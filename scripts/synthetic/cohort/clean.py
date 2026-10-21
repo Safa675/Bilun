@@ -18,7 +18,7 @@ from scripts.synthetic.pathways.schema import Drug, Pins
 from .catalogs import CohortCatalogs
 from .clinical import DrugRoute, PatientClinical, ShowcaseClinical, Vitals, load_clinical
 from .compose import ComposedClaim
-from .ids import PATIENT_ID_RE
+from .ids import PATIENT_ID_RE, claim_sequence
 from .labs import LabReferenceError, _fmt, build_lab_clean, check_lab_coherence, expected_lab_keys
 from .tables import TableSchemaError, _canonical_table_text
 
@@ -271,20 +271,36 @@ def _patient_no_from_id(pid: str) -> int:
     return int(pid.rsplit("-", 1)[1])
 
 
+def _encounter_no_from_claim(claim_id: str) -> int:
+    """The encounter of a claim: its sequence within the patient (the last three digits of the id)."""
+    try:
+        return claim_sequence(claim_id)
+    except ValueError as exc:
+        raise CleanTableError(str(exc)) from None
+
+
 def _resolve_vitals_map(
-    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[int, PatientClinical | Vitals],
-) -> dict[int, Vitals]:
+    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[Any, PatientClinical | Vitals],
+) -> dict[tuple[int, int], Vitals]:
+    """The vitals of each encounter, keyed by (patient_no, encounter_no).
+
+    A mapping may be keyed by the patient number alone (the patient's first encounter) or by a
+    (patient_no, encounter_no) pair.
+    """
     if isinstance(clinical, ShowcaseClinical):
-        return {p.patient_no: p.vitals for p in clinical.patients}
+        return {(p.patient_no, p.encounter_no): p.vitals for p in clinical.patients}
     if isinstance(clinical, Mapping):
         return {
-            int(k): (v.vitals if isinstance(v, PatientClinical) else v) for k, v in clinical.items()
+            (int(key[0]), int(key[1])) if isinstance(key, tuple) else (int(key), 1): (
+                value.vitals if isinstance(value, PatientClinical) else value
+            )
+            for key, value in clinical.items()
         }
-    return {p.patient_no: p.vitals for p in clinical}
+    return {(p.patient_no, p.encounter_no): p.vitals for p in clinical}
 
 
 def _resolve_drug_routes(
-    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[int, PatientClinical | Vitals],
+    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[Any, PatientClinical | Vitals],
 ) -> dict[str, str]:
     """Routes declared per barcode; only a `ShowcaseClinical` document can carry them."""
     if isinstance(clinical, ShowcaseClinical) and clinical.drug_routes is not None:
@@ -299,6 +315,12 @@ def _find_drug_entry_and_pins(
     pathway: Pathway,
     siblings_by_story: Mapping[str, list[Pathway]],
 ) -> tuple[Drug | None, Pins]:
+    """The pathway entry a billed drug line comes from, and the pins of the encounter it was expanded with.
+
+    The pins are the claim's effective pins (`ComposedClaim.pins`: the recipe's overrides over the pathway's
+    own `showcase` block); a claim that carries none gets the `showcase` pins of the pathway or sibling the
+    entry was found in.
+    """
     line_to_entry = {lid: eid for eid, lids in claim.entry_line_ids.items() for lid in lids}
     entry_id = line_to_entry.get(drug_line_id)
     candidate_pathways: list[Pathway] = [
@@ -306,22 +328,25 @@ def _find_drug_entry_and_pins(
         *siblings_by_story.get(pathway.showcase.story, ()),
     ]
 
+    def pins_of(pw: Pathway) -> Pins:
+        return claim.pins if claim.pins is not None else pw.showcase
+
     if entry_id is not None:
         for pw in candidate_pathways:
             for d in pw.drugs:
                 if d.id == entry_id and d.barcode == barcode:
-                    return d, pw.showcase
+                    return d, pins_of(pw)
         for pw in candidate_pathways:
             for d in pw.drugs:
                 if d.id == entry_id:
-                    return d, pw.showcase
+                    return d, pins_of(pw)
 
     for pw in candidate_pathways:
         matches = [d for d in pw.drugs if d.barcode == barcode]
         if len(matches) == 1:
-            return matches[0], pw.showcase
+            return matches[0], pins_of(pw)
 
-    return None, pathway.showcase
+    return None, pins_of(pathway)
 
 
 def _build_narratives(
@@ -391,7 +416,7 @@ def build_clean_tables(
     *,
     clinical: ShowcaseClinical
     | Sequence[PatientClinical]
-    | Mapping[int, PatientClinical | Vitals]
+    | Mapping[Any, PatientClinical | Vitals]
     | None = None,
     pathways: Mapping[str, Pathway] | None = None,
     siblings: Mapping[str, Pathway] | None = None,
@@ -399,14 +424,20 @@ def build_clean_tables(
     icd_names: Mapping[str, str] | None = None,
     drug_crosswalk: Mapping[str, str] | None = None,
 ) -> dict[str, pl.DataFrame]:
-    """Build the 3 clean Polars DataFrames (`anadata_clean`, `lab_clean`, `recete_clean`)."""
+    """Build the 3 clean Polars DataFrames (`anadata_clean`, `lab_clean`, `recete_clean`).
+
+    `claims` come in the order of `claim_headers.parquet` (by patient, then by date of the encounter: see
+    `build_showcase`); the anadata and recete rows follow it, and `validate_clean_tables` compares them with the
+    claims tables row by row. The vitals of a claim are those of the (patient_no, encounter_no) entry of
+    `clinical`, its age and sex those of the claim's effective pins (`ComposedClaim.pins`).
+    """
     cats = catalogs if catalogs is not None else CohortCatalogs()
     icd_map = icd_names if icd_names is not None else cats.icd_names_map
     titck_map = drug_crosswalk if drug_crosswalk is not None else cats.titck_names_map
     pathways_map = pathways if pathways is not None else load_all()
     siblings_map = siblings if siblings is not None else load_siblings()
     document = load_clinical() if clinical is None else clinical
-    vitals_by_no = _resolve_vitals_map(document)
+    vitals_by_encounter = _resolve_vitals_map(document)
     routes_by_barcode = _resolve_drug_routes(document)
 
     siblings_by_story: dict[str, list[Pathway]] = {}
@@ -420,18 +451,20 @@ def build_clean_tables(
         header = claim.header
         pid = header.patient_id
         pno = _patient_no_from_id(pid)
-        if pno not in vitals_by_no:
+        encounter = _encounter_no_from_claim(header.claim_id)
+        if (pno, encounter) not in vitals_by_encounter:
             raise CleanTableError(
-                f"anadata_clean.parquet for {pid}: missing clinical vitals for patient_no {pno}"
+                f"anadata_clean.parquet for {pid}: missing clinical vitals for patient_no {pno}, "
+                f"encounter {encounter}"
             )
-        vitals = vitals_by_no[pno]
+        vitals = vitals_by_encounter[(pno, encounter)]
 
         if header.scenario_tag not in pathways_map:
             raise CleanTableError(
                 f"anadata_clean.parquet for {pid}: pathway {header.scenario_tag!r} not found"
             )
         pathway = pathways_map[header.scenario_tag]
-        pins = pathway.showcase
+        pins = claim.pins if claim.pins is not None else pathway.showcase
         age = pins.age
         if pins.sex not in _SEX_PIN_TO_CINSIYET:
             raise CleanTableError(

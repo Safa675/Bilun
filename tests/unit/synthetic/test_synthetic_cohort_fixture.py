@@ -262,7 +262,10 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
 def test_the_stories_are_the_role_stories_then_the_scenarios_in_number_order() -> None:
     assert cohort.stories() == [*_STORIES, *_SCENARIO_STORIES]
     assert cohort.stories() == sorted(cohort.stories(), key=lambda story: int(story[1:]))
-    assert {record["story"] for record in cohort.load_registry()["faults"]} == set(cohort.stories())
+    registry = cohort.load_registry()
+    faulty = {record["story"] for record in registry["faults"]}
+    clean = {e["story"] for e in registry["encounters"] if e["is_clean"]}  # a bill without a fault has a story too
+    assert faulty | clean == set(cohort.stories()) and not faulty & clean
 
 def test_a_scenario_points_at_a_patient_and_claims_in_the_committed_tables() -> None:
     headers = pl.read_parquet(_CLAIMS / "claim_headers.parquet", columns=["patient_id", "claim_id"])
@@ -326,6 +329,69 @@ def test_the_registry_is_read_once_and_the_accessors_return_copies() -> None:
         cohort.role("default_landing").claim_id = "X"  # type: ignore[misc]
     with pytest.raises(AttributeError):
         cohort.scenario("S9").patient_id = "X"  # type: ignore[misc]
+
+
+# --- 2b. A patient with two bills ---------------------------------------------------------------------
+#
+# No committed patient has a second bill yet, so the registry of one is made here from the committed one the
+# way the generator writes it: a second encounter, a clean bill with a story of its own (`S90`), a scenario
+# that names it, and the pins its recipe overrides. The accessors must still answer for the right bill.
+
+_FIRST_CLAIM = cohort.role("showcase_S4").claim_id
+_SECOND_CLAIM = _FIRST_CLAIM.replace("-001", "-002")
+_PATIENTS_BEFORE, _CLAIMS_BEFORE = cohort.patient_count(), cohort.claim_count()
+
+
+@pytest.fixture
+def two_bills(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    registry = copy.deepcopy(cohort.load_registry())
+    first = next(e for e in registry["encounters"] if e["claim_id"] == _FIRST_CLAIM)
+    registry["encounters"].append(
+        {
+            **first,
+            "claim_id": _SECOND_CLAIM,
+            "story": "S90",
+            "is_clean": True,
+            "fault_id": None,
+            "pins": {"story": "S90", "admit": "2026-05-12"},
+        }
+    )
+    registry["scenarios"]["S90"] = {"patient_id": first["patient_id"], "claim_ids": [_SECOND_CLAIM]}
+    monkeypatch.setattr(cohort, "load_registry", lambda: registry)
+    return registry
+
+
+def test_a_patient_with_two_bills_is_one_patient_and_two_claims(two_bills: dict[str, Any]) -> None:
+    assert (cohort.patient_count(), cohort.claim_count()) == (_PATIENTS_BEFORE, _CLAIMS_BEFORE + 1)
+    assert len(cohort.patient_ids()) == _PATIENTS_BEFORE
+    assert cohort.claim_ids() == sorted({*cohort.claim_ids()}) and _SECOND_CLAIM in cohort.claim_ids()
+    assert [c for c in cohort.claim_ids() if c.startswith(_FIRST_CLAIM[:-3])] == [_FIRST_CLAIM, _SECOND_CLAIM]
+
+
+def test_the_roles_and_the_fault_of_a_story_stay_on_the_first_bill(two_bills: dict[str, Any]) -> None:
+    patient = cohort.role("showcase_S4").patient_id
+    assert cohort.role("showcase_S4").claim_id == _FIRST_CLAIM  # a later bill takes no role over
+    assert cohort.role("default_landing") == cohort.role("showcase_S1")
+    assert cohort.fault("S4")["claim_id"] == _FIRST_CLAIM and cohort.fault("S4")["patient_id"] == patient
+    with pytest.raises(KeyError) as error:
+        cohort.fault("S90")  # a bill without a fault has no record, and the message lists those that have
+    assert "S90" not in str(error.value).split("the stories are")[1]
+    assert "S4" in str(error.value)
+
+
+def test_a_second_bill_is_a_scenario_of_its_own_and_the_stories_stay_in_number_order(
+    two_bills: dict[str, Any],
+) -> None:
+    patient = cohort.role("showcase_S4").patient_id
+    assert cohort.scenario("S90") == cohort.Scenario(patient_id=patient, claim_ids=(_SECOND_CLAIM,))
+    assert set(cohort.scenarios()) == {*_SCENARIO_STORIES, "S90"}
+    assert cohort.stories() == [*_STORIES, *_SCENARIO_STORIES, "S90"]
+    # the patient's bills are found by grouping: the encounters, and the roles and scenarios, by patient
+    bills = [e["claim_id"] for e in two_bills["encounters"] if e["patient_id"] == patient]
+    assert bills == [_FIRST_CLAIM, _SECOND_CLAIM]
+    named = {t.claim_id for t in cohort.roles().values() if t.patient_id == patient}
+    named |= {c for s in cohort.scenarios().values() if s.patient_id == patient for c in s.claim_ids}
+    assert named == {_FIRST_CLAIM, _SECOND_CLAIM}
 
 
 # --- 3. The helper reads the registry only -----------------------------------------------------------

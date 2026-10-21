@@ -64,6 +64,7 @@ from scripts.synthetic.cohort.labs import (
     BILLED_LAB_CODES,
     _base_excess,
     _egfr_normal_band_for_age,
+    _encounter_no,
     _generate_blood_gas_values,
     _generate_creatinine_and_egfr,
     _generate_hemogram_values,
@@ -90,6 +91,7 @@ from src.bilun.cache.loaders import _normalize_lab, load_normalized_raw_data
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.prose_rules.lab_capture_gap import detect_lab_capture_gaps
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
@@ -2015,7 +2017,7 @@ def _with_states(
     base = load_clinical()
     patients: list[PatientClinical] = []
     for patient in base.patients:
-        if patient.patient_no == patient_no:
+        if (patient.patient_no, patient.encounter_no) == (patient_no, 1):  # the patient's first bill
             assert patient.labs is not None
             states = {k: v for k, v in patient.labs.states.items() if k not in drop}
             states.update(add or {})
@@ -2029,7 +2031,7 @@ def _without_blood_gas(patient_no: int, *, whole_block: bool) -> ShowcaseClinica
     base = load_clinical()
     patients: list[PatientClinical] = []
     for patient in base.patients:
-        if patient.patient_no == patient_no:
+        if (patient.patient_no, patient.encounter_no) == (patient_no, 1):  # the patient's first bill
             assert patient.labs is not None
             labs: PatientLabs | None = (
                 None if whole_block else patient.labs.model_copy(update={"blood_gas": None})
@@ -2350,8 +2352,9 @@ def test_the_engine_proof_over_the_committed_files_reports_no_mismatch(
     built_showcase: BuildResult,
 ) -> None:
     proofs = prove_showcase(built_showcase, dataset=load_showcase_dataset(_CLAIMS_DIR))
-    assert len(proofs) == cohort.claim_count()
-    assert [sp.mismatches for sp in proofs] == [()] * cohort.claim_count()
+    faults = len(cohort.load_registry()["faults"])  # a proof for each bill that carries a fault
+    assert len(proofs) == faults
+    assert [sp.mismatches for sp in proofs] == [()] * faults
 
 
 # --- 3.10 Hygiene ----------------------------------------------------------------------------------
@@ -2891,8 +2894,13 @@ def test_the_generator_takes_the_clinical_document_in_every_form(
         "none (read from the file)": None,
         "document": document,
         "sequence of patients": list(document.patients),
-        "mapping of patients": {p.patient_no: p for p in document.patients},
-        "mapping of lab blocks": {p.patient_no: p.labs for p in document.patients},
+        "mapping of encounters": {(p.patient_no, p.encounter_no): p for p in document.patients},
+        "mapping of lab blocks": {(p.patient_no, p.encounter_no): p.labs for p in document.patients},
+        # keyed by the patient number alone, a mapping names the patient's first encounter
+        "mapping of patient numbers": {p.patient_no: p for p in document.patients if p.encounter_no == 1},
+        "mapping of lab blocks by patient number": {
+            p.patient_no: p.labs for p in document.patients if p.encounter_no == 1
+        },
     }
     for name, clinical in forms.items():
         built = build_lab_clean(built_showcase.claims, clinical=clinical, schema=LAB_CLEAN_SCHEMA)
@@ -2907,7 +2915,12 @@ def test_the_generator_refuses_a_bad_patient_id_or_a_lab_code_the_csv_lacks(
 ) -> None:
     with pytest.raises(LabReferenceError, match="Invalid patient_id format 'ANON'"):
         _patient_no("ANON")
-    claim = built_showcase.claims[0]
+    assert _encounter_no("F-SENTETIK-HASTA-0004-002") == 2
+    with pytest.raises(LabReferenceError, match="invalid claim_id 'X-1'"):
+        _encounter_no("X-1")  # a claim whose sequence cannot be read is a reader error, not a bare ValueError
+    claim = next(
+        c for c in built_showcase.claims if any(p.procedure_category == "laboratuvar" for p in c.procedures)
+    )
     lab_index = next(
         i for i, line in enumerate(claim.procedures) if line.procedure_category == "laboratuvar"
     )
@@ -4219,3 +4232,190 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
                     assert band[0] - 1e-9 <= got <= band[1] + 1e-9, (spec.key, state.name, sex, k)
                     checked += 1
     assert (checked, refused) == (1014, 12)
+
+
+# --- 3.20 Several bills of one patient: the draws, the pins and the order of the rows -----------------
+#
+# Patient 2 gets a second COPD stay (a blood gas, its own lab states: none, so every value is normal),
+# patient 3 a pyelonephritis stay of the same age and sex as the patient (the pathway's own showcase age is 86,
+# the patient's 77) dated BEFORE its first bill, patient 4 a stay one day after its first (the lab days
+# interleave). Nothing here is committed.
+
+_COPD = "copd_exacerbation_pneumonia_ward"
+_PYELO = "pyelonephritis_dementia_delirium_ward"
+_ALL_NORMAL = {"blood_gas": "arterial", "states": {}, "basis": "judgment", "source": "Test fixture only."}
+_CLAIM_2_2, _CLAIM_3_2, _CLAIM_4_2 = (f"F-SENTETIK-HASTA-{n:04d}-002" for n in (2, 3, 4))
+
+
+@pytest.fixture(scope="module")
+def extra_bills() -> BuildResult:
+    recipes, clinical = with_encounters(
+        Extra(2, 2, _COPD, {"admit": "2026-04-20", "story": "S92"}, labs=_ALL_NORMAL),
+        Extra(3, 2, _PYELO, {"story": "S93", "age": 77, "sex": "F"}),
+        Extra(4, 2, _PYELO, {"admit": "2026-05-12", "story": "S90"}),
+    )
+    return build_showcase(recipes=recipes, clinical=clinical)
+
+
+def _record_salts(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """Every `draw_u` of the generator, with its salt written down (they all go through it)."""
+    asked: list[int] = []
+    real = labs_module.draw_u
+
+    def recorder(patient_id: str, code: str, parameter: str, k: int, salt: int = 0) -> float:
+        asked.append(salt)
+        return real(patient_id, code, parameter, k, salt)
+
+    monkeypatch.setattr(labs_module, "draw_u", recorder)
+    return asked
+
+
+@pytest.mark.parametrize(
+    ("claim_id", "base"),
+    [
+        pytest.param("F-SENTETIK-HASTA-0002-001", 0, id="2.1_blood_gas_first_bill"),
+        pytest.param(_CLAIM_2_2, 1000, id="2.2_blood_gas"),
+        pytest.param("F-SENTETIK-HASTA-0003-001", 0, id="3.1"),
+        pytest.param(_CLAIM_3_2, 1000, id="3.2_creatinine"),
+        pytest.param("F-SENTETIK-HASTA-0004-001", 0, id="4.1"),
+        pytest.param(_CLAIM_4_2, 1000, id="4.2"),
+    ],
+)
+def test_the_draws_of_a_claim_use_the_salts_of_its_sequence_and_no_others(
+    extra_bills: BuildResult, monkeypatch: pytest.MonkeyPatch, claim_id: str, base: int
+) -> None:
+    claim = next(c for c in extra_bills.claims if c.header.claim_id == claim_id)
+    asked = _record_salts(monkeypatch)
+    build_lab_clean([claim], clinical=extra_bills.clinical, schema=LAB_CLEAN_SCHEMA)
+    assert asked and base in asked  # the first try of a draw is the base itself
+    assert set(asked) <= set(range(base, base + 50)), sorted(set(asked))  # and no draw of another claim's salts
+    assert labs_module.CLAIM_SALT_STEP >= 50  # the retries of one claim never reach the next claim's salts
+
+
+@pytest.mark.parametrize(
+    "kind",
+    ["hemogram", "hemogram_with_a_state", "creatinine", "creatinine_egfr_band", "creatinine_range", "blood_gas"],
+)
+def test_every_generator_starts_at_the_salt_it_is_given(kind: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    ref = load_lab_reference()
+    patient = _pid(3)
+    creatinine_states = {
+        "creatinine_egfr_band": {"L104780|Kreatinin": "ckd_g3a"},
+        "creatinine_range": {"L104780|Kreatinin": "sarcopenic_elderly"},
+    }
+
+    def draw(salt_base: int) -> dict[str, float]:
+        if kind.startswith("hemogram"):
+            states = {"L107020|WBC (Lökosit)": "bacterial_infection"} if kind.endswith("state") else {}
+            return _generate_hemogram_values(
+                ref.by_code["L107020"], patient_id=patient, sex="F", k=1, states_map=states, salt_base=salt_base
+            )
+        if kind.startswith("creatinine"):
+            return _generate_creatinine_and_egfr(
+                ref.by_code["L104780"],
+                patient_id=patient,
+                age=77,
+                sex="F",
+                k=1,
+                states_map=creatinine_states.get(kind, {}),
+                egfr_age_bands=ref.egfr_age_bands,
+                salt_base=salt_base,
+            )
+        return _generate_blood_gas_values(
+            ref.by_code["L103900"], patient_id=patient, sex="F", k=1, blood_gas_type="arterial", states_map={}, salt_base=salt_base
+        )
+
+    asked = _record_salts(monkeypatch)
+    at_zero = draw(0)
+    assert set(asked) <= set(range(50)) and 0 in asked
+    asked.clear()
+    at_base = draw(5000)
+    assert set(asked) <= set(range(5000, 5050)) and 5000 in asked, sorted(set(asked))
+    assert at_base != at_zero  # another claim of the same patient draws other values for the same code
+
+
+def test_the_lab_rows_of_two_bills_come_out_in_the_order_the_feed_check_states(
+    extra_bills: BuildResult, csv_rows: pl.DataFrame
+) -> None:
+    lab_table = extra_bills.clean_tables["lab_clean.parquet"]
+    procs = extra_bills.tables["procedure_claim_lines.parquet"]
+    assert _actual_lab_keys(lab_table).equals(_expected_lab_keys(procs, csv_rows))
+    # whatever the order the claims are handed over in, the rows come out in that order
+    claims = list(extra_bills.claims)
+    forward = build_lab_clean(claims, clinical=extra_bills.clinical, schema=LAB_CLEAN_SCHEMA)
+    assert forward.equals(lab_table)
+    assert build_lab_clean(claims[::-1], clinical=extra_bills.clinical, schema=LAB_CLEAN_SCHEMA).equals(forward)
+    # patient 4's two stays overlap by days, so its rows alternate between the bills: by patient and date
+    # (the claim cannot be the order), and a precursor (patient 3's second bill) comes first
+    p4 = lab_table.filter(pl.col("HASTA_ID") == _pid(4))
+    assert p4["tarih"].is_sorted()
+    episodes = p4["basvuru_id"].to_list()
+    assert sum(a != b for a, b in zip(episodes, episodes[1:], strict=False)) > 1
+    p3 = lab_table.filter(pl.col("HASTA_ID") == _pid(3))
+    assert p3["basvuru_id"][0] == "B-SENTETIK-HASTA-0003-002" and p3["basvuru_id"][-1] == "B-SENTETIK-HASTA-0003-001"
+
+
+def test_the_lab_values_of_a_second_bill_differ_from_the_first_and_the_first_stays_as_it_was(
+    extra_bills: BuildResult, lab: pl.DataFrame
+) -> None:
+    lab_table = extra_bills.clean_tables["lab_clean.parquet"]
+    for patient_no, second in ((3, "B-SENTETIK-HASTA-0003-002"), (4, "B-SENTETIK-HASTA-0004-002")):
+        mine = lab_table.filter(pl.col("HASTA_ID") == _pid(patient_no))
+        first = mine.filter(pl.col("basvuru_id") != second)
+        committed = lab.filter(pl.col("HASTA_ID") == _pid(patient_no))
+        assert first.equals(committed), patient_no  # adding a bill moves nothing of the first one
+        key = ["SUB_CODE", "parametre"]
+        paired = (
+            first.select(*key, "sonuc_sayisal")
+            .join(mine.filter(pl.col("basvuru_id") == second).select(*key, "sonuc_sayisal"), on=key, suffix="_2nd")
+            .drop_nulls()
+            .unique(subset=key)
+        )
+        assert paired.height > 0 and (paired["sonuc_sayisal"] != paired["sonuc_sayisal_2nd"]).any(), patient_no
+
+
+def test_a_bill_has_the_lab_states_of_its_own_entry(extra_bills: BuildResult, lab: pl.DataFrame) -> None:
+    """Patient 2's first stay has a bacterial WBC; the second has no states, so its WBC rows are normal."""
+    lab_table = extra_bills.clean_tables["lab_clean.parquet"]
+    wbc = lab_table.filter((pl.col("HASTA_ID") == _pid(2)) & (pl.col("parametre") == "WBC (Lökosit)"))
+    by_bill = {
+        episode: rows["anormal_mi"].to_list() for (episode,), rows in wbc.group_by("basvuru_id", maintain_order=True)
+    }
+    assert any(by_bill["B-SENTETIK-HASTA-0002-001"]) and not any(by_bill["B-SENTETIK-HASTA-0002-002"])
+    # blood gas: the entry says arterial for the second stay too, so the set is there
+    assert lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0002-002")["SUB_CODE"].is_in(["L103900"]).any()
+
+
+def test_a_later_bill_of_another_pathway_is_judged_at_the_age_of_its_pins(extra_bills: BuildResult) -> None:
+    """Patient 3 is 77; the pathway of its second bill has an 86-year-old showcase patient, the pins say 77."""
+    lab_table = extra_bills.clean_tables["lab_clean.parquet"]
+    rows = lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0003-002")
+    creatinine = rows.filter(pl.col("parametre") == "Kreatinin")["sonuc_sayisal"].to_list()
+    egfr = rows.filter(pl.col("parametre") == _EGFR)["sonuc_sayisal"].to_list()
+    assert creatinine and len(creatinine) == len(egfr)
+    assert egfr == [float(round(ckd_epi_2021(scr, 77, "F"))) for scr in creatinine]
+    assert egfr != [float(round(ckd_epi_2021(scr, 86, "F"))) for scr in creatinine]  # the pathway's age would differ
+    ana = extra_bills.clean_tables["anadata_clean.parquet"].filter(pl.col("HASTA_ID") == _pid(3))
+    assert dict(zip(ana["SQ_EPISODE"], ana["TANI_YASI"], strict=True)) == {
+        "B-SENTETIK-HASTA-0003-001": 77,
+        "B-SENTETIK-HASTA-0003-002": 77,
+    }
+    claim = next(c for c in extra_bills.claims if c.header.claim_id == _CLAIM_3_2)
+    assert claim.pins is not None and (claim.pins.age, claim.pins.sex) == (77, "F")
+
+
+def test_a_mapping_keyed_by_patient_number_names_the_first_encounter_only(extra_bills: BuildResult) -> None:
+    """The old form of the argument still works for a one-bill patient; for a patient with two it is the first."""
+    by_number = {p.patient_no: p for p in extra_bills.clinical.patients if p.encounter_no == 1}
+    by_pair = {(p.patient_no, p.encounter_no): p for p in extra_bills.clinical.patients}
+    claims = extra_bills.claims
+    a = build_lab_clean(claims, clinical=by_pair, schema=LAB_CLEAN_SCHEMA)
+    assert a.equals(extra_bills.clean_tables["lab_clean.parquet"])
+    # patient 2's second stay has no entry in this form, and a billed blood gas without one is refused
+    with pytest.raises(LabCoherenceError, match="blood_gas"):
+        build_lab_clean(claims, clinical=by_number, schema=LAB_CLEAN_SCHEMA)
+    # for a patient with one bill the two forms are the same thing
+    one_bill = [c for c in claims if c.header.patient_id in {_pid(1), _pid(3)} and not c.header.claim_id.endswith("002")]
+    assert build_lab_clean(one_bill, clinical=by_number, schema=LAB_CLEAN_SCHEMA).equals(
+        build_lab_clean(one_bill, clinical=by_pair, schema=LAB_CLEAN_SCHEMA)
+    )

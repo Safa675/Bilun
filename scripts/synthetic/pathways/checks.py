@@ -27,6 +27,7 @@ from .schema import (
     BED_KINDS,
     ICU_KINDS,
     Pathway,
+    Pins,
     Problem,
     anchors_for,
     course_overrun,
@@ -796,9 +797,12 @@ def check_drug_indications(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     return out
 
 
-def check_pins(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """pins.*: the showcase pins obey the declared ranges, and the stay is inside the window."""
-    pins = pathway.showcase
+def pins_problems(pathway: Pathway, pins: Pins, cat: Catalogs) -> list[Problem]:
+    """pins.*: `pins` obey the declared ranges of `pathway`, and the stay is inside the window.
+
+    The pins are the pathway's own showcase block (`check_pins`) or the pins of one encounter of a recipe
+    (a recipe may override them): the rules are the same.
+    """
     out = pin_problems(pathway, pins)
     start, end = effective_window(pathway, cat)
     last = (date.fromisoformat(pins.admit) + timedelta(days=pins.nights or 0)).isoformat()
@@ -811,6 +815,11 @@ def check_pins(pathway: Pathway, cat: Catalogs) -> list[Problem]:
             )
         )
     return out
+
+
+def check_pins(pathway: Pathway, cat: Catalogs) -> list[Problem]:
+    """pins.*: the showcase pins obey the declared ranges, and the stay is inside the window."""
+    return pins_problems(pathway, pathway.showcase, cat)
 
 
 def check_window(pathway: Pathway, cat: Catalogs) -> list[Problem]:

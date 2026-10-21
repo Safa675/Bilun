@@ -81,6 +81,7 @@ from scripts.synthetic.cohort.plausibility_clean import (
 )
 from scripts.synthetic.cohort.tables import TABLE_FILES, build_tables
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
@@ -236,8 +237,8 @@ def lab(
     code: str | None = None,
     parameter: str | None = None,
 ) -> pl.Expr:
-    """The lab rows of a story's patient, optionally of one day, one code and one parameter."""
-    expr = pl.col("HASTA_ID") == PATIENT[story]
+    """The lab rows of a story's bill, optionally of one day, one code and one parameter."""
+    expr = pl.col("basvuru_id") == EPISODE[story]
     if on is not None:
         expr = expr & (pl.col("tarih") == day(on))
     if code is not None:
@@ -248,12 +249,16 @@ def lab(
 
 
 def rx(story: int, name: str) -> pl.Expr:
-    """The prescription row of a story's patient whose billed name starts with `name`."""
-    return (pl.col("HASTA_ID") == PATIENT[story]) & pl.col("ilac_adi").str.starts_with(name)
+    """The prescription row of a story's bill whose billed name starts with `name`."""
+    return (pl.col("RF_EPISODE") == EPISODE[story]) & pl.col("ilac_adi").str.starts_with(name)
 
 
-def patient_row(story: int) -> pl.Expr:
-    return pl.col("HASTA_ID") == PATIENT[story]
+_EPISODE_COLUMN = {TABLE_ANADATA: "SQ_EPISODE", TABLE_LAB: "basvuru_id", TABLE_RECETE: "RF_EPISODE"}
+
+
+def bill_row(story: int, table: str) -> pl.Expr:
+    """The rows of the story's (first) bill in a clean table: a patient may have other bills, with rows of their own."""
+    return pl.col(_EPISODE_COLUMN[table]) == EPISODE[story]
 
 
 def lab_where(story: int, on: str, code: str, parameter: str | None = None) -> str:
@@ -346,7 +351,7 @@ def _lab_value(story, on, code, parameter, **changes) -> Callable[[Data], None]:
 
 
 def _vital(story: int, **changes) -> Callable[[Data], None]:
-    return lambda d: edit(d, TABLE_ANADATA, patient_row(story), **changes)
+    return lambda d: edit(d, TABLE_ANADATA, bill_row(story, TABLE_ANADATA), **changes)
 
 
 def _recete(story: int, name: str, **changes) -> Callable[[Data], None]:
@@ -354,11 +359,11 @@ def _recete(story: int, name: str, **changes) -> Callable[[Data], None]:
 
 
 def _null_column(column: str) -> Callable[[Data], None]:
-    return lambda d: edit(d, TABLE_RECETE, patient_row(7), **{column: None})
+    return lambda d: edit(d, TABLE_RECETE, bill_row(7, TABLE_RECETE), **{column: None})
 
 
 def _blank_column(column: str) -> Callable[[Data], None]:
-    return lambda d: edit(d, TABLE_RECETE, patient_row(7), **{column: "  "})
+    return lambda d: edit(d, TABLE_RECETE, bill_row(7, TABLE_RECETE), **{column: "  "})
 
 
 # S7's single prescription row (PARTEMOL, 1 flakon) carries the required-field cases; a null in a
@@ -873,7 +878,7 @@ CASES: list[Case] = [
         EGFR_RELATION,
         # no anadata row at all for S3: the sex-dependent limits of her HGB cannot be judged either,
         # and the one id that owns the gap says so (flag_and_limits skips what it cannot evaluate)
-        lambda d: drop(d, TABLE_ANADATA, patient_row(3)),
+        lambda d: drop(d, TABLE_ANADATA, bill_row(3, TABLE_ANADATA)),
         where=PATIENT[3],
         says=f"the episode {EPISODE[3]} has no anadata_clean row",
         n=2,
@@ -1109,21 +1114,21 @@ CASES: list[Case] = [
     ),
     Case(
         REQUIRED,
-        lambda d: edit(d, TABLE_RECETE, patient_row(7), kohort=""),
+        lambda d: edit(d, TABLE_RECETE, bill_row(7, TABLE_RECETE), kohort=""),
         where=_REQUIRED_START,
         says="missing required column(s): kohort",
         label="empty_kohort",
     ),
     Case(
         REQUIRED,
-        lambda d: edit(d, TABLE_RECETE, patient_row(7), kohort="demo"),
+        lambda d: edit(d, TABLE_RECETE, bill_row(7, TABLE_RECETE), kohort="demo"),
         where=_REQUIRED_START,
         says="kohort is demo, not showcase",
         label="wrong_kohort",
     ),
     Case(
         REQUIRED,
-        lambda d: edit(d, TABLE_RECETE, patient_row(7), donem="2025"),
+        lambda d: edit(d, TABLE_RECETE, bill_row(7, TABLE_RECETE), donem="2025"),
         where=_REQUIRED_START,
         says="donem is 2025 but RECETE_TARIH is in 2026",
         label="wrong_donem",
@@ -1182,7 +1187,7 @@ CASES: list[Case] = [
         VITALS,
         # a second episode of S3 that says she is a man: both rows name the contradiction
         lambda d: add_row(
-            d, TABLE_ANADATA, patient_row(3), SQ_EPISODE="B-SENTETIK-HASTA-0003-002", CINSIYET="E"
+            d, TABLE_ANADATA, bill_row(3, TABLE_ANADATA), SQ_EPISODE="B-SENTETIK-HASTA-0003-002", CINSIYET="E"
         ),
         where=f"{PATIENT[3]} anadata_clean[",
         says="CINSIYET differs between the episodes of the patient",
@@ -1270,7 +1275,7 @@ def test_the_committed_clean_tables_raise_no_problem(committed_problems, clean) 
     assert [str(p) for p in committed_problems] == []
     # the tables are the ones of the brief: they are not empty, so "no problem" is not "no data"
     assert {name: clean[name].height for name in _CLEAN_FILES} == {
-        TABLE_ANADATA: cohort.patient_count(),
+        TABLE_ANADATA: cohort.claim_count(),  # one anadata row per bill
         TABLE_LAB: LAB_ROWS,
         TABLE_RECETE: RX_ROWS,
     }
@@ -1337,7 +1342,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
     expected_labs = {}
     for line in lab_lines.iter_rows(named=True):
         rows = clean[TABLE_LAB].filter(
-            (pl.col("HASTA_ID") == line["patient_id"])
+            (pl.col("basvuru_id") == line["episode_id"])
             & (pl.col("SUB_CODE") == line["procedure_code"])
             & (pl.col("tarih").dt.strftime("%Y-%m-%d") == line["procedure_date"])
         )
@@ -1381,7 +1386,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
 def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
     """Twin claims and clean tables without S1's lab and prescription rows: nothing depends on the fault."""
     twin_clean = {
-        name: (frame.filter(pl.col("HASTA_ID") != PATIENT[1]) if name != TABLE_ANADATA else frame)
+        name: (frame.filter(pl.col(_EPISODE_COLUMN[name]) != EPISODE[1]) if name != TABLE_ANADATA else frame)
         for name, frame in clean.items()
     }
     assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16  # S1 has 16 lab rows
@@ -1514,7 +1519,7 @@ def test_every_committed_vital_row_is_looked_at(column, built, clean, context) -
     schema = clean[TABLE_ANADATA].schema
     broken = {column: pl.lit(VITAL_BREAKS[column], dtype=schema[column])}
     found = _all_rows_of(TABLE_ANADATA, built, clean, context, VITALS, **broken)
-    assert len(found) == cohort.patient_count(), [str(p) for p in found[:3]]
+    assert len(found) == cohort.claim_count(), [str(p) for p in found[:3]]
 
 
 def test_the_mutations_leave_the_clean_tables_untouched(built, clean) -> None:
@@ -1644,7 +1649,7 @@ def test_a_missing_table_or_column_is_reported_by_name(built, clean, context) ->
 
 def test_the_problems_come_in_the_order_of_the_registry(built, clean, context) -> None:
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, patient_row(2), SPO2=120)
+    edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), SPO2=120)
     edit(data, TABLE_RECETE, rx(2, "IESEF"), dozaj_ham="8 flakon")
     edit(data, TABLE_LAB, lab(2, DAY_2, GLUCOSE_CODE, "Glukoz"), birim="mmol/L")
     edit(data, TABLE_LAB, lab(2, DAY_2, "L107420", "Üre"), sonuc_sayisal=-1.0, anormal_mi=True)
@@ -1661,7 +1666,7 @@ def test_the_run_follows_the_registry_order_whatever_the_order_of_only(
     built, clean, context
 ) -> None:
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, patient_row(2), SPO2=120)
+    edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), SPO2=120)
     edit(data, TABLE_RECETE, rx(2, "IESEF"), dozaj_ham="8 flakon")
     edit(data, TABLE_LAB, lab(2, DAY_2, GLUCOSE_CODE, "Glukoz"), birim="mmol/L")
     edit(data, TABLE_LAB, lab(2, DAY_2, "L107420", "Üre"), sonuc_sayisal=-1.0, anormal_mi=True)
@@ -1906,7 +1911,7 @@ def test_a_defect_is_found_whatever_the_representation_of_the_table(built, clean
         data = fresh(built, clean)
         edit(data, TABLE_LAB, lab(2, DAY_2, GLUCOSE_CODE, "Glukoz"), donem="2025")
         edit(data, TABLE_RECETE, rx(2, "IESEF"), miktar=8, dozaj_ham="8 flakon")
-        edit(data, TABLE_ANADATA, patient_row(2), SPO2=120)
+        edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), SPO2=120)
         return data
 
     expected = findings(seeded(), context)
@@ -1969,7 +1974,7 @@ def test_a_column_of_no_type_at_all_is_read_as_missing(built, clean, context) ->
         pl.lit(None).alias("kohort"),
     )
     found = data.problems(context, only=VITALS)
-    assert len(found) == cohort.patient_count()
+    assert len(found) == cohort.claim_count()
     assert all(
         {"EPISODE_TARIH is missing", "SPO2 is missing", "kohort is missing"}
         <= set(p.message.split("; "))
@@ -1987,7 +1992,7 @@ def test_a_column_of_no_type_at_all_is_read_as_missing(built, clean, context) ->
     assert all(p.message.endswith("has no numeric result") for p in bounds)
     assert data.problems(context, only=EGFR_RELATION) == []
     ages = data.problems(context, only=VITALS)
-    assert len(ages) == cohort.patient_count() and all("TANI_YASI is missing" in p.message for p in ages)
+    assert len(ages) == cohort.claim_count() and all("TANI_YASI is missing" in p.message for p in ages)
 
 
 # --- 4d. the columns: REQUIRED_COLUMNS against the files that are committed ---------------------------
@@ -2094,7 +2099,7 @@ def test_a_missing_value_is_named_in_the_message_not_dropped(built, clean, conte
     (problem,) = data.problems(context, only=FLAG_AND_LIMITS)
     assert problem.message.endswith("but the reference gives 60.0..(none) for sex E")
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, patient_row(2), CINSIYET=None)
+    edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), CINSIYET=None)
     (problem,) = data.problems(context, only=VITALS)
     assert problem.message == "CINSIYET (none) is neither E nor K"
 
@@ -2450,7 +2455,7 @@ def ckd_epi(creatinine: float, age: int, sex: str) -> float:
 
 def egfr_problems(clean, context, creatinine, egfr, age=60, sex="E") -> list[Problem]:
     """S2's creatinine set with the given values, for a patient of that age and sex."""
-    patient = pl.col("HASTA_ID") == PATIENT[2]
+    patient = pl.col("SQ_EPISODE") == EPISODE[2]  # the row of S2's bill
     anadata = clean[TABLE_ANADATA].with_columns(
         pl.when(patient)
         .then(pl.lit(age, dtype=pl.Int64))
@@ -2512,7 +2517,7 @@ def test_egfr_relation_without_an_age_is_skipped_and_without_an_anadata_row_is_r
         {"SUB_CODE": CREATININE_CODE, "parametre": EGFR, "sonuc_sayisal": 10.0},
     )
     no_age = clean[TABLE_ANADATA].with_columns(
-        pl.when(pl.col("HASTA_ID") == PATIENT[2])
+        pl.when(pl.col("SQ_EPISODE") == EPISODE[2])
         .then(None)
         .otherwise(pl.col("TANI_YASI"))
         .alias("TANI_YASI")
@@ -2521,7 +2526,7 @@ def test_egfr_relation_without_an_age_is_skipped_and_without_an_anadata_row_is_r
         {}, {TABLE_LAB: frame, TABLE_ANADATA: no_age}, context=context, only=EGFR_RELATION
     )
     assert found == []
-    no_row = clean[TABLE_ANADATA].filter(pl.col("HASTA_ID") != PATIENT[2])
+    no_row = clean[TABLE_ANADATA].filter(pl.col("SQ_EPISODE") != EPISODE[2])
     (problem,) = check_clean_plausibility(
         {}, {TABLE_LAB: frame, TABLE_ANADATA: no_row}, context=context, only=EGFR_RELATION
     )
@@ -2608,7 +2613,7 @@ def test_a_missing_low_limit_means_zero(built, clean, context) -> None:
 
 def test_an_unknown_sex_checks_the_limits_that_do_not_depend_on_it(built, clean, context) -> None:
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, patient_row(2), CINSIYET="?")
+    edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), CINSIYET="?")
     assert flag_problems(data, context) == [], (
         "sex-dependent limits cannot be checked, none is wrong"
     )
@@ -2627,7 +2632,7 @@ def test_the_sex_of_a_patient_comes_from_every_episode_of_the_patient(
     built, clean, context
 ) -> None:
     data = fresh(built, clean)
-    second = clean[TABLE_ANADATA].filter(patient_row(3)).with_columns(
+    second = clean[TABLE_ANADATA].filter(bill_row(3, TABLE_ANADATA)).with_columns(
         pl.lit("B-SENTETIK-HASTA-0003-002").alias("SQ_EPISODE")
     )  # fmt: skip
     data.clean[TABLE_ANADATA] = pl.concat([clean[TABLE_ANADATA], second])
@@ -2649,7 +2654,7 @@ def test_the_sex_of_a_patient_comes_from_every_episode_of_the_patient(
 def test_the_age_comes_from_the_episode_of_the_result_set(built, clean, context) -> None:
     """S2 has a second episode at another age; its result sets are judged at that age, not at 81."""
     data = fresh(built, clean)
-    second = clean[TABLE_ANADATA].filter(patient_row(2)).with_columns(
+    second = clean[TABLE_ANADATA].filter(bill_row(2, TABLE_ANADATA)).with_columns(
         pl.lit("B-SENTETIK-HASTA-0002-002").alias("SQ_EPISODE"),
         pl.lit(40, dtype=pl.Int64).alias("TANI_YASI"),
     )  # fmt: skip
@@ -2673,7 +2678,7 @@ def test_an_episode_with_two_rows_has_the_smallest_of_their_ages_in_any_order(
 ) -> None:
     """A copy of an anadata row changes nothing; two ages of one episode give the smaller, in any order."""
     anadata = clean[TABLE_ANADATA]
-    copy = anadata.filter(patient_row(2))
+    copy = anadata.filter(bill_row(2, TABLE_ANADATA))
     for rows in ([anadata, copy], [copy, anadata]):
         data = fresh(built, clean)
         data.clean[TABLE_ANADATA] = pl.concat(rows)
@@ -3282,7 +3287,7 @@ def test_a_woman_of_unknown_sex_is_not_judged_by_the_male_limit_of_a_one_sided_r
 ) -> None:
     """hs-troponin I has the lower limit 0 for both sexes and a different upper limit: not verifiable without the sex."""
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, patient_row(7), CINSIYET="?")
+    edit(data, TABLE_ANADATA, bill_row(7, TABLE_ANADATA), CINSIYET="?")
     assert data.problems(context, only=FLAG_AND_LIMITS) == []
 
 
@@ -3307,7 +3312,7 @@ def test_the_limits_of_a_patient_without_an_anadata_row_are_still_checked_when_t
     built, clean, context
 ) -> None:
     data = fresh(built, clean)
-    data.clean[TABLE_ANADATA] = data.clean[TABLE_ANADATA].filter(pl.col("HASTA_ID") != PATIENT[2])
+    data.clean[TABLE_ANADATA] = data.clean[TABLE_ANADATA].filter(pl.col("SQ_EPISODE") != EPISODE[2])
     edit(
         data, TABLE_LAB, lab(2, DAY_2, "L101850", "CRP (kantitatif)"), ref_ust=6.0, anormal_mi=True
     )
@@ -3331,7 +3336,7 @@ def test_an_episode_without_an_anadata_row_is_reported_once_by_the_one_id_that_o
     not judged by the men's).
     """
     data = fresh(built, clean)
-    data.clean[TABLE_ANADATA] = data.clean[TABLE_ANADATA].filter(pl.col("HASTA_ID") != PATIENT[2])
+    data.clean[TABLE_ANADATA] = data.clean[TABLE_ANADATA].filter(pl.col("SQ_EPISODE") != EPISODE[2])
     found = data.problems(context)
     assert only_ids(found) == {EGFR_RELATION}
     assert len(found) == 12 and {p.patient_id for p in found} == {PATIENT[2]}
@@ -3414,7 +3419,7 @@ def test_a_tie_between_two_variants_goes_to_the_one_whose_first_row_comes_first(
 
 def recete_frame(clean, **changes) -> pl.DataFrame:
     """S7's single prescription row (PARTEMOL, 1 flakon) with `changes` laid over it."""
-    row = clean[TABLE_RECETE].filter(patient_row(7))
+    row = clean[TABLE_RECETE].filter(bill_row(7, TABLE_RECETE))
     assert row.height == 1
     return row.with_columns(
         [pl.lit(value, dtype=row.schema[column]).alias(column) for column, value in changes.items()]
@@ -4049,7 +4054,7 @@ def test_the_cohort_of_the_dataset_is_the_one_of_the_context_for_every_table(bui
     assert {p.message for p in found if p.check == VITALS} == {"kohort is showcase, not cohort"}
     assert (sum(p.check == REQUIRED for p in found), sum(p.check == VITALS for p in found)) == (
         RX_ROWS,
-        cohort.patient_count(),
+        cohort.claim_count(),
     )
     relabelled = {
         **clean,
@@ -4079,7 +4084,7 @@ def vitals_frame(clean, **changes) -> pl.DataFrame:
     values.update(changes)
     if "BMI" not in changes and values["Boy"] and values["Kilo"] is not None:
         values["BMI"] = round(values["Kilo"] / (values["Boy"] / 100) ** 2, 1)
-    row = clean[TABLE_ANADATA].filter(patient_row(2))
+    row = clean[TABLE_ANADATA].filter(bill_row(2, TABLE_ANADATA))
     return row.with_columns(
         [pl.lit(value, dtype=row.schema[column]).alias(column) for column, value in values.items()]
     )
@@ -4725,3 +4730,38 @@ def test_the_scan_of_the_loops_sees_every_kind_of_iteration_over_a_column() -> N
     assert {
         n.attr for n in ast.walk(scanned) if isinstance(n, ast.Attribute)
     } & _FORBIDDEN_ATTRIBUTES == {"map_batches"}
+
+
+# --- Several bills of one patient ----------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def more_bills():
+    """Patients 4 and 7 with a second bill (a stay one day after, a visit nine days before) and the newborn of
+    patient 11 with a second stay after its first: the three clean tables of 14 bills. In memory only."""
+    recipes, clinical = with_encounters(
+        *STANDARD_EXTRAS,
+        Extra(11, 2, "late_preterm_newborn_incubator_stay", {"admit": "2026-07-20", "story": "S92"}),
+    )
+    return build_showcase(recipes=recipes, clinical=clinical)
+
+
+def test_more_bills_of_a_patient_raise_no_clean_table_problem(more_bills, context) -> None:
+    found = check_clean_plausibility(more_bills.tables, more_bills.clean_tables, context=context)
+    assert [str(p) for p in found] == []
+    assert more_bills.clean_tables[TABLE_ANADATA].height == cohort.claim_count() + 3  # one anadata row per bill
+
+
+def test_the_second_bill_of_a_baby_is_judged_by_the_infant_ranges_row_by_row(more_bills, context) -> None:
+    """The age of the row decides the band, so the baby's second bill (age 0) is an infant row as well."""
+    ana = more_bills.clean_tables[TABLE_ANADATA]
+    babies = ana.filter(pl.col("HASTA_ID") == PATIENT[11])
+    assert babies.height == 2 and babies["TANI_YASI"].to_list() == [0, 0]
+    adult = {**more_bills.clean_tables, TABLE_ANADATA: ana.with_columns(
+        pl.when(pl.col("HASTA_ID") == PATIENT[11]).then(pl.lit(30, dtype=pl.Int64)).otherwise(pl.col("TANI_YASI")).alias("TANI_YASI")
+    )}
+    found = check_clean_plausibility(more_bills.tables, adult, context=context, only=VITALS)
+    # an adult's age on a baby's vitals: both bills of the patient are outside the adult ranges
+    assert sorted({p.where for p in found}) == sorted(
+        f"{PATIENT[11]} anadata_clean[{episode}]" for episode in babies["SQ_EPISODE"].to_list()
+    )

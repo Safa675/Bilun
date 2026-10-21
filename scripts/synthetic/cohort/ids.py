@@ -46,6 +46,18 @@ def claim_id(patient: str, seq: int) -> str:
     return f"F-{pid}-{n:03d}"
 
 
+def claim_sequence(claim: str) -> int:
+    """The sequence of a claim within its patient: the last three digits of ``F-<patient>-NNN`` (1 for the first).
+
+    It is the encounter number the claim was built from, so it does not change when a later encounter is
+    added to the patient (ids follow the build order, never the date order).
+    """
+    match = CLAIM_ID_RE.fullmatch(claim) if isinstance(claim, str) else None
+    if match is None:
+        raise ValueError(f"invalid claim_id {claim!r}; expected F-SENTETIK-HASTA-NNNN-NNN")
+    return int(match.group(2))
+
+
 def episode_id(patient: str, seq: int) -> str:
     """Build an episode identifier: ``B-<patient>-NNN``."""
     pid = _check_patient_id(patient)
