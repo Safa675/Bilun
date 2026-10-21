@@ -348,6 +348,30 @@ def test_a_newborn_story_composes_incubator_lines_as_bed_lines(
     assert claim.header.expected_total_billed_try == Decimal("3049.55")
 
 
+def test_a_claim_carries_the_pins_it_was_composed_with_and_its_ids_follow_its_sequence(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    """The second bill of a patient: its own claim sequence in every id, and the pins of the encounter."""
+    pathway = pathways["pyelonephritis_dementia_delirium_ward"]
+    pins = pathway.showcase.model_copy(update={"admit": "2026-05-12", "story": "S90"})
+    pid = patient_id(4)
+    ctx = EncounterContext(
+        patient_id=pid, claim_id=claim_id(pid, 2), episode_id=episode_id(pid, 2), pins=pins
+    )
+    claim = compose_claim(expand(pathway, pins, annotate=True), ctx, catalogs)
+    assert claim.pins is pins
+    header = claim.header
+    assert (header.claim_id, header.episode_id) == ("F-SENTETIK-HASTA-0004-002", "B-SENTETIK-HASTA-0004-002")
+    assert header.admission_date == date(2026, 5, 12)  # the bill follows the pins it was expanded with
+    assert {p.claim_id for p in claim.procedures} == {header.claim_id}
+    assert all(p.procedure_line_id.startswith("ISL-F-SENTETIK-HASTA-0004-002-") for p in claim.procedures)
+    assert all(d.diagnosis_id.startswith("TANI-SENTETIK-HASTA-0004-002-") for d in claim.diagnoses)
+    assert all(d.drug_claim_line_id.startswith("ILC-F-SENTETIK-HASTA-0004-002-") for d in claim.drugs)
+    # a context with no pins gives a claim with none: the pathway's own pins are then the encounter's
+    plain = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 1), episode_id=episode_id(pid, 1))
+    assert compose_claim(expand(pathway, annotate=True), plain, catalogs).pins is None
+
+
 def test_compose_claim_rejects_unannotated_bill(
     catalogs: CohortCatalogs,
     pathways: dict[str, Pathway],

@@ -35,6 +35,7 @@ from scripts.synthetic.cohort.clinical import (
 from scripts.synthetic.cohort.recipes import load_recipes
 from scripts.synthetic.pathways import load_all
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
@@ -86,7 +87,7 @@ def _problems(
 def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> None:
     clinical = load_clinical(CLINICAL_PATH)
     assert clinical.schema_version == 1
-    assert len(clinical.patients) == cohort.patient_count()
+    assert len(clinical.patients) == cohort.claim_count()  # one entry per bill
     assert check_clinical(clinical) == []
     assert run_all(clinical) == []
 
@@ -207,6 +208,73 @@ def test_the_model_holds_types_and_the_ranges_belong_to_the_check() -> None:
     }  # fmt: skip
     with pytest.raises(ValueError):
         Vitals(sbp=120, dbp=80, pulse=70, spo2=97, height_cm=170, weight_kg=float("nan"))
+
+
+# --- several encounters of one patient: the clinical entries are keyed by (patient_no, encounter_no) ------------
+
+
+def test_a_second_encounter_has_its_own_clinical_entry() -> None:
+    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
+    assert check_clinical(clinical, recipes=recipes) == []
+    assert [(p.patient_no, p.encounter_no) for p in clinical.patients][3:8] == [
+        (4, 1), (4, 2), (5, 1), (6, 1), (7, 1)
+    ]  # fmt: skip
+    by_encounter = clinical.by_encounter()
+    assert set(by_encounter) == {(r.patient_no, r.encounter_no) for r in recipes.recipes}
+    assert by_encounter[(4, 2)].vitals.pulse == by_encounter[(4, 1)].vitals.pulse + 3
+    # by patient number only the first encounter answers
+    assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
+    assert len(clinical.by_patient_no()) == cohort.patient_count()
+    # and the first encounter of every committed patient is unchanged: encounter_no defaults to 1
+    assert all(p.encounter_no == 1 for p in load_clinical(CLINICAL_PATH).patients)
+
+
+@pytest.mark.parametrize(
+    "edit",
+    [
+        pytest.param(lambda entries: entries.pop(4), id="an_encounter_without_an_entry"),
+        pytest.param(lambda entries: entries.pop(3), id="a_first_encounter_without_an_entry"),
+        pytest.param(lambda entries: entries.reverse(), id="the_entries_out_of_order"),
+        pytest.param(lambda entries: entries.append(entries[0].model_copy(update={"encounter_no": 2})), id="an_entry_the_recipes_do_not_have"),
+        pytest.param(lambda entries: entries.append(entries[4].model_copy()), id="an_entry_twice"),
+    ],
+)
+def test_the_pairs_of_the_entries_must_be_the_pairs_of_the_recipes(edit) -> None:
+    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
+    entries = list(clinical.patients)
+    edit(entries)
+    found = check_clinical(clinical.model_copy(update={"patients": entries}), recipes=recipes)
+    assert {p.check for p in found} == {"clinical.patient_numbers"}, [str(p) for p in found]
+
+
+def test_an_encounter_is_named_by_its_patient_and_number_in_a_problem() -> None:
+    recipes, clinical = with_encounters(Extra(2, 2, "copd_exacerbation_pneumonia_ward", {"admit": "2026-06-01"}))
+    # patient 2's second stay bills a blood gas (L103900) and has no labs block: the entry is named 2.2
+    found = check_clinical(clinical, recipes=recipes)
+    assert [(p.check, p.where) for p in found] == [("labs.blood_gas", "patients[2.2].labs")]
+    assert "patient 2.2 has an L103900 blood gas line" in found[0].message
+    # a first encounter keeps the plain number, a later one carries the dot
+    for index, where in ((1, "patients[2].vitals.sbp"), (2, "patients[2.2].vitals.sbp")):
+        entries = list(clinical.patients)
+        entries[index] = entries[index].model_copy(
+            update={"vitals": entries[index].vitals.model_copy(update={"sbp": 300})}
+        )
+        again = check_clinical(clinical.model_copy(update={"patients": entries}), recipes=recipes)
+        assert ("vitals.sbp_range", where) in [(p.check, p.where) for p in again]
+
+
+def test_the_vitals_band_is_the_patients_not_the_encounters() -> None:
+    """A baby's later bill is judged by the infant table, though its pathway is an adult one with an adult age."""
+    recipes, clinical = with_encounters(
+        Extra(11, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-07-15"}, pulse_shift=-8)
+    )
+    assert load_all()[recipes.recipes[-1].pathway].showcase.age > 60  # the second bill alone would be an adult's
+    assert check_clinical(clinical, recipes=recipes) == []  # the baby's vitals (62/36, 140, 46 cm, 2.4 kg) fit
+    adult = list(clinical.patients)
+    adult[-1] = adult[-1].model_copy(update={"vitals": load_clinical().patients[0].vitals})
+    found = check_clinical(clinical.model_copy(update={"patients": adult}), recipes=recipes)
+    assert {p.check for p in found} == {"vitals.height_range", "vitals.weight_range"}
+    assert all(p.where.startswith("patients[11.2].vitals.") for p in found)
 
 
 def test_unregistered_problem_check_id_raises_key_error() -> None:
@@ -522,6 +590,16 @@ CASES: list[Case] = [
         label="an_adult_with_a_baby_weight",
     ),
     # --- Cross-reference against showcase_recipes.yaml & lab_reference.csv
+    Case(
+        "clinical.patient_numbers",
+        lambda r: _patient(r, 3).update(encounter_no=2),
+        label="an_encounter_the_recipes_do_not_have",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _patient(r, 3).update(encounter_no=0),
+        label="encounter_no_zero",
+    ),
     Case(
         "clinical.patient_numbers",
         lambda r: _patient(r, 2).update(patient_no=1),

@@ -6,7 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.claims.models import (
     ClaimDiagnosis,
@@ -26,6 +26,9 @@ from .ids import (
     prescription_id,
     procedure_line_id,
 )
+
+if TYPE_CHECKING:
+    from scripts.synthetic.pathways.schema import Pins
 
 _CENT = Decimal("0.01")
 _ZERO = Decimal("0.00")
@@ -48,6 +51,10 @@ class EncounterContext:
     scenario_tag: str = ""
     occupational_context: str = "none"
     package_candidate: bool = False
+    # The pins the bill was expanded with (the pathway's own `showcase` block, or the recipe's overrides of
+    # it). The clean-table builders read the age, sex, nights and course days of the encounter from the
+    # claim, not from the pathway; None: the pathway's own pins.
+    pins: Pins | None = None
 
 
 @dataclass(frozen=True)
@@ -61,6 +68,7 @@ class ComposedClaim:
     drugs: tuple[DrugClaimLine, ...]
     performed: tuple[PerformedProcedureLine, ...]
     entry_line_ids: dict[str, tuple[str, ...]]
+    pins: Pins | None = None  # the effective pins of the encounter (`EncounterContext.pins`)
 
 
 def money(value: float | Decimal | str) -> Decimal:
@@ -310,4 +318,5 @@ def compose_claim(
         drugs=tuple(drugs),
         performed=tuple(performed),
         entry_line_ids={k: tuple(v) for k, v in entry_lines.items()},
+        pins=ctx.pins,
     )

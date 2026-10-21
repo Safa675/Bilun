@@ -64,7 +64,7 @@ from scripts.synthetic.faults.schema import UseSiblingPathway
 from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.checks import Catalogs, _group_expr
 from scripts.synthetic.pathways.expand import expand
-from scripts.synthetic.pathways.schema import Problem as _PathwayProblem
+from scripts.synthetic.pathways.schema import Pins, Problem as _PathwayProblem
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -524,29 +524,39 @@ class PlausibilityContext:
                     found.setdefault(fault.target_pathway, []).append(op.sibling_pathway_id)
         return found
 
+    def bill_codes(self, pathway_id: str, pins: Pins | None = None) -> list[tuple[str, str]]:
+        """(family, code) of the clean bill of a pathway with `pins` (its own showcase pins by default).
+
+        The siblings that the faults aimed at the pathway swap in are expanded with the same pins.
+        """
+        pathway = self.pathways[pathway_id]
+        effective = pins if pins is not None else pathway.showcase
+        bills = [expand(pathway, effective)]
+        bills += [
+            expand(self.siblings[sid], effective) for sid in self.sibling_ids.get(pathway_id, [])
+        ]
+        found: list[tuple[str, str]] = []
+        for bill in bills:
+            held = {
+                "procedure": [p["code"] for p in bill["procedures"]],
+                "material": [m["code"] for m in bill["materials"]],
+                "drug": [d["barcode"] for d in bill["drugs"]],
+                "diagnosis": [d["icd10"] for d in bill["diagnoses"]],
+            }
+            found += [(family, code) for family, family_codes in held.items() for code in family_codes]
+        return found
+
     @cached_property
     def vocabulary(self) -> pl.DataFrame:
         """scenario_tag, family, code: what the clean bill of each pathway (and its siblings) holds."""
         tags: list[str] = []
         families: list[str] = []
         codes: list[str] = []
-        for pathway_id, pathway in self.pathways.items():
-            bills = [expand(pathway)]
-            bills += [
-                expand(self.siblings[sid], pathway.showcase)
-                for sid in self.sibling_ids.get(pathway_id, [])
-            ]
-            for bill in bills:
-                held = {
-                    "procedure": [p["code"] for p in bill["procedures"]],
-                    "material": [m["code"] for m in bill["materials"]],
-                    "drug": [d["barcode"] for d in bill["drugs"]],
-                    "diagnosis": [d["icd10"] for d in bill["diagnoses"]],
-                }
-                for family, family_codes in held.items():
-                    tags += [pathway_id] * len(family_codes)
-                    families += [family] * len(family_codes)
-                    codes += family_codes
+        for pathway_id in self.pathways:
+            for family, code in self.bill_codes(pathway_id):
+                tags.append(pathway_id)
+                families.append(family)
+                codes.append(code)
         schema = {"scenario_tag": pl.String, "family": pl.String, "code": pl.String}
         frame = pl.DataFrame(
             {"scenario_tag": tags, "family": families, "code": codes}, schema=schema
@@ -862,6 +872,36 @@ class _Bill:
         )
 
     @cached_property
+    def pinned_vocabulary(self) -> pl.DataFrame:
+        """claim_id, family, code: what the clean bill of an encounter holds whose recipe overrides the pins.
+
+        The registry's `encounters` carry the overrides (`pins`, only where a recipe has some); an encounter
+        with none is judged by the vocabulary of its pathway's own pins (`PlausibilityContext.vocabulary`).
+        An override the pathway cannot expand (a registry that was edited by hand) is left out, so the
+        codes of that bill are judged by the pathway's own pins.
+        """
+        claims: list[str] = []
+        families: list[str] = []
+        codes: list[str] = []
+        for encounter in (self.registry or {}).get("encounters", []):
+            overrides = encounter.get("pins")
+            pathway = self.ctx.pathways.get(encounter.get("pathway_id"))
+            if not overrides or pathway is None:
+                continue
+            try:
+                pins = Pins.model_validate({**pathway.showcase.model_dump(), **overrides})
+                held = self.ctx.bill_codes(pathway.id, pins)
+            except ValueError:  # ValidationError and ExpandError
+                continue
+            for family, code in held:
+                claims.append(encounter["claim_id"])
+                families.append(family)
+                codes.append(code)
+        schema = {"claim_id": pl.String, "family": pl.String, "code": pl.String}
+        frame = pl.DataFrame({"claim_id": claims, "family": families, "code": codes}, schema=schema)
+        return frame.unique()
+
+    @cached_property
     def named_lines(self) -> pl.DataFrame:
         """Procedure lines with the patient's sex and age and the folded name without exceptions."""
         return self.lines.join(
@@ -1142,18 +1182,28 @@ def check_pathway_membership(bill: _Bill) -> list[Problem]:
             pl.col("scenario_tag").fill_null("(missing)"),
         ).alias("message"),
     )
-    extra = (
-        held.filter(pl.col("scenario_tag").is_in(pathway_ids).fill_null(False))
-        .join(ctx.vocabulary, on=["scenario_tag", "family", "code"], how="anti")
-        .select(
-            _where("claim_id", pl.col("table"), "line_id").alias("where"),
-            _format(
-                "{} code {} is not in the expansion of {} or of a sibling that a fault swaps in",
-                pl.col("family"),
-                pl.col("code"),
-                pl.col("scenario_tag"),
-            ).alias("message"),
-        )
+    pinned_claims = bill.pinned_vocabulary["claim_id"].unique().to_list()
+    in_pathway = pl.col("scenario_tag").is_in(pathway_ids).fill_null(False)
+    # A claim whose recipe overrides the pins is judged by the expansion of the pathway with those pins,
+    # every other claim by the expansion with the pathway's own.
+    off_vocabulary = pl.concat(
+        [
+            held.filter(in_pathway & ~pl.col("claim_id").is_in(pinned_claims)).join(
+                ctx.vocabulary, on=["scenario_tag", "family", "code"], how="anti"
+            ),
+            held.filter(in_pathway & pl.col("claim_id").is_in(pinned_claims)).join(
+                bill.pinned_vocabulary, on=["claim_id", "family", "code"], how="anti"
+            ),
+        ]
+    )
+    extra = off_vocabulary.select(
+        _where("claim_id", pl.col("table"), "line_id").alias("where"),
+        _format(
+            "{} code {} is not in the expansion of {} or of a sibling that a fault swaps in",
+            pl.col("family"),
+            pl.col("code"),
+            pl.col("scenario_tag"),
+        ).alias("message"),
     )
     return _problems("fit.pathway_membership", pl.concat([unknown, extra]))
 

@@ -2,6 +2,13 @@
 
 The default output directory is `data/synthetic`: the tables land in `sut/claims` and `sut/clean`,
 where the app's loaders read them, and the registry in `cohort_registry.json` next to `sut/`.
+
+A recipe is one bill; a patient may have several (`encounter_no`). The claim and episode ids follow the
+recipe order (`claim_id(patient, encounter_no)`: a bill added later renumbers nothing), the tables are laid out
+by patient and then by the date of the bill, one copay profile is made per patient (from the first bill), and
+each bill is built with its own effective pins (the pathway's `showcase` block with the recipe's overrides),
+which travel on the composed claim. A story belongs to one bill (`recipe.story`), so a role or a scenario of
+the registry names one claim.
 """
 
 from __future__ import annotations
@@ -9,6 +16,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -17,6 +25,7 @@ import sys
 from typing import Any
 
 import polars as pl
+from pydantic import ValidationError
 
 from scripts.synthetic.faults import (
     SHOWCASE_STORIES,
@@ -53,10 +62,13 @@ from .ids import claim_id, episode_id, patient_id
 from .labs import expected_lab_row_count
 from .recipes import (
     RECIPES_PATH,
+    EncounterPins,
     RecipeLoadError,
     ShowcaseRecipes,
     check_recipes,
+    effective_pins,
     load_recipes,
+    pin_overrides,
 )
 from .tables import (
     TABLE_FILES,
@@ -131,6 +143,13 @@ class BuildResult:
 def format_registry_json(registry: Mapping[str, Any]) -> str:
     """Serialize `cohort_registry.json` deterministically (sorted keys, 2-space indent, UTF-8, newline)."""
     return json.dumps(dict(registry), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def _default_landing(
+    roles: Mapping[str, Mapping[str, str]], first_claim: Mapping[str, str]
+) -> dict[str, str]:
+    """The claim the app opens on: the S1 bill, or the first bill when the cohort has no S1."""
+    return dict(roles.get("showcase_S1", first_claim))
 
 
 def _resolve_target_line_id(fault: FaultSpec, faulty_claim: ComposedClaim) -> str:
@@ -246,6 +265,21 @@ def _make_injection_record(
         billed_clean_try=f"{clean_total:.2f}",
         billed_faulty_try=f"{faulty_total:.2f}",
     )
+
+
+def _check_encounter_pins(claim: str, pins: Any) -> None:
+    """The `pins` of a registry encounter are the overrides of its recipe, written as the builder writes them."""
+    try:
+        parsed = EncounterPins.model_validate(pins)
+    except ValidationError as exc:
+        first = exc.errors()[0]
+        field = ".".join(map(str, first["loc"]))
+        detail = f"{field}: {first['msg']}" if field else first["msg"]
+        raise BuildError(f"encounter {claim!r} pins are not recipe pins: {detail}") from exc
+    if not pins or pin_overrides(parsed) != pins:
+        raise BuildError(
+            f"encounter {claim!r} pins must be non-empty and hold only the fields the recipe sets, got {pins!r}"
+        )
 
 
 def validate_cohort_registry(
@@ -402,6 +436,8 @@ def validate_cohort_registry(
         pid = enc.get("patient_id")
         if cid not in claim_to_patient or claim_to_patient[cid] != pid:
             raise BuildError(f"encounter {enc!r} does not resolve to an existing claim/patient")
+        if "pins" in enc:
+            _check_encounter_pins(cid, enc["pins"])
 
     raw_faults = registry.get("faults")
     if not isinstance(raw_faults, list):
@@ -549,29 +585,32 @@ def build_showcase(
     siblings_map = siblings if siblings is not None else load_siblings()
     faults_by_id: dict[str, FaultSpec] = {f.fault_id: f for f in loaded_fault_reg.faults}
 
-    faulty_claims: list[ComposedClaim] = []
-    clean_claims: list[ComposedClaim] = []
+    # One entry per recipe, in recipe order: the recipes are listed by patient and then by encounter
+    # (`check_recipes`), so the encounters of a patient are adjacent and the claim and episode ids follow
+    # the encounter number (the build order), never the date. The tables are laid out by date below.
+    built: list[tuple[int, int, date, ComposedClaim, ComposedClaim]] = []
     records_unsorted: list[FaultInjectionRecord] = []
-    profiles: list[dict[str, Any]] = []
+    profile_of: dict[int, dict[str, Any]] = {}
     encounters: list[dict[str, Any]] = []
     roles: dict[str, dict[str, str]] = {}
     scenarios: dict[str, dict[str, Any]] = {}
+    first_claim: dict[str, str] | None = None
 
-    for idx, recipe in enumerate(loaded_recipes.recipes):
+    for recipe in loaded_recipes.recipes:
         pathway = pathways_map[recipe.pathway]
         fault = faults_by_id[recipe.fault] if recipe.fault is not None else None
-        pins = pathway.showcase
+        pins = effective_pins(pathway, recipe.pins)
 
-        clean_bill = expand(pathway, annotate=True)
+        clean_bill = expand(pathway, pins, annotate=True)
         faulty_bill = (
-            apply_fault(fault, pathway, siblings=siblings_map, annotate=True)
+            apply_fault(fault, pathway, pins, siblings=siblings_map, annotate=True)
             if fault is not None
             else clean_bill
         )
 
         pid = patient_id(recipe.patient_no)
-        cid = claim_id(pid, 1)
-        eid = episode_id(pid, 1)
+        cid = claim_id(pid, recipe.encounter_no)
+        eid = episode_id(pid, recipe.encounter_no)
         ctx = EncounterContext(
             patient_id=pid,
             claim_id=cid,
@@ -581,6 +620,7 @@ def build_showcase(
             scenario_tag=pathway.id,
             occupational_context="none",
             package_candidate=(pathway.billing_mode == "package"),
+            pins=pins,
         )
 
         clean_claim = compose_claim(clean_bill, ctx, cats)
@@ -593,36 +633,49 @@ def build_showcase(
         )
 
         ref_date = faulty_claim.header.admission_date or faulty_claim.header.claim_start_date
-        birth_year = ref_date.year - pins.age
-        profile = copay_profile(pid, birth_year)
+        # One copay profile per patient, with the birth year of the first encounter; the later ones agree
+        # with it (`recipe.patient_identity`, and `patient.age_arithmetic` on the tables).
+        if recipe.patient_no not in profile_of:
+            profile_of[recipe.patient_no] = copay_profile(pid, ref_date.year - pins.age)
 
-        story = (fault.story if fault is not None else None) or pins.story
+        # A story is the story of one bill (`recipe.story`), so a role or a scenario names one claim and a
+        # later bill never takes a role over; a patient's other bills are scenarios of their own stories.
+        story = pins.story
         role_target = {"patient_id": pid, "claim_id": cid}
-        if idx == 0 or story == "S1":
-            roles["default_landing"] = dict(role_target)
+        if first_claim is None:
+            first_claim = dict(role_target)
         if story in SHOWCASE_STORIES:
-            roles[f"showcase_{story}"] = dict(role_target)
+            roles[f"showcase_{story}"] = role_target
         else:
-            scenario = scenarios.setdefault(story, {"patient_id": pid, "claim_ids": []})
-            scenario["claim_ids"].append(cid)
+            scenarios[story] = {"patient_id": pid, "claim_ids": [cid]}
 
-        encounters.append(
-            {
-                "patient_id": pid,
-                "claim_id": cid,
-                "pathway_id": pathway.id,
-                "story": story,
-                "tier": "showcase",
-                "is_clean": fault is None,
-                "fault_id": fault.fault_id if fault is not None else None,
-            }
-        )
+        encounter = {
+            "patient_id": pid,
+            "claim_id": cid,
+            "pathway_id": pathway.id,
+            "story": story,
+            "tier": "showcase",
+            "is_clean": fault is None,
+            "fault_id": fault.fault_id if fault is not None else None,
+        }
+        if pin_overrides(recipe.pins):
+            encounter["pins"] = pin_overrides(recipe.pins)
+        encounters.append(encounter)
 
-        clean_claims.append(clean_claim)
-        faulty_claims.append(faulty_claim)
+        built.append((recipe.patient_no, recipe.encounter_no, ref_date, faulty_claim, clean_claim))
         if record is not None:
             records_unsorted.append(record)
-        profiles.append(profile)
+
+    if first_claim is not None:
+        roles["default_landing"] = _default_landing(roles, first_claim)
+
+    # The tables are laid out by patient and then by date of the encounter (the claim sequence breaks a
+    # tie): the clean tables and the lab feed read a patient's rows next to each other and in date order.
+    # With one claim per patient this is the recipe order.
+    layout = sorted(built, key=lambda item: (item[0], item[2], item[1]))
+    faulty_claims = [item[3] for item in layout]
+    clean_claims = [item[4] for item in layout]
+    profiles = [profile_of[number] for number in sorted(profile_of)]
 
     ordered_records = tuple(sorted(records_unsorted, key=lambda r: (r.claim_id, r.fault_id)))
     answer_rows = tuple(build_expected_rule_outputs(ordered_records))

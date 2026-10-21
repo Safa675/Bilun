@@ -34,6 +34,7 @@ from scripts.synthetic.cohort import (
     signal_counter,
     target_signal_found,
     ui_signals,
+    write_showcase,
 )
 import scripts.synthetic.cohort.engine_proof as engine_proof_mod
 from scripts.synthetic.cohort.engine_proof import _f, main
@@ -42,15 +43,24 @@ from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import (
     PatientClaimContext,
+    build_bill_claim_context,
     build_patient_claim_context,
 )
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
 _OUT_DIR = DEFAULT_OUT_DIR
 _CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
-_STORIES: tuple[str, ...] = tuple(cohort.stories())
+# The stories the engine has to find: those with a fault record (a bill without a fault is a clean bill, with a
+# story and no proof).
+_STORIES: tuple[str, ...] = tuple(
+    sorted(
+        {record["story"] for record in cohort.load_registry()["faults"] if record.get("story")},
+        key=lambda story: int(story[1:]),
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -103,9 +113,11 @@ def story_bundles(
         assert rec.story is not None
         story = rec.story
         proof = load_proof_json(story, PROOFS_RESULTS_DIR)
-        faulty_ctx = build_patient_claim_context(rec.patient_id, showcase_dataset)
+        # The proof is about one bill: its context holds that claim's lines, the patient's other claims are
+        # only history. The clean twin is the same context with the clean bill's lines laid over it.
+        faulty_ctx = build_bill_claim_context(rec.patient_id, rec.claim_id, showcase_dataset)
         assert faulty_ctx is not None
-        clean_ctx = context_from_composed(clean_by_claim[rec.claim_id])
+        clean_ctx = context_from_composed(clean_by_claim[rec.claim_id], base=faulty_ctx)
 
         f_rep, f_viol = run_engine(faulty_ctx)
         c_rep, c_viol = run_engine(clean_ctx)
@@ -523,3 +535,66 @@ def test_cli_main_prints_one_line_per_story_and_returns_zero(
     assert {line.split()[0] for line in lines if "note:" in line} == {"S8", "S9"}
     assert captured.err == ""
     assert rc == 0
+
+
+# --- 9. A patient with two bills: the proof is about one ----------------------------------------
+
+
+def test_the_engine_runs_over_one_bill_with_the_patients_other_bills_as_history(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """S7's patient has an earlier ER visit (a precursor, dated nine days before, with the later claim id)."""
+    recipes, clinical = with_encounters(
+        Extra(
+            7,
+            2,
+            "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out",
+            {"admit": "2026-02-10", "story": "S91"},
+        )
+    )
+    built = build_showcase(recipes=recipes, clinical=clinical)
+    write_showcase(built, tmp_path)
+    dataset = load_showcase_dataset(tmp_path / "sut" / "claims")
+    first, precursor = "F-SENTETIK-HASTA-0007-001", "F-SENTETIK-HASTA-0007-002"
+    assert {c for c in dataset.claims if c.startswith("F-SENTETIK-HASTA-0007-")} == {first, precursor}
+
+    # what the proof hands the engine: the bill, with the other bill as history, on both sides
+    seen: dict[str, dict[str, Any]] = {}
+    real = engine_proof_mod.prove_story
+
+    def spy(story: str, **kwargs: Any) -> StoryProof:
+        seen[story] = kwargs
+        return real(story, **kwargs)
+
+    monkeypatch.setattr(engine_proof_mod, "prove_story", spy)
+    proofs = prove_showcase(built, dataset=dataset)
+
+    assert [p.story for p in proofs] == [r.story for r in built.records]  # a proof per faulty bill, none for S91
+    assert all(p.mismatches == () for p in proofs), [(p.story, p.mismatches) for p in proofs]
+    s7 = next(p for p in proofs if p.story == "S7")
+    assert s7.claim_id == first
+    for side in ("faulty_ctx", "clean_ctx"):
+        ctx = seen["S7"][side]
+        assert [c.claim_id for c in ctx.claims] == [first], side
+        assert {line.claim_id for line in ctx.procedure_lines} == {first}, side
+        assert {c.claim_id for c in ctx.history.claims} == {first, precursor}, side
+        assert {line.claim_id for line in ctx.history.procedure_lines} == {first, precursor}, side
+    # the patient-level context the proof used to run over holds both bills as active rows
+    patient_ctx = build_patient_claim_context(s7.patient_id, dataset)
+    assert patient_ctx is not None and {c.claim_id for c in patient_ctx.claims} == {first, precursor}
+    assert seen["S7"]["faulty_ctx"] == build_bill_claim_context(s7.patient_id, first, dataset)
+
+
+def test_a_clean_twin_laid_over_a_bill_keeps_the_patients_history_and_nothing_else_of_the_bill() -> None:
+    claim = next(c for c in build_showcase().clean_claims if c.header.claim_id == cohort.role("showcase_S2").claim_id)
+    dataset = load_showcase_dataset(_CLAIMS_DIR)
+    bill = build_bill_claim_context(claim.header.patient_id, claim.header.claim_id, dataset)
+    assert bill is not None
+    twin = context_from_composed(claim, base=bill)
+    assert twin.patient_id == bill.patient_id and twin.patient_history == bill.patient_history
+    assert (twin.claims, twin.procedure_lines) == ((claim.header,), claim.procedures)
+    assert twin.drug_lines == claim.drugs and twin.diagnoses == claim.diagnoses
+    assert (twin.medula_rejection_events, twin.medula_rejection_ingest_available) == ((), False)
+    # without a base it is the context of the one claim, as it always was
+    alone = context_from_composed(claim)
+    assert alone.patient_history is None and alone.claims == (claim.header,)

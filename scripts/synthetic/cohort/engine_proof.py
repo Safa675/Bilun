@@ -1,10 +1,10 @@
-"""Prove that the billing and prose-rules engine finds every showcase fault (S1..S9) on the committed dataset."""
+"""Prove that the billing and prose-rules engine finds every showcase fault on the committed dataset, one bill at a time."""
 
 from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -24,7 +24,7 @@ from src.bilun.domain.claims.loader import read_claim_tables
 from src.bilun.domain.claims.parquet_reader import _read_parquet_table
 from src.bilun.domain.claims.patient_context import (
     PatientClaimContext,
-    build_patient_claim_context,
+    build_bill_claim_context,
 )
 from src.bilun.domain.claims.schema import (
     CLAIM_DIAGNOSES,
@@ -185,16 +185,34 @@ def load_showcase_dataset(
     )
 
 
-def context_from_composed(claim: ComposedClaim) -> PatientClaimContext:
+def context_from_composed(
+    claim: ComposedClaim, *, base: PatientClaimContext | None = None
+) -> PatientClaimContext:
     """Build an in-memory ``PatientClaimContext`` from a ``ComposedClaim``.
 
     Mirrors ``Bill.ctx()`` in ``reports/synthetic-data/2026-10-15-showcase-proofs/harness.py``.
+
+    With ``base`` (the loaded context of the same bill, ``build_bill_claim_context``) the claim's rows
+    replace the bill's active rows and the patient's other bills stay as the loaded history: the clean twin
+    of one bill of a patient who has several. Without it the context knows the one claim only.
     """
     header = claim.header
     mats = _enrich_material_regulatory_flags(
         {m.material_line_id: m for m in claim.materials},
         {header.claim_id: header},
     )
+    if base is not None:
+        return replace(
+            base,
+            claims=(header,),
+            procedure_lines=claim.procedures,
+            material_lines=tuple(mats.values()),
+            drug_lines=claim.drugs,
+            diagnoses=claim.diagnoses,
+            performed_procedure_lines=claim.performed,
+            medula_rejection_events=(),
+            medula_rejection_ingest_available=False,
+        )
     return PatientClaimContext(
         patient_id=header.patient_id,
         claims=(header,),
@@ -898,13 +916,17 @@ def prove_showcase(
         story = rec.story
         if story is None:
             raise BuildError(f"record {rec.injection_id} is missing a showcase story identifier")
-        faulty_ctx = build_patient_claim_context(rec.patient_id, loaded)
+        # One bill: the engine runs over the bill that carries the fault, and its clean twin over the same
+        # bill with the same patient history, not over every claim of the patient.
+        faulty_ctx = build_bill_claim_context(rec.patient_id, rec.claim_id, loaded)
         if faulty_ctx is None:
-            raise BuildError(f"patient {rec.patient_id} not found in loaded showcase dataset")
+            raise BuildError(
+                f"claim {rec.claim_id} of patient {rec.patient_id} not found in loaded showcase dataset"
+            )
         clean_claim = clean_by_claim.get(rec.claim_id)
         if clean_claim is None:
             raise BuildError(f"clean twin for claim {rec.claim_id} not found in build_result")
-        clean_ctx = context_from_composed(clean_claim)
+        clean_ctx = context_from_composed(clean_claim, base=faulty_ctx)
         proofs.append(
             prove_story(
                 story,

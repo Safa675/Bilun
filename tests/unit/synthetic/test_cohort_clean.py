@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 from collections import Counter
 from collections.abc import Callable, Iterator
-from datetime import datetime, time
+from datetime import date, datetime, time
 from decimal import ROUND_HALF_UP, Decimal
 import json
 from pathlib import Path
@@ -47,7 +47,8 @@ from scripts.synthetic.cohort import (
     write_showcase,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
-from scripts.synthetic.cohort.clean import _UNIT_TR
+from scripts.synthetic.cohort.clean import _UNIT_TR, _encounter_no_from_claim
+from scripts.synthetic.cohort.ids import claim_sequence
 from scripts.synthetic.faults import load_siblings
 from scripts.synthetic.pathways import load_all
 from scripts.synthetic.pathways.loader import hygiene
@@ -57,6 +58,7 @@ from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import load_normalized_raw_data, resolve_patient_ids
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
@@ -65,6 +67,17 @@ _OUT_DIR = DEFAULT_OUT_DIR
 _CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
 _CLEAN_DIR = _OUT_DIR / "sut" / "clean"
 _REGISTRY_JSON_PATH = _OUT_DIR / "cohort_registry.json"
+
+
+def _episode_of(patient_no: int, encounter_no: int = 1) -> str:
+    """The episode id of a patient's encounter (the claim id of the same encounter with a B for the F)."""
+    return f"B-SENTETIK-HASTA-{patient_no:04d}-{encounter_no:03d}"
+
+
+def _row_of(built: BuildResult, patient_no: int, encounter_no: int = 1) -> int:
+    """Where an encounter's row is in claim_headers.parquet, and so in anadata_clean.parquet (same order)."""
+    return built.tables["claim_headers.parquet"]["episode_id"].to_list().index(_episode_of(patient_no, encounter_no))
+
 
 # Column names and dtypes of the three clean tables of the former 50-patient set, which the cache
 # loaders (`src/bilun/cache/data_loader.py`) were written against. The files are in git history only;
@@ -237,7 +250,7 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
     lab_df = built_showcase.clean_tables["lab_clean.parquet"]
 
     clean_counts = cohort.load_registry()["clean_counts"]
-    assert ana_df.height == clean_counts["anadata_clean.parquet"] == cohort.patient_count()
+    assert ana_df.height == clean_counts["anadata_clean.parquet"] == cohort.claim_count()  # one row per bill
     assert rec_df.height == clean_counts["recete_clean.parquet"]
     assert lab_df.height == clean_counts["lab_clean.parquet"]
 
@@ -248,8 +261,10 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
     drugs_df = built_showcase.tables["drug_claim_lines.parquet"]
 
     raw_clinical = yaml.safe_load(CLINICAL_PATH.read_text(encoding="utf-8"))
-    vitals_by_no = {p["patient_no"]: p["vitals"] for p in raw_clinical["patients"]}
-    pathways = load_all()
+    vitals_by_encounter = {
+        (p["patient_no"], p.get("encounter_no", 1)): p["vitals"] for p in raw_clinical["patients"]
+    }
+    claims_by_id = {c.header.claim_id: c for c in built_showcase.claims}
     icd_df = pl.read_parquet(_REPO / "data/synthetic/reference/icd10_tr.parquet")
     icd_map = dict(zip(icd_df["code"].to_list(), icd_df["name_tr"].to_list(), strict=True))
 
@@ -260,14 +275,17 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         "gunubirlik": "günübirlik işlem için",
     }
 
-    for idx in range(8):
-        pno = idx + 1
-        pid = f"SENTETIK-HASTA-{pno:04d}"
-        row = ana_df.row(idx, named=True)
+    checked = 0
+    for idx in range(headers_df.height):
         hdr = headers_df.row(idx, named=True)
-        pw = pathways[hdr["scenario_tag"]]
-        pins = pw.showcase
-        v = vitals_by_no[pno]
+        pid = hdr["patient_id"]
+        pno = int(pid.rsplit("-", 1)[1])
+        if pno > 8:  # the first cohort; the stories after it have tests of their own
+            continue
+        checked += 1
+        row = ana_df.row(idx, named=True)  # anadata row i is the row of claim_headers row i
+        pins = claims_by_id[hdr["claim_id"]].pins  # the pins of the bill (a later bill may override them)
+        v = vitals_by_encounter[(pno, claim_sequence(hdr["claim_id"]))]
 
         assert row["HASTA_ID"] == pid == hdr["patient_id"]
         assert row["SQ_EPISODE"] == hdr["episode_id"]
@@ -361,11 +379,12 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         assert row["Tedavi Notu"] == exp_tedavi
 
     # Literal hard-coded narrative checks for Patient 6 (S6) and Patient 7 (S7, ER)
-    p6_row = ana_df.row(5, named=True)
+    assert checked >= 8
+    p6_row = ana_df.row(_row_of(built_showcase, 6), named=True)
     for col, expected_str in _PATIENT_6_NARRATIVES.items():
         assert p6_row[col] == expected_str, f"Patient 6 {col}"
 
-    p7_row = ana_df.row(6, named=True)
+    p7_row = ana_df.row(_row_of(built_showcase, 7), named=True)
     for col, expected_str in _PATIENT_7_NARRATIVES.items():
         assert p7_row[col] == expected_str, f"Patient 7 {col}"
 
@@ -726,8 +745,9 @@ def test_turkish_sentence_case_helper_and_four_boolean_derivations(
         "S7": False,
         "S8": False,
     }
-    for idx, (story, exp_ht) in enumerate(expected_ht_by_story.items()):
-        row = ana_df.row(idx, named=True)
+    for story, exp_ht in expected_ht_by_story.items():
+        episode = cohort.role(f"showcase_{story}").claim_id.replace("F-", "B-", 1)
+        (row,) = ana_df.filter(pl.col("SQ_EPISODE") == episode).to_dicts()
         assert row["Hipertansiyon Hastada"] is exp_ht, story
         assert row["Kalp Damar Hastada"] is False, story
         assert row["Diyabet Hastada"] is False, story
@@ -998,17 +1018,13 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
 
     # (c) A vitals block for a missing patient (and a patient missing its vitals block):
     base_clinical = load_clinical()
+    eighth = base_clinical.by_patient_no()[8]
     extra_patient_clinical = ShowcaseClinical(
         schema_version=1,
         drug_routes=base_clinical.drug_routes,
         patients=[
-            *base_clinical.patients[:7],
-            PatientClinical(
-                patient_no=99,
-                vitals=base_clinical.patients[7].vitals,
-                basis="judgment",
-                source=base_clinical.patients[7].source,
-            ),
+            *(p for p in base_clinical.patients if p.patient_no <= 7),
+            PatientClinical(patient_no=99, vitals=eighth.vitals, basis="judgment", source=eighth.source),
         ],
     )
     problems = check_clinical(extra_patient_clinical)
@@ -1028,45 +1044,62 @@ Tables = dict[str, pl.DataFrame]
 
 
 def _ana_set(
-    ana: pl.DataFrame, patient_no: int, column: str, value: str | int | None
+    ana: pl.DataFrame, patient_no: int, column: str, value: str | int | None, encounter_no: int = 1
 ) -> pl.DataFrame:
-    """Copy of the anadata table with one cell of one patient's row replaced."""
+    """Copy of the anadata table with one cell of one encounter's row replaced."""
     return ana.with_columns(
-        pl.when(pl.col("HASTA_ID") == f"SENTETIK-HASTA-{patient_no:04d}")
+        pl.when(pl.col("SQ_EPISODE") == _episode_of(patient_no, encounter_no))
         .then(pl.lit(value, dtype=ana.schema[column]))
         .otherwise(pl.col(column))
         .alias(column)
     )
 
 
+def _row_in(ana: pl.DataFrame, patient_no: int, encounter_no: int = 1) -> int:
+    return ana["SQ_EPISODE"].to_list().index(_episode_of(patient_no, encounter_no))
+
+
+def _swap_first_two_patients(ana: pl.DataFrame) -> pl.DataFrame:
+    """The rows of patients 1 and 2 (their first encounters) change places."""
+    i, j = _row_in(ana, 1), _row_in(ana, 2)
+    return pl.concat(
+        [ana.slice(0, i), ana.slice(j, 1), ana.slice(i + 1, j - i - 1), ana.slice(i, 1), ana.slice(j + 1)]
+    )
+
+
+def _mismatch_at(ana: pl.DataFrame, patient_no: int) -> str:
+    """`at row N` for the first encounter of a patient, N read from the table as it is."""
+    return rf"at row {_row_in(ana, patient_no)}"
+
+
+# The messages that name a row quote its position in the table, so a case that does says it as a function
+# of the table it is mutated: `at row N` is where the bill of the patient is, not a number to keep in step
+# with the data.
 @pytest.mark.parametrize(
     ("mutate", "message"),
     [
         pytest.param(
             # patient 8 has no lab rows, so the missing row is the first thing the check meets
-            lambda ana, claims: (pl.concat([ana.head(7), ana.slice(8)]), claims),
-            rf"anadata_clean\.parquet row count \({cohort.patient_count() - 1}\) does not equal claim_headers\.parquet row count \({cohort.patient_count()}\)",
+            lambda ana, claims: (ana.filter(pl.col("SQ_EPISODE") != _episode_of(8)), claims),
+            lambda ana: rf"anadata_clean\.parquet row count \({cohort.claim_count() - 1}\) does not equal claim_headers\.parquet row count \({cohort.claim_count()}\)",
             id="a_row_is_missing",
         ),
         pytest.param(
-            lambda ana, claims: (
-                pl.concat([ana.slice(1, 1), ana.slice(0, 1), ana.slice(2)]),
-                claims,
-            ),
-            r"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row 0: "
+            lambda ana, claims: (_swap_first_two_patients(ana), claims),
+            lambda ana: rf"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row {_row_in(ana, 1)}: "
             r"expected \(SENTETIK-HASTA-0001, B-SENTETIK-HASTA-0001-001\), "
             r"got \(SENTETIK-HASTA-0002, B-SENTETIK-HASTA-0002-001\)",
             id="two_rows_in_the_other_order",
         ),
         pytest.param(
             lambda ana, claims: (_ana_set(ana, 5, "HASTA_ID", "SENTETIK-HASTA-0099"), claims),
-            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            lambda ana: rf"{_mismatch_at(ana, 5)}: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
             r"got \(SENTETIK-HASTA-0099, B-SENTETIK-HASTA-0005-001\)",
             id="another_patient_id",
         ),
         pytest.param(
             lambda ana, claims: (_ana_set(ana, 5, "HASTA_ID", None), claims),
-            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            lambda ana: rf"{_mismatch_at(ana, 5)}: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
             r"got \(null, B-SENTETIK-HASTA-0005-001\)",
             id="no_patient_id",
         ),
@@ -1075,19 +1108,19 @@ def _ana_set(
                 _ana_set(ana, 5, "SQ_EPISODE", "B-SENTETIK-HASTA-0099-001"),
                 claims,
             ),
-            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            lambda ana: rf"{_mismatch_at(ana, 5)}: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
             r"got \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0099-001\)",
             id="another_episode",
         ),
         pytest.param(
             lambda ana, claims: (_ana_set(ana, 5, "SQ_EPISODE", None), claims),
-            r"at row 4: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
+            lambda ana: rf"{_mismatch_at(ana, 5)}: expected \(SENTETIK-HASTA-0005, B-SENTETIK-HASTA-0005-001\), "
             r"got \(SENTETIK-HASTA-0005, null\)",
             id="no_episode",
         ),
         pytest.param(
             lambda ana, claims: (_ana_set(ana, 5, "GELIS_TIPI", "acil"), claims),
-            r"anadata_clean\.parquet\.GELIS_TIPI for SENTETIK-HASTA-0005: expected 'yatis', got 'acil'",
+            lambda ana: r"anadata_clean\.parquet\.GELIS_TIPI for SENTETIK-HASTA-0005: expected 'yatis', got 'acil'",
             id="another_claim_type",
         ),
         pytest.param(
@@ -1096,7 +1129,7 @@ def _ana_set(
                 claims,
             ),
             # Two rows are wrong in the same column: the first one is the one named.
-            r"anadata_clean\.parquet\.GELIS_TIPI for SENTETIK-HASTA-0003: expected 'yatis', got 'acil'",
+            lambda ana: r"anadata_clean\.parquet\.GELIS_TIPI for SENTETIK-HASTA-0003: expected 'yatis', got 'acil'",
             id="the_first_of_two_wrong_rows_is_named",
         ),
         pytest.param(
@@ -1106,18 +1139,18 @@ def _ana_set(
             ),
             # The columns are checked one after the other: the department of patient 2 comes before the
             # diagnosis code of patient 1, although patient 1 is the earlier row.
-            r"anadata_clean\.parquet\.SERVISADI for SENTETIK-HASTA-0002: "
+            lambda ana: r"anadata_clean\.parquet\.SERVISADI for SENTETIK-HASTA-0002: "
             r"expected 'Gogus Hastaliklari', got 'X'",
             id="department_before_primary_diagnosis",
         ),
         pytest.param(
             lambda ana, claims: (_ana_set(ana, 4, "TANIKODU", None), claims),
-            r"anadata_clean\.parquet\.TANIKODU for SENTETIK-HASTA-0004: expected 'N10', got None",
+            lambda ana: r"anadata_clean\.parquet\.TANIKODU for SENTETIK-HASTA-0004: expected 'N10', got None",
             id="no_primary_diagnosis",
         ),
         pytest.param(
             lambda ana, claims: (_ana_set(ana, 6, "TUM_EPS_TANILAR", ""), claims),
-            r"anadata_clean\.parquet\.TUM_EPS_TANILAR for SENTETIK-HASTA-0006 "
+            lambda ana: r"anadata_clean\.parquet\.TUM_EPS_TANILAR for SENTETIK-HASTA-0006 "
             r"\(B-SENTETIK-HASTA-0006-001\): expected 'J69\.0,I10,R13' from claim_diagnoses\.parquet, got ''",
             id="no_diagnoses",
         ),
@@ -1131,22 +1164,17 @@ def _ana_set(
                     ),
                 },
             ),
-            r"anadata_clean\.parquet\.TUM_EPS_TANILAR for SENTETIK-HASTA-0003 "
+            lambda ana: r"anadata_clean\.parquet\.TUM_EPS_TANILAR for SENTETIK-HASTA-0003 "
             r"\(B-SENTETIK-HASTA-0003-001\): expected '' from claim_diagnoses\.parquet, "
             r"got 'M48\.06,I10'",
             id="claim_without_diagnoses",
         ),
         pytest.param(
             lambda ana, claims: (
-                _ana_set(
-                    pl.concat([ana.slice(1, 1), ana.slice(0, 1), ana.slice(2)]),
-                    5,
-                    "GELIS_TIPI",
-                    "acil",
-                ),
+                _ana_set(_swap_first_two_patients(ana), 5, "GELIS_TIPI", "acil"),
                 claims,
             ),
-            r"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row 0",
+            lambda ana: rf"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row {_row_in(ana, 1)}",
             id="the_pair_is_checked_before_the_columns",
         ),
     ],
@@ -1154,12 +1182,13 @@ def _ana_set(
 def test_the_anadata_table_is_checked_against_claim_headers_and_diagnoses(
     built_showcase: BuildResult,
     mutate: Callable[[pl.DataFrame, Tables], tuple[pl.DataFrame, Tables]],
-    message: str,
+    message: Callable[[pl.DataFrame], str],
 ) -> None:
     clean = built_showcase.clean_tables
     validate_clean_tables(clean, built_showcase.tables)  # the untouched tables are valid
     ana, claims = mutate(clean["anadata_clean.parquet"], built_showcase.tables)
-    with pytest.raises(CleanTableError, match=message):
+    # the row of a patient is read in the table as the case found it, before it was changed
+    with pytest.raises(CleanTableError, match=message(clean["anadata_clean.parquet"])):
         validate_clean_tables({**clean, "anadata_clean.parquet": ana}, claims)
 
 
@@ -1400,3 +1429,143 @@ def test_there_is_one_allowed_dataframe_loop_and_it_is_the_reference_reader() ->
     assert list(_ALLOWED_DATAFRAME_LOOPS) == [
         ("labs.py", "load_lab_reference_df", "attribute iter_columns")
     ]
+
+
+# --- 10. Several bills of one patient ---------------------------------------------------------------
+#
+# Patient 4 gets a second stay one day after its first and patient 7 a visit nine days before its first (so
+# its claim 002 is dated before claim 001): `STANDARD_EXTRAS`, built in memory. Nothing is committed.
+
+
+@pytest.fixture(scope="module")
+def two_bills() -> BuildResult:
+    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
+    return build_showcase(recipes=recipes, clinical=clinical)
+
+
+def test_every_bill_has_its_own_anadata_row_with_its_own_vitals_pins_and_date(two_bills: BuildResult) -> None:
+    ana = two_bills.clean_tables["anadata_clean.parquet"]
+    headers = two_bills.tables["claim_headers.parquet"]
+    assert ana["SQ_EPISODE"].to_list() == headers["episode_id"].to_list()  # one row per bill, in the table's order
+    vitals = {(p.patient_no, p.encounter_no): p.vitals for p in two_bills.clinical.patients}
+    claims = {c.header.claim_id: c for c in two_bills.claims}
+    pulses: dict[str, int] = {}
+    for row, hdr in zip(ana.iter_rows(named=True), headers.iter_rows(named=True), strict=True):
+        pno = int(hdr["patient_id"].rsplit("-", 1)[1])
+        v = vitals[(pno, claim_sequence(hdr["claim_id"]))]  # the entry of this bill, not of the patient
+        pins = claims[hdr["claim_id"]].pins
+        pulses[hdr["claim_id"]] = row["Nabiz"]
+        assert (row["KB-S"], row["KB-D"], row["Nabiz"], row["SPO2"], row["Boy"]) == (
+            v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm
+        )  # fmt: skip
+        assert row["Kilo"] == float(v.weight_kg)
+        assert (row["TANI_YASI"], row["CINSIYET"]) == (pins.age, "E" if pins.sex == "M" else "K")
+        day = date.fromisoformat(hdr["admission_date"] or hdr["claim_start_date"])
+        assert row["EPISODE_TARIH"].date() == day and row["donem"] == str(day.year)
+        assert day.strftime("%d.%m.%Y") in row["OYKU"]  # the story of this bill names this bill's date
+        # the visit counters are constants (no engine reader needs them): see plan 7.3, row 8
+        assert (row["TOPLAM_GELIS_SAYISI"], row["GELIS_SAYISI"]) == (1, 1)
+    # the fixture gives each second bill its own pulse (+3), so a patient's rows differ
+    assert pulses["F-SENTETIK-HASTA-0004-002"] == pulses["F-SENTETIK-HASTA-0004-001"] + 3
+    assert pulses["F-SENTETIK-HASTA-0007-002"] == pulses["F-SENTETIK-HASTA-0007-001"] + 3
+    # the first bills' rows are the committed rows
+    committed = pl.read_parquet(_CLEAN_DIR / "anadata_clean.parquet")
+    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-002", "B-SENTETIK-HASTA-0007-002"])).equals(committed)
+
+
+def test_the_prescription_rows_follow_the_drug_lines_of_every_bill(two_bills: BuildResult) -> None:
+    rec = two_bills.clean_tables["recete_clean.parquet"]
+    drugs = two_bills.tables["drug_claim_lines.parquet"]
+    assert rec.height == drugs.height and rec.height > cohort.counts()["recete_clean.parquet"]
+    assert rec["RF_EPISODE"].to_list() == drugs["episode_id"].to_list()
+    assert rec["HASTA_ID"].to_list() == drugs["patient_id"].to_list()
+    assert rec["RECETE_TARIH"].dt.date().to_list() == [date.fromisoformat(d) for d in drugs["drug_claim_date"]]
+    assert rec["ilac_adi"].to_list() == drugs["drug_name"].to_list()
+
+
+def test_the_vitals_of_a_later_bill_are_asked_for_by_patient_and_bill(two_bills: BuildResult) -> None:
+    patients = list(two_bills.clinical.patients)
+    by_pair = {(p.patient_no, p.encounter_no): p for p in patients}
+    # the document with its routes gives the table, with an entry missing it names the bill
+    ana = two_bills.clean_tables["anadata_clean.parquet"]
+    assert build_clean_tables(two_bills.claims, clinical=two_bills.clinical)["anadata_clean.parquet"].equals(ana)
+    for number, encounter in ((4, 2), (7, 2), (4, 1)):
+        without = two_bills.clinical.model_copy(
+            update={"patients": [p for p in patients if (p.patient_no, p.encounter_no) != (number, encounter)]}
+        )
+        with pytest.raises(CleanTableError, match=rf"missing clinical vitals for patient_no {number}, encounter {encounter}$"):
+            build_clean_tables(two_bills.claims, clinical=without)
+    # the other forms of the argument carry no drug routes: patient 7's two bills bill none that needs one
+    claims = tuple(c for c in two_bills.claims if c.header.patient_id == "SENTETIK-HASTA-0007")
+    expected = build_clean_tables(claims, clinical=two_bills.clinical)["anadata_clean.parquet"]
+    assert expected.height == 2
+    for form in (
+        patients,
+        by_pair,
+        {pair: p.vitals for pair, p in by_pair.items()},
+    ):
+        assert build_clean_tables(claims, clinical=form)["anadata_clean.parquet"].equals(expected)
+    # a mapping keyed by the patient number alone names the first bill, so the second is missing its vitals
+    by_number = {p.patient_no: p for p in patients if p.encounter_no == 1}
+    with pytest.raises(CleanTableError, match=r"for SENTETIK-HASTA-0007: missing clinical vitals for patient_no 7, encounter 2"):
+        build_clean_tables(claims, clinical=by_number)
+    assert build_clean_tables(claims[1:], clinical=by_number)["anadata_clean.parquet"].height == 1
+
+
+def test_the_claims_come_in_the_order_of_the_claims_table_or_the_check_says_where_it_breaks(
+    two_bills: BuildResult,
+) -> None:
+    clean = build_clean_tables(tuple(reversed(two_bills.claims)), clinical=two_bills.clinical)
+    assert not clean["anadata_clean.parquet"].equals(two_bills.clean_tables["anadata_clean.parquet"])
+    with pytest.raises(CleanTableError, match=r"\(HASTA_ID, SQ_EPISODE\) mismatch against claim_headers\.parquet at row 0"):
+        validate_clean_tables(clean, two_bills.tables)
+    # whatever the order, the lab rows are in the order of the feed contract (labs.py sorts them)
+    assert clean["lab_clean.parquet"].equals(two_bills.clean_tables["lab_clean.parquet"])
+
+
+def test_a_claim_id_that_is_no_claim_id_is_a_clean_table_error() -> None:
+    assert _encounter_no_from_claim("F-SENTETIK-HASTA-0004-002") == 2
+    with pytest.raises(CleanTableError, match="invalid claim_id 'X-1'"):
+        _encounter_no_from_claim("X-1")
+
+
+def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
+    """Patient 2's second stay is 8 nights (the first, 6) with a 6-day ceftriaxone course (the first, 7)."""
+    recipes, clinical = with_encounters(
+        Extra(
+            2,
+            2,
+            "copd_exacerbation_pneumonia_ward",
+            {
+                "admit": "2026-04-20",
+                "story": "S92",
+                "nights": 8,
+                "course_days": {"ceftriaxone": 6, "clarithromycin": 5, "methylprednisolone": 5},
+            },
+            labs={"blood_gas": "arterial", "states": {}, "basis": "judgment", "source": "Test fixture only."},
+        )
+    )
+    built = build_showcase(recipes=recipes, clinical=clinical)
+    headers = built.tables["claim_headers.parquet"].filter(pl.col("patient_id") == "SENTETIK-HASTA-0002")
+    assert headers["discharge_date"].to_list() == ["2026-03-15", "2026-04-28"]  # 6 nights, then 8
+    rec = built.clean_tables["recete_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0002")
+
+    def days(episode: str) -> dict[str, int | None]:
+        rows = rec.filter(pl.col("RF_EPISODE") == episode)
+        return {name.split()[0]: gun for name, gun in zip(rows["ilac_adi"], rows["gun"], strict=True)}
+
+    assert days(_episode_of(2, 1)) == {"IPRAVENT": None, "IESEF": 7, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 6}
+    assert days(_episode_of(2, 2)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
+
+
+def test_a_later_bill_of_another_pathway_has_the_age_and_sex_of_its_pins() -> None:
+    """Patient 3 is a woman of 77; the pathway of her second bill has an 86-year-old woman as its showcase patient."""
+    recipes, clinical = with_encounters(
+        Extra(3, 2, "pyelonephritis_dementia_delirium_ward", {"story": "S93", "age": 77, "sex": "F"})
+    )
+    built = build_showcase(recipes=recipes, clinical=clinical)
+    ana = built.clean_tables["anadata_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0003")
+    assert ana["SQ_EPISODE"].to_list() == [_episode_of(3, 2), _episode_of(3, 1)]  # dated before her first bill
+    assert ana["TANI_YASI"].to_list() == [77, 77] and ana["CINSIYET"].to_list() == ["K", "K"]
+    assert ana["OYKU"][0].startswith("77 yaşında kadın hasta, ")  # the story of the bill uses its own age too
+    assert load_all()["pyelonephritis_dementia_delirium_ward"].showcase.age == 86

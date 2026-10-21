@@ -1,8 +1,9 @@
 """Showcase clinical context (vitals, lab states, product routes): Pydantic v2 schema, strict YAML loader and cross-checks.
 
 `data/synthetic/cohort/showcase_clinical.yaml` declares the admission/visit vitals and optional lab
-state profiles for each showcase patient (`patient_no` 1, 2, 3 ... as in `showcase_recipes.yaml`: 1..8 are the
-stories S1..S8, 9 is S9), with `basis: judgment` and a short `source` note referencing clinician review in
+state profiles for each showcase encounter (`patient_no` 1, 2, 3 ... as in `showcase_recipes.yaml`: 1..8 are the
+stories S1..S8, 9 is S9; `encounter_no` 1 when the patient has one bill, and the number of the bill when it has
+several), with `basis: judgment` and a short `source` note referencing clinician review in
 issue #309. Its
 `drug_routes` block gives the route of administration of the billed products whose TITCK product
 name states none. No prices, amounts or totals exist in this schema.
@@ -38,7 +39,14 @@ from scripts.synthetic.pathways.schema import (
 )
 
 from .catalogs import CohortCatalogs
-from .recipes import RECIPES_PATH, PatientNo, ShowcaseRecipes, load_recipes
+from .recipes import (
+    RECIPES_PATH,
+    EncounterNo,
+    PatientNo,
+    ShowcaseRecipes,
+    effective_pins,
+    load_recipes,
+)
 
 if TYPE_CHECKING:
     from .labs import LabReference
@@ -275,9 +283,10 @@ class DrugRoutes(_Model):
 
 
 class PatientClinical(_Model):
-    """One showcase patient's clinical vitals and optional lab profile with provenance (`basis: judgment` and `source`)."""
+    """One showcase encounter's clinical vitals and optional lab profile with provenance (`basis: judgment` and `source`)."""
 
     patient_no: PatientNo
+    encounter_no: EncounterNo = 1  # the bill of the patient (the recipe with this patient_no and encounter_no)
     vitals: Vitals
     labs: PatientLabs | None = None
     basis: Literal["judgment"]
@@ -295,15 +304,24 @@ class ShowcaseClinical(_Model):
     patients: list[PatientClinical] = Field(min_length=1)
 
     def by_patient_no(self) -> dict[int, PatientClinical]:
-        """Return a mapping from `patient_no` to `PatientClinical`."""
-        return {p.patient_no: p for p in self.patients}
+        """Return a mapping from `patient_no` to the `PatientClinical` of the patient's first encounter."""
+        return {p.patient_no: p for p in self.patients if p.encounter_no == 1}
+
+    def by_encounter(self) -> dict[tuple[int, int], PatientClinical]:
+        """Return a mapping from (`patient_no`, `encounter_no`) to `PatientClinical`."""
+        return {(p.patient_no, p.encounter_no): p for p in self.patients}
 
 
 ClinicalRegistry = ShowcaseClinical
 
 
+def _label(patient_no: int, encounter_no: int) -> str:
+    """`3` for the first encounter of patient 3, `3.2` for its second: how a problem names an entry."""
+    return str(patient_no) if encounter_no == 1 else f"{patient_no}.{encounter_no}"
+
+
 def _where(loc: tuple[Any, ...], raw: Any) -> str:
-    """Format a Pydantic error location, substituting `patient_no` for a patient list index."""
+    """Format a Pydantic error location, substituting the entry's label for a patient list index."""
     parts: list[str] = []
     node = raw
     for step in loc:
@@ -312,7 +330,12 @@ def _where(loc: tuple[Any, ...], raw: Any) -> str:
         except (KeyError, IndexError, TypeError):
             node = None
         if isinstance(step, int) and parts:
-            label = node.get("patient_no") if isinstance(node, dict) else None
+            label = None
+            if isinstance(node, dict) and node.get("patient_no") is not None:
+                label = str(node["patient_no"])
+                encounter = node.get("encounter_no")
+                if encounter is not None and encounter != 1:
+                    label += f".{encounter}"
             parts[-1] += f"[{label if label is not None else step}]"
         else:
             parts.append(str(step))
@@ -426,39 +449,50 @@ def check_clinical(
         )
     )
 
-    expected_nos = [r.patient_no for r in loaded_recipes.recipes]
-    actual_nos = [p.patient_no for p in clinical.patients]
-    dup_nos = sorted({n for n in actual_nos if actual_nos.count(n) > 1})
-    if dup_nos:
+    expected_pairs = [(r.patient_no, r.encounter_no) for r in loaded_recipes.recipes]
+    actual_pairs = [(p.patient_no, p.encounter_no) for p in clinical.patients]
+    dup_pairs = sorted({pair for pair in actual_pairs if actual_pairs.count(pair) > 1})
+
+    def names(pairs: list[tuple[int, int]]) -> list[str]:
+        return [_label(number, encounter) for number, encounter in pairs]
+
+    if dup_pairs:
         out.append(
             Problem(
                 "clinical.patient_numbers",
                 "patients",
-                f"duplicate patient_no(s): {', '.join(str(n) for n in dup_nos)}; "
-                f"expected unique {expected_nos} matching showcase_recipes.yaml",
+                f"duplicate (patient_no, encounter_no) pair(s): {', '.join(names(dup_pairs))}; "
+                f"expected unique {names(expected_pairs)} matching showcase_recipes.yaml",
             )
         )
-    elif actual_nos != expected_nos:
-        missing = sorted(set(expected_nos) - set(actual_nos))
-        extra = sorted(set(actual_nos) - set(expected_nos))
+    elif actual_pairs != expected_pairs:
+        missing = sorted(set(expected_pairs) - set(actual_pairs))
+        extra = sorted(set(actual_pairs) - set(expected_pairs))
         out.append(
             Problem(
                 "clinical.patient_numbers",
                 "patients",
-                f"patient_no values must equal showcase_recipes.yaml {expected_nos} in order "
-                f"(missing={missing}, extra={extra}, got={actual_nos})",
+                f"(patient_no, encounter_no) pairs must equal showcase_recipes.yaml "
+                f"{names(expected_pairs)} in order (missing={names(missing)}, "
+                f"extra={names(extra)}, got={names(actual_pairs)})",
             )
         )
 
-    recipe_by_no = {r.patient_no: r for r in loaded_recipes.recipes}
+    recipe_by_key = {(r.patient_no, r.encounter_no): r for r in loaded_recipes.recipes}
+    # The vitals band is the patient's, not the encounter's: it follows the age of the first encounter.
+    first_age = {
+        recipe.patient_no: effective_pins(pathways_map[recipe.pathway], recipe.pins).age
+        for recipe in loaded_recipes.recipes
+        if recipe.encounter_no == 1 and recipe.pathway in pathways_map
+    }
 
     for idx, patient in enumerate(clinical.patients):
-        pno = patient.patient_no
-        where_pat = f"patients[{pno if not dup_nos else idx}]"
-        recipe = recipe_by_no.get(pno)
+        pno, encounter = patient.patient_no, patient.encounter_no
+        where_pat = f"patients[{_label(pno, encounter) if not dup_pairs else idx}]"
+        recipe = recipe_by_key.get((pno, encounter))
         pw = pathways_map.get(recipe.pathway) if recipe is not None else None
         has_l103900_line = _pathway_has_l103900(pw) if pw is not None else False
-        band = age_band(pw.showcase.age if pw is not None else None)
+        band = age_band(first_age.get(pno))
         out.extend(vitals_problems(patient.vitals, band, f"{where_pat}.vitals"))
 
         if patient.labs is None:
@@ -467,7 +501,7 @@ def check_clinical(
                     Problem(
                         "labs.blood_gas",
                         f"{where_pat}.labs",
-                        f"patient {pno} has an L103900 blood gas line and must specify labs.blood_gas: 'arterial'",
+                        f"patient {_label(pno, encounter)} has an L103900 blood gas line and must specify labs.blood_gas: 'arterial'",
                     )
                 )
             continue
@@ -503,7 +537,7 @@ def check_clinical(
                 Problem(
                     "labs.blood_gas",
                     f"{where_labs}.blood_gas",
-                    f"patient {pno} with L103900 blood gas must specify blood_gas: 'arterial'",
+                    f"patient {_label(pno, encounter)} with L103900 blood gas must specify blood_gas: 'arterial'",
                 )
             )
         elif patient.labs.blood_gas is not None and not (has_l103900_key or has_l103900_line):
@@ -511,7 +545,7 @@ def check_clinical(
                 Problem(
                     "labs.blood_gas",
                     f"{where_labs}.blood_gas",
-                    f"patient {pno} has no L103900 blood gas line or state key, so blood_gas must not be set",
+                    f"patient {_label(pno, encounter)} has no L103900 blood gas line or state key, so blood_gas must not be set",
                 )
             )
 

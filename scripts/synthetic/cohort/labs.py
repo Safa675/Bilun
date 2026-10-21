@@ -18,11 +18,18 @@ from scripts.synthetic.pathways import Pathway, load_all
 
 from .clinical import PatientClinical, PatientLabs, ShowcaseClinical, load_clinical
 from .compose import ComposedClaim
-from .ids import PATIENT_ID_RE
+from .ids import PATIENT_ID_RE, claim_sequence
 from .tables import TableSchemaError
 
 REPO = Path(__file__).resolve().parents[3]
 LAB_REFERENCE_PATH = REPO / "data" / "synthetic" / "reference" / "lab_reference.csv"
+
+# A value is drawn from SHA-256 of `patient|code|parameter|k|salt` (`draw_u`), `k` the occurrence of the code
+# within one claim. A patient's second claim would draw the same values as its first for the same codes, so the
+# claim moves the salt: the first claim keeps the salts 0..49 it has always used (single-claim patients stay
+# byte-identical), claim n starts at `CLAIM_SALT_STEP * (n - 1)`. The step is larger than the 50 retries of the
+# generators, so no two (claim, retry) pairs of a patient share a salt.
+CLAIM_SALT_STEP = 1000
 
 BILLED_LAB_CODES: frozenset[str] = frozenset(
     {
@@ -889,6 +896,7 @@ def _generate_hemogram_values(
     sex: str,
     k: int,
     states_map: Mapping[str, str | Sequence[str]],
+    salt_base: int = 0,
 ) -> dict[str, float]:
     spec_by_param = {s.result_parameter: s for s in specs}
 
@@ -915,7 +923,7 @@ def _generate_hemogram_values(
         sex=sex,
         k=k,
         state_id=wbc_state,
-        salt=0,
+        salt=salt_base,
     )
 
     profile_key = wbc_state if wbc_state in DIFF_PROFILES else "normal"
@@ -923,7 +931,7 @@ def _generate_hemogram_values(
     raw_pcts: dict[str, float] = {}
     for diff_p in DIFF_PARAMETER_NAMES:
         p_lo, p_hi = profile[diff_p]
-        u_p = draw_u(patient_id, "L107020", diff_p, k, 0)
+        u_p = draw_u(patient_id, "L107020", diff_p, k, salt_base)
         raw_pcts[diff_p] = p_lo + (p_hi - p_lo) * u_p
     pct_sum = sum(raw_pcts.values())
     diff_counts: dict[str, float] = {}
@@ -951,7 +959,8 @@ def _generate_hemogram_values(
 
     red_values: dict[str, float] | None = None
     last_failed_param = "RBC (Eritrosit)"
-    for salt in range(50):
+    for attempt in range(50):
+        salt = salt_base + attempt
         hgb = draw_numeric_value(
             hgb_spec, patient_id=patient_id, sex=sex, k=k, state_id=hgb_state, salt=salt
         )
@@ -1013,7 +1022,7 @@ def _generate_hemogram_values(
             sex=sex,
             k=k,
             state_id=indep_state,
-            salt=0,
+            salt=salt_base,
         )
     return out
 
@@ -1037,6 +1046,7 @@ def _generate_creatinine_and_egfr(
     k: int,
     states_map: Mapping[str, str | Sequence[str]],
     egfr_age_bands: Sequence[tuple[int, int, float, float]],
+    salt_base: int = 0,
 ) -> dict[str, float]:
     spec_by_param = {s.result_parameter: s for s in specs}
     scr_spec = spec_by_param[CREATININE_PARAM_NAME]
@@ -1055,8 +1065,8 @@ def _generate_creatinine_and_egfr(
         egfr_lo, egfr_hi = _egfr_normal_band_for_age(age, egfr_age_bands)
         scr_lo, scr_hi = scr_spec.normal_draw_limits(sex)
         scr_val: float | None = None
-        for salt in range(50):
-            u = draw_u(patient_id, "L104780", CREATININE_PARAM_NAME, k, salt)
+        for attempt in range(50):
+            u = draw_u(patient_id, "L104780", CREATININE_PARAM_NAME, k, salt_base + attempt)
             target_egfr = egfr_lo + (egfr_hi - egfr_lo) * (0.30 + 0.40 * u)
             candidate_scr = round(invert_ckd_epi_2021(target_egfr, age, sex), 2)
             if scr_lo <= candidate_scr <= scr_hi:
@@ -1068,12 +1078,12 @@ def _generate_creatinine_and_egfr(
             )
     elif parsed_state.kind == "egfr_band":
         assert parsed_state.low is not None and parsed_state.high is not None
-        u = draw_u(patient_id, "L104780", CREATININE_PARAM_NAME, k, 0)
+        u = draw_u(patient_id, "L104780", CREATININE_PARAM_NAME, k, salt_base)
         target_egfr = parsed_state.low + (parsed_state.high - parsed_state.low) * (0.20 + 0.60 * u)
         scr_val = round(invert_ckd_epi_2021(target_egfr, age, sex), 2)
     else:
         lo, hi = parsed_state.range_for_sex(sex)
-        u = draw_u(patient_id, "L104780", CREATININE_PARAM_NAME, k, 0)
+        u = draw_u(patient_id, "L104780", CREATININE_PARAM_NAME, k, salt_base)
         scr_val = round(lo + (hi - lo) * (0.20 + 0.60 * u), 2)
 
     egfr_val = float(round(ckd_epi_2021(scr_val, age, sex)))
@@ -1091,6 +1101,7 @@ def _generate_blood_gas_values(
     k: int,
     blood_gas_type: str | None,
     states_map: Mapping[str, str | Sequence[str]],
+    salt_base: int = 0,
 ) -> dict[str, float]:
     if blood_gas_type != "arterial":
         raise LabCoherenceError(
@@ -1115,7 +1126,7 @@ def _generate_blood_gas_values(
         sex=sex,
         k=k,
         state_id=_state_for_occurrence(states_map, ph_spec.key, k),
-        salt=0,
+        salt=salt_base,
     )
     pco2 = draw_numeric_value(
         pco2_spec,
@@ -1123,7 +1134,7 @@ def _generate_blood_gas_values(
         sex=sex,
         k=k,
         state_id=_state_for_occurrence(states_map, pco2_spec.key, k),
-        salt=0,
+        salt=salt_base,
     )
     po2 = draw_numeric_value(
         po2_spec,
@@ -1131,7 +1142,7 @@ def _generate_blood_gas_values(
         sex=sex,
         k=k,
         state_id=_state_for_occurrence(states_map, po2_spec.key, k),
-        salt=0,
+        salt=salt_base,
     )
 
     hco3 = henderson_hasselbalch_hco3(ph, pco2)
@@ -1160,30 +1171,35 @@ def _generate_blood_gas_values(
             sex=sex,
             k=k,
             state_id=indep_state,
-            salt=0,
+            salt=salt_base,
         )
     return out
 
 
 def _resolve_labs_map(
-    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[int, Any] | None,
-) -> dict[int, PatientLabs | None]:
+    clinical: ShowcaseClinical | Sequence[PatientClinical] | Mapping[Any, Any] | None,
+) -> dict[tuple[int, int], PatientLabs | None]:
+    """The lab profile of each encounter, keyed by (patient_no, encounter_no).
+
+    A mapping may be keyed by the patient number alone (the patient's first encounter) or by a
+    (patient_no, encounter_no) pair.
+    """
     if clinical is None:
-        loaded = load_clinical()
-        return {p.patient_no: p.labs for p in loaded.patients}
+        clinical = load_clinical()
     if isinstance(clinical, ShowcaseClinical):
-        return {p.patient_no: p.labs for p in clinical.patients}
+        return {(p.patient_no, p.encounter_no): p.labs for p in clinical.patients}
     if isinstance(clinical, Mapping):
-        out: dict[int, PatientLabs | None] = {}
-        for k, v in clinical.items():
-            if isinstance(v, PatientClinical):
-                out[int(k)] = v.labs
-            elif isinstance(v, PatientLabs):
-                out[int(k)] = v
+        out: dict[tuple[int, int], PatientLabs | None] = {}
+        for key, value in clinical.items():
+            pair = (int(key[0]), int(key[1])) if isinstance(key, tuple) else (int(key), 1)
+            if isinstance(value, PatientClinical):
+                out[pair] = value.labs
+            elif isinstance(value, PatientLabs):
+                out[pair] = value
             else:
-                out[int(k)] = None
+                out[pair] = None
         return out
-    return {p.patient_no: p.labs for p in clinical}
+    return {(p.patient_no, p.encounter_no): p.labs for p in clinical}
 
 
 def _patient_no(pid: str) -> int:
@@ -1191,6 +1207,14 @@ def _patient_no(pid: str) -> int:
     if match is None:
         raise LabReferenceError(f"Invalid patient_id format {pid!r}")
     return int(pid.rsplit("-", 1)[1])
+
+
+def _encounter_no(claim_id: str) -> int:
+    """The encounter of a claim: its sequence within the patient (the last three digits of the id)."""
+    try:
+        return claim_sequence(claim_id)
+    except ValueError as exc:
+        raise LabReferenceError(str(exc)) from None
 
 
 def expected_lab_row_count(
@@ -1292,23 +1316,31 @@ def build_lab_clean(
     reference: LabReference | None = None,
     schema: pl.Schema,
 ) -> pl.DataFrame:
-    """Build `lab_clean.parquet` deterministically for `claims`."""
+    """Build `lab_clean.parquet` deterministically for `claims`.
+
+    The age and sex of an encounter are those of its effective pins (`ComposedClaim.pins`; the pathway's own
+    `showcase` pins for a claim that carries none), its lab states are those of the (patient_no, encounter_no)
+    entry of `clinical`, and its draws start at the salt of its claim sequence (`CLAIM_SALT_STEP`). The rows
+    come out in the order `expected_lab_keys` states for the billed lines (by patient, then line date, then
+    line id, then parameter position), whatever the order of `claims`.
+    """
     ref = reference if reference is not None else load_lab_reference()
     pathways_map = pathways if pathways is not None else load_all()
-    labs_by_no = _resolve_labs_map(clinical)
+    labs_by_encounter = _resolve_labs_map(clinical)
 
-    rows: list[dict[str, Any]] = []
+    rows: list[tuple[tuple[str, Any, str, int], dict[str, Any]]] = []
 
     for claim in claims:
         header = claim.header
         pid = header.patient_id
         pno = _patient_no(pid)
-        pathway = pathways_map[header.scenario_tag]
-        pins = pathway.showcase
+        encounter = _encounter_no(header.claim_id)
+        salt_base = CLAIM_SALT_STEP * (encounter - 1)
+        pins = claim.pins if claim.pins is not None else pathways_map[header.scenario_tag].showcase
         age = pins.age
         sex = pins.sex
 
-        patient_labs = labs_by_no.get(pno)
+        patient_labs = labs_by_encounter.get((pno, encounter))
         states_map: Mapping[str, str | Sequence[str]] = (
             patient_labs.states if patient_labs is not None else {}
         )
@@ -1339,6 +1371,7 @@ def build_lab_clean(
                     sex=sex,
                     k=k,
                     states_map=states_map,
+                    salt_base=salt_base,
                 )
             elif code == "L104780":
                 precomputed_numeric = _generate_creatinine_and_egfr(
@@ -1349,6 +1382,7 @@ def build_lab_clean(
                     k=k,
                     states_map=states_map,
                     egfr_age_bands=ref.egfr_age_bands,
+                    salt_base=salt_base,
                 )
             elif code == "L103900":
                 precomputed_numeric = _generate_blood_gas_values(
@@ -1358,10 +1392,21 @@ def build_lab_clean(
                     k=k,
                     blood_gas_type=blood_gas_type,
                     states_map=states_map,
+                    salt_base=salt_base,
                 )
 
-            for spec in specs:
+            for position, spec in enumerate(specs):
                 organ = organ_system_of(spec.test_key)
+                row: dict[str, Any] = {
+                    "HASTA_ID": pid,
+                    "basvuru_id": line.episode_id,
+                    "SUB_CODE": code,
+                    "parametre": spec.result_parameter,
+                    "kohort": COHORT,
+                    "donem": donem,
+                    "tarih": line_dt,
+                    "organ_sistemi": organ,
+                }
                 if spec.is_qualitative_strip:
                     st_id = _state_for_occurrence(states_map, spec.key, k)
                     grade = draw_strip_grade(
@@ -1369,26 +1414,16 @@ def build_lab_clean(
                         patient_id=pid,
                         k=k,
                         state_id=st_id,
-                        salt=0,
+                        salt=salt_base,
                     )
-                    rows.append(
-                        {
-                            "HASTA_ID": pid,
-                            "basvuru_id": line.episode_id,
-                            "SUB_CODE": code,
-                            "parametre": spec.result_parameter,
-                            "sonuc_sayisal": None,
-                            "sonuc_nitel": grade,
-                            "birim": "",
-                            "ref_alt": None,
-                            "ref_ust": None,
-                            "anormal_mi": is_abnormal_strip(grade),
-                            "organ_sistemi": organ,
-                            "kohort": COHORT,
-                            "donem": donem,
-                            "tarih": line_dt,
-                        }
-                    )
+                    row |= {
+                        "sonuc_sayisal": None,
+                        "sonuc_nitel": grade,
+                        "birim": "",
+                        "ref_alt": None,
+                        "ref_ust": None,
+                        "anormal_mi": is_abnormal_strip(grade),
+                    }
                 else:
                     if precomputed_numeric is not None:
                         val = precomputed_numeric[spec.result_parameter]
@@ -1400,29 +1435,21 @@ def build_lab_clean(
                             sex=sex,
                             k=k,
                             state_id=st_id,
-                            salt=0,
+                            salt=salt_base,
                         )
                     ref_alt, ref_ust = spec.ref_limits(sex)
-                    rows.append(
-                        {
-                            "HASTA_ID": pid,
-                            "basvuru_id": line.episode_id,
-                            "SUB_CODE": code,
-                            "parametre": spec.result_parameter,
-                            "sonuc_sayisal": float(val),
-                            "sonuc_nitel": None,
-                            "birim": spec.unit,
-                            "ref_alt": ref_alt,
-                            "ref_ust": ref_ust,
-                            "anormal_mi": is_abnormal_numeric(val, ref_alt, ref_ust),
-                            "organ_sistemi": organ,
-                            "kohort": COHORT,
-                            "donem": donem,
-                            "tarih": line_dt,
-                        }
-                    )
+                    row |= {
+                        "sonuc_sayisal": float(val),
+                        "sonuc_nitel": None,
+                        "birim": spec.unit,
+                        "ref_alt": ref_alt,
+                        "ref_ust": ref_ust,
+                        "anormal_mi": is_abnormal_numeric(val, ref_alt, ref_ust),
+                    }
+                rows.append(((pid, line.procedure_date, line.procedure_line_id, position), row))
 
-    return pl.DataFrame(rows, schema=schema, strict=True)
+    rows.sort(key=lambda item: item[0])
+    return pl.DataFrame([row for _, row in rows], schema=schema, strict=True)
 
 
 # Tolerances of the derived values: half a unit of the last printed decimal, which is the rounding

@@ -108,6 +108,7 @@ from scripts.synthetic.cohort.plausibility import (
 from scripts.synthetic.cohort.tables import TABLE_FILES, build_tables
 from scripts.synthetic.faults import FaultInjectionRecord, build_expected_rule_outputs
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
@@ -338,8 +339,8 @@ def reprice(data: Data, table: str, where: pl.Expr, price: float) -> None:
 
 
 def edit_patient(data: Data, story: int, birth_year: int | None = None, **changes: object) -> None:
-    """Change anadata_clean (and, with `birth_year`, the copay profile) of the story's patient."""
-    here = pl.col("HASTA_ID") == PATIENT[story]
+    """Change the anadata_clean row of the story's bill (and, with `birth_year`, its patient's copay profile)."""
+    here = pl.col("SQ_EPISODE") == EPISODE[story]
     assert data.anadata.filter(here).height == 1
     data.anadata = data.anadata.with_columns(
         [
@@ -2008,11 +2009,15 @@ def test_the_clean_twins_are_all_there_and_all_clean(clean_problems, twins) -> N
 
 @pytest.mark.parametrize("story", sorted(EXPECTED_FAULT_TRIPS))
 def test_a_faulty_bill_trips_the_pinned_ids(story, built, faulty_problems) -> None:
-    story_of = {e["claim_id"]: e["story"] for e in built.registry["encounters"]}
-    assert sorted(story_of.values()) == sorted(EXPECTED_FAULT_TRIPS)
+    encounters = built.registry["encounters"]
+    story_of = {e["claim_id"]: e["story"] for e in encounters if not e["is_clean"]}
+    assert sorted(story_of.values()) == sorted(EXPECTED_FAULT_TRIPS)  # one pinned entry per faulty bill
     claim = next(claim for claim, name in story_of.items() if name == story)
     tripped = {p.check for p in faulty_problems if p.claim_id == claim}
     assert tripped == EXPECTED_FAULT_TRIPS[story], [str(p) for p in faulty_problems]
+    # a bill without a fault is a clean bill: the checks find nothing on it
+    clean_claims = {e["claim_id"] for e in encounters if e["is_clean"]}
+    assert [str(p) for p in faulty_problems if p.claim_id in clean_claims] == []
 
 
 def test_the_committed_files_give_the_result_of_the_tables_in_memory(
@@ -2050,7 +2055,9 @@ def test_a_registry_without_fault_records_leaves_the_committed_answer_rows_unexp
     )
     labels = [p for p in found if p.check in REGISTRY_CHECKS]
     assert {p.check for p in labels} == {ANSWER_ROWS}
-    assert sorted(p.claim_id for p in labels) == sorted(CLAIM.values())  # one row per claim
+    assert sorted(p.claim_id for p in labels) == sorted(
+        built.tables[TABLE_ANSWERS]["claim_id"].to_list()
+    )  # one row per answer row: a bill without a fault has none
     assert all("the claim has no fault record" in p.message for p in labels)
 
 
@@ -2096,7 +2103,10 @@ def test_billed_clean_try_is_the_total_of_the_clean_twin(built, twins) -> None:
     }
     faults = built.registry["faults"]
     assert len(faults) == len(cohort.load_registry()["faults"])
-    assert {fault["claim_id"]: fault["billed_clean_try"] for fault in faults} == totals
+    # a record per faulty bill; a bill without a fault has a clean twin and no record
+    assert {fault["claim_id"]: fault["billed_clean_try"] for fault in faults} == {
+        fault["claim_id"]: totals[fault["claim_id"]] for fault in faults
+    }
 
 
 # --- 3. the mutation cases -------------------------------------------------------------------------
@@ -5025,3 +5035,103 @@ def test_the_module_writes_no_file() -> None:
     assert "write_parquet" not in text
     assert "write_csv" not in text
     assert ".write_text(" not in text
+
+
+# --- 5. Several bills of one patient --------------------------------------------------------------------
+#
+# Patients 4 and 7 get a second bill (`STANDARD_EXTRAS`: one a day after the first, one nine days before)
+# and patient 9 a second bill of its pathway with other optional items pinned (decompression with its
+# single anaesthesia, where the pathway's own pins have the foraminoplasty and the multiple one).
+# Built in memory; nothing is committed.
+
+_S9_PATHWAY = "lumbar_stenosis_decompression_foraminoplasty_itemized"
+
+
+@pytest.fixture(scope="module")
+def two_bills():
+    recipes, clinical = with_encounters(
+        *STANDARD_EXTRAS,
+        Extra(9, 2, _S9_PATHWAY, {"admit": "2026-06-01", "story": "S94", "include": ["anaesthesia_single"]}),
+    )
+    return build_showcase(recipes=recipes, clinical=clinical)
+
+
+def _claims_findings(result, *, tables=None, registry=None, anadata=None, only=None) -> list[Problem]:
+    return check_plausibility(
+        tables if tables is not None else result.tables,
+        {TABLE_ANADATA: anadata if anadata is not None else result.clean_tables[TABLE_ANADATA]},
+        registry=registry if registry is not None else result.registry,
+        only=only,
+    )
+
+
+def test_more_bills_of_a_patient_raise_no_finding_that_the_cohort_does_not_raise(
+    two_bills, built, faulty_problems
+) -> None:
+    found = _claims_findings(two_bills)
+    assert {p.check for p in found} == set().union(*EXPECTED_FAULT_TRIPS.values())
+    assert sorted(str(p) for p in found) == sorted(str(p) for p in faulty_problems)  # the same, bill for bill
+    extra = {"F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0007-002", "F-SENTETIK-HASTA-0009-002"}
+    assert not [p for p in found if p.claim_id in extra]
+
+
+def test_the_age_of_every_bill_is_the_year_of_its_claim_minus_the_patients_birth_year(two_bills) -> None:
+    check = ["patient.age_arithmetic"]
+    assert _claims_findings(two_bills, only=check) == []
+    ana = two_bills.clean_tables[TABLE_ANADATA]
+    # a second bill that is a year older than its patient's one birth year
+    wrong = ana.with_columns(
+        pl.when(pl.col("SQ_EPISODE") == "B-SENTETIK-HASTA-0004-002")
+        .then(pl.col("TANI_YASI") + 1)
+        .otherwise(pl.col("TANI_YASI"))
+        .alias("TANI_YASI")
+    )
+    found = _claims_findings(two_bills, anadata=wrong, only=check)
+    assert [(p.check, p.claim_id) for p in found] == [("patient.age_arithmetic", "F-SENTETIK-HASTA-0004-002")]
+    # a profile a year off is wrong for both bills of its patient, and for no other
+    profiles = two_bills.tables[TABLE_COPAY].with_columns(
+        pl.when(pl.col("patient_id") == PATIENT[4])
+        .then(pl.col("birth_year") + 1)
+        .otherwise(pl.col("birth_year"))
+        .alias("birth_year")
+    )
+    found = _claims_findings(two_bills, tables={**two_bills.tables, TABLE_COPAY: profiles}, only=check)
+    assert sorted(p.claim_id for p in found) == ["F-SENTETIK-HASTA-0004-001", "F-SENTETIK-HASTA-0004-002"]
+
+
+def test_a_bill_that_overrides_its_pins_is_judged_by_the_expansion_with_those_pins(two_bills) -> None:
+    check = ["fit.pathway_membership"]
+    assert _claims_findings(two_bills, only=check) == []
+    second = next(e for e in two_bills.registry["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0009-002")
+    assert second["pins"] == {"story": "S94", "admit": "2026-06-01", "include": ["anaesthesia_single"]}
+    # a registry that does not say so judges the same bill by the pathway's own pins: its anaesthesia line is foreign
+    old = copy.deepcopy(two_bills.registry)
+    for encounter in old["encounters"]:
+        encounter.pop("pins", None)
+    (problem,) = _claims_findings(two_bills, registry=old, only=check)
+    assert problem.claim_id == "F-SENTETIK-HASTA-0009-002"
+    assert "procedure code 550160 is not in the expansion of " + _S9_PATHWAY in problem.message
+    # pins that do not fit the code still count: another pin on the same bill, a code it does not expand
+    wrong = copy.deepcopy(two_bills.registry)
+    next(e for e in wrong["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0009-002")["pins"] = {
+        "story": "S94",
+        "include": ["foraminoplasty"],
+    }
+    (problem,) = _claims_findings(two_bills, registry=wrong, only=check)
+    assert "550160" in problem.message
+    # the bills with no override are judged as they always were
+    assert all(p.claim_id == "F-SENTETIK-HASTA-0009-002" for p in _claims_findings(two_bills, registry=old, only=check))
+
+
+def test_a_bill_without_a_fault_has_no_answer_row_and_no_record_and_the_labels_agree(two_bills) -> None:
+    labels = sorted(REGISTRY_CHECKS)
+    assert _claims_findings(two_bills, only=labels) == []
+    faults = len(cohort.load_registry()["faults"])  # three more bills, no more faults
+    assert two_bills.tables[TABLE_ANSWERS].height == len(two_bills.registry["faults"]) == faults
+    assert len(two_bills.tables[TABLE_CLAIM_HEADERS]) == cohort.claim_count() + 3
+    # a record for a bill that has none would be an answer row the tables do not hold
+    bad = copy.deepcopy(two_bills.registry)
+    bad["faults"].append({**bad["faults"][0], "claim_id": "F-SENTETIK-HASTA-0004-002", "patient_id": PATIENT[4]})
+    found = _claims_findings(two_bills, registry=bad, only=labels)
+    assert ANSWER_ROWS in {p.check for p in found}
+    assert {p.claim_id for p in found} == {"F-SENTETIK-HASTA-0004-002"}

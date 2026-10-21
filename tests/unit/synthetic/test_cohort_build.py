@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 import copy
+from datetime import date
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -42,7 +43,8 @@ from scripts.synthetic.cohort import (
     validate_cohort_registry,
     write_showcase,
 )
-from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
+from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, check_showcase, main
+from scripts.synthetic.cohort.recipes import EncounterPins
 from scripts.synthetic.faults import (
     FaultApplyError,
     FaultInjectionRecord,
@@ -53,9 +55,11 @@ from scripts.synthetic.faults import (
 )
 from scripts.synthetic.pathways import load_all
 from scripts.synthetic.pathways.loader import hygiene
+import src.bilun.domain.claims.config as claims_config
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.models import ExpectedRuleOutput, PatientCopayProfile
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
@@ -571,11 +575,12 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
             *base_recipes.recipes[1:],
         ],
     )
+    # (every pathway is in use, so the story of patient 2 is now on two bills as well)
     problems = check_recipes(mismatched_recipes)
-    assert [p.check for p in problems] == ["recipe.fault_pathway"]
+    assert [p.check for p in problems] == ["recipe.fault_pathway", "recipe.story"]
     with pytest.raises(RecipeLoadError) as exc_info:
         build_showcase(recipes=mismatched_recipes)
-    assert [p.check for p in exc_info.value.problems] == ["recipe.fault_pathway"]
+    assert [p.check for p in exc_info.value.problems] == ["recipe.fault_pathway", "recipe.story"]
 
     # Also caught directly by apply_fault if called with mismatched pathway.
     pathways = load_all()
@@ -630,9 +635,10 @@ def test_a_recipe_without_a_fault_builds_the_clean_claim_with_no_record(
     built_showcase: BuildResult,
 ) -> None:
     base = load_recipes()
-    clean_second = ShowcaseRecipe(patient_no=2, pathway=base.recipes[1].pathway)
+    second = next(r for r in base.recipes if (r.patient_no, r.encounter_no) == (2, 1))
+    clean_second = ShowcaseRecipe(patient_no=2, pathway=second.pathway)
     recipes = ShowcaseRecipes(
-        schema_version=1, recipes=[base.recipes[0], clean_second, *base.recipes[2:]]
+        schema_version=1, recipes=[clean_second if r is second else r for r in base.recipes]
     )
     built = build_showcase(recipes=recipes)
 
@@ -640,20 +646,39 @@ def test_a_recipe_without_a_fault_builds_the_clean_claim_with_no_record(
     assert len(built.claims) == cohort.claim_count()
     assert len(built.records) == faults - 1 and len(built.answer_rows) == faults - 1
     assert "S2" not in {rec.story for rec in built.records}
-    assert built.claims[1] == built_showcase.clean_claims[1]  # the bill is the clean twin
-    assert built.claims[0] == built_showcase.claims[0] and built.claims[2:] == built_showcase.claims[2:]
-    encounter = built.registry["encounters"][1]
+    claim = "F-SENTETIK-HASTA-0002-001"
+    built_by_id = {c.header.claim_id: c for c in built.claims}
+    committed_faulty = {c.header.claim_id: c for c in built_showcase.claims}
+    committed_clean = {c.header.claim_id: c for c in built_showcase.clean_claims}
+    assert built_by_id[claim] == committed_clean[claim]  # the bill is the clean twin
+    assert {cid: c for cid, c in built_by_id.items() if cid != claim} == {
+        cid: c for cid, c in committed_faulty.items() if cid != claim
+    }  # every other bill is as it was
+    encounter = next(e for e in built.registry["encounters"] if e["claim_id"] == claim)
     assert (encounter["is_clean"], encounter["fault_id"]) == (True, None)
     assert built.registry["roles"]["showcase_S2"]["claim_id"] == "F-SENTETIK-HASTA-0002-001"
     assert built.tables["expected_rule_outputs.parquet"].height == faults - 1
     validate_cohort_registry(built.registry, built.tables, built.clean_tables)
 
 
+def test_the_landing_claim_is_the_s1_bill_or_else_the_first_bill() -> None:
+    from scripts.synthetic.cohort.build import _default_landing
+
+    first = {"patient_id": "SENTETIK-HASTA-0001", "claim_id": "F-SENTETIK-HASTA-0001-001"}
+    s1 = {"patient_id": "SENTETIK-HASTA-0003", "claim_id": "F-SENTETIK-HASTA-0003-001"}
+    assert _default_landing({"showcase_S2": first, "showcase_S1": s1}, first) == s1  # S1 need not be the first bill
+    assert _default_landing({"showcase_S2": first}, first) == first  # a cohort without S1 lands on its first bill
+    landing = _default_landing({"showcase_S1": s1}, first)
+    landing["claim_id"] = "changed"
+    assert s1["claim_id"] == "F-SENTETIK-HASTA-0003-001"  # a copy: the role itself is not shared with the landing
+
+
 def test_the_story_of_a_clean_recipe_is_the_story_of_its_pathway() -> None:
     base = load_recipes()
-    clean_ninth = ShowcaseRecipe(patient_no=9, pathway=base.recipes[8].pathway)
+    ninth = next(r for r in base.recipes if (r.patient_no, r.encounter_no) == (9, 1))
+    clean_ninth = ShowcaseRecipe(patient_no=9, pathway=ninth.pathway)
     recipes = ShowcaseRecipes(
-        schema_version=1, recipes=[*base.recipes[:8], clean_ninth, *base.recipes[9:]]
+        schema_version=1, recipes=[clean_ninth if r is ninth else r for r in base.recipes]
     )
     built = build_showcase(recipes=recipes)
     assert built.registry["scenarios"] == {
@@ -835,7 +860,8 @@ def test_target_and_evidence_line_resolution_guards(built_showcase: BuildResult)
 
     # If a line-level fault's target_entry_id resolves to 0 or >1 lines, _resolve_target_line_id raises BuildError.
     s5_fault = faults_by_story["S5"]
-    s5_claim = built_showcase.claims[4]
+    claims_by_id = {c.header.claim_id: c for c in built_showcase.claims}
+    s5_claim = claims_by_id[cohort.role("showcase_S5").claim_id]
     zero_lines_claim = replace(s5_claim, entry_line_ids={})
     with pytest.raises(BuildError, match="resolved to 0 lines"):
         _resolve_target_line_id(s5_fault, zero_lines_claim)
@@ -855,12 +881,286 @@ def test_target_and_evidence_line_resolution_guards(built_showcase: BuildResult)
 
     # If an evidence_entry_id resolves to 0 lines, _resolve_evidence_line_ids raises BuildError.
     s7_fault = faults_by_story["S7"]
-    s7_claim = built_showcase.claims[6]
+    s7_claim = claims_by_id[cohort.role("showcase_S7").claim_id]
     no_ev_claim = replace(s7_claim, entry_line_ids={})
     with pytest.raises(
         BuildError, match="evidence_entry_id 'ct_angiography_pacs' resolved to 0 lines"
     ):
         _resolve_evidence_line_ids(s7_fault, no_ev_claim)
+
+
+# --- several encounters of one patient (G2) ------------------------------------------------------------
+#
+# No committed patient has a second bill, so these tests build in memory the committed recipes plus
+# `STANDARD_EXTRAS`: patient 4 gets a stay one day after its first (the lab days interleave), patient 7 a
+# visit nine days BEFORE its first (a precursor: claim 002 is dated before claim 001). Nothing is committed.
+
+_EXTRA_CLAIMS = ("F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0007-002")
+_EXTRA_EPISODES = ("B-SENTETIK-HASTA-0004-002", "B-SENTETIK-HASTA-0007-002")
+_EPISODE_COLUMN = {
+    "anadata_clean.parquet": "SQ_EPISODE",
+    "lab_clean.parquet": "basvuru_id",
+    "recete_clean.parquet": "RF_EPISODE",
+}
+
+
+@pytest.fixture(scope="module")
+def two_bills() -> BuildResult:
+    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
+    return build_showcase(recipes=recipes, clinical=clinical)
+
+
+def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two_bills: BuildResult) -> None:
+    headers = two_bills.tables["claim_headers.parquet"]
+    assert headers["claim_id"].to_list() == [
+        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (1, 2, 3)),
+        "F-SENTETIK-HASTA-0004-001",
+        "F-SENTETIK-HASTA-0004-002",
+        "F-SENTETIK-HASTA-0005-001",
+        "F-SENTETIK-HASTA-0006-001",
+        "F-SENTETIK-HASTA-0007-002",  # the precursor: the later id, the earlier date
+        "F-SENTETIK-HASTA-0007-001",
+        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (8, 9, 10, 11)),
+    ]
+    assert headers["episode_id"].to_list() == [
+        claim.replace("F-", "B-", 1) for claim in headers["claim_id"].to_list()
+    ]
+    starts = dict(zip(headers["claim_id"].to_list(), headers["claim_start_date"].to_list(), strict=True))
+    assert starts["F-SENTETIK-HASTA-0004-001"] < starts["F-SENTETIK-HASTA-0004-002"]
+    assert starts["F-SENTETIK-HASTA-0007-002"] < starts["F-SENTETIK-HASTA-0007-001"]
+    # the composed claims are in the table order; a claim is built from its own recipe
+    assert [c.header.claim_id for c in two_bills.claims] == headers["claim_id"].to_list()
+    assert [c.header.claim_id for c in two_bills.clean_claims] == headers["claim_id"].to_list()
+
+    # the three clean tables list a patient's episodes together, in the order of the claims table
+    anadata = two_bills.clean_tables["anadata_clean.parquet"]
+    assert anadata["SQ_EPISODE"].to_list() == headers["episode_id"].to_list()
+    assert anadata["HASTA_ID"].to_list() == headers["patient_id"].to_list()
+    assert anadata["EPISODE_TARIH"].dt.date().to_list() == [
+        date.fromisoformat(d) for d in headers["claim_start_date"].to_list()
+    ]
+    for name in ("lab_clean.parquet", "recete_clean.parquet"):
+        patients = two_bills.clean_tables[name]["HASTA_ID"].to_list()
+        runs = [p for i, p in enumerate(patients) if i == 0 or p != patients[i - 1]]
+        assert runs == sorted(set(runs)), f"{name} lists a patient in two places"
+    lab = two_bills.clean_tables["lab_clean.parquet"]
+    for _, rows in lab.group_by("HASTA_ID", maintain_order=True):
+        assert rows["tarih"].is_sorted(), "the lab rows of a patient are in date order"
+    assert set(lab.filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0004")["basvuru_id"]) == {
+        "B-SENTETIK-HASTA-0004-001",
+        "B-SENTETIK-HASTA-0004-002",
+    }
+
+
+def test_a_second_bill_changes_no_row_of_any_other_bill(two_bills: BuildResult) -> None:
+    """Every row that does not belong to a new bill is the committed row, in the committed order."""
+    for name in TABLE_FILES:
+        committed = pl.read_parquet(_CLAIMS_DIR / name)
+        built = two_bills.tables[name]
+        if "claim_id" in built.columns:
+            built = built.filter(~pl.col("claim_id").is_in(_EXTRA_CLAIMS))
+        assert dict(built.schema) == dict(committed.schema), name
+        assert built.equals(committed, null_equal=True), name
+    for name in CLEAN_TABLE_FILES:
+        committed = pl.read_parquet(_CLEAN_DIR / name)
+        built = two_bills.clean_tables[name]
+        built = built.filter(~pl.col(_EPISODE_COLUMN[name]).is_in(_EXTRA_EPISODES))
+        assert dict(built.schema) == dict(committed.schema), name
+        assert built.equals(committed, null_equal=True), name
+    # the new bills are really there: 2 claims, and their own rows in every table that has rows per bill
+    assert two_bills.tables["claim_headers.parquet"].height == cohort.claim_count() + 2
+    assert two_bills.registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count() + 2
+    for name in ("claim_diagnoses.parquet", "procedure_claim_lines.parquet", "drug_claim_lines.parquet"):
+        assert two_bills.tables[name].filter(pl.col("claim_id").is_in(_EXTRA_CLAIMS)).height > 0, name
+
+
+def test_a_patient_has_one_copay_profile_with_the_birth_year_of_the_first_encounter(
+    two_bills: BuildResult, built_showcase: BuildResult
+) -> None:
+    assert two_bills.copay_profiles == built_showcase.copay_profiles  # 11 profiles, none added or changed
+    by_patient = {p["patient_id"]: p["birth_year"] for p in two_bills.copay_profiles}
+    assert (by_patient["SENTETIK-HASTA-0004"], by_patient["SENTETIK-HASTA-0007"]) == (2026 - 86, 2026 - 58)
+    assert two_bills.tables["patient_copay_profiles.parquet"].height == cohort.patient_count()
+    # the bills agree with the profile: age at the bill = year of the bill - birth year (the tables' own check)
+    anadata = two_bills.clean_tables["anadata_clean.parquet"]
+    for patient, age, year in zip(
+        anadata["HASTA_ID"].to_list(),
+        anadata["TANI_YASI"].to_list(),
+        anadata["EPISODE_TARIH"].dt.year().to_list(),
+        strict=True,
+    ):
+        assert year - by_patient[patient] == age, patient
+
+
+def test_roles_and_scenarios_of_a_patient_with_two_bills(two_bills: BuildResult, built_showcase: BuildResult) -> None:
+    registry = two_bills.registry
+    assert registry["roles"] == built_showcase.registry["roles"]  # the second bills take no role over
+    assert registry["roles"]["showcase_S4"]["claim_id"] == "F-SENTETIK-HASTA-0004-001"
+    assert registry["roles"]["showcase_S7"]["claim_id"] == "F-SENTETIK-HASTA-0007-001"  # not the earlier bill
+    assert registry["roles"]["default_landing"] == registry["roles"]["showcase_S1"]
+    assert registry["scenarios"] == {
+        "S90": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
+        "S91": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
+        **built_showcase.registry["scenarios"],
+    }
+    encounters = {e["claim_id"]: e for e in registry["encounters"]}
+    assert len(registry["encounters"]) == cohort.claim_count() + 2 == len(encounters)
+    assert [e["claim_id"] for e in registry["encounters"] if e["claim_id"] in _EXTRA_CLAIMS] == list(_EXTRA_CLAIMS)
+    second = encounters["F-SENTETIK-HASTA-0004-002"]
+    assert (second["story"], second["is_clean"], second["fault_id"]) == ("S90", True, None)
+    assert second["pins"] == {"story": "S90", "admit": "2026-05-12"}  # only what the recipe overrides
+    assert [e["claim_id"] for e in registry["encounters"] if "pins" in e] == list(_EXTRA_CLAIMS)
+    # the bills of a patient are found by grouping the encounters (and the scenarios) by patient
+    assert {s: t["patient_id"] for s, t in registry["scenarios"].items() if t["patient_id"] == "SENTETIK-HASTA-0007"} == {
+        "S91": "SENTETIK-HASTA-0007"
+    }
+    # a clean second bill adds no fault record and no answer row
+    assert registry["faults"] == built_showcase.registry["faults"]
+    assert two_bills.records == built_showcase.records
+    assert two_bills.answer_rows == built_showcase.answer_rows
+    assert two_bills.tables["expected_rule_outputs.parquet"].height == len(built_showcase.records)
+    for claim in (c for c in two_bills.claims if c.header.claim_id in _EXTRA_CLAIMS):
+        clean = next(c for c in two_bills.clean_claims if c.header.claim_id == claim.header.claim_id)
+        assert claim == clean  # a bill without a fault is its own clean twin
+
+
+def test_the_effective_pins_travel_on_every_composed_claim(two_bills: BuildResult, built_showcase: BuildResult) -> None:
+    pathways = load_all()
+    recipes = load_recipes()
+    for claim, recipe in zip(built_showcase.claims, recipes.recipes, strict=True):
+        assert claim.pins == pathways[recipe.pathway].showcase  # a recipe without pins: the pathway's own
+    for claim in two_bills.claims:
+        encounter = next(e for e in two_bills.registry["encounters"] if e["claim_id"] == claim.header.claim_id)
+        pathway = pathways[encounter["pathway_id"]]
+        overrides = encounter.get("pins", {})
+        assert claim.pins == pathway.showcase.model_copy(update=overrides)
+    second = next(c for c in two_bills.claims if c.header.claim_id == "F-SENTETIK-HASTA-0004-002")
+    assert (second.pins.story, second.pins.admit) == ("S90", "2026-05-12")
+    assert second.header.admission_date == date(2026, 5, 12) and second.pins.nights == 5
+
+
+def test_a_two_bill_dataset_is_deterministic_written_checked_and_loaded(
+    two_bills: BuildResult, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
+    assert build_showcase(recipes=recipes, clinical=clinical) == two_bills
+
+    write_showcase(two_bills, tmp_path / "a")
+    write_showcase(build_showcase(recipes=recipes, clinical=clinical), tmp_path / "b")
+    names = ["cohort_registry.json", *(f"sut/claims/{n}" for n in TABLE_FILES), *(f"sut/clean/{n}" for n in CLEAN_TABLE_FILES)]
+    for name in names:
+        assert (tmp_path / "a" / name).read_bytes() == (tmp_path / "b" / name).read_bytes(), name
+    assert check_showcase(tmp_path / "a", result=two_bills) == []
+    assert check_showcase(DEFAULT_OUT_DIR, result=two_bills) != []  # these are not the committed files
+
+    monkeypatch.setattr(claims_config, "SYNTHETIC_SUT_DIR", tmp_path / "a" / "sut")  # let the loader read it
+    monkeypatch.setattr(claims_config, "DEFAULT_SYNTHETIC_CLEAN_DIR", tmp_path / "a" / "sut" / "clean")
+    load_sut_claim_dataset.cache_clear()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        dataset = load_sut_claim_dataset(tmp_path / "a" / "sut" / "claims", mode="synthetic_demo")
+    assert tuple(dataset.claims) == tuple(c.header.claim_id for c in two_bills.claims)
+    assert len(dataset.copay_profiles_by_patient) == cohort.patient_count()
+    for claim in two_bills.claims:
+        cid = claim.header.claim_id
+        assert dataset.claims[cid] == claim.header
+        assert dataset.procedure_lines_by_claim.get(cid, ()) == claim.procedures
+        assert dataset.drug_lines_by_claim.get(cid, ()) == claim.drugs
+        assert dataset.diagnoses_by_claim.get(cid, ()) == claim.diagnoses
+    assert {c for c, h in dataset.claims.items() if h.patient_id == "SENTETIK-HASTA-0004"} == {
+        "F-SENTETIK-HASTA-0004-001",
+        "F-SENTETIK-HASTA-0004-002",
+    }
+
+
+def test_the_lab_values_of_a_second_bill_are_drawn_afresh_and_the_first_bills_are_not_moved(
+    two_bills: BuildResult, built_showcase: BuildResult
+) -> None:
+    lab = two_bills.clean_tables["lab_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0004")
+    first = lab.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0004-001")
+    second = lab.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0004-002")
+    assert first.height == second.height > 0  # the same pathway bills the same tests
+    assert first.drop("basvuru_id", "tarih").equals(
+        built_showcase.clean_tables["lab_clean.parquet"]
+        .filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0004")
+        .drop("basvuru_id", "tarih")
+    )
+    key = ["SUB_CODE", "parametre"]
+    paired = first.select(*key, "sonuc_sayisal").join(second.select(*key, "sonuc_sayisal"), on=key, suffix="_2nd")
+    numeric = paired.drop_nulls()
+    assert numeric.height > 0
+    assert (numeric["sonuc_sayisal"] != numeric["sonuc_sayisal_2nd"]).any(), (
+        "two bills of one patient must not carry the same lab values"
+    )
+
+
+def test_a_faulty_second_bill_is_recorded_on_its_own_claim() -> None:
+    """The first bill of patient 4 is clean (and takes another story), the fault sits on the second bill."""
+    recipes, clinical = with_encounters(
+        Extra(4, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12"}, fault="F_S4_COMPANION_NOT_BILLED")
+    )
+    raw = [r for r in recipes.recipes]
+    first = next(i for i, r in enumerate(raw) if (r.patient_no, r.encounter_no) == (4, 1))
+    raw[first] = raw[first].model_copy(update={"fault": None, "pins": EncounterPins(story="S92")})
+    built = build_showcase(recipes=recipes.model_copy(update={"recipes": raw}), clinical=clinical)
+
+    committed = cohort.fault("S4")
+    (record,) = (r for r in built.records if r.story == "S4")
+    assert record.claim_id == "F-SENTETIK-HASTA-0004-002"
+    assert record.amount_try == committed["amount_try"]  # the same fault, the same amount at stake
+    assert record.line_id.startswith("ILC-F-SENTETIK-HASTA-0004-002-") or record.line_type == "fatura"
+    row = built.tables["expected_rule_outputs.parquet"].filter(pl.col("claim_id") == record.claim_id)
+    assert row.height >= 1 and set(row["patient_id"]) == {"SENTETIK-HASTA-0004"}
+    # the faulty bill and its clean twin are expanded with the same pins: the date of the second stay, not the pathway's
+    faulty = next(c for c in built.claims if c.header.claim_id == record.claim_id)
+    twin = next(c for c in built.clean_claims if c.header.claim_id == record.claim_id)
+    assert faulty.pins == twin.pins and faulty.pins.admit == "2026-05-12"
+    assert faulty.header.admission_date == twin.header.admission_date == date(2026, 5, 12)
+    assert {line.procedure_date for line in faulty.procedures} <= {date(2026, 5, day) for day in range(12, 18)}
+    # the role of S4 names the bill that carries the fault; the clean first bill is a scenario of S92
+    assert built.registry["roles"]["showcase_S4"]["claim_id"] == "F-SENTETIK-HASTA-0004-002"
+    assert built.registry["scenarios"]["S92"]["claim_ids"] == ["F-SENTETIK-HASTA-0004-001"]
+    validate_cohort_registry(built.registry, built.tables, built.clean_tables)
+
+
+def test_two_bills_that_share_a_story_are_refused_before_anything_is_built() -> None:
+    recipes, clinical = with_encounters(Extra(4, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12"}))
+    with pytest.raises(RecipeLoadError) as excinfo:
+        build_showcase(recipes=recipes, clinical=clinical)
+    assert [p.check for p in excinfo.value.problems] == ["recipe.story"]
+
+
+def _encounter_pin_defects() -> list[tuple[str, Any, str]]:
+    return [
+        ("empty", {}, "pins must be non-empty and hold only the fields the recipe sets, got {}"),
+        ("none_kept", {"admit": "2026-05-12", "nights": None}, "hold only the fields the recipe sets"),
+        ("not_a_mapping", ["admit"], "pins are not recipe pins"),
+        ("a_string", "2026-05-12", "pins are not recipe pins"),
+        ("unknown_field", {"price": 5}, "pins are not recipe pins: price: Extra inputs are not permitted"),
+        ("bad_date", {"admit": "May 12"}, "pins are not recipe pins: admit: "),
+        ("age_out_of_range", {"age": 200}, "pins are not recipe pins: age: "),
+        ("date_as_a_number", {"admit": 20260512}, "pins are not recipe pins: admit: "),
+    ]
+
+
+def test_the_registry_check_accepts_the_pins_of_an_encounter(two_bills: BuildResult) -> None:
+    validate_cohort_registry(two_bills.registry, two_bills.tables, two_bills.clean_tables)
+    registry = copy.deepcopy(two_bills.registry)
+    for enc in registry["encounters"]:
+        enc.pop("pins", None)  # an encounter with no override has no key at all
+    validate_cohort_registry(registry, two_bills.tables, two_bills.clean_tables)
+
+
+@pytest.mark.parametrize(
+    ("pins", "message"),
+    [pytest.param(pins, message, id=name) for name, pins, message in _encounter_pin_defects()],
+)
+def test_damaged_pins_of_an_encounter_are_refused(two_bills: BuildResult, pins: Any, message: str) -> None:
+    registry = copy.deepcopy(two_bills.registry)
+    next(e for e in registry["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0004-002")["pins"] = pins
+    with pytest.raises(BuildError, match=re.escape("encounter 'F-SENTETIK-HASTA-0004-002' ")) as excinfo:
+        validate_cohort_registry(registry, two_bills.tables, two_bills.clean_tables)
+    assert message in str(excinfo.value)
 
 
 @pytest.mark.parametrize("filename", ["recipes.py", "build.py"])

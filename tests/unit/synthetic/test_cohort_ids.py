@@ -19,6 +19,7 @@ from scripts.synthetic.cohort.ids import (
     PRESCRIPTION_ID_RE,
     PROCEDURE_LINE_ID_RE,
     claim_id,
+    claim_sequence,
     diagnosis_id,
     drug_claim_line_id,
     drug_line_id,
@@ -150,3 +151,32 @@ def test_builders_reproduce_the_id_columns_of_the_committed_tables() -> None:
         pid, seq = patient_of_claim[cid], _trailing_int(cid)
         assert ids == [diagnosis_id(pid, seq, n) for n in range(1, len(ids) + 1)], cid
         assert all(DIAGNOSIS_ID_RE.fullmatch(v) for v in ids), cid
+
+
+def test_claim_sequence_is_the_sequence_claim_id_was_built_with() -> None:
+    pid = patient_id(4)
+    for sequence in (1, 2, 17, 999):
+        assert claim_sequence(claim_id(pid, sequence)) == sequence
+    assert claim_sequence("F-SENTETIK-HASTA-0004-002") == 2
+    # the patient part does not leak into it, and the diagnosis id carries the same number
+    assert claim_sequence(claim_id(patient_id(1234), 5)) == 5
+    assert diagnosis_id(claim_id(pid, 7), 3) == "TANI-SENTETIK-HASTA-0004-007-003"
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "F-SENTETIK-HASTA-0004",  # no sequence
+        "F-SENTETIK-HASTA-0004-0001",  # four digits
+        "F-SENTETIK-HASTA-0004-01",  # two digits
+        "B-SENTETIK-HASTA-0004-001",  # an episode id, not a claim id
+        "ISL-F-SENTETIK-HASTA-0004-001-001",  # a line id
+        "F-SENTETIK-HASTA-0004-001 ",  # trailing blank
+        "",
+        5,
+        None,
+    ],
+)
+def test_claim_sequence_refuses_what_is_no_claim_id(bad: object) -> None:
+    with pytest.raises(ValueError, match="invalid claim_id"):
+        claim_sequence(bad)  # type: ignore[arg-type]

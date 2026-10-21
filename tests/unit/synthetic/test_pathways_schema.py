@@ -30,9 +30,11 @@ from scripts.synthetic.pathways.checks import (
     check_anaesthesia,
     check_package_mode,
     check_package_window,
+    check_pins,
     identity_problems,
     in_force,
     norm,
+    pins_problems,
     probe_days,
     run_all,
 )
@@ -847,6 +849,26 @@ def test_the_stay_may_fill_the_window_but_not_leave_it(
     raw["window"] = {"start": start, "end": end, "source": FIXTURE}
     found = {p.check for p in _problems(raw, catalogs, tmp_path)}
     assert found == ({"pins.window"} if fires else set())
+
+
+def test_the_pins_of_an_encounter_obey_the_rules_of_the_pathways_own(catalogs: Catalogs) -> None:
+    """`pins_problems` is `check_pins` for any pins: a recipe's pins for one encounter are judged alike."""
+    pathway = load_pathway(_DIR / f"{S2}.yaml")  # admitted 2026-03-09 for 6 nights, age 81, a man
+    assert check_pins(pathway, catalogs) == pins_problems(pathway, pathway.showcase, catalogs) == []
+    later = pathway.showcase.model_copy(update={"admit": "2026-05-04", "nights": 7})
+    assert pins_problems(pathway, later, catalogs) == []  # the same pathway on another date and for another stay
+    for update, check in (
+        ({"admit": "2026-01-15"}, "pins.window"),
+        ({"admit": "2026-09-28", "nights": 6}, "pins.window"),  # leaves the window on the far side
+        ({"age": 120}, "pins.out_of_range"),
+        ({"nights": 10}, "pins.out_of_range"),
+        ({"include": ["I10", "nowhere"]}, "pins.unknown_id"),
+        ({"include": ["I10", "bed"]}, "pins.not_optional"),
+    ):
+        found = pins_problems(pathway, pathway.showcase.model_copy(update=update), catalogs)
+        assert check in {p.check for p in found}, (update, [str(p) for p in found])
+    # the pins given are the pins judged: the pathway's own are fine all the while
+    assert check_pins(pathway, catalogs) == []
 
 
 def test_a_window_equal_to_the_default_is_not_wider_than_it(catalogs: Catalogs, tmp_path) -> None:
