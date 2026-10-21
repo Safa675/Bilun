@@ -1,0 +1,86 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-06-07",
+      "icd10": "A41.9",
+      "role": "primary"
+    },
+    {
+      "date": "2026-06-07",
+      "icd10": "N39.0",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-06-07",
+    "claim_end_date": "2026-06-10",
+    "claim_start_date": "2026-06-07",
+    "claim_type": "yatis",
+    "department": "İç Hastalıkları",
+    "discharge_date": "2026-06-10",
+    "primary_icd10": "A41.9"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-07",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-07",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-08",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-08",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-09",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-09",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-10",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    }
+  ],
+  "story": "S14"
+}

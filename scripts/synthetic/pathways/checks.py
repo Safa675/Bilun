@@ -694,28 +694,40 @@ def check_stay_coverage(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     On a newborn stay (a line of kind newborn_bed) the ward and newborn bed lines together cover
     admit..discharge once each. On an ICU stay (a line of kind icu_day or icu_package) the ICU lines take
     the bed lines' place: they cover admit..discharge-1 once each, and a ward or newborn bed line is a
-    defect.
+    defect. A ward stay that arrives from an ICU bill (`arrives_from_icu`) has its first day's bed paid by
+    that bill: its bed line covers admit+1..discharge, and it has no ICU or newborn line of its own.
     """
     icu_stay = bool(_icu_lines(pathway))
     newborn_stay = any(line.kind == "newborn_bed" for line in pathway.procedures)
     out = _icu_coverage_problems(pathway) if icu_stay else []
     if newborn_stay and not icu_stay:
         out += _bed_coverage_problems(pathway)
+    arrival = pathway.arrives_from_icu
+    if arrival and (icu_stay or newborn_stay):
+        out.append(
+            Problem(
+                "stay.coverage",
+                "arrives_from_icu",
+                "a ward stay that arrives from an ICU bill has no ICU or newborn bed line of its own",
+            )
+        )
     for line in pathway.procedures:
         if line.kind not in STAY_LINE_END or (line.kind == "bed" and (icu_stay or newborn_stay)):
             continue
+        first = 1 if arrival and line.kind == "bed" else 0
         faults = []
         for nights in _stay_cases(pathway):
             if nights is None:
                 continue
             anchors = anchors_for(pathway, nights)
             got = {d for expr in line.days for d in resolve_days(expr, anchors)}
-            want = set(range(nights + 1 + STAY_LINE_END[line.kind]))
+            want = set(range(first, nights + 1 + STAY_LINE_END[line.kind]))
             if got != want:
                 faults.append(f"{nights} nights: days {sorted(got)}, expected {sorted(want)}")
         if faults:
+            start = "admit+1" if first else "admit"
             end = "discharge" + ("-1" if line.kind == "companion" else "")
-            message = f"a {line.kind} line must cover admit..{end}; {'; '.join(faults)}"
+            message = f"a {line.kind} line must cover {start}..{end}; {'; '.join(faults)}"
             out.append(Problem("stay.coverage", f"procedures[{line.id}]", message))
     return out
 

@@ -54,6 +54,10 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     10: (84, 46, 124, 91, 158, 66.0),
     11: (62, 36, 148, 96, 46, 2.4),  # S12, a late-preterm newborn: the infant ranges
 }
+# the second bills of the committed cohort, by (patient, encounter): the vitals of S14, on the ward after the ICU
+_EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
+    (10, 2): (118, 66, 92, 95, 158, 64.0),
+}
 
 
 def _raw_clinical() -> dict:
@@ -104,14 +108,14 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     assert set(by_no) == set(range(1, cohort.patient_count() + 1))
 
     pathways = load_all()
-    story_of = {r.patient_no: pathways[r.pathway].showcase.story for r in recipes.recipes}
+    story_of = {(r.patient_no, r.encounter_no): pathways[r.pathway].showcase.story for r in recipes.recipes}
     assert set(_EXPECTED_VITALS) == set(by_no)
     for pno, expected_tuple in _EXPECTED_VITALS.items():
         pat = by_no[pno]
         assert pat.patient_no == pno
         assert pat.basis == "judgment"
         assert "#309" in pat.source
-        assert story_of[pno] in pat.source  # patient 10 is story S11, patient 11 is S12
+        assert story_of[(pno, 1)] in pat.source  # patient 10 is story S11, patient 11 is S12
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
@@ -125,6 +129,21 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
                 assert pat.labs.blood_gas == "arterial"
             else:
                 assert pat.labs.blood_gas is None
+
+
+def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> None:
+    by_encounter = load_clinical(CLINICAL_PATH).by_encounter()
+    assert set(_EXPECTED_SECOND_BILL_VITALS) == {key for key in by_encounter if key[1] > 1}
+    pathways = load_all()
+    story_of = {(r.patient_no, r.encounter_no): pathways[r.pathway].showcase.story for r in load_recipes().recipes}
+    for key, expected in _EXPECTED_SECOND_BILL_VITALS.items():
+        entry = by_encounter[key]
+        v = entry.vitals
+        assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected
+        assert story_of[key] in entry.source and "#309" in entry.source  # the S14 entry names S14, not S11
+        assert story_of[(key[0], 1)] not in entry.source
+        assert entry.labs is None  # S14 bills no laboratory line: the ICU bill holds every test of the episode
+        assert entry.basis == "judgment"
 
 
 def test_a_document_without_drug_routes_has_no_route_problem() -> None:
@@ -225,8 +244,12 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # by patient number only the first encounter answers
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
-    # and the first encounter of every committed patient is unchanged: encounter_no defaults to 1
-    assert all(p.encounter_no == 1 for p in load_clinical(CLINICAL_PATH).patients)
+    # the committed encounters are numbered 1..n by patient, and only patient 10 has two (S11 and its ward bill S14)
+    numbers: dict[int, list[int]] = {}
+    for entry in load_clinical(CLINICAL_PATH).patients:
+        numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
+    assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {10: [1, 2]}
 
 
 @pytest.mark.parametrize(

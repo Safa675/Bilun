@@ -48,6 +48,7 @@ from src.bilun.domain.prose_rules.payment_method import check_payment_method_com
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
+from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
 from src.bilun.domain.prose_rules.yenidogan_yatak import detect_yenidogan_yatak_opportunities
 
@@ -289,15 +290,10 @@ def ui_signals(rep: Any, viol: list[dict[str, Any]]) -> list[tuple[Any, ...]]:
         )
     for blk in ("claim_reviews", "claim_advisories", "financial_findings"):
         for r in getattr(rep, blk).rows or []:
-            out.append(
-                (
-                    "wavea",
-                    blk,
-                    r.get("rule_id") or r.get("family"),
-                    "",
-                    _f(r.get("amount_try") or r.get("risk_amount_try")),
-                )
-            )
+            amount = r.get("amount_try") or r.get("risk_amount_try")
+            if blk == "financial_findings":  # a financial row says what was billed when it has no money of its own
+                amount = amount or r.get("observed_billed_amount_try")
+            out.append(("wavea", blk, r.get("rule_id") or r.get("family"), "", _f(amount)))
     for v in viol:
         out.append(
             (
@@ -336,24 +332,39 @@ def canonicalize_text(
     value: Any,
     claim_id: str | None = None,
     patient_id: str | None = None,
+    other_claim_ids: Sequence[str] = (),
 ) -> Any:
-    """Replace cohort and proof claim/patient IDs inside strings throughout a JSON-like structure."""
+    """Replace cohort and proof claim/patient IDs inside strings throughout a JSON-like structure.
+
+    `other_claim_ids` are the patient's other bills (history): a rule that names the ICU bill of a ward
+    bill (S14) writes its id, which is a proof id in the proof JSON and a cohort id on the loaded data.
+    """
     if isinstance(value, str):
         text = value
         if claim_id:
             text = text.replace(claim_id, "<claim>")
+        for other in other_claim_ids:
+            text = text.replace(other, "<claim>")
         text = _PROOF_CLAIM_ID_RE.sub("<claim>", text)
         if patient_id:
             text = text.replace(patient_id, "<patient>")
         text = _PROOF_PATIENT_ID_RE.sub("<patient>", text)
         return text
     if isinstance(value, list):
-        return [canonicalize_text(item, claim_id, patient_id) for item in value]
+        return [canonicalize_text(item, claim_id, patient_id, other_claim_ids) for item in value]
     if isinstance(value, tuple):
-        return tuple(canonicalize_text(item, claim_id, patient_id) for item in value)
+        return tuple(canonicalize_text(item, claim_id, patient_id, other_claim_ids) for item in value)
     if isinstance(value, Mapping):
-        return {k: canonicalize_text(v, claim_id, patient_id) for k, v in value.items()}
+        return {k: canonicalize_text(v, claim_id, patient_id, other_claim_ids) for k, v in value.items()}
     return value
+
+
+def _other_claim_ids(ctx: PatientClaimContext | None, claim_id: str | None) -> tuple[str, ...]:
+    """The ids of the patient's other bills known to `ctx` (its history), longest first so no id eats another."""
+    if ctx is None:
+        return ()
+    others = {c.claim_id for c in ctx.history.claims if c.claim_id != claim_id}
+    return tuple(sorted(others, key=lambda value: (-len(value), value)))
 
 
 def _direct_rows_s1(ctx: PatientClaimContext) -> list[dict[str, Any]]:
@@ -654,6 +665,31 @@ def _direct_rows_s12(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s14(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    claim = ctx.claims[0]
+    history = ctx.history  # a cross-bill rule: the ICU bill is history
+    return [
+        _keep(
+            o,
+            (
+                "type",
+                "claim_id",
+                "rule_id",
+                "procedure_code",
+                "overlap_date",
+                "icu_claim_id",
+                "risk_amount_try",
+                "sut_section_id",
+            ),
+        )
+        for o in detect_yatak_icu_overlap(
+            list(history.claims),
+            list(history.procedure_lines),
+            claim_ids_with_procs={claim.claim_id},
+        )
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -666,6 +702,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S9": _direct_rows_s9,
     "S11": _direct_rows_s11,
     "S12": _direct_rows_s12,
+    "S14": _direct_rows_s14,
 }
 
 
@@ -734,7 +771,9 @@ def canonicalize_signal_tuple(
         ctx.claims[0].claim_id if ctx is not None and ctx.claims else None
     )
     resolved_patient_id = patient_id or (ctx.patient_id if ctx is not None else None)
-    return canonicalize_text(line_canon, resolved_claim_id, resolved_patient_id)
+    return canonicalize_text(
+        line_canon, resolved_claim_id, resolved_patient_id, _other_claim_ids(ctx, resolved_claim_id)
+    )
 
 
 def signal_counter(
@@ -825,8 +864,9 @@ def prove_story(
     only_in_faulty = tuple(only_f_counter.elements())
     only_in_clean = tuple(only_c_counter.elements())
 
-    direct_faulty = canonicalize_text(direct_rows(story, faulty_ctx), cid, pid)
-    direct_clean = canonicalize_text(direct_rows(story, clean_ctx), cid, pid)
+    others = _other_claim_ids(faulty_ctx, cid)
+    direct_faulty = canonicalize_text(direct_rows(story, faulty_ctx), cid, pid, others)
+    direct_clean = canonicalize_text(direct_rows(story, clean_ctx), cid, pid, others)
 
     exp_noise = signal_counter(proof_data["noise_in_clean"], claim_id=cid, patient_id=pid)
     exp_only_f = signal_counter(proof_data["only_in_faulty"], claim_id=cid, patient_id=pid)

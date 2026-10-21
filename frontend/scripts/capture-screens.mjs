@@ -572,7 +572,8 @@ async function preflight(browser, cfg, token) {
 
 function buildRoutes(cfg, facts) {
   // The Patients table shows 10 patients per page (PAGE_SIZE in PatientInvoiceTable.tsx) and keeps its page in ?p=: the tool walks
-  // every page. A cohort that fits one page (the 9 showcase patients) has a single page and no pager with more to see.
+  // every page. A cohort that fits one page has a single page and no pager with more to see; the 11 showcase patients
+  // (12 bills: a patient list row is a patient, not a bill) take two.
   const routes = HOME_ROUTES.map((id) => ({ id, kind: "home", url: `/?tab=${id}`, ...(id === "patients" ? { pageWalk: true } : {}) }));
   for (const patient of facts.primary) {
     routes.push({ id: `patient-${last4(patient)}`, kind: "patient", url: `/patient/${patient}`, patient });

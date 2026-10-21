@@ -6,6 +6,11 @@ from collections import Counter
 from collections.abc import Iterator
 from dataclasses import dataclass, replace
 from decimal import Decimal
+import json
+from pathlib import Path
+import subprocess
+import sys
+from types import SimpleNamespace
 from typing import Any
 import warnings
 
@@ -37,7 +42,7 @@ from scripts.synthetic.cohort import (
     write_showcase,
 )
 import scripts.synthetic.cohort.engine_proof as engine_proof_mod
-from scripts.synthetic.cohort.engine_proof import _f, main
+from scripts.synthetic.cohort.engine_proof import _f, _other_claim_ids, main
 from scripts.synthetic.faults import FaultInjectionRecord
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
@@ -148,10 +153,16 @@ def story_bundles(
             f_counter=f_counter,
             c_counter=c_counter,
             direct_faulty=canonicalize_text(
-                direct_rows(story, faulty_ctx), rec.claim_id, rec.patient_id
+                direct_rows(story, faulty_ctx),
+                rec.claim_id,
+                rec.patient_id,
+                _other_claim_ids(faulty_ctx, rec.claim_id),
             ),
             direct_clean=canonicalize_text(
-                direct_rows(story, clean_ctx), rec.claim_id, rec.patient_id
+                direct_rows(story, clean_ctx),
+                rec.claim_id,
+                rec.patient_id,
+                _other_claim_ids(clean_ctx, rec.claim_id),
             ),
             story_proof=proofs_by_story[story],
         )
@@ -293,10 +304,13 @@ def test_direct_rows_match_proof(
 ) -> None:
     b = story_bundles[story]
     cid, pid = b.record.claim_id, b.record.patient_id
-    assert canonicalize_text(b.direct_faulty, cid, pid) == canonicalize_text(
+    # the rows of the loaded bill name the patient's other bills by their cohort ids; the proof JSON holds proof ids,
+    # which the proof-id pattern already replaces
+    others = _other_claim_ids(b.faulty_ctx, cid)
+    assert canonicalize_text(b.direct_faulty, cid, pid, others) == canonicalize_text(
         normalize(b.proof["faulty"]["direct"]), cid, pid
     )
-    assert canonicalize_text(b.direct_clean, cid, pid) == canonicalize_text(
+    assert canonicalize_text(b.direct_clean, cid, pid, others) == canonicalize_text(
         normalize(b.proof["clean"]["direct"]), cid, pid
     )
 
@@ -598,3 +612,126 @@ def test_a_clean_twin_laid_over_a_bill_keeps_the_patients_history_and_nothing_el
     # without a base it is the context of the one claim, as it always was
     alone = context_from_composed(claim)
     assert alone.patient_history is None and alone.claims == (claim.header,)
+
+
+# --- S14: a cross-bill rule. The ICU bill is history of the ward bill, the ward bill is history of the ICU bill ---
+
+
+def test_the_ward_bill_is_found_through_the_icu_bill_that_is_its_history(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    b = story_bundles["S14"]
+    icu_claim = cohort.scenario("S11").claim_ids[0]
+    assert b.record.claim_id == cohort.scenario("S14").claim_ids[0] != icu_claim
+    assert [c.claim_id for c in b.faulty_ctx.claims] == [b.record.claim_id]  # one bill is active
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {icu_claim, b.record.claim_id}
+    # the rule reads the history: the bed line of the active bill, on the day the other bill ends
+    assert len(b.direct_faulty) == 1
+    row = b.direct_faulty[0]
+    assert (row["rule_id"], row["overlap_date"], row["risk_amount_try"]) == ("yatak_icu_overlap_510010", "2026-06-07", 222.36)
+    assert (row["claim_id"], row["icu_claim_id"]) == ("<claim>", "<claim>")  # both ids canonicalized, not only the active bill's
+    assert b.direct_clean == []
+    financial = b.faulty_report.financial_findings.rows
+    assert [(r["rule_id"], r["claim_id"], r["observed_billed_amount_try"]) for r in financial] == [
+        ("yatak_icu_overlap_510010", b.record.claim_id, 222.36)
+    ]
+    assert not (b.clean_report.financial_findings.rows or [])
+    assert ("wavea", "financial_findings", "yatak_icu_overlap_510010", "", 222.36) in b.f_counter  # the amount the signal carries
+    assert target_signal_found("S14", b.record.amount_try, (b.f_counter - b.c_counter).elements())
+
+
+def test_a_later_bill_is_history_of_an_earlier_one_and_adds_nothing_to_its_report(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    """S11's own proof stays what it was with S14 in the patient's history: the finding belongs to the ward bill."""
+    b = story_bundles["S11"]
+    ward = cohort.scenario("S14").claim_ids[0]
+    assert ward in {c.claim_id for c in b.faulty_ctx.history.claims}
+    assert [c.claim_id for c in b.faulty_ctx.claims] == [b.record.claim_id]
+    assert not (b.faulty_report.financial_findings.rows or [])
+    assert not [sig for sig in b.f_counter if "yatak_icu_overlap" in str(sig)]
+    assert b.story_proof.mismatches == ()
+
+
+def test_the_other_bills_of_a_patient_are_canonicalized_longest_id_first(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    b = story_bundles["S14"]
+    icu_claim = cohort.scenario("S11").claim_ids[0]
+    assert _other_claim_ids(b.faulty_ctx, b.record.claim_id) == (icu_claim,)
+    assert _other_claim_ids(b.faulty_ctx, icu_claim) == (b.record.claim_id,)
+    assert _other_claim_ids(None, "x") == ()
+    text = f"{b.record.claim_id} after {icu_claim}"
+    assert canonicalize_text(text, b.record.claim_id, None, (icu_claim,)) == "<claim> after <claim>"
+    assert canonicalize_text(text, b.record.claim_id) == f"<claim> after {icu_claim}"  # without the history it stays
+    ids = [SimpleNamespace(claim_id=i) for i in ("C-1", "C-10", "C-1x", "C-active")]
+    longest_first = _other_claim_ids(SimpleNamespace(history=SimpleNamespace(claims=ids)), "C-active")
+    assert longest_first == ("C-10", "C-1x", "C-1")  # no id eats the start of a longer one
+    assert canonicalize_text("C-10 C-1x C-1", None, None, longest_first) == "<claim> <claim> <claim>"
+    sig = ("x", f"see {icu_claim}", 1.0)
+    assert canonicalize_signal_tuple(sig, b.faulty_ctx, claim_id=b.record.claim_id) == ("x", "see <claim>", 1.0)
+
+
+def _fake_report(*, reviews=(), advisories=(), financial=()) -> SimpleNamespace:
+    empty = SimpleNamespace(opportunities=[])
+    return SimpleNamespace(
+        recommended_actions=[],
+        anestezi_puani=empty,
+        refakatci=empty,
+        icu_puani=empty,
+        yenidogan_yatak=empty,
+        audit_exposure_try=0.0,
+        capture_gap_try=0.0,
+        compliance_adjustment_try=0.0,
+        claim_compliance=SimpleNamespace(findings=[]),
+        claim_reviews=SimpleNamespace(rows=list(reviews)),
+        claim_advisories=SimpleNamespace(rows=list(advisories)),
+        financial_findings=SimpleNamespace(rows=list(financial)),
+    )
+
+
+def test_a_financial_row_without_money_of_its_own_carries_the_amount_it_observed() -> None:
+    """The Wave A financial row of S14 has no `amount_try`: the signal reads what the bill had billed on the line."""
+    row = {"rule_id": "yatak_icu_overlap_510010", "observed_billed_amount_try": 222.36}
+    assert ui_signals(_fake_report(financial=[row]), []) == [
+        ("wavea", "financial_findings", "yatak_icu_overlap_510010", "", 222.36)
+    ]
+    # a row with money of its own keeps it; a review or an advisory never takes the observed amount
+    own = {"rule_id": "r", "amount_try": 5.0, "observed_billed_amount_try": 9.0}
+    assert ui_signals(_fake_report(financial=[own]), [])[0][-1] == 5.0
+    assert ui_signals(_fake_report(financial=[{"rule_id": "r", "risk_amount_try": 7.0, "observed_billed_amount_try": 9.0}]), [])[0][-1] == 7.0
+    review = {"rule_id": "ORTAK-1", "observed_billed_amount_try": 9.0}
+    assert ui_signals(_fake_report(reviews=[review], advisories=[review]), []) == [
+        ("wavea", "claim_reviews", "ORTAK-1", "", 0.0),
+        ("wavea", "claim_advisories", "ORTAK-1", "", 0.0),
+    ]
+
+
+def test_the_proof_harness_reads_the_rows_of_a_report_like_the_engine_proof() -> None:
+    """The proof harness is a script with its own copy of `ui_signals`; the two must give the same signals.
+
+    Run in a subprocess like the golden export: importing the harness changes the working directory."""
+    reviews = [{"rule_id": "ORTAK-1", "observed_billed_amount_try": 9.0}]
+    financial = [
+        {"rule_id": "yatak_icu_overlap_510010", "observed_billed_amount_try": 222.36},
+        {"rule_id": "r", "amount_try": 5.0, "observed_billed_amount_try": 9.0},
+        {"rule_id": "q", "risk_amount_try": 7.0, "observed_billed_amount_try": 9.0},
+    ]
+    code = (
+        "import json, sys\n"
+        "from types import SimpleNamespace\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "from harness import ui_signals\n"
+        f"reviews, financial = json.loads({json.dumps(json.dumps([reviews, financial]))})\n"
+        "empty = SimpleNamespace(opportunities=[])\n"
+        "rep = SimpleNamespace(recommended_actions=[], anestezi_puani=empty, refakatci=empty, icu_puani=empty,\n"
+        "    yenidogan_yatak=empty, audit_exposure_try=0.0, capture_gap_try=0.0, compliance_adjustment_try=0.0,\n"
+        "    claim_compliance=SimpleNamespace(findings=[]), claim_reviews=SimpleNamespace(rows=reviews),\n"
+        "    claim_advisories=SimpleNamespace(rows=reviews), financial_findings=SimpleNamespace(rows=financial))\n"
+        "print(json.dumps(ui_signals(rep, [])))\n"
+    )
+    repo = Path(__file__).resolve().parents[3]
+    done = subprocess.run([sys.executable, "-c", code], cwd=repo, capture_output=True, text=True, check=True)
+    harness = [tuple(signal) for signal in json.loads(done.stdout.strip().splitlines()[-1])]
+    assert harness == ui_signals(_fake_report(reviews=reviews, advisories=reviews, financial=financial), [])
+    assert [signal[-1] for signal in harness] == [0.0, 0.0, 222.36, 5.0, 7.0]

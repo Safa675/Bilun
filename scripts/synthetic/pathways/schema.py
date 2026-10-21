@@ -52,7 +52,7 @@ CHECKS: dict[str, str] = {
     "schema.line_shape": "a line carries fields its kind does not allow, or lacks required ones",
     "schema.quantity_form": "a drug has no quantity form or several",
     "schema.diagnosis_primary": "not exactly one primary diagnosis",
-    "schema.stay_shape": "nights missing on a stay, or present on an ER-only pathway",
+    "schema.stay_shape": "nights missing on a stay, or present on an ER-only pathway, or an arrival from an ICU on an ER-only pathway",
     # checks.py: against the catalogs
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
@@ -474,6 +474,10 @@ class Pathway(_Model):
     patient: Patient
     nights: NightsRange | None = None
     op_day: DayPoint | None = None
+    # The stay begins on the day the patient leaves an ICU bill of the same patient: that day's bed is paid by
+    # the ICU bill (EK-2B 510090 covers yemek + yatak + vizit; src/bilun/domain/prose_rules/yatak_icu_overlap.py),
+    # so the bed lines of this bill cover admit+1..discharge. A sibling without the flag bills the transfer day.
+    arrives_from_icu: bool = False
     diagnoses: list[Diagnosis] = Field(min_length=1)
     procedures: list[Procedure] = Field(min_length=1)
     materials: list[Material] = Field(default_factory=list)
@@ -502,6 +506,8 @@ class Pathway(_Model):
             return "an acil (ER-only) pathway has no nights"
         if self.claim_type == "acil" and any(d.per_night for d in self.drugs):
             return "a per_night drug needs a stay"
+        if self.claim_type == "acil" and self.arrives_from_icu:
+            return "an ER-only pathway cannot arrive from an ICU"
         return ""
 
     def _primary_problem(self) -> str:

@@ -33,7 +33,7 @@ API patient, action, claim, clause, rejection and corrective-step identities are
 checked against rendered content. The playbook table is also scrolled horizontally to
 expose its corrective steps.
 
-**Known limit on the showcase cohort** (8 patients when this was checked, 9 now; engine billing reports and the
+**Known limit on the showcase cohort** (8 patients when this was checked, 11 patients with 12 bills now, patient 10 having two; engine billing reports and the
 registry, checked 2026-10-18): none of the three paths can complete there, because the
 workflows were written for the retired 50-patient cohort. (1) The landing patient's top
 ranked action has no `clause_ref` (only the S7 copay-exemption row has one, and it is not

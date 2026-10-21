@@ -82,6 +82,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S9": "758.01",
     "S11": "6089.82",
     "S12": "1322.94",
+    "S14": "222.36",
 }
 
 _ANON_RE = re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE)
@@ -355,6 +356,7 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
         "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
         "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
         "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
+        "S14": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-002"]},
     }
     assert roles["default_landing"] == {
         "patient_id": "SENTETIK-HASTA-0001",
@@ -608,12 +610,107 @@ def test_stories_after_the_eighth_are_scenarios_and_not_roles(built_showcase: Bu
         "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
         "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
         "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
+        "S14": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-002"]},
     }
     assert next(rec for rec in built_showcase.records if rec.story == "S9").claim_id == (
         "F-SENTETIK-HASTA-0009-001"
     )
     encounter = next(e for e in registry["encounters"] if e["story"] == "S9")
     assert encounter["patient_id"] == "SENTETIK-HASTA-0009" and encounter["is_clean"] is False
+
+
+# --- S14, the second bill of patient 10: the ward bill after the ICU bill ----------------------------------------
+
+_ICU_CLAIM = "F-SENTETIK-HASTA-0010-001"
+_WARD_CLAIM = "F-SENTETIK-HASTA-0010-002"
+_WARD_PATIENT = "SENTETIK-HASTA-0010"
+
+
+def test_the_ward_bill_of_patient_10_starts_on_the_day_the_icu_bill_ends(built_showcase: BuildResult) -> None:
+    headers = built_showcase.tables["claim_headers.parquet"]
+    icu = headers.filter(pl.col("claim_id") == _ICU_CLAIM).row(0, named=True)
+    ward = headers.filter(pl.col("claim_id") == _WARD_CLAIM).row(0, named=True)
+    assert (icu["admission_date"], icu["discharge_date"]) == ("2026-06-02", "2026-06-07")
+    assert (ward["admission_date"], ward["discharge_date"]) == ("2026-06-07", "2026-06-10")
+    assert icu["discharge_date"] == ward["admission_date"]  # the transfer day: the last day of one bill, the first of the next
+    assert icu["patient_id"] == ward["patient_id"] == _WARD_PATIENT
+    assert (ward["episode_id"], ward["claim_type"], ward["department"]) == (
+        "B-SENTETIK-HASTA-0010-002", "yatis", "İç Hastalıkları",
+    )  # fmt: skip
+    ids = headers["claim_id"].to_list()
+    assert ids.index(_WARD_CLAIM) == ids.index(_ICU_CLAIM) + 1  # the tables follow the dates inside the patient
+    assert cohort.scenario("S14").claim_ids == (_WARD_CLAIM,) and cohort.scenario("S11").claim_ids == (_ICU_CLAIM,)
+
+
+def test_the_faulty_ward_bill_bills_the_bed_on_the_transfer_day_and_the_clean_twin_does_not(
+    built_showcase: BuildResult,
+) -> None:
+    lines = built_showcase.tables["procedure_claim_lines.parquet"].filter(pl.col("claim_id") == _WARD_CLAIM)
+    days = lambda frame, code: sorted(frame.filter(pl.col("procedure_code") == code)["procedure_date"])  # noqa: E731
+    assert days(lines, "510010") == ["2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10"]
+    assert days(lines, "510121") == ["2026-06-07", "2026-06-08", "2026-06-09"]  # one companion line per night
+    assert lines.height == 7
+    clean = next(c for c in built_showcase.clean_claims if c.header.claim_id == _WARD_CLAIM)
+    assert sorted(p.procedure_date.isoformat() for p in clean.procedures if p.procedure_code == "510010") == [
+        "2026-06-08", "2026-06-09", "2026-06-10",
+    ]  # fmt: skip
+    assert len(clean.procedures) == 6
+    # the faulty bill is the clean one plus the transfer-day bed, and nothing else
+    faulty = built_showcase.claims[_claim_index(built_showcase, _WARD_CLAIM)]
+    identity = lambda claim: sorted((p.procedure_code, p.procedure_date.isoformat(), p.quantity) for p in claim.procedures)  # noqa: E731
+    assert [x for x in identity(faulty) if x not in identity(clean)] == [("510010", "2026-06-07", 1)]
+    assert [x for x in identity(clean) if x not in identity(faulty)] == []
+    for name in ("drug_claim_lines.parquet", "material_claim_lines.parquet", "performed_procedure_lines.parquet"):
+        assert built_showcase.tables[name].filter(pl.col("claim_id") == _WARD_CLAIM).is_empty(), name
+    assert built_showcase.clean_tables["lab_clean.parquet"].filter(pl.col("basvuru_id") == _WARD_CLAIM.replace("F-", "B-", 1)).is_empty()
+
+
+def _claim_index(built: BuildResult, claim_id: str) -> int:
+    return [c.header.claim_id for c in built.claims].index(claim_id)
+
+
+def test_the_fault_record_of_the_ward_bill_is_the_one_bed_line(built_showcase: BuildResult) -> None:
+    record = next(r for r in built_showcase.records if r.claim_id == _WARD_CLAIM)
+    assert (record.story, record.line_id, record.effect_kind, record.expected_status) == ("S14", "", "deduction_risk", "kismi_red")
+    assert record.engine_rule == "yatak_icu_overlap_510010"
+    assert record.amount_try == "222.36"
+    assert Decimal(record.billed_faulty_try) - Decimal(record.billed_clean_try) == Decimal(record.amount_try)  # the bed line
+    clean = next(c for c in built_showcase.clean_claims if c.header.claim_id == _WARD_CLAIM)
+    assert f"{clean.header.expected_total_billed_try:.2f}" == record.billed_clean_try
+    # one record per bill: the ICU bill keeps its own
+    assert {r.claim_id: r.story for r in built_showcase.records if r.patient_id == _WARD_PATIENT} == {_ICU_CLAIM: "S11", _WARD_CLAIM: "S14"}
+
+
+def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile(built_showcase: BuildResult) -> None:
+    anadata = built_showcase.clean_tables["anadata_clean.parquet"].filter(pl.col("HASTA_ID") == _WARD_PATIENT)
+    assert anadata["SQ_EPISODE"].to_list() == ["B-SENTETIK-HASTA-0010-001", "B-SENTETIK-HASTA-0010-002"]
+    assert (anadata["TANI_YASI"].to_list(), anadata["CINSIYET"].to_list()) == ([76, 76], ["K", "K"])
+    assert anadata["EPISODE_TARIH"].dt.date().to_list() == [date(2026, 6, 2), date(2026, 6, 7)]
+    profiles = built_showcase.tables["patient_copay_profiles.parquet"]
+    assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
+    assert profiles.height == cohort.patient_count() == 11 and built_showcase.tables["claim_headers.parquet"].height == 12
+    registry = built_showcase.registry
+    assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
+    assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
+    encounter = next(e for e in registry["encounters"] if e["claim_id"] == _WARD_CLAIM)
+    assert (encounter["story"], encounter["is_clean"], encounter["pathway_id"]) == ("S14", False, "urosepsis_ward_stay_after_icu_transfer")
+    assert "pins" not in encounter  # the pathway pins the patient's identity itself (F, 76 as S11): no override needed
+
+
+def test_the_ward_bill_leaves_every_other_bill_of_the_cohort_as_it_was(built_showcase: BuildResult) -> None:
+    """The tables list the new bill's rows only in the tables that have rows per bill; the other rows are S1-S12's."""
+    tables = built_showcase.tables
+    per_claim = {name: frame.filter(pl.col("claim_id") == _WARD_CLAIM).height for name, frame in tables.items() if "claim_id" in frame.columns}
+    assert per_claim["claim_headers.parquet"] == 1
+    assert per_claim["procedure_claim_lines.parquet"] == 7 and per_claim["claim_diagnoses.parquet"] == 2
+    assert per_claim["expected_rule_outputs.parquet"] == 1
+    assert {name for name, n in per_claim.items() if n} == {
+        "claim_headers.parquet", "procedure_claim_lines.parquet", "claim_diagnoses.parquet", "expected_rule_outputs.parquet",
+    }  # fmt: skip
+    diagnoses = tables["claim_diagnoses.parquet"].filter(pl.col("claim_id") == _WARD_CLAIM)
+    assert sorted(diagnoses["icd10_code"]) == ["A41.9", "N39.0"]  # both are on the patient's ICU bill already: the union list stays
+    icu = tables["claim_diagnoses.parquet"].filter(pl.col("claim_id") == _ICU_CLAIM)
+    assert set(diagnoses["icd10_code"]) <= set(icu["icd10_code"])
 
 
 def test_the_faulty_s12_bill_lacks_its_first_three_incubator_days_and_ends_on_an_incubator_day(
@@ -685,6 +782,7 @@ def test_the_story_of_a_clean_recipe_is_the_story_of_its_pathway() -> None:
         "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
         "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
         "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
+        "S14": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-002"]},
     }
     assert len(built.records) == len(cohort.load_registry()["faults"]) - 1  # the S9 fault is gone
 
@@ -920,7 +1018,9 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0006-001",
         "F-SENTETIK-HASTA-0007-002",  # the precursor: the later id, the earlier date
         "F-SENTETIK-HASTA-0007-001",
-        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (8, 9, 10, 11)),
+        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (8, 9, 10)),
+        "F-SENTETIK-HASTA-0010-002",  # the committed second bill (S14, the ward bill after the ICU bill), dated later
+        "F-SENTETIK-HASTA-0011-001",
     ]
     assert headers["episode_id"].to_list() == [
         claim.replace("F-", "B-", 1) for claim in headers["claim_id"].to_list()

@@ -183,7 +183,11 @@ def test_a_patient_may_have_several_encounters() -> None:
 def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_overrides_nothing() -> None:
     raw = _raw_recipes()
     assert "encounter_no" not in _recipe(raw, 1)
-    assert [r.encounter_no for r in load_recipes().recipes] == [1] * cohort.claim_count()
+    committed = load_recipes().recipes
+    assert len(committed) == cohort.claim_count()
+    # a recipe without encounter_no is a first bill; the one second bill of the committed cohort (S14, patient 10) writes it
+    assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [(10, 2)]
+    assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1)
     _recipe(raw, 2)["pins"] = {}
     assert _problems(raw) == []
     recipe = load_recipes_text(yaml.safe_dump(raw, allow_unicode=True), "r.yaml").recipes[1]

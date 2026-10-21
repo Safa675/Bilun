@@ -1,0 +1,75 @@
+# Urosepsis, ward stay on internal medicine after the transfer out of intensive care, billed itemized (hizmet başı).
+# Showcase story S14 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S14): the second bill of the patient of story S11.
+# Built by WP5. Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# The stay begins on the day the patient leaves the ICU bill (arrives_from_icu): that day's bed is paid by the ICU bill
+# (EK-2B 510090 covers yemek, yatak, vizit; src/bilun/domain/prose_rules/yatak_icu_overlap.py), so the ward bed starts the next day.
+schema_version: 1
+id: urosepsis_ward_stay_after_icu_transfer
+title: "Urosepsis, ward stay after the transfer out of intensive care, bed billed from the day after the transfer"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "İç Hastalıkları"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+arrives_from_icu: true
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Urosepsis occurs in both sexes; A41.9 and N39.0 have no sex gate. Story S14 is the woman of story S11 (the same patient, the next bill)."
+  age:
+    min: 60
+    max: 90
+    basis: judgment
+    source: "Story S14 patient was born in 1950 (76 years), like story S11. Urosepsis with shock is a disease of the elderly; the bounds are the author's judgment."
+
+nights:
+  min: 2
+  max: 8
+  basis: judgment
+  source: "Story S14 has 3 nights. After septic shock a ward stay of a few days follows; 2 and 8 are the author's judgment. Internist to confirm."
+
+diagnoses:
+  - icd10: A41.9
+    name: "SEPTİSEMİ, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: A41.9 is sepsis, organism not specified. Story S14 continues the treatment of the urosepsis of story S11 on the ward."
+  - icd10: N39.0
+    name: "ÜRİNER SİSTEM ENFEKSİYONU, YERİ TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: N39.0 urinary tract infection, site not specified: the source of the urosepsis. R57.8 (S11) is dropped: the shock has resolved."
+
+procedures:
+  # --- the stay: the ICU bill pays the transfer day, so the ward bed starts the day after it; one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit+1..discharge           # 3 lines for 3 nights: the first day (the transfer day) is the ICU bill's
+    basis: sut
+    source: "C001243 (SUT 2.4.4.H.(8)), EK-2B 510090 (yemek, yatak, vizit): the ICU bill pays the day the patient leaves. Intensivist: is 510010 billed that day?"
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 3 lines for 3 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the companion is billed with 510121; a ward doctor's statement of need is on file (age, post-shock weakness). Clinician to confirm."
+
+notes:
+  - "The bed is 510010 from the day after the transfer; the transfer day belongs to the ICU bill of story S11. The faulty sibling (data/synthetic/faults/siblings/urosepsis_ward_stay_transfer_day_billed.yaml) bills it again."
+  - "No laboratory, imaging, drug or material line on purpose: the cross-bill rules read the whole patient history (tablo15_12_duplicate_test: the same test on two bills within 7 days), and the ICU bill already bills every test of this episode. Drug prices stay 0 in the demo."
+
+showcase:
+  story: S14
+  sex: F
+  age: 76
+  admit: "2026-06-07"
+  nights: 3

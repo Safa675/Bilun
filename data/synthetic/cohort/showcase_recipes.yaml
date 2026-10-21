@@ -1,6 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9, patient 10 is S11, patient 11 is S12 (the story ids are not contiguous: S10 is a later bill). A recipe without a fault is a clean bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 9 is S9, patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12 (the story ids are not contiguous: S10 is a later bill). A recipe without a fault is a clean bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -43,6 +43,11 @@ recipes:
   - patient_no: 10
     pathway: urosepsis_septic_shock_icu_stay
     fault: F_S11_ICU_PACKAGE_DAYS_UNDERBILLED
+
+  - patient_no: 10
+    encounter_no: 2
+    pathway: urosepsis_ward_stay_after_icu_transfer
+    fault: F_S14_WARD_BED_ON_ICU_TRANSFER_DAY
 
   - patient_no: 11
     pathway: late_preterm_newborn_incubator_stay

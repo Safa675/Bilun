@@ -1,4 +1,4 @@
-"""Eleven showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9, S11 and S12 added 2026-10-21; S10 is a later bill).
+"""Twelve showcase stories: clean bill + one injected fault each (S1-S8 a scratch draft, S9, S11, S12 and S14 added 2026-10-21; S10 is a later bill).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -324,4 +324,25 @@ def s12(variant: str) -> Bill:
     return b
 
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11, "S12": s12}
+# ── S14 ─ ward bed billed on the day the patient leaves intensive care ──────
+def s14(variant: str) -> Bill:
+    """76 F, the ward bill of the patient of S11 after her transfer out of the ICU; 3 nights on internal medicine.
+
+    The ICU bill (S11, 2026-06-02 to 06-07) is this patient's history: its 510090 pays the day she leaves
+    (EK-2B 510090 covers yemek, yatak, vizit), so the clean ward bill bills 510010 from the next day and the
+    faulty one from the transfer day too (src/bilun/domain/prose_rules/yatak_icu_overlap.py). The companion
+    covers every night of the bill. No lab, drug or material line: the cross-bill rules read the whole history.
+    """
+    a, d = D("2026-06-07"), D("2026-06-10")
+    b = Bill("SH-11", "C-SH14", "yatis", "İç Hastalıkları", a, d, "A41.9")
+    b.history = (s11("faulty"),)
+    for i, icd in enumerate(("A41.9", "N39.0")):
+        b.diag(icd, primary=(i == 0))
+    days = _days(a, d)
+    for day in days if variant != "clean" else days[1:]:  # the faulty bill also bills the transfer day
+        b.proc("510010", day, specialty=DAHILIYE)
+    _companion(b, a, d, DAHILIYE)                         # 3 nights
+    return b
+
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11, "S12": s12, "S14": s14}

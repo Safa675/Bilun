@@ -284,3 +284,35 @@ def test_billed_ratio_has_four_decimals(golden) -> None:
             )
         ]
         assert bad == [], name
+
+
+# --- S14: the story bill has the ICU bill of S11 as history (a cross-bill rule needs it) -----------------------
+
+
+def test_the_s14_story_bill_reads_the_faulty_icu_bill_as_history_and_the_rule_fires_on_the_faulty_ward_bill_only() -> None:
+    """Run in a subprocess like the golden export: the proof harness changes the working directory when it is imported."""
+    code = (
+        "import json, sys\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "from stories import s14\n"
+        "from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap\n"
+        "out = {}\n"
+        "for variant in ('clean', 'faulty'):\n"
+        "    ctx = s14(variant).ctx()\n"
+        "    rows = detect_yatak_icu_overlap(list(ctx.history.claims), list(ctx.history.procedure_lines))\n"
+        "    icu = sum(p.billed_amount_try for p in ctx.history.procedure_lines if p.claim_id == 'C-SH11')\n"
+        "    out[variant] = {'active': [c.claim_id for c in ctx.claims], 'icu_billed': str(icu),\n"
+        "                    'history': sorted(c.claim_id for c in ctx.history.claims),\n"
+        "                    'patients': sorted({c.patient_id for c in ctx.history.claims}),\n"
+        "                    'rows': [(r['claim_id'], r['overlap_date'], r['risk_amount_try']) for r in rows]}\n"
+        "print(json.dumps(out))\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    for variant in ("clean", "faulty"):
+        assert out[variant]["icu_billed"] == "8072.73"  # the history is S11's faulty bill, the one the cohort holds
+        assert out[variant]["active"] == ["C-SH14"]
+        assert out[variant]["history"] == ["C-SH11", "C-SH14"]
+        assert out[variant]["patients"] == ["SH-11"]  # the ward bill is the patient of S11
+    assert out["clean"]["rows"] == []
+    assert out["faulty"]["rows"] == [["C-SH14", "2026-06-07", 222.36]]
