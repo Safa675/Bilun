@@ -94,7 +94,7 @@ CHECKS: dict[str, str] = {
     # stay: beds, companions and dates
     "stay.bed_coverage": "one bed line a day, admission..discharge (ICU: ..discharge-1; none on the day an ICU bill ends); no day bed on a stay",
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
-    "stay.dates_in_window": "a header whose dates contradict the claim type, or a line date outside the claim window",
+    "stay.dates_in_window": "a header whose dates contradict the claim type (a session claim may span dates), or a line date outside the window",
     # bill: performed against billed
     "bill.performed_billed": "a performed procedure with no billed line of the same code on the same day",
     # package: the billing mode
@@ -1479,20 +1479,25 @@ def check_companion_coverage(bill: _Bill) -> list[Problem]:
 
 
 def check_dates_in_window(bill: _Bill) -> list[Problem]:
-    """stay.dates_in_window: the header fits the claim type; every line date is in the window."""
+    """stay.dates_in_window: the header fits the claim type; every line date is in the window.
+
+    A stay starts on its admission and ends on its discharge (the same date for a stay under 24 hours). A
+    visit has no admission and no discharge: an ER visit is one date, a gunubirlik or poliklinik claim one
+    date or a span of dates (a session claim, end on or after start; G3).
+    """
     h = bill.headers
     yatis = pl.col("claim_type") == "yatis"
+    acil = pl.col("claim_type") == "acil"
     starts_on_admission = pl.col("start") == pl.col("adm")
     ends_on_discharge = pl.col("end") == pl.col("dis")
     ward_window = (starts_on_admission & ends_on_discharge).fill_null(False)
-    visit_window = (
-        (pl.col("start") == pl.col("end"))
-        & pl.col("admission_date").is_null()
-        & pl.col("discharge_date").is_null()
-    ).fill_null(False)
+    no_stay_dates = pl.col("admission_date").is_null() & pl.col("discharge_date").is_null()
+    one_date = (pl.col("start") == pl.col("end")) & no_stay_dates
+    span = (pl.col("start") <= pl.col("end")) & no_stay_dates
+    visit_window = pl.when(acil).then(one_date).otherwise(span).fill_null(False)
     header = h.filter(
         (yatis & ~ward_window)
-        | (pl.col("claim_type").is_in(["acil", "poliklinik"]) & ~visit_window)
+        | (pl.col("claim_type").is_in(["acil", "poliklinik", "gunubirlik"]) & ~visit_window)
     ).select(
         _claim_text().alias("where"),
         _format(
@@ -1500,7 +1505,9 @@ def check_dates_in_window(bill: _Bill) -> list[Problem]:
             pl.col("claim_type"),
             pl.when(yatis)
             .then(pl.lit("starts on admission and ends on discharge"))
-            .otherwise(pl.lit("is one day, with no admission and no discharge")),
+            .when(acil)
+            .then(pl.lit("is one day, with no admission and no discharge"))
+            .otherwise(pl.lit("is one day or a span of days, with no admission and no discharge")),
             pl.col("admission_date").fill_null("none"),
             pl.col("discharge_date").fill_null("none"),
             pl.col("start").cast(pl.String).fill_null("none"),

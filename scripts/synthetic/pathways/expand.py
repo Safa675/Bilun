@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from decimal import Decimal
 
-from .schema import Drug, Pathway, Pins, anchors_for, included, pin_problems, resolve_days
+from .schema import Drug, Pathway, Pins, anchors_for, included, last_day, pin_problems, resolve_days
 
 FORMAT_VERSION = 1
 
@@ -75,14 +75,16 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
         return line.specialty or pathway.department.specialty
 
     stay = pathway.claim_type == "yatis"
-    last = day("discharge") if stay else None
+    last = day("discharge") if stay else None  # nights 0: the admission date
+    # a visit ends on its one date, a session claim with a span on admit+span
+    end = last or (first + timedelta(days=last_day(pathway, pins))).isoformat()
     header = {
         "claim_type": pathway.claim_type,
         "department": pathway.department.name,
         "admission_date": pins.admit if stay else None,
         "discharge_date": last,
         "claim_start_date": pins.admit,
-        "claim_end_date": last or pins.admit,
+        "claim_end_date": end,
         "primary_icd10": next(d.icd10 for d in pathway.diagnoses if d.role == "primary"),
     }
 

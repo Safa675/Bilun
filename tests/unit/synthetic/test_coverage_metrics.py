@@ -746,10 +746,10 @@ def test_every_patient_of_the_registry_is_measured(measured: dict[str, dict[str,
     assert sum(entry["claims"] for entry in measured.values()) == cohort.claim_count()
 
 
-def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_the_outpatient_bills_of_patient_4_add(
+def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_their_later_bills_add(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
-    """The plan measured 273 / 14 / 14 on the eight first bills; patient 4's control and second visit add the rest."""
+    """The plan measured 273 / 14 / 14 on the eight first bills; the later bills of patients 2, 4 and 7 add the rest."""
     summary = cm.summarize(showcase_eight)
     assert summary["patients"] == 8
     assert summary["blocks"]["total"] == 20
@@ -757,9 +757,10 @@ def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_the_out
     assert summary["blocks"]["with_output_names"] == BASELINE_BLOCKS_WITH_OUTPUT  # the outpatient bills light no block
     wavea = summary["wavea"]
     assert wavea["rule_ids"] == 528
-    # +13 evaluated (the first outpatient claims), +2 matched (the duplicate exam, ORTAK-20), +1 with a row (ORTAK-20)
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 13, 14 + 2, 14 + 1)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (9, 6, 0)
+    # +13 evaluated (the first outpatient claims), +2 matched (the duplicate exam, ORTAK-20), +1 with a row (ORTAK-20);
+    # patient 7's observation (S47) adds the duplicate test: +1 evaluated, +1 matched, +1 with a row (a review)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 14, 14 + 3, 14 + 2)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (10, 6, 0)
 
 
 def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
@@ -767,16 +768,22 @@ def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
     return (len(entry["blocks_with_output"]), wavea["evaluated"], wavea["matched"], wavea["review"], wavea["advisory"])
 
 
-def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patients_2_and_4(
+def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patients_2_4_and_7(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
     rows = [_row(entry) for _, entry in sorted(showcase_eight.items())]
     second, fourth = cohort.role("showcase_S2").patient_id, cohort.role("showcase_S4").patient_id
-    assert (showcase_eight[second]["claims"], showcase_eight[fourth]["claims"]) == (2, 3)
-    # the plan's table is the first bill of each patient: the six patients with one bill still give it
-    assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid not in (second, fourth)] == [
-        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i not in (1, 3)
+    seventh = cohort.role("showcase_S7").patient_id
+    assert [showcase_eight[p]["claims"] for p in (second, fourth, seventh)] == [2, 3, 3]
+    # the plan's table is the first bill of each patient: the five patients with one bill still give it
+    several = (second, fourth, seventh)
+    assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid not in several] == [
+        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i not in (1, 3, 6)
     ]
+    # patient 7 is read over its ER visit, its observation of one date (S47) and its follow-up (S48): the blocks of a
+    # stay (claim checklist, companion, bed days), 48 more rules evaluated, 8 more matched (the duplicate test, the
+    # inpatient itemized basis, ORTAK-19/20/22/25)
+    assert _row(showcase_eight[seventh]) == (4 + 3, 231 + 48, 4 + 8, 4 + 5, 0 + 3)
     # patient 2 is read over its stay and its control (S32, its first outpatient bill): 86 more rules evaluated (the
     # outpatient rules, already evaluated on patient 4), 2 more matched with a row (ORTAK-13 and ORTAK-20, reviews)
     assert _row(showcase_eight[second]) == (6, 191 + 86, 9 + 2, 6 + 2, 3)
@@ -809,14 +816,18 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
 
     After F2 b2 (WP9, S32, patient 2's control): bills 16 -> 17 and nothing else of the cohort (its rules are the outpatient
     rules patient 4 already has; the copay waiver shows on the app path only).
+
+    After F7 b2, b3 and S20 (WP10): patients 12 -> 13, bills 17 -> 20, finding kinds 24 -> 25 (the day bed of a stay
+    of one date, `yatak_puani_day_bed`); blocks and Wave A unchanged (every rule the new bills match is matched elsewhere).
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (12, 17)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (13, 20)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
     assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (288, 19, 18)
     assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (11, 6, 1)
-    assert summary["finding_kinds"]["count"] == 24
+    assert summary["finding_kinds"]["count"] == 25
+    assert "action:yatak_puani:yatak_puani_day_bed" in summary["finding_kinds"]["kinds"]
     assert "yatak_icu_overlap_510010" in wavea["row_ids"]
     # the eight of the plan's baseline plus S9, S11 and S12 had 273 / 14: the one new id is the financial one
     without_s14 = {pid: entry for pid, entry in measured.items() if pid != cohort.scenario("S14").patient_id}
@@ -839,6 +850,7 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
     assert {pid: e["claims"] for pid, e in measured.items() if e["claims"] > 1} == {
         patient: 2,
         cohort.role("showcase_S2").patient_id: 2,  # the stay and the control visit S32
+        cohort.role("showcase_S7").patient_id: 3,  # the ER visit, the observation S47 and the follow-up S48
         cohort.role("showcase_S4").patient_id: 3,
         cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
     }
@@ -860,11 +872,13 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
     )
     assert {duplicate, ortak20, ortak13} <= set(entry["wavea"]["matched_ids"])
     # the duplicate exam is this patient's alone; ORTAK-20 matches every outpatient bill that bills an EK-2B line, so
-    # patient 2's control visit (S32) has it too
+    # patient 2's control visit (S32), patient 7's follow-up (S48) and patient 13's day case (S20) have it too
     assert {pid for pid, e in measured.items() if duplicate in e["wavea"]["matched_ids"]} == {patient}
     assert {pid for pid, e in measured.items() if ortak20 in e["wavea"]["matched_ids"]} == {
         patient,
         cohort.scenario("S32").patient_id,
+        cohort.scenario("S48").patient_id,
+        cohort.scenario("S20").patient_id,
     }
     assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # 2, 6, 7, 11, 12
     assert ortak20 in entry["wavea"]["review_ids"] and duplicate not in entry["wavea"]["review_ids"]  # no row for the duplicate
@@ -895,7 +909,10 @@ def test_patient_12_is_measured_over_its_two_bills_and_alone_lights_the_three_bl
     assert new_ids <= set(entry["wavea"]["matched_ids"]) and new_ids <= set(entry["wavea"]["review_ids"])  # a row each, a review
     others = {pid: e for pid, e in measured.items() if pid != patient}
     assert not new_blocks & set(cm.summarize(others)["blocks"]["with_output_names"])
-    assert not new_ids & set(cm.summarize(others)["wavea"]["matched_ids"])
+    assert not {"GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling"} & set(cm.summarize(others)["wavea"]["matched_ids"])
+    # the duplicate test is patient 7's too: its observation of one date (S47) repeats tests of its ER visit within a week
+    duplicate = "tablo15_12_duplicate_test"
+    assert {pid for pid, e in others.items() if duplicate in e["wavea"]["matched_ids"]} == {cohort.scenario("S47").patient_id}
     assert entry["wavea"]["financial"] == 0  # the two reviews are reviews, not money
 
 
@@ -940,7 +957,7 @@ def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state
     assert sum(item["rate_corrections"] for item in copay.values()) == 12
     assert cm.summarize(measured_app_path)["copay"] == {
         "rate_corrections": 12,
-        "outcomes": {"exempt": 3, "none": 4, "partial_exempt": 5},
+        "outcomes": {"exempt": 3, "none": 5, "partial_exempt": 5},  # patient 13 (S20, K42.9): no exemption ground
     }
 
 

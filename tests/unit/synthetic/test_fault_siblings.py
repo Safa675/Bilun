@@ -33,6 +33,7 @@ S1_SIBLING = "appendicitis_lap_appendectomy_itemized"
 S10_SIBLING = "gi_bleed_melena_er_visit_manual_hct_billed"
 S14_SIBLING = "urosepsis_ward_stay_transfer_day_billed"
 S40_SIBLING = "pyelonephritis_dementia_second_visit_exam_billed"
+S20_SIBLING = "umbilical_hernia_day_case_itemized"
 
 
 @pytest.fixture(scope="module")
@@ -92,7 +93,7 @@ def test_deleting_a_bed_day_in_memory_makes_faulty_golden_equality_fail() -> Non
 def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_would_not_be(
     tmp_path: Path,
 ) -> None:
-    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S10_SIBLING, S40_SIBLING, S14_SIBLING]
+    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S10_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING]
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
     later = tmp_path / "later.yaml"

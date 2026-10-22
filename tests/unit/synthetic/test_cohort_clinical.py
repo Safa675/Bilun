@@ -55,12 +55,15 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     10: (84, 46, 124, 91, 158, 66.0),
     11: (62, 36, 148, 96, 46, 2.4),  # S12, a late-preterm newborn: the infant ranges
     12: (122, 74, 98, 97, 176, 84.0),  # S10, melena in the ER
+    13: (126, 78, 72, 98, 176, 84.0),  # S20, a day-case hernia repair
 }
 # the later bills of the committed cohort, by (patient, encounter): the vitals of S39 (the control of patient 4) and
 # S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
 # of patient 12 two days after his ER visit
 _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
     (2, 2): (136, 80, 86, 93, 170, 67.0),
+    (7, 2): (118, 72, 78, 98, 162, 71.0),
+    (7, 3): (128, 80, 80, 98, 162, 70.5),
     (4, 2): (126, 72, 76, 96, 155, 57.5),
     (4, 3): (122, 70, 88, 95, 155, 57.0),
     (10, 2): (118, 66, 92, 95, 158, 64.0),
@@ -132,7 +135,7 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
-        if pno in {5, 8, 11}:  # S12 bills no laboratory line: lab_reference.csv has adult ranges only
+        if pno in {5, 8, 11, 13}:  # packages (S5, S8, S20) and S12 (lab_reference.csv has adult ranges only) bill no lab line
             assert pat.labs is None
         else:
             assert pat.labs is not None
@@ -158,6 +161,8 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
         assert entry.basis == "judgment"
         if key == (4, 2):  # the control bills a creatinine: baseline CKD G3a, as at the admission
             assert entry.labs is not None and entry.labs.states == {"L104780|Kreatinin": "ckd_g3a"}
+        elif key == (7, 2):  # the observation repeats the D-dimer of S7: the same age-related elevation, a normal troponin
+            assert entry.labs is not None and entry.labs.states == {"L102090|D-dimer": "elderly_without_vte"}
         elif key == (12, 2):  # the admission bills a blood count: the haemoglobin of a bleed and the small red cells of a slow loss
             assert entry.labs is not None and entry.labs.states == {
                 "L107020|HGB (Hemoglobin)": "acute_gi_bleed",
@@ -268,14 +273,15 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # by patient number only the first encounter answers
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
-    # the committed encounters are numbered 1..n by patient; patient 2 has two (S2 and its control S32), patient 4 three
+    # the committed encounters are numbered 1..n by patient; patient 2 has two (S2 and its control S32), patient 7 three
+    # (S7, its observation S47 and its follow-up S48), patient 4 three
     # (S4, its control S39 and its second visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two
     # (S10, the ER visit, and S22, the admission)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2], 4: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
 
 
 @pytest.mark.parametrize(

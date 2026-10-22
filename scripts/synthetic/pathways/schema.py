@@ -54,7 +54,7 @@ CHECKS: dict[str, str] = {
     "schema.line_shape": "a line carries fields its kind does not allow, or lacks required ones",
     "schema.quantity_form": "a drug has no quantity form or several",
     "schema.diagnosis_primary": "not exactly one primary diagnosis",
-    "schema.stay_shape": "nights missing on a stay, or present on a pathway without a stay (acil, poliklinik, gunubirlik), or an arrival from an ICU on one",
+    "schema.stay_shape": "nights missing on a stay, or present on a pathway without a stay (acil, poliklinik, gunubirlik), or an arrival from an ICU on one; a span off gunubirlik and poliklinik; a per_night drug on a stay that may have no night",
     # checks.py: against the catalogs
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
@@ -253,6 +253,14 @@ class AgeRange(_Range):
 
 
 class NightsRange(_Range):
+    # 0 nights: admitted and discharged on the same date (a stay under 24 hours, billed with the day bed 510120)
+    min: int = Field(ge=0, le=60)
+    max: int = Field(ge=0, le=60)
+
+
+class SpanRange(_Range):
+    """The days after the first day that a gunubirlik or poliklinik session claim runs (its last day is admit+span)."""
+
     min: int = Field(ge=1, le=60)
     max: int = Field(ge=1, le=60)
 
@@ -477,7 +485,9 @@ class Pins(_Model):
     sex: Literal["M", "F"]
     age: int = Field(ge=0, le=120)
     admit: IsoDate  # first day of the stay; for a pathway without a stay (acil, poliklinik, gunubirlik), the visit day
-    nights: int | None = Field(default=None, ge=1, le=60)
+    nights: int | None = Field(default=None, ge=0, le=60)  # 0: admission and discharge on one date
+    # the last day of a gunubirlik or poliklinik session claim is admit+span (a pathway with a `span` range)
+    span: int | None = Field(default=None, ge=1, le=60)
     include: list[str] = Field(default_factory=list)  # optional ids that are in
     course_days: dict[Slug, int] = Field(default_factory=dict)  # drug id -> chosen course days
     # A fact about the patient, not the bill: the patient's copay profile row `has_chronic_health_report`
@@ -489,13 +499,15 @@ class Pathway(_Model):
     schema_version: Literal[1]
     id: PathwayId
     title: Name
-    # yatis is a stay; acil, poliklinik and gunubirlik are visits: one date, no nights, no discharge
+    # yatis is a stay (nights 0 is a stay of one date); acil, poliklinik and gunubirlik are visits: no nights, no
+    # discharge, one date, or for a gunubirlik or poliklinik session claim the days admit..admit+span (`span`)
     claim_type: Literal["yatis", "acil", "poliklinik", "gunubirlik"]
     billing_mode: Literal["package", "itemized"]
     department: Department
     window: Window | None = None
     patient: Patient
     nights: NightsRange | None = None
+    span: SpanRange | None = None  # a session claim over several dates (gunubirlik, poliklinik)
     op_day: DayPoint | None = None
     # The stay begins on the day the patient leaves an ICU bill of the same patient: that day's bed is paid by
     # the ICU bill (EK-2B 510090 covers yemek + yatak + vizit; src/bilun/domain/prose_rules/yatak_icu_overlap.py),
@@ -530,6 +542,10 @@ class Pathway(_Model):
             return f"a {self.claim_type} pathway has no nights"
         if not stay and any(d.per_night for d in self.drugs):
             return "a per_night drug needs a stay"
+        if stay and self.nights.min == 0 and any(d.per_night for d in self.drugs):
+            return "a per_night drug needs a night; this stay may have none (nights.min 0)"
+        if self.span is not None and self.claim_type not in ("gunubirlik", "poliklinik"):
+            return f"a {self.claim_type} pathway has no span (a span is for gunubirlik and poliklinik session claims)"
         if not stay and self.arrives_from_icu:
             return f"a {self.claim_type} pathway cannot arrive from an ICU"
         return ""
@@ -601,9 +617,21 @@ def anchors_for(pathway: Pathway, nights: int | None) -> dict[str, int]:
 
 
 def course_overrun(pathway: Pathway, drug: Drug, nights: int | None, days: int) -> int:
-    """Days by which a course of `days` days from the drug's first day outlasts the stay (<= 0: fits)."""
+    """Days by which a course of `days` days from the drug's first day outlasts the stay (<= 0: fits).
+
+    `nights` is the last day of the bill: the nights of a stay, the span of a session claim, None for one date.
+    """
     first = resolve_days(drug.day, anchors_for(pathway, nights))[0]
     return first + days - 1 - (nights or 0)
+
+
+def last_day(pathway: Pathway, pins: Pins) -> int:
+    """The day number of the bill's last day (admit = 0): the nights of a stay, the span of a session claim, else 0."""
+    if pathway.nights is not None:
+        return pins.nights or 0
+    if pathway.span is not None:
+        return pins.span or 0
+    return 0
 
 
 def included(item: object, pins: Pins) -> bool:
@@ -638,6 +666,14 @@ def pin_problems(pathway: Pathway, pins: Pins) -> list[Problem]:
     elif not pathway.nights.min <= pins.nights <= pathway.nights.max:
         low, high = pathway.nights.min, pathway.nights.max
         add("pins.out_of_range", "showcase.nights", f"{pins.nights} is outside {low}..{high}")
+    if pathway.span is None:
+        if pins.span is not None:
+            add("pins.out_of_range", "showcase.span", f"a {pathway.claim_type} pathway without a span range has no span")
+    elif pins.span is None:
+        add("pins.missing", "showcase.span", "a session claim over several dates needs its span")
+    elif not pathway.span.min <= pins.span <= pathway.span.max:
+        low, high = pathway.span.min, pathway.span.max
+        add("pins.out_of_range", "showcase.span", f"{pins.span} is outside {low}..{high}")
 
     items = (*pathway.procedures, *pathway.materials, *pathway.drugs, *pathway.performed)
     optional = {x.id for x in items if x.optional} | {
@@ -651,7 +687,8 @@ def pin_problems(pathway: Pathway, pins: Pins) -> list[Problem]:
             add("pins.not_optional", "showcase.include", f"{ident!r} is not optional")
 
     drugs = {d.id: d for d in pathway.drugs}
-    stay_known = pathway.nights is None or pins.nights is not None  # else pins.missing says so
+    # else pins.missing says so
+    stay_known = (pathway.nights is None or pins.nights is not None) and (pathway.span is None or pins.span is not None)
     for ident, days in pins.course_days.items():
         drug = drugs.get(ident)
         if drug is None or drug.course_days is None:
@@ -664,12 +701,12 @@ def pin_problems(pathway: Pathway, pins: Pins) -> list[Problem]:
                 f"showcase.course_days.{ident}",
                 f"{days} is outside {low}..{high}",
             )
-        late = course_overrun(pathway, drug, pins.nights, days) if stay_known else 0
+        late = course_overrun(pathway, drug, last_day(pathway, pins), days) if stay_known else 0
         if late > 0 and included(drug, pins):
             add(
                 "drug.course",
                 f"showcase.course_days.{ident}",
-                f"{days} days end {late} day(s) after the discharge (stay of {pins.nights or 0} nights)",
+                f"{days} days end {late} day(s) after the last day of the bill (day {last_day(pathway, pins)})",
             )
     for drug in pathway.drugs:
         if drug.course_days and included(drug, pins) and drug.id not in pins.course_days:

@@ -24,6 +24,7 @@ from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indicatio
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
 from src.bilun.domain.prose_rules.medula_rejection import detect_medula_rejection_playbook_entries
+from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
@@ -45,14 +46,18 @@ def direct(story: str, ctx) -> list[dict]:
     """Call the target rule the way the unit tests do; return its raw rows (trimmed)."""
     claims, procs = list(ctx.claims), list(ctx.procedure_lines)
     claim = claims[0]
-    if story == "S1":
+    if story in ("S1", "S20"):
+        # S20 is a day case: the care setting and the day-case flag as the billing strategy derives them
+        codes = ("610131", "P610131") if story == "S1" else ("603840", "P603840")
+        setting = "inpatient" if story == "S1" else infer_care_setting(claim)
         rows = []
         for line in procs:
-            if line.procedure_code in ("610131", "P610131"):
+            if line.procedure_code in codes:
                 c = check_payment_method_compliance(
                     line.procedure_code, billed_as_package=line.procedure_category == "paket",
-                    care_setting="inpatient", facility_tier=claim.facility_tier,
-                    provider_type=claim.provider_type, as_of_date=line.procedure_date)
+                    care_setting=setting, facility_tier=claim.facility_tier,
+                    provider_type=claim.provider_type, as_of_date=line.procedure_date,
+                    day_case=claim_is_day_case(claim))
                 rows.append({"fn": "check_payment_method_compliance", "code": c.procedure_code,
                              "kind": c.kind, "mandated": c.mandated_method, "compliant": c.is_compliant,
                              "section": c.trace.sut_section, "detail": c.detail})
@@ -63,7 +68,7 @@ def direct(story: str, ctx) -> list[dict]:
                 "type", "procedure_code", "recommendation", "payment_method_kind", "current_billing",
                 "package_total_try", "itemized_total_try", "savings_try", "sut_section_id", "detail"))})
         return rows
-    if story == "S2":
+    if story in ("S2", "S47"):
         return [_keep(o, ("rule_id", "bed_days", "gross_bed_days", "daily_rate_try", "expected_yatak_try",
                           "actual_billed_try", "recoverable_uplift_try", "detail"))
                 for o in detect_yatak_puani_opportunities(claims, procs, claim_ids_with_procs={claim.claim_id})]
@@ -219,11 +224,11 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
     def total(key: str) -> float | None:
         amount = sum(float(r.get(key) or 0.0) for r in rows)
         return round(amount, 2) if amount > 0 else None
-    if story == "S1":
+    if story in ("S1", "S20"):
         if not any(r.get("compliant") is False for r in rows):
             return None
         return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
-    if story in ("S2", "S3", "S4", "S9", "S11", "S12", "S22"):
+    if story in ("S2", "S3", "S4", "S9", "S11", "S12", "S22", "S47"):
         return total("recoverable_uplift_try")
     if story == "S10":
         return total("savings_try")

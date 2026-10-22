@@ -84,12 +84,14 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S11": "6089.82",
     "S12": "1322.94",
     "S14": "222.36",
+    "S20": "4724.84",
     "S22": "439.86",
     "S40": "0.00",
+    "S47": "44.45",
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S32 and S39 are clean bills (no fault, no record), the others carry one.
+# S32, S39 and S48 are clean bills (no fault, no record), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
@@ -98,6 +100,9 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S10": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-001"]},
     "S22": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-002"]},
     "S32": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-002"]},
+    "S20": {"patient_id": "SENTETIK-HASTA-0013", "claim_ids": ["F-SENTETIK-HASTA-0013-001"]},
+    "S47": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
+    "S48": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-003"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
     "S40": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-003"]},
 }
@@ -255,7 +260,7 @@ def test_loader_accepts_committed_showcase_dataset_and_matches_composed_claims(
     assert len(dataset.procedure_lines) == expected_counts["procedure_claim_lines.parquet"]
     assert len(dataset.material_lines) == expected_counts["material_claim_lines.parquet"]
     assert len(dataset.drug_lines) == expected_counts["drug_claim_lines.parquet"]
-    # an answer row for every injected fault, none for a clean bill (S32, S39)
+    # an answer row for every injected fault, none for a clean bill (S32, S39, S48)
     assert len(dataset.expected_outputs) == len(cohort.load_registry()["faults"]) == expected_counts["expected_rule_outputs.parquet"]
     assert (
         len(dataset.copay_profiles_by_patient)
@@ -326,11 +331,11 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     assert s7_rec.line_id == ""
     assert s7_rec.line_ids == ("EMR-F-SENTETIK-HASTA-0007-001-004",)
 
-    # S1, S5, S8 have package_candidate=True in both clean and faulty composed headers; others False.
+    # S1, S5, S8 and S20 have package_candidate=True in both clean and faulty composed headers; others False.
     story_of_claim = {rec.claim_id: rec.story for rec in built_showcase.records}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
-        story = story_of_claim.get(faulty_c.header.claim_id)  # a clean bill (S32, S39) has no record
-        expected_pkg_cand = story in {"S1", "S5", "S8"}
+        story = story_of_claim.get(faulty_c.header.claim_id)  # a clean bill (S32, S39, S48) has no record
+        expected_pkg_cand = story in {"S1", "S5", "S8", "S20"}
         assert clean_c.header.package_candidate is expected_pkg_cand
         assert faulty_c.header.package_candidate is expected_pkg_cand
 
@@ -697,8 +702,8 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     assert anadata["EPISODE_TARIH"].dt.date().to_list() == [date(2026, 6, 2), date(2026, 6, 7)]
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
-    assert profiles.height == cohort.patient_count() == 12
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 17
+    assert profiles.height == cohort.patient_count() == 13
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 20
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -999,8 +1004,8 @@ def test_target_and_evidence_line_resolution_guards(built_showcase: BuildResult)
 # and S40), patient 7 a visit nine days BEFORE its first (a precursor: claim 002 is dated before claim 001).
 # Nothing is committed from the extras.
 
-_EXTRA_CLAIMS = ("F-SENTETIK-HASTA-0004-004", "F-SENTETIK-HASTA-0007-002")
-_EXTRA_EPISODES = ("B-SENTETIK-HASTA-0004-004", "B-SENTETIK-HASTA-0007-002")
+_EXTRA_CLAIMS = ("F-SENTETIK-HASTA-0004-004", "F-SENTETIK-HASTA-0007-004")
+_EXTRA_EPISODES = ("B-SENTETIK-HASTA-0004-004", "B-SENTETIK-HASTA-0007-004")
 _EPISODE_COLUMN = {
     "anadata_clean.parquet": "SQ_EPISODE",
     "lab_clean.parquet": "basvuru_id",
@@ -1027,13 +1032,16 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0004-003",
         "F-SENTETIK-HASTA-0005-001",
         "F-SENTETIK-HASTA-0006-001",
-        "F-SENTETIK-HASTA-0007-002",  # the precursor: the later id, the earlier date
+        "F-SENTETIK-HASTA-0007-004",  # the precursor: the later id, the earlier date
         "F-SENTETIK-HASTA-0007-001",
+        "F-SENTETIK-HASTA-0007-002",  # the committed observation (S47) and follow-up (S48) of patient 7, dated later
+        "F-SENTETIK-HASTA-0007-003",
         *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (8, 9, 10)),
         "F-SENTETIK-HASTA-0010-002",  # the committed second bill (S14, the ward bill after the ICU bill), dated later
         "F-SENTETIK-HASTA-0011-001",
         "F-SENTETIK-HASTA-0012-001",  # the ER visit of patient 12 (S10) and the admission two days later (S22)
         "F-SENTETIK-HASTA-0012-002",
+        "F-SENTETIK-HASTA-0013-001",  # the day case of patient 13 (S20)
     ]
     assert headers["episode_id"].to_list() == [
         claim.replace("F-", "B-", 1) for claim in headers["claim_id"].to_list()
@@ -1041,7 +1049,7 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
     starts = dict(zip(headers["claim_id"].to_list(), headers["claim_start_date"].to_list(), strict=True))
     assert starts["F-SENTETIK-HASTA-0004-001"] < starts["F-SENTETIK-HASTA-0004-004"] < starts["F-SENTETIK-HASTA-0004-002"]
     assert starts["F-SENTETIK-HASTA-0004-002"] < starts["F-SENTETIK-HASTA-0004-003"]
-    assert starts["F-SENTETIK-HASTA-0007-002"] < starts["F-SENTETIK-HASTA-0007-001"]
+    assert starts["F-SENTETIK-HASTA-0007-004"] < starts["F-SENTETIK-HASTA-0007-001"]
     # the composed claims are in the table order; a claim is built from its own recipe
     assert [c.header.claim_id for c in two_bills.claims] == headers["claim_id"].to_list()
     assert [c.header.claim_id for c in two_bills.clean_claims] == headers["claim_id"].to_list()
@@ -1115,7 +1123,7 @@ def test_roles_and_scenarios_of_a_patient_with_two_bills(two_bills: BuildResult,
     assert registry["roles"]["default_landing"] == registry["roles"]["showcase_S1"]
     assert registry["scenarios"] == {
         "S90": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-004"]},
-        "S91": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
+        "S91": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-004"]},
         **built_showcase.registry["scenarios"],
     }
     encounters = {e["claim_id"]: e for e in registry["encounters"]}
@@ -1127,7 +1135,9 @@ def test_roles_and_scenarios_of_a_patient_with_two_bills(two_bills: BuildResult,
     assert [e["claim_id"] for e in registry["encounters"] if "pins" in e] == list(_EXTRA_CLAIMS)
     # the bills of a patient are found by grouping the encounters (and the scenarios) by patient
     assert {s: t["patient_id"] for s, t in registry["scenarios"].items() if t["patient_id"] == "SENTETIK-HASTA-0007"} == {
-        "S91": "SENTETIK-HASTA-0007"
+        "S47": "SENTETIK-HASTA-0007",  # the committed observation and follow-up
+        "S48": "SENTETIK-HASTA-0007",
+        "S91": "SENTETIK-HASTA-0007",  # the test-only precursor
     }
     # a clean second bill adds no fault record and no answer row
     assert registry["faults"] == built_showcase.registry["faults"]

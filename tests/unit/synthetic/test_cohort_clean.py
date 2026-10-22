@@ -1468,10 +1468,10 @@ def test_every_bill_has_its_own_anadata_row_with_its_own_vitals_pins_and_date(tw
         assert (row["TOPLAM_GELIS_SAYISI"], row["GELIS_SAYISI"]) == (1, 1)
     # the fixture gives each second bill its own pulse (+3), so a patient's rows differ
     assert pulses["F-SENTETIK-HASTA-0004-004"] == pulses["F-SENTETIK-HASTA-0004-001"] + 3
-    assert pulses["F-SENTETIK-HASTA-0007-002"] == pulses["F-SENTETIK-HASTA-0007-001"] + 3
+    assert pulses["F-SENTETIK-HASTA-0007-004"] == pulses["F-SENTETIK-HASTA-0007-001"] + 3
     # the first bills' rows are the committed rows
     committed = pl.read_parquet(_CLEAN_DIR / "anadata_clean.parquet")
-    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-004", "B-SENTETIK-HASTA-0007-002"])).equals(committed)
+    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-004", "B-SENTETIK-HASTA-0007-004"])).equals(committed)
 
 
 def test_the_prescription_rows_follow_the_drug_lines_of_every_bill(two_bills: BuildResult) -> None:
@@ -1496,10 +1496,10 @@ def test_the_vitals_of_a_later_bill_are_asked_for_by_patient_and_bill(two_bills:
         )
         with pytest.raises(CleanTableError, match=rf"missing clinical vitals for patient_no {number}, encounter {encounter}$"):
             build_clean_tables(two_bills.claims, clinical=without)
-    # the other forms of the argument carry no drug routes: patient 7's two bills bill none that needs one
+    # the other forms of the argument carry no drug routes: patient 7's four bills bill none that needs one
     claims = tuple(c for c in two_bills.claims if c.header.patient_id == "SENTETIK-HASTA-0007")
     expected = build_clean_tables(claims, clinical=two_bills.clinical)["anadata_clean.parquet"]
-    assert expected.height == 2
+    assert expected.height == 4  # the ER visit, the observation S47, the follow-up S48 and the test-only precursor
     for form in (
         patients,
         by_pair,
@@ -1508,9 +1508,11 @@ def test_the_vitals_of_a_later_bill_are_asked_for_by_patient_and_bill(two_bills:
         assert build_clean_tables(claims, clinical=form)["anadata_clean.parquet"].equals(expected)
     # a mapping keyed by the patient number alone names the first bill, so the second is missing its vitals
     by_number = {p.patient_no: p for p in patients if p.encounter_no == 1}
-    with pytest.raises(CleanTableError, match=r"for SENTETIK-HASTA-0007: missing clinical vitals for patient_no 7, encounter 2"):
+    # (the first of patient 7's claims in table order is the test-only precursor, its fourth bill, dated first)
+    with pytest.raises(CleanTableError, match=r"for SENTETIK-HASTA-0007: missing clinical vitals for patient_no 7, encounter 4"):
         build_clean_tables(claims, clinical=by_number)
-    assert build_clean_tables(claims[1:], clinical=by_number)["anadata_clean.parquet"].height == 1
+    first = tuple(c for c in claims if c.header.claim_id.endswith("-001"))
+    assert build_clean_tables(first, clinical=by_number)["anadata_clean.parquet"].height == 1
 
 
 def test_the_claims_come_in_the_order_of_the_claims_table_or_the_check_says_where_it_breaks(

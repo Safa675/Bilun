@@ -131,7 +131,7 @@ _PARAMETER_COUNTS: dict[str, int] = {
 LAB_ROWS = cohort.counts()["lab_clean.parquet"]  # the size of the table, from the registry
 # patient 4: the stay's 52 rows and the control's (S39) 27: blood count 15, creatinine 2, urinalysis 10
 # patient 12: the ER bill (S10) 16, a blood count 15 and the manual haematocrit 1, and the admission (S22) 15
-_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 6: 40, 7: 23, 9: 15, 10: 18, 12: 31}
+_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 6: 40, 7: 25, 9: 15, 10: 18, 12: 31}
 _PATIENTS: dict[int, tuple[str, int]] = {
     1: ("M", 34),
     2: ("M", 81),
@@ -756,9 +756,9 @@ def test_each_billed_lab_line_has_exactly_one_result_set(
         | (pl.col("result_sets") != pl.col("billed_lines"))
     )
     assert mismatched.is_empty(), mismatched
-    # Serial troponin I: two billed lines on one day, two result sets.
-    troponin = both.filter(pl.col("SUB_CODE") == "L107360")
-    assert troponin.select("billed_lines", "result_sets").rows() == [(2, 2)]
+    # Serial troponin I: two billed lines on one day (S7's ER bill), two result sets; the observation S47 bills one.
+    troponin = both.filter(pl.col("SUB_CODE") == "L107360").sort("basvuru_id")
+    assert troponin.select("billed_lines", "result_sets").rows() == [(2, 2), (1, 1)]
 
 
 def test_the_table_is_the_billed_lines_times_their_csv_parameters(
@@ -832,10 +832,11 @@ def test_mutation_removing_one_billed_lab_line_gives_exactly_one_gap_with_its_co
             assert gaps[0]["type"] == "lab_performed_not_submitted"
             assert gaps[0]["source"] == "lab"
             checked += 1
-    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 pairs (patient 4:
-    # 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission).
+    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 pairs (patient 4:
+    # 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission; patient 7: the troponin and the
+    # D-dimer of the observation S47).
     once = _billed_lab_lines(procs).group_by("episode_id", "procedure_code").len()
-    assert checked == once.filter(pl.col("len") == 1).height == 41
+    assert checked == once.filter(pl.col("len") == 1).height == 43
 
 
 # --- 3.3 Values ----------------------------------------------------------------------------------
@@ -1030,8 +1031,9 @@ def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
         (pl.col("sonuc_sayisal") < pl.col("lo")) | (pl.col("sonuc_sayisal") > pl.col("hi"))
     )
     assert outside.is_empty(), outside.select("HASTA_ID", "key", "sonuc_sayisal", "lo", "hi")
-    # 286 numeric rows = 128 derived + 32 drawn from a state + 126 drawn without one.
-    assert rows.height == 126
+    # 288 numeric rows = 128 derived + 33 drawn from a state + 127 drawn without one (S47 adds a troponin without a
+    # state and a D-dimer with one).
+    assert rows.height == 127
 
 
 def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.DataFrame) -> None:
@@ -1061,7 +1063,7 @@ def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.Data
     assert outside.is_empty(), outside.select(
         "HASTA_ID", "key", "state", "sonuc_sayisal", "band_lo", "band_hi"
     )
-    assert rows.height == 32  # numeric rows drawn from a state band
+    assert rows.height == 33  # numeric rows drawn from a state band
     # The bands are the ones the brief names for the two stories with a list of states.
     assert bands.filter(
         (pl.col("key") == "L107020|WBC (Lökosit)") & (pl.col("state") == "bacterial_infection")
@@ -1595,8 +1597,9 @@ def test_r5_anormal_mi_is_below_ref_alt_or_above_ref_ust_or_a_strip_other_than_n
     # Both outcomes occur, so the test is not vacuous: 61 numeric rows and 3 strips are abnormal.
     abnormal_numeric = numeric.select(expected.sum()).item()
     abnormal_strips = strips.filter(not_negative).height
-    assert (abnormal_numeric, abnormal_strips) == (61, 3)  # the control's creatinine and eGFR (CKD G3a) add two; patient 12's bleed adds ten
-    assert lab["anormal_mi"].sum() == 64
+    # the control's creatinine and eGFR (CKD G3a) add two; patient 12's bleed adds ten; S47's D-dimer (above 500) one
+    assert (abnormal_numeric, abnormal_strips) == (62, 3)
+    assert lab["anormal_mi"].sum() == 65
     assert 0 < lab["anormal_mi"].sum() < lab.height == LAB_ROWS
 
 
@@ -1607,8 +1610,9 @@ def test_troponin_i_uses_the_sex_specific_limit_of_the_csv(
     assert (troponin["ref_high_male"][0], troponin["ref_high_female"][0]) == (34.2, 15.6)
     rows = lab.filter(pl.col("SUB_CODE") == "L107360")
     assert rows["HASTA_ID"].unique().to_list() == [_pid(7)]  # a woman
-    assert rows["ref_ust"].to_list() == [15.6, 15.6] and rows["ref_alt"].to_list() == [0.0, 0.0]
-    assert rows["anormal_mi"].to_list() == [False, False]
+    # S7's two serial sets and the one of the observation S47
+    assert rows["ref_ust"].to_list() == [15.6, 15.6, 15.6] and rows["ref_alt"].to_list() == [0.0, 0.0, 0.0]
+    assert rows["anormal_mi"].to_list() == [False, False, False]
     # 20 ng/L is abnormal for her and would be normal against the male limit.
     index = _index_of(lab, 7, "L107360", "hs-Troponin I", nth=0)
     assert 15.6 < 20.0 < 34.2
@@ -2204,9 +2208,9 @@ def test_occurrences_are_ordered_by_date_then_line_id_for_the_serial_troponin(
     assert 0.0 <= second <= 15.6
     assert _cell(table, 7, "2026-02-19", "L107360", "hs-Troponin I", "anormal_mi", nth=0) is True
     assert _cell(table, 7, "2026-02-19", "L107360", "hs-Troponin I", "anormal_mi", nth=1) is False
-    # The two serial lines are the two last billed lines of the claim, in line-id order.
+    # The two serial lines are the two last billed lines of the ER claim, in line-id order.
     lines = built_showcase.tables["procedure_claim_lines.parquet"].filter(
-        (pl.col("patient_id") == _pid(7)) & (pl.col("procedure_code") == "L107360")
+        (pl.col("claim_id") == cohort.role("showcase_S7").claim_id) & (pl.col("procedure_code") == "L107360")
     )
     assert lines["procedure_line_id"].to_list() == sorted(lines["procedure_line_id"].to_list())
     assert lines.height == 2
@@ -2741,7 +2745,7 @@ def test_the_readme_describes_the_rules_the_code_implements() -> None:
         "SHA-256",
         "issue #309",
         "no automatic trend",
-        "Patients 5 and 8 have none because their bills are packages",
+        "Patients 5, 8 and 13 have none because their bills are packages",
         "cultures and serology are not L-codes",
     ):
         assert right in readme, right

@@ -1,0 +1,376 @@
+{
+ "story": "S47",
+ "clean": {
+  "total_billed": "299.04",
+  "rows": [
+   {
+    "date": "2026-02-25",
+    "code": "510120",
+    "name": "Gündüz yatak tarifesi",
+    "qty": 1,
+    "unit": "44.45",
+    "billed": "44.45",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "520010",
+    "name": "Konsültasyon (Her bir branş için)",
+    "qty": 1,
+    "unit": "33.17",
+    "billed": "33.17",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "530100",
+    "name": "Elektrokardiyogram",
+    "qty": 1,
+    "unit": "16.66",
+    "billed": "16.66",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "L107360",
+    "name": "Troponin I",
+    "qty": 1,
+    "unit": "59.26",
+    "billed": "59.26",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "L102090",
+    "name": "D-dimer (Kantitatif)",
+    "qty": 1,
+    "unit": "145.50",
+    "billed": "145.50",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "R55",
+    true
+   ],
+   [
+    "R07.1",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "yatak_puani_510010",
+    "bed_days": 1,
+    "gross_bed_days": 1,
+    "daily_rate_try": 44.45,
+    "expected_yatak_try": 44.45,
+    "actual_billed_try": 44.45,
+    "recoverable_uplift_try": 0.0,
+    "detail": "Gündüz yatak (510120): 1 billable bed-day(s) (gross LOS 1 day(s) at 44.45 TRY/day) = 44.45 TRY (inclusive LOS, discharge day billed). Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed at the day bed (510120, Gündüz yatak tarifesi), not as a full 510010 day."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "faulty": {
+  "total_billed": "254.59",
+  "rows": [
+   {
+    "date": "2026-02-25",
+    "code": "520010",
+    "name": "Konsültasyon (Her bir branş için)",
+    "qty": 1,
+    "unit": "33.17",
+    "billed": "33.17",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "530100",
+    "name": "Elektrokardiyogram",
+    "qty": 1,
+    "unit": "16.66",
+    "billed": "16.66",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "L107360",
+    "name": "Troponin I",
+    "qty": 1,
+    "unit": "59.26",
+    "billed": "59.26",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-02-25",
+    "code": "L102090",
+    "name": "D-dimer (Kantitatif)",
+    "qty": 1,
+    "unit": "145.50",
+    "billed": "145.50",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "R55",
+    true
+   ],
+   [
+    "R07.1",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "yatak_puani_510010",
+    "bed_days": 1,
+    "gross_bed_days": 1,
+    "daily_rate_try": 44.45,
+    "expected_yatak_try": 44.45,
+    "actual_billed_try": 0.0,
+    "recoverable_uplift_try": 44.45,
+    "detail": "Gündüz yatak (510120): 1 billable bed-day(s) (gross LOS 1 day(s) at 44.45 TRY/day) = 44.45 TRY (inclusive LOS, discharge day billed). Same-day admission/discharge (under 24 hours): SUT §2.2.2.(3) bills the bed at the day bed (510120, Gündüz yatak tarifesi), not as a full 510010 day."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 44.45,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "yatak_puani",
+   "yatak_puani_day_bed",
+   "",
+   44.45
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "tablo15_12_duplicate_test",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "tablo15_12_duplicate_test",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_12_duplicate_test",
+   "L107360",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_12_duplicate_test",
+   "L102090",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "never_principal_diagnosis_blocklist",
+   "",
+   0.0
+  ]
+ ]
+}

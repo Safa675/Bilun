@@ -108,13 +108,13 @@ def test_only_sends_an_id_to_its_family_and_a_family_without_ids_does_not_run(
     assert calls == ["clean"]
     calls.clear()
     got = check_all_plausibility(claims, clean, only=["package.mode"])
-    assert [problem.check for problem in got] == ["package.mode"]
+    assert [problem.check for problem in got] == ["package.mode", "package.mode"]  # the faulty bills of S1 and S20
     assert calls == ["claims"]
     calls.clear()
     both = check_all_plausibility(
         claims, clean, only=("package.mode", "lab.value_bounds"), registry=registry
     )
-    assert [problem.check for problem in both] == ["package.mode"]
+    assert [problem.check for problem in both] == ["package.mode", "package.mode"]
     assert calls == ["claims", "clean"]
     calls.clear()
     assert check_all_plausibility(claims, clean, only=[]) == []

@@ -38,19 +38,19 @@ pytestmark = pytest.mark.unit
 
 
 def _raw_recipes() -> dict:
-    """The real recipes, without the committed follow-up bills of patients 2 and 4 (S32; S39 and S40) and without
-    patient 12 (S10, S22).
+    """The real recipes, without the committed follow-up bills of patients 2, 4 and 7 (S32; S39 and S40; S47 and S48)
+    and without patients 12 (S10, S22) and 13 (S20).
 
     The cases below add follow-up bills of patient 4 themselves (`_stay`), change patient 2's first bill, and add the ER
-    visit of patient 12 with its MEDULA events (`_er_visit`): they start from the file as it was before patients 2 and 4
-    had any follow-up and before patient 12, so the encounter numbers and the patient number they write are free and a
-    change of a first bill meets no later bill. The real file is checked as it is.
+    visit of patient 12 with its MEDULA events (`_er_visit`): they start from the file as it was before patients 2, 4
+    and 7 had any follow-up and before patient 12, so the encounter numbers and the patient numbers they write are free
+    and a change of a first bill meets no later bill. The real file is checked as it is.
     """
     raw = yaml.safe_load(RECIPES_PATH.read_text(encoding="utf-8"))
     raw["recipes"] = [
         r
         for r in raw["recipes"]
-        if r["patient_no"] != 12 and not (r["patient_no"] in (2, 4) and r.get("encounter_no", 1) > 1)
+        if r["patient_no"] < 12 and not (r["patient_no"] in (2, 4, 7) and r.get("encounter_no", 1) > 1)
     ]
     return raw
 
@@ -227,11 +227,11 @@ def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_ove
     committed = load_recipes().recipes
     assert len(committed) == cohort.claim_count()
     # a recipe without encounter_no is a first bill; the later bills of the committed cohort (patient 2: S32,
-    # patient 4: S39 and S40, patient 10: S14, patient 12: S22) write it
+    # patient 4: S39 and S40, patient 7: S47 and S48, patient 10: S14, patient 12: S22) write it
     assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [
-        (2, 2), (4, 2), (4, 3), (10, 2), (12, 2),
+        (2, 2), (4, 2), (4, 3), (7, 2), (7, 3), (10, 2), (12, 2),
     ]  # fmt: skip
-    assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1 and r.patient_no != 12)
+    assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1 and r.patient_no < 12)
     _recipe(raw, 2)["pins"] = {}
     assert _problems(raw) == []
     recipe = load_recipes_text(yaml.safe_dump(raw, allow_unicode=True), "r.yaml").recipes[1]
@@ -248,6 +248,24 @@ def test_the_pins_of_an_encounter_are_the_pathways_own_with_the_given_fields_lai
     assert (pins.story, pins.sex, pins.age, pins.course_days) == (own.story, own.sex, own.age, own.course_days)
     assert own.include == ["I10"] and own.nights == 5  # the pathway is not changed
     assert pin_overrides(EncounterPins(admit="2026-07-20", nights=7)) == {"admit": "2026-07-20", "nights": 7}
+
+
+def test_a_recipe_may_pin_a_stay_of_one_date_and_a_span_and_the_pathway_judges_them() -> None:
+    """G3: `nights` 0 is a stay of one date (the observation of S47 is one); `span` is the last day of a session claim."""
+    observation = load_all()["syncope_er_observation_under_24_hours"]
+    assert effective_pins(observation, EncounterPins(nights=0)).nights == 0 == observation.showcase.nights
+    assert pin_overrides(EncounterPins(nights=0)) == {"nights": 0}  # 0 is given, not "nothing"
+    assert pin_overrides(EncounterPins(span=3)) == {"span": 3}
+    for bad in ({"nights": -1}, {"span": 0}, {"span": 61}):
+        with pytest.raises(ValueError):
+            EncounterPins.model_validate(bad)
+    # a span on a pathway without a span range is refused by the recipe checks (the pins must fit the pathway)
+    raw = _raw_recipes()
+    _recipe(raw, 3)["pins"] = {"span": 2}
+    assert {p.check for p in _problems(raw)} == {"recipe.pins"}
+    # and a stay of one date on a stay whose nights start at 2 (S3) is out of its range too
+    _recipe(raw, 3)["pins"] = {"nights": 0}
+    assert {p.check for p in _problems(raw)} == {"recipe.pins"}
 
 
 def test_the_chronic_report_is_a_pin_of_the_patient_that_every_bill_of_the_patient_carries() -> None:

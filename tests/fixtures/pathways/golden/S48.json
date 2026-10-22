@@ -1,0 +1,46 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-03-12",
+      "icd10": "R07.1",
+      "role": "primary"
+    },
+    {
+      "date": "2026-03-12",
+      "icd10": "R06.0",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-03-12",
+    "claim_start_date": "2026-03-12",
+    "claim_type": "poliklinik",
+    "department": "Göğüs Hastalıkları",
+    "discharge_date": null,
+    "primary_icd10": "R07.1"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-03-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "801720",
+      "date": "2026-03-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3300"
+    }
+  ],
+  "story": "S48"
+}

@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32 as encounter_no 2, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32 as encounter_no 2, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -192,6 +192,35 @@ patients:
     basis: judgment
     source: "Story S7 emergency pleuritic chest pain presentation (preserved oxygen saturation, borderline tachycardia); clinician confirms in issue #309."
 
+  - patient_no: 7
+    encounter_no: 2
+    vitals:
+      sbp: 118
+      dbp: 72
+      pulse: 78
+      spo2: 98
+      height_cm: 162
+      weight_kg: 71.0
+    labs:
+      states:
+        "L102090|D-dimer": elderly_without_vte
+      basis: judgment
+      source: "Story S47 observation after a syncope: the age-related D-dimer of S7 again, a normal troponin I; clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S47 observation after a syncope (normotensive, pulse 78, SpO2 98 %, no orthostatic drop recorded); clinician confirms in issue #309."
+
+  - patient_no: 7
+    encounter_no: 3
+    vitals:
+      sbp: 128
+      dbp: 80
+      pulse: 80
+      spo2: 98
+      height_cm: 162
+      weight_kg: 70.5
+    basis: judgment
+    source: "Story S48 chest-disease follow-up three weeks after the ER visit (no chest pain at rest, SpO2 98 %); clinician confirms in issue #309."
+
   - patient_no: 8
     vitals:
       sbp: 124
@@ -297,3 +326,13 @@ patients:
     basis: judgment
     source: "Story S22 admission (pulse 92, normotensive, half a kilo lighter than at the ER visit); clinician confirms in issue #309."
 
+  - patient_no: 13
+    vitals:
+      sbp: 126
+      dbp: 78
+      pulse: 72
+      spo2: 98
+      height_cm: 176
+      weight_kg: 84.0
+    basis: judgment
+    source: "Story S20 day-case umbilical hernia repair, a healthy man of 41 admitted the morning of surgery; clinician confirms in issue #309."

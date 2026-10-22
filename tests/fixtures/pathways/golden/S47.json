@@ -1,0 +1,70 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-02-25",
+      "icd10": "R55",
+      "role": "primary"
+    },
+    {
+      "date": "2026-02-25",
+      "icd10": "R07.1",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-02-25",
+    "claim_end_date": "2026-02-25",
+    "claim_start_date": "2026-02-25",
+    "claim_type": "yatis",
+    "department": "Acil Tıp",
+    "discharge_date": "2026-02-25",
+    "primary_icd10": "R55"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510120",
+      "date": "2026-02-25",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "520010",
+      "date": "2026-02-25",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "530100",
+      "date": "2026-02-25",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L102090",
+      "date": "2026-02-25",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107360",
+      "date": "2026-02-25",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    }
+  ],
+  "story": "S47"
+}
