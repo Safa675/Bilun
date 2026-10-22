@@ -401,6 +401,43 @@ def test_a_material_flagged_as_waiting_for_an_approval_reaches_the_claim(
     assert [m.requires_pre_auth for m in flagged] == [True] + [False] * (len(flagged) - 1)
 
 
+def test_the_report_duration_and_the_prescriber_of_a_drug_reach_the_claim_line(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway], faults_by_story: dict[str, FaultSpec]
+) -> None:
+    """Slice G9: S17's ESA carries its one-month report; the fault names general surgery as the prescriber."""
+    pathway = pathways["end_stage_kidney_disease_haemodialysis_month"]
+    pid = patient_id(14)
+    ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 1), episode_id=episode_id(pid, 1), scenario_tag=pathway.id)
+    (clean_esa,) = compose_claim(expand(pathway, annotate=True), ctx, catalogs).drugs
+    assert (clean_esa.drug_report_duration_months, clean_esa.prescriber_specialty) == (1, "Nefroloji")
+    assert clean_esa.drug_specialty_board_report_present is True
+    assert (clean_esa.quantity, clean_esa.billed_amount_try) == (4, Decimal("0.00"))  # drug prices enter at 0
+    faulty_bill = apply_fault(faults_by_story["S17"], pathway, annotate=True)
+    (faulty_esa,) = compose_claim(faulty_bill, ctx, catalogs).drugs
+    assert faulty_esa == replace(clean_esa, prescriber_specialty="Genel Cerrahi")
+    # a drug without the flag has the claim line's default: no report duration known
+    s2 = pathways["copd_exacerbation_pneumonia_ward"]
+    s2_ctx = EncounterContext(patient_id=patient_id(2), claim_id=claim_id(patient_id(2), 1), episode_id=episode_id(patient_id(2), 1))
+    assert {d.drug_report_duration_months for d in compose_claim(expand(s2, annotate=True), s2_ctx, catalogs).drugs} == {None}
+
+
+def test_a_haemodialysis_month_composes_twelve_session_packages_and_one_drug(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    """S17: one gunubirlik claim from the first to the last session of May; each session the EK-2C package P704230."""
+    pathway = pathways["end_stage_kidney_disease_haemodialysis_month"]
+    pid = patient_id(14)
+    ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 1), episode_id=episode_id(pid, 1), package_candidate=True)
+    bill = expand(pathway, annotate=True)
+    composed = compose_claim(bill, ctx, catalogs)
+    assert [(p.procedure_code, p.procedure_category) for p in composed.procedures] == [("P704230", "paket")] * 12
+    assert {p.billed_amount_try for p in composed.procedures} == {Decimal("5445.77")}
+    assert (composed.header.claim_start_date, composed.header.claim_end_date) == (date(2026, 5, 4), date(2026, 5, 29))
+    assert (composed.header.admission_date, composed.header.discharge_date) == (None, None)
+    assert composed.header.expected_total_billed_try == composed.header.expected_total_payable_try == Decimal("65349.24")
+    _assert_claim_invariants(composed, bill)
+
+
 _BED_LINE_CODES = {"510010", "510070", "510081", "510120", "510121", "510090", "530000"}
 
 

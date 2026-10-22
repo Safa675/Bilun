@@ -698,3 +698,23 @@ def test_set_flag_on_a_procedure_line_flags_that_line_only(
     again = fault.model_copy(update={"mutations": [op, op]})
     with pytest.raises(FaultApplyError, match="set_flag.*already has is_package_included=True"):
         apply_fault(again, pathway)
+
+
+def test_set_flag_on_a_drug_names_another_prescriber_and_nothing_else(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    """S17: the ESA's prescriber is general surgery on the faulty bill; the report and its duration stay (slice G9)."""
+    fault = _fault_by_story(faults, "S17")
+    (op,) = fault.mutations
+    assert isinstance(op, SetFlag) and (op.section, op.entry_id, op.flag, op.value) == (
+        "drugs",
+        "darbepoetin",
+        "prescriber_specialty",
+        "Genel Cerrahi",
+    )
+    pathway = pathways[fault.target_pathway]
+    clean, faulty = expand(pathway), apply_fault(fault, pathway)
+    (clean_esa,), (faulty_esa,) = clean["drugs"], faulty["drugs"]
+    assert faulty_esa["flags"] == {**clean_esa["flags"], "prescriber_specialty": "Genel Cerrahi"}
+    assert clean_esa["flags"]["drug_report_duration_months"] == 1
+    assert {**faulty, "drugs": clean["drugs"]} == clean

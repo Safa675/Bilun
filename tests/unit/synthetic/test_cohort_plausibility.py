@@ -156,6 +156,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S11": set(),  # half the price of the ICU package days: only the engine (icu_puani) sees it
     "S12": {"stay.bed_coverage"},  # the first three incubator days are not billed: a bed day is missing (as S2)
     "S14": {"stay.bed_coverage"},  # the ward bed on the day the ICU bill ends: the ICU bill's 510090 already pays it
+    "S17": set(),  # the ESA prescribed by general surgery: no check reads a prescriber, only the engine (drug_indication) sees it
     "S22": set(),  # the polypectomy beside the colonoscopy is not billed: a line is missing, only the engine (procedure_addon_uplift) sees it
     "S33": set(),  # the enoxaparin strength keyed as the count (4000 syringes): no check bounds a drug count, only the engine (tablo15_11) sees it
     "S34": set(),  # the control examination flagged as a package component: no check reads a procedure flag, only the engine (tablo15_3) sees it

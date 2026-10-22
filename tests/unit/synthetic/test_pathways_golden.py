@@ -137,10 +137,10 @@ def test_every_story_has_its_golden_file_and_no_other_file_is_there(variant: str
 
 
 def test_a_story_has_a_faulty_golden_exactly_when_it_has_a_fault() -> None:
-    """A bill without a fault (S32, S39, S48) is a clean golden only; every other story's fault record has its faulty golden."""
+    """A bill without a fault (S23, S32, S39, S48) is a clean golden only; every other story's fault record has its faulty golden."""
     with_fault = {record["story"] for record in cohort.load_registry()["faults"]}
     assert set(FAULTY_STORIES) == with_fault
-    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S32", "S39", "S48"]
+    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S39", "S48"]
     assert FAULTY_STORIES == [s for s in STORIES if s not in clean_only_stories()]  # stories.py order
 
 
@@ -416,7 +416,7 @@ def test_the_s39_story_bill_is_a_clean_bill_with_no_faulty_variant() -> None:
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
-    assert out["clean_only"] == ["S32", "S39", "S48"] and out["in_stories"] is True and out["refused"] is True
+    assert out["clean_only"] == ["S23", "S32", "S39", "S48"] and out["in_stories"] is True and out["refused"] is True
     assert out["history"] == ["C-SH04", "C-SH39"]  # the stay of the same patient is its history
     assert out["codes"] == ["520030", "905671", "L104780", "L107010", "L107020"]  # the visit, the culture, three tests
 

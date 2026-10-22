@@ -1,0 +1,100 @@
+# A month of haemodialysis of a man with end-stage kidney disease, billed as one day-case (gunubirlik) claim over the sessions
+# of May 2026, each session the EK-2C package P704230, and his erythropoiesis-stimulating agent beside them.
+# Showcase story S17 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S17 b1): bill 1 of patient 14.
+# Grammar: README.md next to this file. A session claim over several dates (`span`): no admission, no discharge.
+schema_version: 1
+id: end_stage_kidney_disease_haemodialysis_month
+title: "End-stage kidney disease, a month of haemodialysis sessions as one day-case claim, with darbepoetin"
+claim_type: gunubirlik
+billing_mode: package
+department:
+  name: "Nefroloji"
+  specialty: "1062"                  # EK-2A: Nefroloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "End-stage kidney disease on haemodialysis occurs in both sexes; story S17 is a man born 1955. Clinician to confirm."
+  age:
+    min: 40
+    max: 90
+    basis: judgment
+    source: "Story S17 patient is 71. Both bounds are the author's judgment of who is on chronic haemodialysis."
+
+span:
+  min: 25
+  max: 25
+  basis: judgment
+  source: "The sessions of May 2026 on Monday, Wednesday and Friday: 05-04 to 05-29, the last day admit+25 (card S17 b1)."
+
+diagnoses:
+  - icd10: N18.0
+    name: "SON DÖNEM BÖBREK HASTALIĞI"
+    role: primary
+    day: admit
+    basis: sut
+    source: "C000957 (SUT 2.4.4.D-1.(1)): chronic kidney failure needing dialysis, certified by a nephrology report. SKRS leaf code."
+  - icd10: D63.8
+    name: "KRONİK HASTALIK ANEMİSİ DİĞER, BAŞKA YERDE SINIFLANMIŞ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "The anaemia of chronic kidney disease that the darbepoetin treats (card S17). A nephrologist to confirm the coding."
+  - icd10: E21.1
+    name: "SEKONDER HİPERPARATİROİDİZM, BAŞKA YERDE SINIFLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Secondary hyperparathyroidism of end-stage kidney disease (card S17); no drug for it is billed on this claim."
+  - icd10: Z49.1
+    name: "EKSTRAKORPOREAL DİALİZ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "The encounter for extracorporeal dialysis (card S17). SKRS leaf code."
+  - icd10: Z99.2
+    name: "DİYALİZE BAĞIMLILIK"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Dependence on renal dialysis (card S17). SKRS leaf code."
+
+procedures:
+  - id: haemodialysis_session
+    kind: package
+    code: "P704230"
+    name: "Hemodiyaliz"
+    days: [admit, admit+2, admit+4, admit+7, admit+9, admit+11, admit+14, admit+16, admit+18, admit+21, admit+23, admit+25]
+    basis: sut
+    source: "C000963 (SUT 2.4.4.D-1.(7)): chronic haemodialysis is billed by the EK-2C puan; three sessions a week of at least 4 hours (C000966)."
+
+drugs:
+  - id: darbepoetin
+    barcode: "8699862950046"
+    name: "ARANESP 40 MCG 4 KULL HAZ ENJ"
+    inn: "darbepoetin alfa"
+    unit: syringe
+    per_box: 4
+    day: admit
+    qty: 4                             # 40 mcg a week for the four weeks of the month: one box
+    indication: N18.0
+    flags:
+      drug_specialty_board_report_present: true
+      drug_report_duration_months: 1   # the report of an ESA in chronic kidney disease covers one month (SUT 4.2.9.A-1)
+      prescriber_specialty: "Nefroloji"
+    basis: sut
+    source: "C004193 (SUT 4.2.9.A-1.(2)): an ESA on a nephrology report, prescribed by nephrology for a haemodialysis patient; dose C004194."
+
+notes:
+  - "The session price includes the tests of the dialysis regulation, the drugs of a complication of the session, heparin and the day bed (C000969, C004117): the claim bills none of them. The ESA is billed apart (SUT 4.2.9.A-1)."
+  - "Whether SGK takes a month of sessions as one takip (one claim) or a takip per session is not verified (card S17): a billing officer to confirm."
+  - "05-19 is a public holiday and 05-26 to 05-30 the Kurban Bayramı; haemodialysis does not stop on holidays, so the Monday-Wednesday-Friday rhythm stays."
+
+showcase:
+  story: S17
+  sex: M
+  age: 71
+  admit: "2026-05-04"
+  span: 25

@@ -290,6 +290,30 @@ faults:
     basis: sut
     source: "C001243 (SUT 2.4.4.H.(8)), EK-2B 510090 (yemek, yatak, vizit): the ICU bill pays the day the patient leaves; the ward bill billed 510010 on it too (story S14)."
 
+  - fault_id: F_S17_ESA_PRESCRIBED_BY_GENERAL_SURGERY
+    story: S17
+    title: "Darbepoetin of a haemodialysis patient prescribed by general surgery instead of nephrology (end-stage kidney disease)"
+    target_pathway: end_stage_kidney_disease_haemodialysis_month
+    mutations:
+      - op: set_flag
+        section: drugs
+        entry_id: darbepoetin
+        flag: prescriber_specialty
+        value: "Genel Cerrahi"
+    expected_finding:
+      engine_rule: drug_indication
+      detectors:
+        - "src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"
+      sut_section: "4.2.9.A-1"
+      sut_clauses: ["C004193"]
+      effect_kind: compliance_error
+      line_type: ilac
+      target_entry_id: darbepoetin
+      expected_status: kismi_red
+      finding_ids: ["prescriber_specialty_mismatch", "4.2.9.esa_ckd_iron_hb_nephrology_report"]
+    basis: sut
+    source: "C004193 (SUT 4.2.9.A-1.(2)): an ESA of a haemodialysis patient is prescribed by nephrology, internal medicine, paediatrics or dialysis."
+
   - fault_id: F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED
     story: S20
     title: "Day-case package billed as itemized (umbilical hernia repair)"

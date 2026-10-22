@@ -1,0 +1,43 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-06-12",
+      "icd10": "N18.0",
+      "role": "primary"
+    },
+    {
+      "date": "2026-06-12",
+      "icd10": "E87.5",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-06-12",
+      "icd10": "Z99.2",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-06-12",
+    "claim_end_date": "2026-06-12",
+    "claim_start_date": "2026-06-12",
+    "claim_type": "yatis",
+    "department": "Nefroloji",
+    "discharge_date": "2026-06-12",
+    "primary_icd10": "N18.0"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704210",
+      "date": "2026-06-12",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    }
+  ],
+  "story": "S23"
+}

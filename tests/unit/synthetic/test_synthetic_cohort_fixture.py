@@ -27,8 +27,8 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S20", "S22", "S32", "S33", "S34", "S39", "S40", "S47", "S48")  # the stories after the eighth, named by scenarios
-_CLEAN_STORIES = ("S32", "S39", "S48")  # the bills without a fault: a story and a claim, no fault record
+_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S17", "S20", "S22", "S23", "S32", "S33", "S34", "S39", "S40", "S47", "S48")  # the stories after the eighth, named by scenarios
+_CLEAN_STORIES = ("S23", "S32", "S39", "S48")  # the bills without a fault: a story and a claim, no fault record
 _FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 
@@ -271,6 +271,13 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     # clean follow-up (S48)
     assert known["S20"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0013", claim_ids=("F-SENTETIK-HASTA-0013-001",)
+    )
+    # patient 14: the month of haemodialysis (S17, a day-case claim over dates) and the emergency session (S23, clean)
+    assert known["S17"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0014", claim_ids=("F-SENTETIK-HASTA-0014-001",)
+    )
+    assert known["S23"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0014", claim_ids=("F-SENTETIK-HASTA-0014-002",)
     )
     assert known["S47"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0007", claim_ids=("F-SENTETIK-HASTA-0007-002",)

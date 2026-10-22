@@ -828,14 +828,25 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
     and matched 19 -> 22 (the drug count `tablo15_11`, the vakabaşı examination `tablo15_3`, and GÖĞÜS-6, a Fatura
     İnceleme rule with no condition but the inpatient setting of the branch: EI-24), with a row 18 -> 20 (the drug
     count and GÖĞÜS-6, reviews; the vakabaşı examination is a compliance finding), finding kinds 25 -> 26.
+
+    After S17 and S23 (WP12, patient 14: a month of haemodialysis and an emergency session): patients 13 -> 14, bills
+    22 -> 24, blocks and Wave A unchanged (every rule the two bills match is matched elsewhere), finding kinds 26 -> 30
+    (the prescriber mismatch of the ESA as an action, a drug finding and a drug violation, and the first eligible drug
+    line, `drug_status:eligible`: the ESA's encoded rule applies and its report and duration are on the line).
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (13, 22)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (14, 24)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
     assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (290, 22, 20)
     assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (13, 6, 1)
-    assert summary["finding_kinds"]["count"] == 26
+    assert summary["finding_kinds"]["count"] == 30
+    assert {
+        "action:drug_indication:prescriber_specialty_mismatch",
+        "drug_finding:prescriber_specialty_mismatch",
+        "drug_violation:prescriber_specialty_mismatch",
+        "drug_status:eligible",
+    } <= set(summary["finding_kinds"]["kinds"])
     assert "action:yatak_puani:yatak_puani_day_bed" in summary["finding_kinds"]["kinds"]
     assert "compliance:tablo15_3_vakabasi_wrong_method" in summary["finding_kinds"]["kinds"]
     assert {"tablo15_11_drug_quantity_error", "tablo15_3_vakabasi_wrong_method"} <= set(wavea["matched_ids"])
@@ -869,6 +880,7 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
         cohort.role("showcase_S7").patient_id: 3,  # the ER visit, the observation S47 and the follow-up S48
         cohort.role("showcase_S4").patient_id: 3,
         cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
+        cohort.scenario("S17").patient_id: 2,  # patient 14: the month of haemodialysis and the emergency session
     }
     assert "icu_puani" in entry["blocks_with_output"]  # the ICU bill's block is still there beside the ward bill
 
@@ -895,6 +907,7 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
         cohort.scenario("S32").patient_id,
         cohort.scenario("S48").patient_id,
         cohort.scenario("S20").patient_id,
+        cohort.scenario("S17").patient_id,  # the month of haemodialysis, a day-case claim of EK-2C sessions
     }
     assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # 2, 6, 7, 11, 12
     assert ortak20 in entry["wavea"]["review_ids"] and duplicate not in entry["wavea"]["review_ids"]  # no row for the duplicate
@@ -943,9 +956,12 @@ def measured_app_path() -> dict[str, dict[str, Any]]:
 
 
 def _partial_patients() -> set[str]:
-    """S3-S6 (the plan's table, 7.4) and S9 (M48.06 with I10): an EK-1/A match and no report on file."""
+    """S3-S6 (the plan's table, 7.4), S9 (M48.06 with I10) and S17 (N18.0): an EK-1/A match and no report on file."""
     stories = ("showcase_S3", "showcase_S4", "showcase_S5", "showcase_S6")
-    return {cohort.role(story).patient_id for story in stories} | {cohort.scenario("S9").patient_id}
+    return {cohort.role(story).patient_id for story in stories} | {
+        cohort.scenario("S9").patient_id,
+        cohort.scenario("S17").patient_id,
+    }
 
 
 def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state_of_the_others(
@@ -967,13 +983,14 @@ def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state
     # so is the generic 1.8.2 drug-copay row (EI-25: it leaves for any exempt patient)
     assert copay[second]["rate_correction_codes"] == ["copay_exemption_ek1a"]
     # the plan's 11 rate corrections on the eight showcase patients (P1 1, P2-P6 2 each) less S2's two plus its waiver,
-    # and 12 with S9
+    # 12 with S9, 14 with S17 (the partial EK-1/A row and the 1.8.2 drug-copay row of patient 14)
     eight = cohort.patient_ids()[:8]
     assert [copay[pid]["rate_corrections"] for pid in eight] == [1, 1, 2, 2, 2, 2, 0, 0]
-    assert sum(item["rate_corrections"] for item in copay.values()) == 12
+    assert copay[cohort.scenario("S17").patient_id]["rate_correction_codes"] == ["ek1a_report_unknown", "sut:1.8.2.(1)"]
+    assert sum(item["rate_corrections"] for item in copay.values()) == 14
     assert cm.summarize(measured_app_path)["copay"] == {
-        "rate_corrections": 12,
-        "outcomes": {"exempt": 3, "none": 5, "partial_exempt": 5},  # patient 13 (S20, K42.9): no exemption ground
+        "rate_corrections": 14,
+        "outcomes": {"exempt": 3, "none": 5, "partial_exempt": 6},  # patient 13 (S20, K42.9): no exemption ground
     }
 
 

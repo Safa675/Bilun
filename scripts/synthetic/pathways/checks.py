@@ -420,6 +420,11 @@ def check_specialties(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 # --- billing logic -----------------------------------------------------------------------------
 
 
+def dialysis_package_codes(cat: Catalogs) -> list[str]:
+    """The EK-2C haemodialysis session packages of `code_sets.yaml` (P704230 chronic, P704210 emergency)."""
+    return [entry["code"] for entry in cat.code_sets["dialysis_packages"].values()]
+
+
 def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     """package.mode: a package bill holds package lines (and linked materials), nothing else.
 
@@ -427,6 +432,9 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     itemized lines (SUT 2.4.4.H.(2)), so an itemized pathway may hold it. A package bill may not hold
     an ICU line of either kind: the engine prices a package stay by the package, not by ICU days. The
     same goes for a newborn bed line (kind newborn_bed): the package includes the bed (C000685 to C000699).
+    A bill of haemodialysis session packages only (P704230, P704210) may hold drug lines: the session
+    price includes the tests, the drugs of a complication of the session, heparin and the day bed
+    (C000969, C004117), not an erythropoiesis-stimulating agent, which is billed apart (SUT 4.2.9.A-1).
     """
     if pathway.billing_mode == "itemized":
         return [
@@ -437,20 +445,28 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
             if p.kind == "package"
         ]
     why = "inside the package (SUT 2.2.2.B-1(1): C000685 to C000699); remove it"
+    dialysis = set(dialysis_package_codes(cat))
+    sessions_only = all(p.code in dialysis for p in pathway.procedures if p.kind == "package")
     return [
         Problem("package.mode", f"procedures[{p.id}]", f"a {p.kind} line is {why}")
         for p in pathway.procedures
         if p.kind != "package"
-    ] + [Problem("package.mode", f"drugs[{d.id}]", f"drugs are {why}") for d in pathway.drugs]
+    ] + [
+        Problem("package.mode", f"drugs[{d.id}]", f"drugs are {why}")
+        for d in pathway.drugs
+        if not sessions_only
+    ]
 
 
 def check_package_window(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     """package.window: the longest stay ends inside the package window of each package's group.
 
     An ICU package (kind icu_package) has no EK-2C group and no window: it is one bed day, and the
-    days it may sit on are `icu.day_pattern`'s business. Only the surgical packages are tested here.
+    days it may sit on are `icu.day_pattern`'s business. A haemodialysis session package (P704230,
+    P704210) has no group either: it is one session. Only the surgical packages are tested here.
     """
-    packages = [p for p in pathway.procedures if p.kind == "package" and p.code]
+    dialysis = set(dialysis_package_codes(cat))
+    packages = [p for p in pathway.procedures if p.kind == "package" and p.code and p.code not in dialysis]
     if pathway.billing_mode != "package" or pathway.nights is None or not packages:
         return []
     codes = sorted({p.code for p in packages})
