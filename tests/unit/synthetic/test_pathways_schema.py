@@ -64,6 +64,8 @@ S20 = "umbilical_hernia_day_case_package"  # the first gunubirlik pathway: a day
 S32 = "copd_exacerbation_post_discharge_control"  # S2's control visit: its examination carries the patient's share (G5b)
 S33 = "copd_exacerbation_readmission_through_er"  # S2's readmission through the ER: the critical ER bed, then the ward
 S34 = "copd_exacerbation_post_readmission_control"  # the control after it: its examination is the line of a G5a fault
+S17 = "end_stage_kidney_disease_haemodialysis_month"  # a month of P704230 sessions as one gunubirlik claim with a span, and an ESA
+S23 = "end_stage_kidney_disease_emergency_haemodialysis"  # one emergency session P704210, a package stay of one date
 S22 = "gi_bleed_admission_colonoscopy"  # a colonoscopy session: the colonoscopy leads, the polypectomy is a chapter-7 add-on at 50 %
 
 
@@ -1017,7 +1019,7 @@ def test_a_package_whose_group_changes_inside_the_window_gets_the_shorter_allowa
         }
     )
     found = check_package_window(
-        pathway, SimpleNamespace(ek2c=ek2c, window=("2026-02-01", "2026-09-30"))
+        pathway, SimpleNamespace(ek2c=ek2c, window=("2026-02-01", "2026-09-30"), code_sets={"dialysis_packages": {}})
     )
     assert [(p.check, "its window is 8 days" in p.message) for p in found] == [
         ("package.window", True)
@@ -1501,3 +1503,66 @@ def test_a_package_bill_names_each_icu_line_as_a_line_the_package_includes(catal
     named = {p.where for p in check_package_mode(pathway, catalogs)}
     assert {"procedures[icu_end_days]", "procedures[icu_package]"} <= named
 
+
+
+# --- slice G9: the report duration of a drug; the haemodialysis session packages -----------------------
+
+
+def test_the_report_duration_of_a_drug_reaches_its_expansion_and_only_s17_sets_it(catalogs: Catalogs) -> None:
+    """The ESA of S17 is billed on a one-month nephrology report (SUT 4.2.9.A-1): the pathway says so (slice G9)."""
+    pathway = load_pathway(_DIR / f"{S17}.yaml")
+    (esa,) = pathway.drugs
+    assert (esa.flags.drug_report_duration_months, esa.flags.prescriber_specialty) == (1, "Nefroloji")
+    (row,) = expand(pathway)["drugs"]
+    assert row["flags"] == {
+        "drug_report_duration_months": 1,
+        "drug_specialty_board_report_present": True,
+        "prescriber_specialty": "Nefroloji",
+    }
+    assert run_all(pathway, catalogs) == []
+    setting = [p.stem for p in _FILES if any(d.flags.drug_report_duration_months for d in load_pathway(p).drugs)]
+    assert setting == [S17]
+
+
+@pytest.mark.parametrize("months", [0, 25, -1, True, "1", 1.5])
+def test_a_report_duration_that_is_no_whole_number_of_months_from_1_to_24_is_a_bad_value(months: object) -> None:
+    raw = _raw(S17)
+    drug(raw, "darbepoetin")["flags"]["drug_report_duration_months"] = months
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S17}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.bad_value"]
+    assert "drugs[darbepoetin].flags.drug_report_duration_months" in str(error.value)
+
+
+def test_a_bill_of_haemodialysis_sessions_may_hold_a_drug_and_no_other_package_bill_may(catalogs: Catalogs) -> None:
+    """The session price includes the tests, the complication drugs, heparin and the day bed (C000969, C004117), not
+    an ESA: a bill of session packages only may carry the ESA; a surgical package beside them takes that away."""
+    pathway = load_pathway(_DIR / f"{S17}.yaml")
+    assert check_package_mode(pathway, catalogs) == []
+    raw = _raw(S17)
+    raw["procedures"].append(
+        {"id": "appendectomy", "kind": "package", "code": "P610131", "name": "Appendektomi, laparoskopik",
+         "days": "admit", "basis": "judgment", "source": FIXTURE}
+    )
+    mixed = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S17}.yaml")
+    problems = {p.where: p.message for p in check_package_mode(mixed, catalogs)}
+    assert set(problems) == {"drugs[darbepoetin]"} and problems["drugs[darbepoetin]"].startswith("drugs are inside the package")
+
+
+def test_the_package_window_leaves_a_haemodialysis_session_alone(catalogs: Catalogs, monkeypatch) -> None:
+    """P704210 and P704230 have no EK-2C group: a session is one day, so no window; without the code set they would
+    be packages without a group."""
+    pathway = load_pathway(_DIR / f"{S23}.yaml")
+    assert check_package_window(pathway, catalogs) == []
+    assert run_all(pathway, catalogs) == []
+    sets = {**catalogs.code_sets, "dialysis_packages": {}}
+    monkeypatch.setitem(catalogs.__dict__, "code_sets", sets)
+    found = check_package_window(pathway, catalogs)
+    assert [p.check for p in found] == ["package.window"] and "P704210 has no group in EK-2C" in found[0].message
+    assert [p.where for p in check_package_mode(load_pathway(_DIR / f"{S17}.yaml"), catalogs)] == ["drugs[darbepoetin]"]
+
+
+def test_the_haemodialysis_session_packages_are_the_chronic_and_the_emergency_code() -> None:
+    sets = yaml.safe_load((_REPO / "data/synthetic/reference/code_sets.yaml").read_text(encoding="utf-8"))
+    assert {k: v["code"] for k, v in sets["dialysis_packages"].items()} == {"chronic": "P704230", "emergency": "P704210"}

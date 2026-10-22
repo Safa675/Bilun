@@ -49,6 +49,12 @@ emergency:  # EK-2B chapter 3
     name: "Acil serviste kritik hasta yatak ve takibi"
     note: "EK-2B: by an emergency physician, once a day; not with 510120 or 530003."
 
+dialysis_packages:  # EK-2C, one per haemodialysis session (SUT 2.4.4.D-1, C000963); no group and no package window
+  # The session price includes the tests, the drugs for a complication of the session, heparin and the day bed
+  # (C000969, C004117); an erythropoiesis-stimulating agent is billed apart (SUT 4.2.9.A-1).
+  chronic: {code: "P704230", name: "Hemodiyaliz"}
+  emergency: {code: "P704210", name: "Acil hemodiyalizi"}
+
 icu_packages:  # EK-2C, one per ICU day
   adult:
     1: {code: "P552001", name: "Birinci basamak yoğun bakım hastası"}

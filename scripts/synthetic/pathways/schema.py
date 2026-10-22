@@ -23,6 +23,7 @@ from pydantic import (
     ConfigDict,
     Field,
     StrictBool,
+    StrictInt,
     StringConstraints,
     field_validator,
     model_validator,
@@ -74,8 +75,8 @@ CHECKS: dict[str, str] = {
     "lab.in_table": "an L-code absent from lab_reference.csv",
     "lab.name": "a lab name that is not the table's catalog_name",
     "specialty.exists": "an EK-2A branch code that does not exist",
-    "package.mode": "a package pathway with a line a package includes (an ICU line too), or the reverse; an ICU package is no surgical package",
-    "package.window": "a stay that outlasts the package window of its group (an ICU package has no group and no window)",
+    "package.mode": "a package pathway with a line a package includes (an ICU line too), or the reverse; an ICU package is no surgical package; a drug beside haemodialysis session packages only",
+    "package.window": "a stay that outlasts the package window of its group (an ICU or a haemodialysis session package has no group and no window)",
     "anaesthesia.group": "an anaesthesia group that the operation's puan does not give",
     "anaesthesia.code": "an anaesthesia code that does not belong to its group",
     "session.primary": "a session without exactly one primary operation",
@@ -434,6 +435,9 @@ class DrugFlags(_Model):
     drug_specialty_board_report_present: bool | None = None
     prescriber_specialty: str | None = None
     drug_inpatient_supply: bool | None = None
+    # the months the drug's health report covers (slice G9): the engine compares it with the report duration a SUT
+    # rule names (SUT 4.2.9.A-1: one month for an ESA in chronic kidney disease)
+    drug_report_duration_months: Annotated[StrictInt, Field(ge=1, le=24)] | None = None
 
 
 class Material(Sourced):

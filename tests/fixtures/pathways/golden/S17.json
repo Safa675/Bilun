@@ -1,0 +1,154 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-05-04",
+      "icd10": "N18.0",
+      "role": "primary"
+    },
+    {
+      "date": "2026-05-04",
+      "icd10": "D63.8",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-05-04",
+      "icd10": "E21.1",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-05-04",
+      "icd10": "Z49.1",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-05-04",
+      "icd10": "Z99.2",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8699862950046",
+      "date": "2026-05-04",
+      "flags": {
+        "drug_report_duration_months": 1,
+        "drug_specialty_board_report_present": true,
+        "prescriber_specialty": "Nefroloji"
+      },
+      "per_box": 4,
+      "qty": 4,
+      "unit": "syringe"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-05-29",
+    "claim_start_date": "2026-05-04",
+    "claim_type": "gunubirlik",
+    "department": "Nefroloji",
+    "discharge_date": null,
+    "primary_icd10": "N18.0"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-04",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-06",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-08",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-11",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-13",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-18",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-25",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-27",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "P704230",
+      "date": "2026-05-29",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1062"
+    }
+  ],
+  "story": "S17"
+}

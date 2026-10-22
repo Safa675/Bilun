@@ -89,10 +89,11 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(v, ("rule_id", "severity", "material_code", "risk_amount", "material_outcome",
                           "sut_section", "message"))
                 for v in check_material_bundling_for_context(ctx) if v.get("rule_id") == "3.1.1.(2).titubb_uts_incomplete"]
-    if story == "S6":
+    if story in ("S6", "S17"):
         rows = []
+        drug = {"S6": "PK-MERZ", "S17": "ARANESP"}[story]  # the drug line of the fault
         for dl in ctx.drug_lines:
-            if not dl.drug_name.startswith("PK-MERZ"):
+            if not dl.drug_name.startswith(drug):
                 continue
             res = evaluate_drug_indication_line_detailed(drug_line=dl, claim=claim, diagnoses=list(ctx.diagnoses))
             v = res.get("violation") or {}
@@ -245,8 +246,9 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         return total("savings_try")
     if story == "S5":
         return total("risk_amount")
-    if story == "S6":
-        return 0.0 if any(r.get("violation_kind") == "indication_mismatch" for r in rows) else None
+    if story in ("S6", "S17"):  # a drug-indication violation without money
+        kind = {"S6": "indication_mismatch", "S17": "prescriber_specialty_mismatch"}[story]
+        return 0.0 if any(r.get("violation_kind") == kind for r in rows) else None
     if story in ("S33", "S34", "S40"):  # a row without money: the finding is the row
         rule = {"S33": "tablo15_11_drug_quantity_error", "S34": "tablo15_3_vakabasi_wrong_method",
                 "S40": "tablo15_2_duplicate_exam_10day"}[story]

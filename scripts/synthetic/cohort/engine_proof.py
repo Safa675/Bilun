@@ -539,10 +539,19 @@ def _direct_rows_s5(ctx: PatientClaimContext) -> list[dict[str, Any]]:
 
 
 def _direct_rows_s6(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return _drug_indication_rows(ctx, "PK-MERZ")  # IV amantadine without its indication
+
+
+def _direct_rows_s17(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return _drug_indication_rows(ctx, "ARANESP")  # darbepoetin prescribed by the wrong branch
+
+
+def _drug_indication_rows(ctx: PatientClaimContext, drug: str) -> list[dict[str, Any]]:
+    """The drug-indication rows of the drug lines whose name starts with `drug`, then the bill's findings."""
     claim = ctx.claims[0]
     rows: list[dict[str, Any]] = []
     for dl in ctx.drug_lines:
-        if not dl.drug_name.startswith("PK-MERZ"):
+        if not dl.drug_name.startswith(drug):
             continue
         res = evaluate_drug_indication_line_detailed(
             drug_line=dl, claim=claim, diagnoses=list(ctx.diagnoses)
@@ -850,6 +859,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S11": _direct_rows_s11,
     "S12": _direct_rows_s12,
     "S14": _direct_rows_s14,
+    "S17": _direct_rows_s17,
     "S20": _direct_rows_s20,
     "S22": _direct_rows_s22,
     "S33": _direct_rows_s33,

@@ -396,6 +396,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
     else:  # a fault without money of its own: the finding itself is the signal
         marker = {
             "S6": "drug_indication",
+            "S17": "prescriber_specialty_mismatch",
             "S33": "tablo15_11_drug_quantity_error",
             "S34": "tablo15_3_vakabasi_wrong_method",
             "S40": "tablo15_2_duplicate_exam_10day",

@@ -56,6 +56,7 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     11: (62, 36, 148, 96, 46, 2.4),  # S12, a late-preterm newborn: the infant ranges
     12: (122, 74, 98, 97, 176, 84.0),  # S10, melena in the ER
     13: (126, 78, 72, 98, 176, 84.0),  # S20, a day-case hernia repair
+    14: (148, 82, 76, 96, 172, 70.0),  # S17, a haemodialysis patient before a session
 }
 # the later bills of the committed cohort, by (patient, encounter): the vitals of S39 (the control of patient 4) and
 # S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
@@ -64,6 +65,7 @@ _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, in
     (2, 2): (136, 80, 86, 93, 170, 67.0),
     (2, 3): (152, 88, 112, 85, 170, 66.5),
     (2, 4): (134, 78, 88, 92, 170, 66.0),
+    (14, 2): (164, 94, 58, 94, 172, 72.5),
     (7, 2): (118, 72, 78, 98, 162, 71.0),
     (7, 3): (128, 80, 80, 98, 162, 70.5),
     (4, 2): (126, 72, 76, 96, 155, 57.5),
@@ -120,7 +122,7 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     assert routes is not None
     assert routes.basis == "judgment"
     assert "#309" in routes.source
-    assert routes.by_barcode == {"8699809950696": "Subkütan", "8697637690128": "Intravenöz"}
+    assert routes.by_barcode == {"8699809950696": "Subkütan", "8697637690128": "Intravenöz", "8699862950046": "Intravenöz"}
 
     by_no = clinical.by_patient_no()
     assert set(by_no) == set(range(1, cohort.patient_count() + 1))
@@ -137,7 +139,7 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
-        if pno in {5, 8, 11, 13}:  # packages (S5, S8, S20) and S12 (lab_reference.csv has adult ranges only) bill no lab line
+        if pno in {5, 8, 11, 13, 14}:  # packages (S5, S8, S20, S17's dialysis sessions) and S12 (adult ranges only) bill no lab line
             assert pat.labs is None
         else:
             assert pat.labs is not None
@@ -284,7 +286,7 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2], 14: [1, 2]}
 
 
 @pytest.mark.parametrize(

@@ -38,7 +38,7 @@ _EK2C_NAMED = [
     (tier["code"], tier["name"])
     for population in _CODE_SETS["icu_packages"].values()
     for tier in population.values()
-]
+] + _named_entries(_CODE_SETS["dialysis_packages"])
 
 
 @pytest.fixture(scope="module")

@@ -1311,7 +1311,7 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_and_s1
     )
     assert only_faulty_drugs.height == 3
     assert set(only_faulty_drugs["patient_id"]) == {PATIENT[1]}
-    assert twins[TABLE_DRUGS].height == 19 and built.tables[TABLE_DRUGS].height == 22
+    assert twins[TABLE_DRUGS].height == 20 and built.tables[TABLE_DRUGS].height == 23
     # S33: the same line, another count
     counts = built.tables[TABLE_DRUGS].join(
         twins[TABLE_DRUGS].select("drug_claim_line_id", pl.col("quantity").alias("twin_quantity")),
@@ -1532,12 +1532,12 @@ def test_every_committed_lab_row_is_looked_at_by_the_row_checks(
 
 
 RECETE_ROW_BREAKS = {
-    # a row without a line and a line without a row, for each of the 22 rows
-    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 22 * 2),
-    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 22),
-    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 21),  # all but the nebule
-    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 21),  # all but the tablet
-    **{f"null_{column}": (REQUIRED, {column: None}, 22) for column in REQUIRED_RECETE_COLUMNS},
+    # a row without a line and a line without a row, for each of the 23 rows
+    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 23 * 2),
+    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 23),
+    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 22),  # all but the nebule
+    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 22),  # all but the tablet
+    **{f"null_{column}": (REQUIRED, {column: None}, 23) for column in REQUIRED_RECETE_COLUMNS},
 }
 
 
@@ -3600,7 +3600,7 @@ def test_the_committed_units_fit_their_products_by_the_classes_of_the_review(cle
     assert pairs == [
         ("inhaled", "kutu", 1),
         ("injected", "ampul", 1),
-        ("injected", "enjektör", 4),
+        ("injected", "enjektör", 5),
         ("injected", "flakon", 11),
         ("injected", "kutu", 1),
         ("injected", "torba", 1),

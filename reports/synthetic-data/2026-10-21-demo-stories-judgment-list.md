@@ -376,3 +376,37 @@ Patient 2 (S2: a man of 81, COPD exacerbation with pneumonia, itemized stay 2026
 - The flags `isbt128_barcode` (procedures) and `requires_pre_auth` (materials) are built and tested but no committed bill sets them yet (S18's blood, WP13, and F2 b5's BPAP device would).
 - No cohort check bounds a drug count or reads a procedure flag: the two faults are found by the engine only (`EXPECTED_FAULT_TRIPS` of S33 and S34 are empty).
 - The reports of S2's stay and of S32 are unchanged at bill level; the patient-level report of patient 2 gains the two findings and GÖĞÜS-6.
+
+## S17 and S23 (WP12) — end-stage kidney disease: a month of haemodialysis and an emergency session
+
+**S17** (patient 14, a man of 71, born 1955): end-stage kidney disease (N18.0) with the anaemia of chronic kidney disease (D63.8), secondary hyperparathyroidism (E21.1), Z49.1 and Z99.2, on chronic haemodialysis in nephrology (`Nefroloji`, EK-2A 1062). His twelve sessions of May 2026 (Monday, Wednesday, Friday, 05-04 to 05-29) are one `gunubirlik` claim over those dates: twelve lines of the EK-2C package P704230, 5445.77 each (65349.24 in all). The session price includes the tests, the complication drugs, heparin and the day bed (C000969, C004117): none is billed. Beside the sessions: darbepoetin (ARANESP 40 mcg, one box of four syringes, 40 mcg a week; drug price 0) on a one-month nephrology report (`drug_report_duration_months: 1`), route intravenous through the dialysis line. The faulty bill names **general surgery** as the prescriber (C004193); the engine shows `prescriber_specialty_mismatch` (no money). **S23** (2026-06-12, a clean bill): an emergency haemodialysis for a raised potassium (E87.5), a stay of one date billed as the package P704210 alone (C000963). **A nephrologist reads S17 and S23, the billing officer the billing premises.**
+
+### Premises the nephrologist confirms
+
+- [ ] **Three sessions a week of at least four hours** (C000966) and the dialysis report behind them (C000957): the demo does not model the report itself.
+- [ ] **Darbepoetin 40 mcg a week, four syringes for the month** (initiation 0.25-0.75 mcg/kg/week, maintenance 0.13-0.35 mcg/kg/week at about 70 kg, C004194): is this an initiation or a maintenance dose for a stable chronic patient (maintenance would be about 40 mcg every two weeks, two syringes)? Given intravenously through the dialysis line (the `drug_routes` entry), or subcutaneously?
+- [ ] **No haemoglobin, ferritin or TSAT on the bill**: the tests of the dialysis regulation are inside the session price (C000969), but C004192 asks for ferritin/TSAT and Hb before an ESA and the report carries them. The demo shows no lab value for patient 14.
+- [ ] **The diagnoses**: N18.0 as the principal code with D63.8 (the anaemia the ESA treats; an asterisk code in WHO ICD-10, a plain leaf in the SKRS table), E21.1, Z49.1 and Z99.2 on the monthly claim.
+- [ ] **The emergency session S23**: a raised potassium (E87.5) two weeks after the month's last session, a slow pulse (58), 2.5 kg above dry weight; one P704210, no test or drug line (the emergency tests are in the package). Is an extra session of a chronic patient billed as P704210 (C000963: a haemodialysis given as an emergency without the dialysis report), or as another P704230? The card names no reason for the session; E87.5 is the author's.
+
+### Premises the billing officer confirms
+
+- [ ] **A month of sessions as one takip** (one `gunubirlik` claim with a date span from the first to the last session): not verified (card S17). If SGK opens a takip per session, the demo's one claim is twelve claims.
+- [ ] **The ESA billed beside the session packages** on the same claim (the pathway grammar now allows a drug line on a bill of dialysis session packages only); the dialysis packages have no EK-2C group and no package window.
+- [ ] **The prescriber of the faulty bill**: general surgery is outside C004193's list (nephrology, internal medicine, paediatrics, dialysis-certified physicians). The engine's message cites "§4.2.14.C" for every prescriber rule, also this 4.2.9.A-1 one (an engine wording, not the demo's).
+- [ ] **The checklist** shows a "surgery or biopsy documentation" row on both bills because any EK-2C code counts as a surgical package there (EI-16).
+- [ ] **Copay**: patient 14's copay profile has no chronic health report on file (unknown), so the app path shows him as partial exempt on EK-1/A (N18) with the 1.8.2 drug-copay row; a haemodialysis patient always has a nephrology report (C000957), but whether it is the EK-1/A report is the billing officer's call.
+
+### Items with `basis: judgment` in the pathways
+
+- S17: `patient.sex`/`age`, the span (25 days), D63.8, E21.1, Z49.1, Z99.2. S23: `patient.sex`/`age`, `nights` (0), E87.5, Z99.2.
+
+### Clinical context (`data/synthetic/cohort/showcase_clinical.yaml`, `basis: judgment`)
+
+- Patient 14, encounter 1: 148/82, 76, SpO2 96 %, 172 cm, 70.0 kg, no labs. Encounter 2: 164/94, 58, SpO2 94 %, 172 cm, 72.5 kg, no labs. `drug_routes`: ARANESP `Intravenöz`.
+
+### What WP12 does not claim
+
+- The report duration flag is set on one line (S17's ESA, one month, as the rule names it); a duration that disagrees with the rule (`report_duration_mismatch`, F5 b5) is not shown yet.
+- The day-bed exclusion of the itemized haemodialysis codes 704210/704230 is not shown (EI-7: the engine mis-signals the itemized codes), so both bills use the packages.
+- Wave A and the blocks do not move: every rule the two bills match is matched elsewhere.

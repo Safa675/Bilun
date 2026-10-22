@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -7,6 +7,7 @@ drug_routes:
   by_barcode:
     "8699809950696": "Subkütan" # CLEXANE 4000 ANTI-XA IU/0,4 ML kullanıma hazır enjektör
     "8697637690128": "Intravenöz" # NEOFLEKS %0,9 izotonik sodyum klorür PP-torba 1000 ML
+    "8699862950046": "Intravenöz" # ARANESP 40 MCG kullanıma hazır dolu enjektör: given through the dialysis line
   basis: judgment
   source: "Route of administration of the billed product (a pharmacological property, not patient history); clinician confirms in issue #309."
 patients:
@@ -360,3 +361,26 @@ patients:
       weight_kg: 84.0
     basis: judgment
     source: "Story S20 day-case umbilical hernia repair, a healthy man of 41 admitted the morning of surgery; clinician confirms in issue #309."
+
+  - patient_no: 14
+    vitals:
+      sbp: 148
+      dbp: 82
+      pulse: 76
+      spo2: 96
+      height_cm: 172
+      weight_kg: 70.0
+    basis: judgment
+    source: "Story S17 haemodialysis patient before a session (pre-dialysis blood pressure 148/82, dry weight about 70 kg); clinician confirms in issue #309."
+
+  - patient_no: 14
+    encounter_no: 2
+    vitals:
+      sbp: 164
+      dbp: 94
+      pulse: 58
+      spo2: 94
+      height_cm: 172
+      weight_kg: 72.5
+    basis: judgment
+    source: "Story S23 emergency haemodialysis (a raised potassium with a slow pulse, 2.5 kg above dry weight); clinician confirms in issue #309."

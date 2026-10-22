@@ -1,0 +1,69 @@
+# An emergency haemodialysis session of the man of story S17 (end-stage kidney disease), a stay of one date billed as the EK-2C
+# package P704210. Showcase story S23 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S17 b2): bill 2 of patient 14,
+# a clean bill. Grammar: README.md next to this file. A stay of one date: `nights: 0`.
+schema_version: 1
+id: end_stage_kidney_disease_emergency_haemodialysis
+title: "End-stage kidney disease, an emergency haemodialysis session as a stay of one date, billed as the package"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Nefroloji"
+  specialty: "1062"                  # EK-2A: Nefroloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S23 is the man of story S17 (the same patient, a later bill); N18.0, E87.5 and Z99.2 have no sex gate."
+  age:
+    min: 40
+    max: 90
+    basis: judgment
+    source: "Story S23 patient is 71, like story S17; the bounds are those of story S17 (the author's judgment)."
+
+nights:
+  min: 0
+  max: 0
+  basis: judgment
+  source: "One emergency session, admitted and discharged on 2026-06-12 (card S17 b2): a stay of one date."
+
+diagnoses:
+  - icd10: N18.0
+    name: "SON DÖNEM BÖBREK HASTALIĞI"
+    role: primary
+    day: admit
+    basis: sut
+    source: "C000963 (SUT 2.4.4.D-1.(7)): an emergency haemodialysis for kidney failure is billed as P704210. SKRS leaf code."
+  - icd10: E87.5
+    name: "HİPERKALEMİ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "The reason for the session out of rhythm (a raised potassium); the card names none. A nephrologist to confirm."
+  - icd10: Z99.2
+    name: "DİYALİZE BAĞIMLILIK"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Dependence on renal dialysis, as on story S17. SKRS leaf code."
+
+procedures:
+  - id: emergency_haemodialysis
+    kind: package
+    code: "P704210"
+    name: "Acil hemodiyalizi"
+    days: admit
+    basis: sut
+    source: "C000963 (SUT 2.4.4.D-1.(7)): a haemodialysis given as an emergency, without the dialysis report, is billed as P704210."
+
+notes:
+  - "The package includes the tests of the emergency and the day bed (C000969): the bill has no bed, test or drug line, and the engine's bed-day motor asks for no day bed on it."
+  - "The session is 14 days after the last session of story S17's claim (2026-05-29); the June sessions of the month are not modelled."
+
+showcase:
+  story: S23
+  sex: M
+  age: 71
+  admit: "2026-06-12"
+  nights: 0

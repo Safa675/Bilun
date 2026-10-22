@@ -84,6 +84,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S11": "6089.82",
     "S12": "1322.94",
     "S14": "222.36",
+    "S17": "0.00",  # the ESA prescribed by the wrong branch: a drug line, and drugs enter at 0 TL
     "S20": "4724.84",
     "S22": "439.86",
     "S33": "0.00",  # the enoxaparin count: a drug line, and drugs enter at 0 TL
@@ -93,7 +94,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S32, S39 and S48 are clean bills (no fault, no record), the others carry one.
+# S23, S32, S39 and S48 are clean bills (no fault, no record), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
@@ -105,6 +106,8 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S33": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-003"]},
     "S34": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-004"]},
     "S20": {"patient_id": "SENTETIK-HASTA-0013", "claim_ids": ["F-SENTETIK-HASTA-0013-001"]},
+    "S17": {"patient_id": "SENTETIK-HASTA-0014", "claim_ids": ["F-SENTETIK-HASTA-0014-001"]},
+    "S23": {"patient_id": "SENTETIK-HASTA-0014", "claim_ids": ["F-SENTETIK-HASTA-0014-002"]},
     "S47": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
     "S48": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-003"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
@@ -335,11 +338,13 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     assert s7_rec.line_id == ""
     assert s7_rec.line_ids == ("EMR-F-SENTETIK-HASTA-0007-001-004",)
 
-    # S1, S5, S8 and S20 have package_candidate=True in both clean and faulty composed headers; others False.
-    story_of_claim = {rec.claim_id: rec.story for rec in built_showcase.records}
+    # S1, S5, S8, S20 and the haemodialysis bills S17 and S23 (EK-2C session packages) have package_candidate=True in
+    # both clean and faulty composed headers; others False. The story of a bill comes from its encounter (a clean bill,
+    # S23, S32, S39 or S48, has no record).
+    story_of_claim = {e["claim_id"]: e["story"] for e in built_showcase.registry["encounters"]}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
-        story = story_of_claim.get(faulty_c.header.claim_id)  # a clean bill (S32, S39, S48) has no record
-        expected_pkg_cand = story in {"S1", "S5", "S8", "S20"}
+        story = story_of_claim[faulty_c.header.claim_id]
+        expected_pkg_cand = story in {"S1", "S5", "S8", "S17", "S20", "S23"}
         assert clean_c.header.package_candidate is expected_pkg_cand
         assert faulty_c.header.package_candidate is expected_pkg_cand
 
@@ -706,8 +711,8 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     assert anadata["EPISODE_TARIH"].dt.date().to_list() == [date(2026, 6, 2), date(2026, 6, 7)]
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
-    assert profiles.height == cohort.patient_count() == 13
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 22
+    assert profiles.height == cohort.patient_count() == 14
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 24
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1048,6 +1053,8 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0012-001",  # the ER visit of patient 12 (S10) and the admission two days later (S22)
         "F-SENTETIK-HASTA-0012-002",
         "F-SENTETIK-HASTA-0013-001",  # the day case of patient 13 (S20)
+        "F-SENTETIK-HASTA-0014-001",  # the month of haemodialysis of patient 14 (S17) and its emergency session (S23)
+        "F-SENTETIK-HASTA-0014-002",
     ]
     assert headers["episode_id"].to_list() == [
         claim.replace("F-", "B-", 1) for claim in headers["claim_id"].to_list()

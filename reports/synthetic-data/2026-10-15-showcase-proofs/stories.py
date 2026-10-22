@@ -1,4 +1,4 @@
-"""Twenty-two showcase stories: clean bill + one injected fault each, except S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33 and S34 on 2026-10-22).
+"""Twenty-four showcase stories: clean bill + one injected fault each, except S23, S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17 and S23 on 2026-10-22).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -22,8 +22,8 @@ from harness import Bill, D, money
 from src.bilun.domain.claims.models import MedulaRejectionEvent
 
 # EK-2A branch codes (data/gazette/curated/ek2a_outpatient_visits.parquet)
-ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI = (
-    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561")
+ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI = (
+    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062")
 
 # EK-4A barcodes (data/gazette/curated/ek4a_history.parquet; ingredient from the drug crosswalk)
 IESEF = "8699508270224"       # IESEF 1 G IV (seftriakson), 1 vial
@@ -38,6 +38,7 @@ EQIZOLIN = "8699814270253"    # EQIZOLIN 1 GR IM/IV 1 FLK (cefazolin)
 NACL_1000 = "8697637690128"   # NEOFLEKS %0,9 SODYUM KLORUR 1000 ML (SETLI)
 PKMERZ = "8699708690525"      # PK-MERZ IV INF. COZ. 2x500 ML (amantadin sülfat)
 MADOPAR = "8699525094841"     # MADOPAR 125 MG 30 TB (levodopa + benserazid)
+ARANESP = "8699862950046"     # ARANESP 40 MCG 4 KULL HAZ ENJ (darbepoetin alfa), 4 syringes
 
 
 def _days(a, b):
@@ -425,6 +426,47 @@ def s20(variant: str) -> Bill:
     return b
 
 
+# ── S17 ─ a month of haemodialysis; the ESA prescribed by the wrong branch ──
+def s17(variant: str) -> Bill:
+    """71 M, end-stage kidney disease on chronic haemodialysis: the 12 sessions of May 2026 (Monday, Wednesday, Friday,
+    05-04 to 05-29) as one day-case claim, each session the EK-2C package P704230, nephrology.
+
+    The session price includes the tests, the drugs of a complication of the session, heparin and the day bed
+    (C000969, C004117); the ESA is billed apart: darbepoetin 40 mcg a week (one box of 4 syringes) on a one-month
+    nephrology report (SUT 4.2.9.A-1). The faulty bill names general surgery as its prescriber (C004193: nephrology,
+    internal medicine, paediatrics or a dialysis-certified physician). Drug prices enter at 0 TL: no money.
+    """
+    a = D("2026-05-04")
+    b = Bill("SH-14", "C-SH17", "gunubirlik", "Nefroloji", None, None, "N18.0", package_candidate=True,
+             start=a, end=a + timedelta(days=25))
+    for i, icd in enumerate(("N18.0", "D63.8", "E21.1", "Z49.1", "Z99.2")):
+        b.diag(icd, primary=(i == 0), on=a)
+    for n in (0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 25):  # three sessions a week of at least 4 hours (C000966)
+        b.proc("P704230", a + timedelta(days=n), specialty=NEFROLOJI)
+    b.drug(ARANESP, a, qty=4, unit="syringe", per_box=4, drug_specialty_board_report_present=True,
+           drug_report_duration_months=1,
+           prescriber_specialty="Nefroloji" if variant == "clean" else "Genel Cerrahi")
+    return b
+
+
+# ── S23 ─ an emergency haemodialysis session of the patient of S17 (a clean bill) ──
+def s23(variant: str) -> Bill:
+    """71 M, the patient of S17: an emergency haemodialysis for a raised potassium on 2026-06-12, a stay of one date.
+
+    A clean bill (CLEAN_ONLY): the session is the EK-2C package P704210 (C000963), which includes the tests of the
+    emergency and the day bed (C000969), so no bed, test or drug line. The month of S17 is its history.
+    """
+    if variant != "clean":
+        raise ValueError("S23 is a clean bill: it has no faulty variant")
+    day = D("2026-06-12")
+    b = Bill("SH-14", "C-SH23", "yatis", "Nefroloji", day, day, "N18.0", package_candidate=True)
+    b.history = (s17("faulty"),)
+    for i, icd in enumerate(("N18.0", "E87.5", "Z99.2")):
+        b.diag(icd, primary=(i == 0))
+    b.proc("P704210", day, specialty=NEFROLOJI)
+    return b
+
+
 # ── S47 ─ the day bed of a stay under 24 hours not billed ───────────────────
 def s47(variant: str) -> Bill:
     """58 F, the patient of S7: syncope six days after the ER visit; ER observation under 24 hours, 2026-02-25.
@@ -574,6 +616,6 @@ def s40(variant: str) -> Bill:
 
 
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S32", "S39", "S48")
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S48")
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S20": s20, "S22": s22, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S47": s47, "S48": s48}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S20": s20, "S22": s22, "S23": s23, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S47": s47, "S48": s48}

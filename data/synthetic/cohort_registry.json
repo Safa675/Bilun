@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 22,
+    "anadata_clean.parquet": 24,
     "lab_clean.parquet": 300,
-    "recete_clean.parquet": 22
+    "recete_clean.parquet": 23
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "ece374d186951595cf1c6841c687a9d128591b1413e6e1f8f1874d6b2aae22d2",
+    "anadata_clean.parquet": "9f1573951979b5df213af5668b197a5f8a958ff76db8a3a65f8d3f82c4873def",
     "lab_clean.parquet": "f9aa94dbe23329c7222ecc2986fc2ac0ae4fdf79acf32f068675ae2ae4021d7c",
-    "recete_clean.parquet": "56b9706c897766174cd44f1c99a912aa8d6d704302330e3a87c7608a02021f53"
+    "recete_clean.parquet": "1e07e69aeb29a4d582425893c9b18fce8ecad2484e2749ae0931dbd212c180c3"
   },
   "counts": {
-    "claim_diagnoses.parquet": 53,
-    "claim_headers.parquet": 22,
-    "drug_claim_lines.parquet": 22,
-    "expected_rule_outputs.parquet": 19,
+    "claim_diagnoses.parquet": 61,
+    "claim_headers.parquet": 24,
+    "drug_claim_lines.parquet": 23,
+    "expected_rule_outputs.parquet": 20,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 1,
-    "patient_copay_profiles.parquet": 13,
+    "patient_copay_profiles.parquet": 14,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 190
+    "procedure_claim_lines.parquet": 203
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -218,6 +218,24 @@
       "pathway_id": "umbilical_hernia_day_case_package",
       "patient_id": "SENTETIK-HASTA-0013",
       "story": "S20",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0014-001",
+      "fault_id": "F_S17_ESA_PRESCRIBED_BY_GENERAL_SURGERY",
+      "is_clean": false,
+      "pathway_id": "end_stage_kidney_disease_haemodialysis_month",
+      "patient_id": "SENTETIK-HASTA-0014",
+      "story": "S17",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0014-002",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "end_stage_kidney_disease_emergency_haemodialysis",
+      "patient_id": "SENTETIK-HASTA-0014",
+      "story": "S23",
       "tier": "showcase"
     }
   ],
@@ -565,6 +583,24 @@
       "patient_id": "SENTETIK-HASTA-0013",
       "story": "S20",
       "sut_section": "2.2.2(1)"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "65349.24",
+      "billed_faulty_try": "65349.24",
+      "claim_id": "F-SENTETIK-HASTA-0014-001",
+      "effect_kind": "compliance_error",
+      "engine_rule": "drug_indication",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S17_ESA_PRESCRIBED_BY_GENERAL_SURGERY",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0014-001-F_S17_ESA_PRESCRIBED_BY_GENERAL_SURGERY",
+      "line_id": "ILC-F-SENTETIK-HASTA-0014-001-001",
+      "line_ids": [],
+      "line_type": "ilac",
+      "pathway_id": "end_stage_kidney_disease_haemodialysis_month",
+      "patient_id": "SENTETIK-HASTA-0014",
+      "story": "S17",
+      "sut_section": "4.2.9.A-1"
     }
   ],
   "roles": {
@@ -630,6 +666,12 @@
       ],
       "patient_id": "SENTETIK-HASTA-0010"
     },
+    "S17": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0014-001"
+      ],
+      "patient_id": "SENTETIK-HASTA-0014"
+    },
     "S20": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0013-001"
@@ -641,6 +683,12 @@
         "F-SENTETIK-HASTA-0012-002"
       ],
       "patient_id": "SENTETIK-HASTA-0012"
+    },
+    "S23": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0014-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0014"
     },
     "S32": {
       "claim_ids": [
@@ -694,14 +742,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "eaa7b0c83d42cf357fa7ade5a4d6281c4fd85a663296abf7ae151b5383c32962",
-    "claim_headers.parquet": "c4c37b064ac4c0b0c85abe9b5eb327c379364ac833cde863a11355a3bec3c6d3",
-    "drug_claim_lines.parquet": "01d663779eebaf683906e757aea5772cfcdcad0eb987e45095e7f744a610a102",
-    "expected_rule_outputs.parquet": "f22b9a79cc696e1361b5fc4e7bc44ded064248841d7adf791290214fc95df78f",
+    "claim_diagnoses.parquet": "1b48a013a2b9213fe255b1d545f06d175c75e899e09d7f84f5129cf04940f826",
+    "claim_headers.parquet": "593f8a525ba2dd2e2fe5c7131b0a56b1c32b0a870f06ec9b7269e519709ae050",
+    "drug_claim_lines.parquet": "48a6af24272df3569158d73f8c9f0ab7648a6c2f2111f71f2b1c0ebd083d7390",
+    "expected_rule_outputs.parquet": "8234d7bc27fbf53ca909297f2b379260fb85128d4714293f2bc66826c55a67e3",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
-    "patient_copay_profiles.parquet": "3b7c023efc383536c107521c4182001e5e5c3127877e33634778540592092c13",
+    "patient_copay_profiles.parquet": "0afb0271a0aea3b43dc653d6cdd21d729f23558b89da39f6c93644a251e56d2a",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "91cd2142202b93378cea166e9f931d7a0adcf1cf004dd8ba1192a0d9b0e54c8a"
+    "procedure_claim_lines.parquet": "e685a60f31acb107b4d0822ef18561378fb612fa2b350a70b967e41a7ebc113d"
   }
 }
