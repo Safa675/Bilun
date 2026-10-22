@@ -17,7 +17,7 @@ from typing import Any
 
 from scripts.synthetic.pathways.checks import Catalogs
 from scripts.synthetic.pathways.expand import expand
-from scripts.synthetic.pathways.schema import Pathway, Pins
+from scripts.synthetic.pathways.schema import Pathway, Pins, last_day
 
 from .schema import (
     DropDiagnosis,
@@ -54,7 +54,7 @@ def _pathway_window(pathway: Pathway) -> tuple[str, str]:
 
 def _check_stay_in_window(fault_id: str, pathway: Pathway, pins: Pins) -> None:
     start, end = _pathway_window(pathway)
-    last = (date.fromisoformat(pins.admit) + timedelta(days=pins.nights or 0)).isoformat()
+    last = (date.fromisoformat(pins.admit) + timedelta(days=last_day(pathway, pins))).isoformat()
     if pins.admit < start or last > end:
         raise FaultApplyError(
             f"{fault_id}: stay {pins.admit}..{last} is outside the window "

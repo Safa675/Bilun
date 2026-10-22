@@ -290,6 +290,27 @@ faults:
     basis: sut
     source: "C001243 (SUT 2.4.4.H.(8)), EK-2B 510090 (yemek, yatak, vizit): the ICU bill pays the day the patient leaves; the ward bill billed 510010 on it too (story S14)."
 
+  - fault_id: F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED
+    story: S20
+    title: "Day-case package billed as itemized (umbilical hernia repair)"
+    target_pathway: umbilical_hernia_day_case_package
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: umbilical_hernia_day_case_itemized
+    expected_finding:
+      engine_rule: billing_strategy
+      detectors:
+        - "src/bilun/domain/prose_rules/payment_method.py:check_payment_method_compliance"
+        - "src/bilun/domain/billing/claim_strategy.py:recommend_billing_strategy_from_claims"
+      sut_section: "2.2.2(1)"
+      sut_clauses: ["C000646", "C003484"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)) with C003484: a day case is inpatient care, so P603840 goes by package; the coder keyed EK-2B 603840 itemized (S20)."
+
   - fault_id: F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED
     story: S22
     title: "Polypectomy add-on not billed with the colonoscopy of the same session (the admission after the ER visit of patient 12)"
@@ -332,3 +353,24 @@ faults:
       finding_ids: ["tablo15_2_duplicate_exam_10day"]
     basis: sut
     source: "C000573 (SUT 2.2.1.B-1.(2)): a second visit to the same branch within 10 days gets no examination fee; the control of story S39 was a week earlier."
+
+  - fault_id: F_S47_DAY_BED_NOT_BILLED
+    story: S47
+    title: "Day bed not billed on a stay under 24 hours (syncope observation)"
+    target_pathway: syncope_er_observation_under_24_hours
+    mutations:
+      - op: drop_entry
+        section: procedures
+        entry_id: day_bed
+    expected_finding:
+      engine_rule: yatak_puani
+      detectors:
+        - "src/bilun/domain/prose_rules/yatak_puani.py:detect_yatak_puani_opportunities"
+      sut_section: "2.2.2(3)"
+      sut_clauses: ["C000648"]
+      effect_kind: revenue_uplift
+      line_type: fatura
+      target_entry_id: null
+      expected_status: eksik_faturalama
+    basis: sut
+    source: "C000648 (SUT 2.2.2.(3)): the bed of a stay under 24 hours is billed as the day bed 510120; the observation of S47 billed no bed line."

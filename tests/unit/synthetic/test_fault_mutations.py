@@ -605,3 +605,29 @@ def test_error_set_billed_ratio_unknown_entry_and_existing_ratio(
         FaultApplyError, match="F_S8_SECOND_PACKAGE_FULL_RATE.*set_billed_ratio.*already has"
     ):
         apply_fault(existing_ratio, pathway)
+
+
+def test_the_window_of_a_fault_on_a_session_claim_is_checked_to_the_end_of_its_span(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    """G3: a session claim ends on admit+span; a fault on it may not move that last day past the window."""
+    import yaml
+
+    from scripts.synthetic.pathways import load_text
+
+    control = "pyelonephritis_dementia_post_discharge_control"  # S39, a poliklinik visit, given a span of 3 here
+    raw = yaml.safe_load((Path(__file__).resolve().parents[3] / f"data/synthetic/pathways/{control}.yaml").read_text(encoding="utf-8"))
+    raw["span"] = {"min": 1, "max": 5, "basis": "judgment", "source": "Test fixture only: a session claim over days."}
+    raw["showcase"]["span"] = 3
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{control}.yaml")
+    dropping = _fault_by_story(faults, "S22")  # a drop_entry fault, pointed at the culture of the control
+    fault = dropping.model_copy(
+        update={
+            "target_pathway": control,
+            "mutations": [dropping.mutations[0].model_copy(update={"entry_id": "urine_culture"})],
+        }
+    )
+    fits = apply_fault(fault, pathway, pathway.showcase.model_copy(update={"admit": "2026-09-27"}))
+    assert fits["header"]["claim_end_date"] == "2026-09-30"  # admit + 3, the last day of the window
+    with pytest.raises(FaultApplyError, match="outside the window"):
+        apply_fault(fault, pathway, pathway.showcase.model_copy(update={"admit": "2026-09-28"}))

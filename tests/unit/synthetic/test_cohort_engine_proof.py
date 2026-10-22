@@ -575,7 +575,7 @@ def test_the_engine_runs_over_one_bill_with_the_patients_other_bills_as_history(
     recipes, clinical = with_encounters(
         Extra(
             7,
-            2,
+            4,  # after the committed second and third bill (S47, S48)
             "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out",
             {"admit": "2026-02-10", "story": "S91"},
         )
@@ -583,8 +583,9 @@ def test_the_engine_runs_over_one_bill_with_the_patients_other_bills_as_history(
     built = build_showcase(recipes=recipes, clinical=clinical)
     write_showcase(built, tmp_path)
     dataset = load_showcase_dataset(tmp_path / "sut" / "claims")
-    first, precursor = "F-SENTETIK-HASTA-0007-001", "F-SENTETIK-HASTA-0007-002"
-    assert {c for c in dataset.claims if c.startswith("F-SENTETIK-HASTA-0007-")} == {first, precursor}
+    first, precursor = "F-SENTETIK-HASTA-0007-001", "F-SENTETIK-HASTA-0007-004"
+    later = {"F-SENTETIK-HASTA-0007-002", "F-SENTETIK-HASTA-0007-003"}  # the committed S47 and S48
+    assert {c for c in dataset.claims if c.startswith("F-SENTETIK-HASTA-0007-")} == {first, precursor, *later}
 
     # what the proof hands the engine: the bill, with the other bill as history, on both sides
     seen: dict[str, dict[str, Any]] = {}
@@ -605,11 +606,11 @@ def test_the_engine_runs_over_one_bill_with_the_patients_other_bills_as_history(
         ctx = seen["S7"][side]
         assert [c.claim_id for c in ctx.claims] == [first], side
         assert {line.claim_id for line in ctx.procedure_lines} == {first}, side
-        assert {c.claim_id for c in ctx.history.claims} == {first, precursor}, side
-        assert {line.claim_id for line in ctx.history.procedure_lines} == {first, precursor}, side
-    # the patient-level context the proof used to run over holds both bills as active rows
+        assert {c.claim_id for c in ctx.history.claims} == {first, precursor, *later}, side
+        assert {line.claim_id for line in ctx.history.procedure_lines} == {first, precursor, *later}, side
+    # the patient-level context the proof used to run over holds every bill as active rows
     patient_ctx = build_patient_claim_context(s7.patient_id, dataset)
-    assert patient_ctx is not None and {c.claim_id for c in patient_ctx.claims} == {first, precursor}
+    assert patient_ctx is not None and {c.claim_id for c in patient_ctx.claims} == {first, precursor, *later}
     assert seen["S7"]["faulty_ctx"] == build_bill_claim_context(s7.patient_id, first, dataset)
 
 

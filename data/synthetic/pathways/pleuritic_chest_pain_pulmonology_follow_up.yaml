@@ -1,0 +1,64 @@
+# Pulmonology follow-up three weeks after the ER visit of story S7 (pleuritic chest pain, pulmonary embolism ruled out), outpatient, billed itemized; a clean bill.
+# Showcase story S48 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F7 b3): bill 3 of the patient of S7.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: pleuritic_chest_pain_pulmonology_follow_up
+title: "Follow-up of pleuritic chest pain at chest diseases, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Göğüs Hastalıkları"
+  specialty: "1171"                  # EK-2A: Göğüs Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S48 is the woman of story S7 (the same patient, the third bill); R07.1 and R06.0 have no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 90
+    basis: judgment
+    source: "Story S48 patient is 58, like story S7; the bounds are the author's judgment."
+
+diagnoses:
+  - icd10: R07.1
+    name: "SOLUNUMDA GÖĞÜS AĞRISI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the follow-up of the pleuritic chest pain of story S7, pulmonary embolism ruled out. Clinician to confirm."
+  - icd10: R06.0
+    name: "DİSPNE"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the dyspnoea of story S7 is reassessed at the follow-up. Clinician to confirm."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+  - id: chest_xray
+    kind: imaging
+    code: "801720"
+    name: "Akciğer grafisi P.A. (Tek yön)"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: judgment
+    source: "A control chest film three weeks after pleuritic chest pain; no guideline named. Clinician to confirm."
+
+notes:
+  - "The visit is 21 days after the ER visit of story S7 (2026-02-19) and 15 days after the observation of story S47 (2026-02-25), in another branch: no duplicate-exam or duplicate-test window applies."
+  - "No test is billed: the tests of story S7 and story S47 are recent and normal."
+
+showcase:
+  story: S48
+  sex: F
+  age: 58
+  admit: "2026-03-12"

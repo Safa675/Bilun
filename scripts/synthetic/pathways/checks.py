@@ -33,6 +33,7 @@ from .schema import (
     course_overrun,
     day_expressions,
     included,
+    last_day,
     pin_problems,
     resolve_days,
 )
@@ -592,8 +593,17 @@ def _stay_cases(pathway: Pathway) -> list[int | None]:
     """The nights to test: shortest, longest and the showcase's; [None] for a pathway without a stay."""
     if pathway.nights is None:
         return [None]
-    shown = [pathway.showcase.nights] if pathway.showcase.nights else []
+    shown = [pathway.showcase.nights] if pathway.showcase.nights is not None else []
     return sorted({pathway.nights.min, pathway.nights.max, *shown})
+
+
+def _day_cases(pathway: Pathway) -> list[int | None]:
+    """The last days to test: the nights of a stay, the span of a session claim (shortest, longest, the showcase's);
+    [None] for a visit of one date."""
+    if pathway.span is None:
+        return _stay_cases(pathway)
+    shown = [pathway.showcase.span] if pathway.showcase.span is not None else []
+    return sorted({pathway.span.min, pathway.span.max, *shown})
 
 
 _DAY_FAULTS = {
@@ -603,9 +613,9 @@ _DAY_FAULTS = {
 
 
 def check_days(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """days.in_stay (every day inside the stay), days.duplicate (a line twice on one day)."""
+    """days.in_stay (every day inside the stay, or the span of a session claim), days.duplicate (a line twice on one day)."""
     failures: dict[tuple[str, str, str], list[int | None]] = {}
-    for nights in _stay_cases(pathway):
+    for nights in _day_cases(pathway):
         anchors = anchors_for(pathway, nights)
         for where, expr in day_expressions(pathway):
             days = resolve_days(expr, anchors)
@@ -800,7 +810,9 @@ def check_drug_courses(pathway: Pathway, cat: Catalogs) -> list[Problem]:
         if drug.per_night and any(starts):
             out.append(Problem("drug.course", where, "a per_night drug starts on admit"))
         if drug.per_day:
-            shortest = pathway.nights.min if pathway.nights else None  # a visit is one day
+            # the shortest stay, the shortest span of a session claim; a visit is one day
+            span = pathway.nights or pathway.span
+            shortest = span.min if span is not None else None
             days = drug.course_days.min
             late = course_overrun(pathway, drug, shortest, days)
             if late > 0:
@@ -838,7 +850,7 @@ def pins_problems(pathway: Pathway, pins: Pins, cat: Catalogs) -> list[Problem]:
     """
     out = pin_problems(pathway, pins)
     start, end = effective_window(pathway, cat)
-    last = (date.fromisoformat(pins.admit) + timedelta(days=pins.nights or 0)).isoformat()
+    last = (date.fromisoformat(pins.admit) + timedelta(days=last_day(pathway, pins))).isoformat()
     if pins.admit < start or last > end:
         out.append(
             Problem(

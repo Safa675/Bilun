@@ -37,7 +37,7 @@ import polars as pl
 import pytest
 
 from scripts.synthetic.cohort import DEFAULT_OUT_DIR, build_showcase, plausibility_clean
-from scripts.synthetic.cohort.ids import episode_id, patient_id
+from scripts.synthetic.cohort.ids import claim_id, episode_id, patient_id
 from scripts.synthetic.cohort.plausibility_clean import (
     BLOOD_GAS_CODE,
     CHECK_FUNCTIONS,
@@ -2830,7 +2830,7 @@ def test_a_set_whose_code_is_not_in_the_reference_cannot_be_compared(built, clea
 def test_the_troponin_is_billed_twice_on_one_day_and_gives_two_result_sets(built, clean) -> None:
     """The facts that the cases `second_troponin_set_removed` and `second_set_for_one_billed_line` use."""
     billed = built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_category") == "laboratuvar")
-    troponin = billed.filter(pl.col("procedure_code") == "L107360")
+    troponin = billed.filter((pl.col("procedure_code") == "L107360") & (pl.col("claim_id") == claim_id(PATIENT[7], 1)))  # S7's ER bill
     assert troponin.height == 2 and troponin["procedure_date"].n_unique() == 1
     assert clean[TABLE_LAB].filter(lab(7, "2026-02-19", "L107360")).height == 2
     assert (

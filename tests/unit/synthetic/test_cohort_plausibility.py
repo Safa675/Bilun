@@ -158,6 +158,8 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S14": {"stay.bed_coverage"},  # the ward bed on the day the ICU bill ends: the ICU bill's 510090 already pays it
     "S22": set(),  # the polypectomy beside the colonoscopy is not billed: a line is missing, only the engine (procedure_addon_uplift) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
+    "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
+    "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
 }
 
 # The ids of slice E1 and of slice E2; later slices add their own to CHECKS.
@@ -4111,11 +4113,11 @@ def test_the_day_bed_is_the_code_set_day_bed_and_a_bed_day_code(context) -> None
     assert context.code_sets["beds"]["ward_day"]["code"] != context.day_bed_code
 
 
-def test_no_committed_bill_uses_the_day_bed_so_the_rule_changes_no_pinned_trip(
-    built, twins
-) -> None:
-    for tables in (twins, built.tables):
-        assert tables[TABLE_PROCEDURES].filter(pl.col("procedure_code") == "510120").height == 0
+def test_the_one_day_bed_of_the_cohort_is_on_the_clean_twin_of_the_stay_of_one_date(built, twins) -> None:
+    """S47's clean twin bills the day bed of its stay of one date; its faulty (committed) bill leaves it out."""
+    day_beds = twins[TABLE_PROCEDURES].filter(pl.col("procedure_code") == "510120")
+    assert day_beds.select("claim_id", "procedure_date").rows() == [(OBSERVATION_CLAIM, "2026-02-25")]
+    assert built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_code") == "510120").height == 0
 
 
 def test_a_minor_operation_on_an_acil_claim_is_not_a_major_one(twins, anadata, context) -> None:
@@ -4194,6 +4196,7 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
         "pyelonephritis_dementia_second_visit_ultrasound": ["pyelonephritis_dementia_second_visit_exam_billed"],
         "urosepsis_ward_stay_after_icu_transfer": ["urosepsis_ward_stay_transfer_day_billed"],
         "gi_bleed_melena_er_visit": ["gi_bleed_melena_er_visit_manual_hct_billed"],
+        "umbilical_hernia_day_case_package": ["umbilical_hernia_day_case_itemized"],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []
@@ -5287,7 +5290,7 @@ def test_more_bills_of_a_patient_raise_no_finding_that_the_cohort_does_not_raise
     found = _claims_findings(two_bills)
     assert {p.check for p in found} == set().union(*EXPECTED_FAULT_TRIPS.values())
     assert sorted(str(p) for p in found) == sorted(str(p) for p in faulty_problems)  # the same, bill for bill
-    extra = {"F-SENTETIK-HASTA-0004-004", "F-SENTETIK-HASTA-0007-002", "F-SENTETIK-HASTA-0009-002"}
+    extra = {"F-SENTETIK-HASTA-0004-004", "F-SENTETIK-HASTA-0007-004", "F-SENTETIK-HASTA-0009-002"}
     assert not [p for p in found if p.claim_id in extra]
 
 
@@ -5393,7 +5396,7 @@ def test_a_visit_that_has_a_discharge_date_is_no_visit(built, anadata, context) 
     data = Data(dict(built.tables), anadata)
     edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == CONTROL_CLAIM, discharge_date="2026-05-26")
     (problem,) = [p for p in run_only(data, context, "stay.dates_in_window") if p.claim_id == CONTROL_CLAIM]
-    assert "claim of type poliklinik is one day, with no admission and no discharge" in problem.message
+    assert "claim of type poliklinik is one day or a span of days, with no admission and no discharge" in problem.message
 
 
 def test_a_visit_billed_with_the_consultation_code_is_found_by_the_visit_rule(built, anadata, context) -> None:
@@ -5413,3 +5416,58 @@ def test_each_bill_of_a_patient_with_three_bills_is_judged_by_its_own_age(built,
     data = Data(dict(built.tables), anadata)
     edit(data, TABLE_COPAY, pl.col("patient_id") == PATIENT[4], birth_year=1941)
     assert sorted(p.claim_id for p in run_only(data, context, ARITH)) == [CLAIM[4], CONTROL_CLAIM, SECOND_VISIT_CLAIM]
+
+
+# --- 7. G3: a stay of one date (S47) and the window of a visit (a session claim may span dates) ------------------------
+
+OBSERVATION_CLAIM = claim_id(PATIENT[7], 2)  # S47: patient 7's observation under 24 hours, admitted and discharged 02-25
+DAY_CASE_CLAIM = claim_id(patient_id(13), 1)  # S20: the day case of patient 13 (gunubirlik)
+
+
+def test_a_stay_of_one_date_has_one_day_bed_and_its_faulty_bill_misses_it(built, twins, anadata, context) -> None:
+    for tables in (built.tables, twins):
+        (header,) = tables[TABLE_CLAIM_HEADERS].filter(pl.col("claim_id") == OBSERVATION_CLAIM).iter_rows(named=True)
+        assert (header["claim_type"], header["admission_date"], header["discharge_date"]) == ("yatis", "2026-02-25", "2026-02-25")
+    beds = twins[TABLE_PROCEDURES].filter((pl.col("claim_id") == OBSERVATION_CLAIM) & pl.col("procedure_code").is_in(["510010", "510120"]))
+    assert beds.select("procedure_code", "procedure_date", "quantity").rows() == [("510120", "2026-02-25", 1)]
+    twin = Data(dict(twins), anadata)
+    assert [p for p in run_only(twin, context, "stay.bed_coverage") if p.claim_id == OBSERVATION_CLAIM] == []
+    faulty = Data(dict(built.tables), anadata)
+    (problem,) = [p for p in run_only(faulty, context, "stay.bed_coverage") if p.claim_id == OBSERVATION_CLAIM]
+    assert problem.message == "no bed line on 1 of 1 day(s): 2026-02-25"
+    # the day bed on a stay of two dates is a defect of its own
+    edit(twin, TABLE_CLAIM_HEADERS, pl.col("claim_id") == OBSERVATION_CLAIM, discharge_date="2026-02-26", claim_end_date="2026-02-26")
+    found = [p.message for p in run_only(twin, context, "stay.bed_coverage") if p.claim_id == OBSERVATION_CLAIM]
+    assert any("the day bed is for a day case" in m for m in found), found
+
+
+@pytest.mark.parametrize(
+    ("claim", "changes", "fits"),
+    [
+        pytest.param(CONTROL_CLAIM, {"claim_end_date": "2026-05-28"}, True, id="poliklinik_span"),
+        pytest.param(DAY_CASE_CLAIM, {"claim_end_date": "2026-06-19"}, True, id="gunubirlik_span"),
+        pytest.param(DAY_CASE_CLAIM, {}, True, id="gunubirlik_one_date"),
+        pytest.param(CONTROL_CLAIM, {"claim_end_date": "2026-05-24"}, False, id="poliklinik_ends_before_it_starts"),
+        pytest.param(DAY_CASE_CLAIM, {"admission_date": "2026-06-17"}, False, id="gunubirlik_with_an_admission"),
+        pytest.param(DAY_CASE_CLAIM, {"discharge_date": "2026-06-17"}, False, id="gunubirlik_with_a_discharge"),
+        pytest.param(OBSERVATION_CLAIM, {"discharge_date": None}, False, id="stay_of_one_date_without_its_discharge"),
+    ],
+)
+def test_a_session_claim_may_span_dates_and_an_er_visit_is_one_date(claim, changes, fits, twins, anadata, context) -> None:
+    data = Data(dict(twins), anadata)
+    if changes:
+        edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == claim, **changes)
+    found = [p for p in run_only(data, context, "stay.dates_in_window") if p.claim_id == claim]
+    assert (found == []) is fits, [str(p) for p in found]
+
+
+def test_an_er_visit_over_two_dates_is_refused_with_the_rule_of_its_type(twins, anadata, context) -> None:
+    er = cohort.role("showcase_S7").claim_id
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == er, claim_end_date="2026-02-20")
+    (problem,) = [p for p in run_only(data, context, "stay.dates_in_window") if p.claim_id == er]
+    assert "is one day, with no admission and no discharge" in problem.message
+    edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == CONTROL_CLAIM, claim_end_date="2026-05-24")
+    # the header (its lines, now after the window's end, are findings of their own)
+    (problem,) = [p for p in run_only(data, context, "stay.dates_in_window") if p.where == CONTROL_CLAIM]
+    assert "is one day or a span of days, with no admission and no discharge" in problem.message

@@ -1,0 +1,50 @@
+# Umbilical hernia repaired as a day case (günübirlik), billed as the EK-2C package.
+# Showcase story S20 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S20): patient 13, one bill, the first gunubirlik pathway.
+# Grammar: README.md next to this file. A day case is a visit: no nights; `admit` is the one date.
+schema_version: 1
+id: umbilical_hernia_day_case_package
+title: "Umbilical hernia, graftless repair as a day case, billed as the EK-2C package"
+claim_type: gunubirlik
+billing_mode: package
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "An umbilical hernia occurs in both sexes and K42.9 has no sex gate; story S20 is a man. Clinician to confirm."
+  age:
+    min: 18
+    max: 80
+    basis: judgment
+    source: "Story S20 patient is 41 (born 1985). Adults fit for a day case; the upper bound is the author's judgment."
+
+diagnoses:
+  - icd10: K42.9
+    name: "UMBİLİKAL HERNİ, OBSTRÜKSİYONSUZ, GANGRENSİZ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; an elective repair of an uncomplicated umbilical hernia (EHS/AHS 2020). WHO ICD-10 Vol. 2 coding."
+
+procedures:
+  - id: hernia_package
+    kind: package
+    code: "P603840"
+    name: "Greftsiz umblikal herni onarımı"
+    days: admit
+    basis: sut
+    source: "C000646 (SUT 2.2.2.(1)): inpatient care with an EK-2C code goes by package; a day case is inpatient care (C003484)."
+
+notes:
+  - "A day case with an EK-2C procedure bills no day bed (C000649) and no companion (C000650): the package is the whole bill."
+  - "A graftless primary repair fits a small defect (EHS/AHS 2020, as story S8 cites for the same code); the defect size is not on the bill."
+
+showcase:
+  story: S20
+  sex: M
+  age: 41
+  admit: "2026-06-17"

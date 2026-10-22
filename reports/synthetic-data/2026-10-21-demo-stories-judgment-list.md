@@ -307,3 +307,38 @@ Patient 2 (S2: a man of 81, COPD exacerbation with pneumonia, itemized stay 2026
 - The 20 % is the demo's model of the visit copay, not a SUT rate; the 17.15 is that model's arithmetic on the 2026-07-07 list price of 520030, not a measured hospital amount.
 - Nothing else moves: the claims-only coverage of the cohort is unchanged but for the bill count (16 -> 17; patient 2 adds the outpatient rules patient 4 already has, ORTAK-13 and ORTAK-20), the bill-level reports of every committed bill are unchanged, and on the app path no patient but patient 2 moves.
 - What the page shows (checked in the local app after a cache rebuild, EN and TR): the patient headline "Exempt: EK-1A, chronic health report on file" / "Muaf: EK-1A, kronik hastalık raporu kayıtlı"; the control bill billed 85.73, expected payable 68.58, the action "EK-1A exemption review" / "EK-1A muafiyet kontrolü" 17.15 and the waiver line "EK-1A outpatient examination" / "EK-1A ayaktan muayene" with "corrected SGK payable (100%)" 85.73; the admission bill "EK-1A waives outpatient specialist examinations only…" (no amount); the cohort table "Exempt (EK-1A)" / "Muaf (EK-1A)", filter exempt 3 / not exempt 9. Two things for the billing officer to read: the page files the waiver under "Revenue opportunity" / "Gelir fırsatı" with the label "Compliance savings", and the cohort's revenue page adds it to patient 2's total opportunity (667.08 -> 684.23) and to the copay savings (0 -> 17.15). The checklist action "Documentation Requirement" is still English on the TR page (not from this package).
+
+## S47, S48 and S20 (WP10) — a stay of one date, the follow-up of patient 7, and the first day case
+
+**S47** (F7 b2): the woman of 58 of S7 (ER visit 2026-02-19, pleuritic chest pain, pulmonary embolism ruled out by CT angiography) comes back to the ER on 2026-02-25 with a syncope and is observed for less than 24 hours: a `yatis` bill admitted and discharged on 02-25 in `Acil Tıp`, R55 (+ R07.1), the consultation 520010, an ECG, troponin I (8.4 ng/L) and a D-dimer (533 ng/mL FEU). Its bed is the day bed 510120 (C000648); the faulty bill leaves it out and the engine asks for it (`yatak_puani_day_bed`, 44.45). The troponin and D-dimer repeat tests of the ER bill six days earlier: the duplicate-test review (Tablo 15 #12) is on this bill, clean and faulty alike. **S48** (F7 b3): a chest-disease follow-up on 2026-03-12 (520030 + a control chest film), a clean bill. **S20**: a man of 41 (born 1985) has an umbilical hernia (K42.9) repaired as a day case on 2026-06-17 in general surgery: the clean bill is the package P603840 alone; the faulty one bills 603840 with its anaesthesia 550170 itemized, and the engine reports the package uplift 4724.84. **An emergency physician reads S47 and S48, a general surgeon (light) S20, the billing officer the billing premises.**
+
+### Premises the emergency physician confirms
+
+- [ ] **An observation under 24 hours for a syncope six days after a negative CT angiography.** ECG, one troponin and a D-dimer, discharged the same day with no cause found (R55). Would the ER repeat the D-dimer at all, six days after a CT that ruled out an embolism? (533 is above the conventional 500 cut-off and below the age-adjusted 580 of a 58-year-old, so no new imaging follows.) Would it draw a second troponin (S7 drew 0 h and 2 h)?
+- [ ] **The ER's observation as a `yatis` bill in `Acil Tıp`, admitted and discharged on one date**, its bed the day bed 510120 (C000648). Is this how the hospital records an ER observation (or as an `acil` bill with an observation line)?
+- [ ] **The examination of the stay is 520010** (consultation), the code the demo uses for every stay's examination; R07.1 kept as a secondary diagnosis.
+- [ ] **The follow-up S48**: chest diseases three weeks after the ER visit, R07.1 + R06.0, an examination and a control PA chest film, no test. Plausible after a pulmonary embolism was ruled out and a syncope observed? The vitals of the three bills (S47: 118/72, 78, 98 %; S48: 128/80, 80, 98 %).
+
+### Premises the general surgeon confirms (light)
+
+- [ ] **A graftless umbilical hernia repair as a day case** in a healthy man of 41: K42.9 (no obstruction, no gangrene), the package P603840 (the code S8 bills for a defect under 1 cm), discharged the same day.
+- [ ] **The anaesthesia of the itemized form is 550170** (group C: one operation of 3228.38 puan is group C on both band tables). The card's "550220, not 550230" was the two-operation case of S9 and does not apply to one operation.
+
+### Premises the billing officer confirms
+
+- [ ] **A day case is inpatient care, so its EK-2C procedure goes by package** (C000646 with C003484, which names günübirlik tedavi among the yatarak tedaviler), with no day bed (C000649) and no companion (C000650). The engine's uplift is the package less the whole itemized bill, anaesthesia included: 4724.84 (the plan's 5255.17 left the anaesthesia out).
+- [ ] **A stay of one date bills the day bed 510120, not the standard bed** (C000648), and no companion (no night).
+- [ ] **The repeated troponin and D-dimer** within seven days of the ER bill: the duplicate-test review is structural (both bills are right); is that how an auditor reads two separate takips?
+
+### Items with `basis: judgment` in the pathways
+
+- S47: `patient.sex`/`age`, the diagnoses R55 and R07.1, the consultation 520010, the troponin and the D-dimer. S48: `patient.sex`/`age`, R07.1, R06.0, the chest film. S20: `patient.sex`/`age` (the diagnosis and the package are cited).
+
+### Clinical context (`data/synthetic/cohort/showcase_clinical.yaml`, `basis: judgment`)
+
+- Patient 7, encounter 2: vitals above; the D-dimer state of S7 (`elderly_without_vte`), a normal troponin. Encounter 3: vitals above, no labs. Patient 13: 126/78, 72, 98 %, 176 cm, 84 kg, no labs.
+
+### What WP10 does not claim
+
+- The span grammar (a `gunubirlik`/`poliklinik` session claim over several dates) is built and tested but no committed bill uses it yet (S17 will).
+- The Wave A rules for a day case (2.2.2.(4)/(5)) are evaluated and cannot match a plain `gunubirlik` claim (EI-20); `care_setting_review` stays dark. The bill-level reports of every earlier bill are unchanged.

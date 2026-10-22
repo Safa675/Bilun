@@ -59,6 +59,8 @@ S11 = "urosepsis_septic_shock_icu_stay"
 S12 = "late_preterm_newborn_incubator_stay"
 S14 = "urosepsis_ward_stay_after_icu_transfer"  # a ward stay that arrives from an ICU bill: its bed starts the day after admission
 S39 = "pyelonephritis_dementia_post_discharge_control"  # a control visit (poliklinik): one date, no stay
+S47 = "syncope_er_observation_under_24_hours"  # a stay of one date (nights 0): admission and discharge on 2026-02-25
+S20 = "umbilical_hernia_day_case_package"  # the first gunubirlik pathway: a day case billed as the EK-2C package
 S32 = "copd_exacerbation_post_discharge_control"  # S2's control visit: its examination carries the patient's share (G5b)
 S22 = "gi_bleed_admission_colonoscopy"  # a colonoscopy session: the colonoscopy leads, the polypectomy is a chapter-7 add-on at 50 %
 
@@ -598,6 +600,11 @@ def set_pins(raw: dict, **changes) -> None:
     raw["showcase"].update(changes)
 
 
+def with_span(raw: dict, cat: Catalogs) -> None:  # on S39: a poliklinik session claim over 2..5 days after the first
+    raw["span"] = {"min": 2, "max": 5, "basis": "judgment", "source": FIXTURE}
+    raw["showcase"]["span"] = 3
+
+
 def fixed_nights(raw: dict, nights: int = 5) -> None:
     """One stay length, so that a day range that is empty at the shortest stay does not hide the defect."""
     raw["nights"].update(min=nights, max=nights)
@@ -710,6 +717,10 @@ CASES = [
     Case("schema.stay_shape", S39, lambda r, c: per_night_instead_of_course(r), prepare=with_er_course, label="a per_night drug on a poliklinik visit"),
     Case("schema.stay_shape", S39, lambda r, c: r.update(arrives_from_icu=True), label="a poliklinik pathway that arrives from an ICU"),
     Case("schema.stay_shape", S39, lambda r, c: r.update(claim_type="yatis"), label="a yatis pathway without nights (the visit type was the only thing that kept it a visit)"),
+    # --- G3: a stay of one date (nights 0) and a session claim over several dates (span)
+    Case("schema.stay_shape", S7, lambda r, c: r.update(span={"min": 2, "max": 4, "basis": "judgment", "source": FIXTURE}), label="a span on an ER visit"),
+    Case("schema.stay_shape", S2, lambda r, c: r.update(span={"min": 2, "max": 4, "basis": "judgment", "source": FIXTURE}), label="a span on a stay"),
+    Case("schema.stay_shape", S2, lambda r, c: r["nights"].update(min=0), label="a per_night drug on a stay that may have no night"),
     # --- catalog identity
     Case("procedure.in_force", S2, lambda r, c: line(r, "bed").update(code="510019"), label="no such code"),
     Case("procedure.in_force", S2, lambda r, c: swap_in(r, "nebulizer", "701068", c), label="listed from 2026-07-07"),
@@ -781,11 +792,17 @@ CASES = [
     Case("pins.not_optional", S2, lambda r, c: set_pins(r, include=["I10", "bed"])),
     Case("pins.missing", S2, lambda r, c: r["showcase"].pop("course_days")),
     Case("pins.missing", S2, lambda r, c: r["showcase"].pop("nights"), label="nights: no course is tested against a missing stay"),
+    Case("pins.out_of_range", S39, lambda r, c: set_pins(r, span=9), prepare=with_span, label="span"),
+    Case("pins.out_of_range", S39, lambda r, c: set_pins(r, span=3), label="a span pin on a pathway without a span range"),
+    Case("pins.missing", S39, lambda r, c: r["showcase"].pop("span"), prepare=with_span, label="span"),
+    Case("pins.window", S39, lambda r, c: set_pins(r, admit="2026-09-28"), prepare=with_span, label="a span that ends after the window"),
     Case("pins.window", S2, lambda r, c: set_pins(r, admit="2026-01-15")),
     # --- days, sources, window
     Case("days.in_stay", S2, lambda r, c: line(r, "nebulizer").update(days="admit..discharge+1"), label="past the discharge day"),
     Case("days.in_stay", S2, lambda r, c: line(r, "chest_xray").update(days="admit+3..admit+1"), label="an empty range"),
     Case("days.in_stay", S2, lambda r, c: line(r, "chest_xray").update(days=["admit", "admit+5"]), label="outside the shortest stay only"),
+    Case("days.in_stay", S39, lambda r, c: line(r, "urine_culture").update(days="admit+4"), prepare=with_span, label="outside the shortest span only"),
+    Case("days.in_stay", S47, lambda r, c: line(r, "ecg").update(days="admit+1"), label="the day after a stay of one date"),
     Case("days.duplicate", S2, lambda r, c: line(r, "chest_xray").update(days=["admit", "admit..admit+4"])),
     Case("days.duplicate", S2, lambda r, c: line(r, "chest_xray").update(days=["admit+1", "discharge-8"]), also=("days.in_stay",), label="a collision at the longest stay only"),
     Case("stay.coverage", S3, lambda r, c: line(r, "bed").update(days="admit..admit+2"), label="a bed line fixed to the showcase nights"),
@@ -933,6 +950,78 @@ def test_the_stays_tested_are_the_shortest_the_longest_and_the_showcase() -> Non
     assert _stay_cases(load_pathway(_DIR / f"{S2}.yaml")) == [4, 6, 9]
     assert _stay_cases(load_pathway(_DIR / f"{S7}.yaml")) == [None]
     assert _stay_cases(load_pathway(_DIR / f"{S39}.yaml")) == [None]  # a visit has no stay to test
+    assert _stay_cases(load_pathway(_DIR / f"{S47}.yaml")) == [0]  # a stay of one date is a stay: 0 is no missing stay
+
+
+# --- G3: a stay of one date (nights 0) and a session claim over several dates (span) ----------------------------
+
+
+def test_a_stay_of_one_date_is_admitted_and_discharged_on_that_date_with_one_day_bed(catalogs: Catalogs, tmp_path) -> None:
+    pathway = load_pathway(_DIR / f"{S47}.yaml")
+    assert (pathway.claim_type, pathway.nights.min, pathway.nights.max, pathway.showcase.nights) == ("yatis", 0, 0, 0)
+    assert run_all(pathway, catalogs) == []
+    bill = expand(pathway)
+    header = bill["header"]
+    assert (header["admission_date"], header["discharge_date"]) == ("2026-02-25", "2026-02-25")
+    assert (header["claim_start_date"], header["claim_end_date"]) == ("2026-02-25", "2026-02-25")
+    assert [(r["code"], r["date"]) for r in bill["procedures"] if r["code"] in ("510010", "510120")] == [("510120", "2026-02-25")]
+    assert {r["date"] for r in bill["procedures"]} == {"2026-02-25"}
+    # a companion line has no night to cover; a bed line that stops before the discharge misses the one day
+    raw = _raw(S47)
+    raw["procedures"].append(
+        {"id": "companion", "kind": "companion", "code": "510121", "name": "Refakat", "days": "admit..discharge-1",
+         "basis": "judgment", "source": FIXTURE}
+    )
+    assert {p.check for p in _problems(raw, catalogs, tmp_path)} == {"days.in_stay"}
+    raw = _raw(S47)
+    line(raw, "day_bed").update(days="admit..discharge-1")
+    assert {p.check for p in _problems(raw, catalogs, tmp_path)} == {"days.in_stay", "stay.coverage"}
+
+
+def test_nights_and_their_pin_take_zero_and_a_stay_without_a_pin_is_still_missing_it() -> None:
+    pathway = load_pathway(_DIR / f"{S47}.yaml")
+    assert pin_problems(pathway, pathway.showcase) == []
+    pins = pathway.showcase.model_copy(update={"nights": None})
+    assert [(p.check, p.where) for p in pin_problems(pathway, pins)] == [("pins.missing", "showcase.nights")]
+    two = load_pathway(_DIR / f"{S2}.yaml")
+    found = [(p.check, p.where) for p in pin_problems(two, two.showcase.model_copy(update={"nights": 0}))]
+    assert found[0] == ("pins.out_of_range", "showcase.nights")  # 0 is outside S2's 4..9: refused like any other number
+
+
+def test_a_session_claim_spans_its_dates_without_a_stay(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S39)
+    with_span(raw, catalogs)
+    line(raw, "urine_culture").update(days="admit+2")  # the culture read on a later session day
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    pathway = load_text(body, f"{S39}.yaml")
+    assert run_all(pathway, catalogs) == []
+    bill = expand(pathway)
+    header = bill["header"]
+    assert (header["admission_date"], header["discharge_date"]) == (None, None)  # a visit, not a stay
+    assert (header["claim_start_date"], header["claim_end_date"]) == ("2026-05-25", "2026-05-28")  # admit + span 3
+    assert {r["code"]: r["date"] for r in bill["procedures"]}["905671"] == "2026-05-27"
+    longer = expand(pathway, pathway.showcase.model_copy(update={"span": 5}))
+    assert longer["header"]["claim_end_date"] == "2026-05-30" and longer["procedures"] == bill["procedures"]
+    # a span is a pin of a pathway with a span range only, and the range is what it is checked against
+    assert [p.check for p in pin_problems(pathway, pathway.showcase.model_copy(update={"span": None}))] == ["pins.missing"]
+    plain = load_pathway(_DIR / f"{S39}.yaml")
+    assert [p.check for p in pin_problems(plain, plain.showcase.model_copy(update={"span": 2}))] == ["pins.out_of_range"]
+
+
+def test_a_drug_course_may_run_to_the_last_day_of_a_session_claim(catalogs: Catalogs, tmp_path) -> None:
+    raw = _raw(S39)
+    with_span(raw, catalogs)
+    with_er_course(raw, catalogs)  # a per_day course on the visit (fixture)
+    d = raw["drugs"][-1]
+    d["course_days"].update(min=1, max=4)
+    raw["showcase"]["course_days"] = {d["id"]: 4}
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    pathway = load_text(body, f"{S39}.yaml")
+    # a 4-day course fits the pinned span of 3 (days 0..3); a span of 2 ends a day before it (the shortest course, 1
+    # day, fits every span, so the checks of the file pass)
+    assert run_all(pathway, catalogs) == []
+    assert pin_problems(pathway, pathway.showcase) == []
+    assert [p.check for p in pin_problems(pathway, pathway.showcase.model_copy(update={"span": 2}))] == ["drug.course"]
 
 
 # --- the visit grammar (G1): acil, poliklinik and gunubirlik are visits, yatis is the only stay ---------------

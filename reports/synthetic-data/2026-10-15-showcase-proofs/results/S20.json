@@ -1,0 +1,279 @@
+{
+ "story": "S20",
+ "clean": {
+  "total_billed": "7169.60",
+  "rows": [
+   {
+    "date": "2026-06-17",
+    "code": "P603840",
+    "name": "Greftsiz umblikal herni onarımı",
+    "qty": 1,
+    "unit": "7169.60",
+    "billed": "7169.60",
+    "source": "EK-2C valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K42.9",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "check_payment_method_compliance",
+    "code": "603840",
+    "kind": "DRG_MANDATORY",
+    "mandated": "package",
+    "compliant": true,
+    "section": "2.2.1.B-1.a",
+    "detail": "Billed correctly as package."
+   },
+   {
+    "fn": "recommend_billing_strategy_from_claims",
+    "recommendation": "package",
+    "payment_method_kind": "DRG_MANDATORY",
+    "current_billing": "package",
+    "package_total_try": 7169.6,
+    "itemized_total_try": 0.0,
+    "savings_try": 0.0,
+    "sut_section_id": "2.2.1.B-1.a",
+    "detail": "Claim C-SH20 is billed correctly as package per SUT §2.2.2(1). Package total 7169.60 TRY."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "faulty": {
+  "total_billed": "2444.76",
+  "rows": [
+   {
+    "date": "2026-06-17",
+    "code": "603840",
+    "name": "Greftsiz umblikal herni onarımı",
+    "qty": 1,
+    "unit": "1914.43",
+    "billed": "1914.43",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "550170",
+    "name": "Anestezi C grubu",
+    "qty": 1,
+    "unit": "530.33",
+    "billed": "530.33",
+    "source": "EK-2B valid_from 2026-01-31"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K42.9",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "check_payment_method_compliance",
+    "code": "603840",
+    "kind": "DRG_MANDATORY",
+    "mandated": "package",
+    "compliant": false,
+    "section": "2.2.1.B-1.a",
+    "detail": "Procedure 603840 must use package billing (tanıya dayalı işlem üzerinden ödeme) per 2.2.1.B-1.a."
+   },
+   {
+    "fn": "recommend_billing_strategy_from_claims",
+    "type": "compliance_violation",
+    "procedure_code": "603840",
+    "payment_method_kind": "DRG_MANDATORY",
+    "sut_section_id": "2.2.1.B-1.a",
+    "detail": "Procedure 603840 must use package billing (tanıya dayalı işlem üzerinden ödeme) per 2.2.1.B-1.a."
+   },
+   {
+    "fn": "recommend_billing_strategy_from_claims",
+    "recommendation": "package",
+    "payment_method_kind": "DRG_MANDATORY",
+    "current_billing": "itemized",
+    "package_total_try": 7169.6,
+    "itemized_total_try": 2444.76,
+    "savings_try": 4724.84,
+    "sut_section_id": "2.2.1.B-1.a",
+    "detail": "SUT §2.2 mandates package billing for claim C-SH20 (EK-2/C procedure present). Package total 7169.60 TRY vs itemized 2444.76 TRY."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 4724.84,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 5
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "billing_strategy",
+   "compliance_violation",
+   "603840",
+   0.0
+  ],
+  [
+   "action",
+   "billing_strategy",
+   "mandatory_compliance",
+   "P603840",
+   4724.84
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

@@ -1,4 +1,4 @@
-"""Seventeen showcase stories: clean bill + one injected fault each, except S32 and S39 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32 on 2026-10-22).
+"""Twenty showcase stories: clean bill + one injected fault each, except S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47 and S48 on 2026-10-22).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -405,6 +405,66 @@ def s22(variant: str) -> Bill:
     return b
 
 
+# ── S20 ─ a day-case package billed itemized ────────────────────────────────
+def s20(variant: str) -> Bill:
+    """41 M, umbilical hernia; graftless repair as a day case (gunubirlik), 2026-06-17, general surgery.
+
+    A day case is inpatient care (C003484), so the EK-2C code goes by package (C000646): the clean bill bills
+    P603840 alone (no day bed, C000649; no companion, C000650), the faulty one the EK-2B operation 603840 with
+    its anaesthesia: one operation of 3228.38 puan is group C on both band tables (550170).
+    """
+    day = D("2026-06-17")
+    b = Bill("SH-13", "C-SH20", "gunubirlik", "Genel Cerrahi", None, None, "K42.9",
+             package_candidate=True, start=day, end=day)
+    b.diag("K42.9", primary=True, on=day)
+    if variant == "clean":
+        b.proc("P603840", day, specialty=GENCER)
+    else:  # the coder keyed the EK-2B operation and its anaesthesia instead of the package
+        b.proc("603840", day, specialty=GENCER)
+        b.proc("550170", day, specialty=ANEST)
+    return b
+
+
+# ── S47 ─ the day bed of a stay under 24 hours not billed ───────────────────
+def s47(variant: str) -> Bill:
+    """58 F, the patient of S7: syncope six days after the ER visit; ER observation under 24 hours, 2026-02-25.
+
+    A stay of one date (admission and discharge on 02-25): its bed is the day bed 510120 (C000648), which the
+    faulty bill leaves out. The troponin and the D-dimer repeat tests of S7's ER bill within seven days: the
+    duplicate-test rule flags them on this bill, clean and faulty alike. S7's bill is its history.
+    """
+    day = D("2026-02-25")
+    b = Bill("SH-07", "C-SH47", "yatis", "Acil Tıp", day, day, "R55")
+    b.history = (s7("faulty"),)
+    for i, icd in enumerate(("R55", "R07.1")):
+        b.diag(icd, primary=(i == 0))
+    if variant == "clean":
+        b.proc("510120", day, specialty=ACIL)           # the day bed of a stay under 24 hours
+    b.proc("520010", day, specialty=ACIL)               # the examination of a stay
+    b.proc("530100", day, specialty=ACIL)               # ECG
+    _labs(b, day, ("L107360", "L102090"), ACIL)         # troponin I, D-dimer
+    return b
+
+
+# ── S48 ─ the chest-disease follow-up of the patient of S7 (a clean bill) ──
+def s48(variant: str) -> Bill:
+    """58 F, the patient of S7: chest-disease follow-up three weeks after the ER visit, 2026-03-12, outpatient.
+
+    A clean bill (CLEAN_ONLY). The ER visit of S7 and the observation of S47 are its history; another branch and
+    more than ten days later, so no duplicate-exam window applies, and no test is billed.
+    """
+    if variant != "clean":
+        raise ValueError("S48 is a clean bill: it has no faulty variant")
+    day = D("2026-03-12")
+    b = Bill("SH-07", "C-SH48", "poliklinik", "Göğüs Hastalıkları", None, None, "R07.1", start=day, end=day)
+    b.history = (s7("faulty"), s47("faulty"))
+    for i, icd in enumerate(("R07.1", "R06.0")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=GOGUS)              # the visit
+    b.proc("801720", day, specialty=RAD)                # control chest X-ray PA
+    return b
+
+
 # ── S32 ─ the control visit three weeks after the discharge of S2, with the chronic health report (a clean bill) ──
 def s32(variant: str) -> Bill:
     """81 M, the patient of S2: control visit after the COPD exacerbation, 2026-04-06, chest diseases, outpatient.
@@ -474,6 +534,6 @@ def s40(variant: str) -> Bill:
 
 
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S32", "S39")
+CLEAN_ONLY: tuple[str, ...] = ("S32", "S39", "S48")
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S22": s22, "S32": s32, "S39": s39, "S40": s40}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S20": s20, "S22": s22, "S32": s32, "S39": s39, "S40": s40, "S47": s47, "S48": s48}

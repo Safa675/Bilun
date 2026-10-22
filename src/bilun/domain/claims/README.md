@@ -2,7 +2,7 @@
 
 `src.bilun.domain.claims` loads billing-native claim Parquets and exposes exact
 line-derived aggregates. In demo mode, those files are the committed synthetic
-claim Parquets under `data/synthetic/sut/claims/`: the 12 patients (17 bills) of the v3
+claim Parquets under `data/synthetic/sut/claims/`: the 13 patients (20 bills) of the v3
 showcase cohort, built by `python -m scripts.synthetic.cohort.build` (layout and
 registry: `data/synthetic/README.md`).
 

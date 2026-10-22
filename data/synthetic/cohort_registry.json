@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 17,
-    "lab_clean.parquet": 298,
+    "anadata_clean.parquet": 20,
+    "lab_clean.parquet": 300,
     "recete_clean.parquet": 21
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "9d2c35046b1f7ea8412da35361819aeba0e47e45ab7f815c27d5065ec2a9ccba",
-    "lab_clean.parquet": "8597b3fc0d2633ef510ba127d6d4fe0dfacb7996bcba4d8c0d82e00c5482148b",
+    "anadata_clean.parquet": "737d8af2baf8d6b127e40b92a742ac10e6460e9ddf5d2ef9abeb7c2eb44728f5",
+    "lab_clean.parquet": "f9aa94dbe23329c7222ecc2986fc2ac0ae4fdf79acf32f068675ae2ae4021d7c",
     "recete_clean.parquet": "17e62c994a68677aedbc96d85597e8b3de7a43fc49574f1016a740a35e6b72c0"
   },
   "counts": {
-    "claim_diagnoses.parquet": 43,
-    "claim_headers.parquet": 17,
+    "claim_diagnoses.parquet": 48,
+    "claim_headers.parquet": 20,
     "drug_claim_lines.parquet": 21,
-    "expected_rule_outputs.parquet": 15,
+    "expected_rule_outputs.parquet": 17,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 1,
-    "patient_copay_profiles.parquet": 12,
+    "patient_copay_profiles.parquet": 13,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 172
+    "procedure_claim_lines.parquet": 180
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -113,6 +113,24 @@
       "tier": "showcase"
     },
     {
+      "claim_id": "F-SENTETIK-HASTA-0007-002",
+      "fault_id": "F_S47_DAY_BED_NOT_BILLED",
+      "is_clean": false,
+      "pathway_id": "syncope_er_observation_under_24_hours",
+      "patient_id": "SENTETIK-HASTA-0007",
+      "story": "S47",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0007-003",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "pleuritic_chest_pain_pulmonology_follow_up",
+      "patient_id": "SENTETIK-HASTA-0007",
+      "story": "S48",
+      "tier": "showcase"
+    },
+    {
       "claim_id": "F-SENTETIK-HASTA-0008-001",
       "fault_id": "F_S8_SECOND_PACKAGE_FULL_RATE",
       "is_clean": false,
@@ -173,6 +191,15 @@
       "pathway_id": "gi_bleed_admission_colonoscopy",
       "patient_id": "SENTETIK-HASTA-0012",
       "story": "S22",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0013-001",
+      "fault_id": "F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED",
+      "is_clean": false,
+      "pathway_id": "umbilical_hernia_day_case_package",
+      "patient_id": "SENTETIK-HASTA-0013",
+      "story": "S20",
       "tier": "showcase"
     }
   ],
@@ -324,6 +351,24 @@
       "sut_section": "2.2.1.B-2(2)"
     },
     {
+      "amount_try": "44.45",
+      "billed_clean_try": "299.04",
+      "billed_faulty_try": "254.59",
+      "claim_id": "F-SENTETIK-HASTA-0007-002",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "yatak_puani",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S47_DAY_BED_NOT_BILLED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0007-002-F_S47_DAY_BED_NOT_BILLED",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "syncope_er_observation_under_24_hours",
+      "patient_id": "SENTETIK-HASTA-0007",
+      "story": "S47",
+      "sut_section": "2.2.2(3)"
+    },
+    {
       "amount_try": "5377.20",
       "billed_clean_try": "13858.13",
       "billed_faulty_try": "19235.33",
@@ -448,6 +493,24 @@
       "patient_id": "SENTETIK-HASTA-0012",
       "story": "S22",
       "sut_section": "2.2.2.A(5)"
+    },
+    {
+      "amount_try": "4724.84",
+      "billed_clean_try": "7169.60",
+      "billed_faulty_try": "2444.76",
+      "claim_id": "F-SENTETIK-HASTA-0013-001",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "billing_strategy",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0013-001-F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "umbilical_hernia_day_case_package",
+      "patient_id": "SENTETIK-HASTA-0013",
+      "story": "S20",
+      "sut_section": "2.2.2(1)"
     }
   ],
   "roles": {
@@ -513,6 +576,12 @@
       ],
       "patient_id": "SENTETIK-HASTA-0010"
     },
+    "S20": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0013-001"
+      ],
+      "patient_id": "SENTETIK-HASTA-0013"
+    },
     "S22": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0012-002"
@@ -537,6 +606,18 @@
       ],
       "patient_id": "SENTETIK-HASTA-0004"
     },
+    "S47": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0007-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0007"
+    },
+    "S48": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0007-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0007"
+    },
     "S9": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0009-001"
@@ -547,14 +628,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "cfe27bd5541eaa8a4ba30a5468a2bc1749f12a6755ad6c2d563fb55ea2321796",
-    "claim_headers.parquet": "bd8f86e9edd8be625d5a80990ae48f52a35cf062266d1821f20ebdc9ae0010d7",
+    "claim_diagnoses.parquet": "7c95b16d82eaad5fd4f638d0e1c0171d392d541433cd2fc3bbceda030bdc9548",
+    "claim_headers.parquet": "86fc2debd1b720accaf5ba420e9d6e8d68101b42b5b2c31fc914ab3cf91b96d5",
     "drug_claim_lines.parquet": "a99c6ad4801110956506f2759747c8afd0f210bf15fa29101b15984edf45f4fb",
-    "expected_rule_outputs.parquet": "07ccec137046a2caa464c6abbb6e9d4b8eb57363c9265e3226ecfc75d3688086",
+    "expected_rule_outputs.parquet": "5382c6a61f58c1a4b76ec167fbb6f6c604de0566319e031689324fafaf564ca2",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
-    "patient_copay_profiles.parquet": "9ec1fdacb55f2565b42f1697c3fd4d818b6ad19fa58669420925944bd4184582",
+    "patient_copay_profiles.parquet": "3b7c023efc383536c107521c4182001e5e5c3127877e33634778540592092c13",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "b671fb072dacfdb9a44ab27362059714948402d0aa7e1e3dea87596ff9446783"
+    "procedure_claim_lines.parquet": "27dcf43b1ddf8c8eea6ecc5260728ab4af2385f5204527619fd074d1c6d3ae43"
   }
 }

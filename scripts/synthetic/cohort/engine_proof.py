@@ -42,6 +42,7 @@ from src.bilun.domain.claims.schema import (
 )
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
 from src.bilun.domain.prose_rules.common_billing_errors import detect_duplicate_exam_10day
+from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
@@ -382,17 +383,33 @@ def _other_claim_ids(ctx: PatientClaimContext | None, claim_id: str | None) -> t
 
 
 def _direct_rows_s1(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return _payment_method_rows(ctx, ("610131", "P610131"), care_setting="inpatient")
+
+
+def _direct_rows_s20(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # a day case: the care setting and the day-case flag as the billing strategy derives them from the claim
+    claim = ctx.claims[0]
+    return _payment_method_rows(
+        ctx, ("603840", "P603840"), care_setting=infer_care_setting(claim), day_case=claim_is_day_case(claim)
+    )
+
+
+def _payment_method_rows(
+    ctx: PatientClaimContext, codes: tuple[str, ...], *, care_setting: str, day_case: bool = False
+) -> list[dict[str, Any]]:
+    """The payment-method check of the story's codes and the non-informational billing-strategy rows."""
     claim = ctx.claims[0]
     rows: list[dict[str, Any]] = []
     for line in ctx.procedure_lines:
-        if line.procedure_code in ("610131", "P610131"):
+        if line.procedure_code in codes:
             c = check_payment_method_compliance(
                 line.procedure_code,
                 billed_as_package=line.procedure_category == "paket",
-                care_setting="inpatient",
+                care_setting=care_setting,  # type: ignore[arg-type]
                 facility_tier=claim.facility_tier,
                 provider_type=claim.provider_type,
                 as_of_date=line.procedure_date,
+                day_case=day_case,
             )
             rows.append(
                 {
@@ -452,6 +469,10 @@ def _direct_rows_s2(ctx: PatientClaimContext) -> list[dict[str, Any]]:
             claims, procs, claim_ids_with_procs={claim.claim_id}
         )
     ]
+
+
+def _direct_rows_s47(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return _direct_rows_s2(ctx)  # the same detector: the bed days of a stay (here the day bed of one date)
 
 
 def _direct_rows_s3(ctx: PatientClaimContext) -> list[dict[str, Any]]:
@@ -800,8 +821,10 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S11": _direct_rows_s11,
     "S12": _direct_rows_s12,
     "S14": _direct_rows_s14,
+    "S20": _direct_rows_s20,
     "S22": _direct_rows_s22,
     "S40": _direct_rows_s40,
+    "S47": _direct_rows_s47,
 }
 
 

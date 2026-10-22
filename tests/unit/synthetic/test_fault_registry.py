@@ -107,6 +107,35 @@ PINNED_FINDINGS: dict[
         [],
         [],
     ),
+    # the day case billed itemized: the S1 fault in a gunubirlik bill (a day case is inpatient care, C003484)
+    "S20": (
+        "billing_strategy",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000646", "C003484"],
+        "2.2.2(1)",
+        [
+            "src/bilun/domain/prose_rules/payment_method.py:check_payment_method_compliance",
+            "src/bilun/domain/billing/claim_strategy.py:recommend_billing_strategy_from_claims",
+        ],
+        [],
+        [],
+    ),
+    # the day bed of a stay of one date not billed (C000648): the bed-day motor of S2
+    "S47": (
+        "yatak_puani",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000648"],
+        "2.2.2(3)",
+        ["src/bilun/domain/prose_rules/yatak_puani.py:detect_yatak_puani_opportunities"],
+        [],
+        [],
+    ),
     "S3": (
         "anestezi_puani",
         "fatura",

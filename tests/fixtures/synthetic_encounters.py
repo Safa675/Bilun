@@ -10,8 +10,8 @@ the committed bills of their patient. Nothing is committed from it.
 
 `STANDARD_EXTRAS` is the dataset most tests use: patient 4 gets a fourth bill, a stay that starts the day after its
 first one (its lab days interleave with the first stay's and it is dated before the committed second and third bill,
-so the claim number and the date disagree), patient 7 gets an earlier visit of the same pathway (a precursor: the
-later claim number, the earlier date).
+so the claim number and the date disagree), patient 7 gets an earlier visit of the same pathway as its fourth bill (a
+precursor: the later claim number, the earlier date; its second and third bill are the committed S47 and S48).
 """
 
 from __future__ import annotations
@@ -84,10 +84,11 @@ def with_encounters(*extras: Extra) -> tuple[ShowcaseRecipes, ShowcaseClinical]:
 
 # patient 4 (S4, a woman of 86): the same stay one day later, its lab days between the first stay's, as the fourth
 # bill (the committed second and third bill are S39 and S40);
-# patient 7 (S7, a woman of 58): the same ER visit nine days earlier, so claim 002 is dated before claim 001.
+# patient 7 (S7, a woman of 58): the same ER visit nine days earlier, as the fourth bill (the committed second and third
+# bill are S47 and S48), so claim 004 is dated before claim 001.
 # A story belongs to one bill, so each extra bill names a story of its own (the program's S39 and up are
 # the real follow-up bills; S90 and S91 exist only here).
 STANDARD_EXTRAS = (
     Extra(4, 4, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12", "story": "S90"}),
-    Extra(7, 2, "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out", {"admit": "2026-02-10", "story": "S91"}),
+    Extra(7, 4, "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out", {"admit": "2026-02-10", "story": "S91"}),
 )

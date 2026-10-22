@@ -1,0 +1,33 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-06-17",
+      "icd10": "K42.9",
+      "role": "primary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-06-17",
+    "claim_start_date": "2026-06-17",
+    "claim_type": "gunubirlik",
+    "department": "Genel Cerrahi",
+    "discharge_date": null,
+    "primary_icd10": "K42.9"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "P603840",
+      "date": "2026-06-17",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    }
+  ],
+  "story": "S20"
+}

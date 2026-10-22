@@ -1,0 +1,57 @@
+# Faulty sibling of umbilical_hernia_day_case_package (story S20): the day case billed itemized (EK-2B 603840 with its
+# anaesthesia) instead of the mandatory EK-2C package P603840. Grammar: data/synthetic/pathways/README.md.
+schema_version: 1
+id: umbilical_hernia_day_case_itemized
+title: "Umbilical hernia, graftless repair as a day case, billed itemized instead of the EK-2C package"
+claim_type: gunubirlik
+billing_mode: itemized
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "An umbilical hernia occurs in both sexes and K42.9 has no sex gate; story S20 is a man. Clinician to confirm."
+  age:
+    min: 18
+    max: 80
+    basis: judgment
+    source: "Story S20 patient is 41 (born 1985). Adults fit for a day case; the upper bound is the author's judgment."
+
+diagnoses:
+  - icd10: K42.9
+    name: "UMBİLİKAL HERNİ, OBSTRÜKSİYONSUZ, GANGRENSİZ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; an elective repair of an uncomplicated umbilical hernia (EHS/AHS 2020). WHO ICD-10 Vol. 2 coding."
+
+procedures:
+  - id: hernia_repair
+    kind: operation
+    code: "603840"
+    name: "Greftsiz umblikal herni onarımı"
+    days: admit
+    basis: sut
+    source: "C000652 (SUT 2.2.2.A(1)): EK-2B code 603840 keyed instead of the mandatory EK-2C package P603840 (C000646, story S20 faulty bill)."
+  - id: anaesthesia
+    kind: anaesthesia
+    code: "550170"
+    name: "Anestezi C grubu"
+    days: admit
+    specialty: "3100"                  # EK-2A: Anesteziyoloji ve Reanimasyon
+    group: C
+    operations: [hernia_repair]
+    basis: sut
+    source: "EK-2B chapter 5: one operation of puan 3228.38 is group C on both band tables (C000652); billed beside the itemized operation."
+
+notes:
+  - "Faulty sibling of umbilical_hernia_day_case_package (story S20): the coder keyed the EK-2B operation and its anaesthesia instead of the package P603840 (C000646; a day case is inpatient care, C003484)."
+
+showcase:
+  story: S20
+  sex: M
+  age: 41
+  admit: "2026-06-17"

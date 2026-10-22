@@ -1,6 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 2 has a second bill, a control visit S32 (encounter_no 2, a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22 (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 2 has a second bill, a control visit S32 (encounter_no 2, a clean bill), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -45,6 +45,15 @@ recipes:
     pathway: pleuritic_chest_pain_er_pulmonary_embolism_ruled_out
     fault: F_S7_ER_CT_ANGIO_UNBILLED
 
+  - patient_no: 7
+    encounter_no: 2
+    pathway: syncope_er_observation_under_24_hours
+    fault: F_S47_DAY_BED_NOT_BILLED
+
+  - patient_no: 7
+    encounter_no: 3
+    pathway: pleuritic_chest_pain_pulmonology_follow_up
+
   - patient_no: 8
     pathway: cholelithiasis_umbilical_hernia_two_packages
     fault: F_S8_SECOND_PACKAGE_FULL_RATE
@@ -82,3 +91,6 @@ recipes:
     pathway: gi_bleed_admission_colonoscopy
     fault: F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED
 
+  - patient_no: 13
+    pathway: umbilical_hernia_day_case_package
+    fault: F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED

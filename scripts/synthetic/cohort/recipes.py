@@ -126,7 +126,8 @@ class EncounterPins(_Model):
     sex: Literal["M", "F"] | None = None
     age: int | None = Field(default=None, ge=0, le=120)
     admit: IsoDate | None = None
-    nights: int | None = Field(default=None, ge=1, le=60)
+    nights: int | None = Field(default=None, ge=0, le=60)  # 0: a stay of one date
+    span: int | None = Field(default=None, ge=1, le=60)  # a session claim over several dates (a pathway with a span)
     include: list[str] | None = None
     course_days: dict[Slug, int] | None = None
     # None: the pathway's value (an override cannot reset a known flag to unknown)

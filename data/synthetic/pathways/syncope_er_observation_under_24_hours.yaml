@@ -1,0 +1,91 @@
+# Syncope six days after an ER visit for chest pain (story S7): ER observation under 24 hours, a stay of one date, billed itemized.
+# Showcase story S47 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F7 b2): bill 2 of the patient of S7, the first stay of one date.
+# Grammar: README.md next to this file. `nights: 0` is a stay whose admission and discharge fall on one date.
+schema_version: 1
+id: syncope_er_observation_under_24_hours
+title: "Syncope, ER observation under 24 hours (a stay of one date), billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp (the observation unit of the ER)
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S47 is the woman of story S7 (the same patient, the next bill); R55 and R07.1 have no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 90
+    basis: judgment
+    source: "Story S47 patient is 58, like story S7. Syncope is observed at any adult age; the bounds are the author's judgment."
+
+nights:
+  min: 0
+  max: 0
+  basis: sut
+  source: "C000648 (SUT 2.2.2.(3)): a stay shorter than 24 hours bills the day bed; the observation is admitted and discharged on one date."
+
+diagnoses:
+  - icd10: R55
+    name: "SENKOP VE BAYILMA"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; a syncope with a normal ECG and troponin is observed and discharged, no cause found (ESC 2018 syncope). Clinician to confirm."
+  - icd10: R07.1
+    name: "SOLUNUMDA GÖĞÜS AĞRISI"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the pleuritic chest pain of story S7 six days earlier is still reported at the visit. Clinician to confirm."
+
+procedures:
+  - id: day_bed
+    kind: bed
+    code: "510120"
+    name: "Gündüz yatak tarifesi"
+    days: admit..discharge             # one line: admission and discharge fall on one date
+    basis: sut
+    source: "C000648 (SUT 2.2.2.(3)): the bed of a stay under 24 hours is billed as the day bed 510120."
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    basis: judgment
+    source: "The examination of a stay is billed as 520010 (code_sets.yaml visits); the ER physician examines the patient in observation. Clinician to confirm."
+  - id: ecg
+    kind: procedure
+    code: "530100"
+    name: "Elektrokardiyogram"
+    days: admit
+    basis: guideline
+    source: "ESC 2018 syncope guideline: a 12-lead ECG for every patient with syncope."
+  - id: troponin
+    kind: lab
+    code: "L107360"
+    name: "Troponin I"
+    days: admit
+    basis: judgment
+    source: "A troponin to rule out a cardiac cause of the syncope in a patient with recent chest pain; no guideline named. Clinician to confirm."
+  - id: d_dimer
+    kind: lab
+    code: "L102090"
+    name: "D-dimer (Kantitatif)"
+    days: admit
+    basis: judgment
+    source: "Syncope after pleuritic chest pain raises pulmonary embolism again; the D-dimer of story S7 is repeated. Clinician to confirm."
+
+notes:
+  - "The observation is six days after the ER visit of story S7 (2026-02-19). The troponin and the D-dimer repeat tests of that bill within seven days: the duplicate-test rule (Tablo 15 #12) flags them on this bill, a structural consequence of two right bills, not a fault."
+  - "The department is the ER's own (Acil Tıp), not cardiology: four Fatura İnceleme rules match any cardiology claim (EI-24)."
+
+showcase:
+  story: S47
+  sex: F
+  age: 58
+  admit: "2026-02-25"
+  nights: 0
