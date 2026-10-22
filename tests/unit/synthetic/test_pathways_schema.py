@@ -40,8 +40,8 @@ from scripts.synthetic.pathways.checks import (
 )
 from scripts.synthetic.pathways.expand import SESSION_RATIOS, expand
 from scripts.synthetic.pathways.loader import hygiene
-from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags, pin_problems
-from src.bilun.domain.claims.models import DrugClaimLine, MaterialClaimLine
+from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags, ProcedureFlags, pin_problems
+from src.bilun.domain.claims.models import DrugClaimLine, MaterialClaimLine, ProcedureClaimLine
 from src.bilun.domain.materials.ek4a_as_of import ek4a_as_of
 
 pytestmark = pytest.mark.unit
@@ -62,6 +62,8 @@ S39 = "pyelonephritis_dementia_post_discharge_control"  # a control visit (polik
 S47 = "syncope_er_observation_under_24_hours"  # a stay of one date (nights 0): admission and discharge on 2026-02-25
 S20 = "umbilical_hernia_day_case_package"  # the first gunubirlik pathway: a day case billed as the EK-2C package
 S32 = "copd_exacerbation_post_discharge_control"  # S2's control visit: its examination carries the patient's share (G5b)
+S33 = "copd_exacerbation_readmission_through_er"  # S2's readmission through the ER: the critical ER bed, then the ward
+S34 = "copd_exacerbation_post_readmission_control"  # the control after it: its examination is the line of a G5a fault
 S22 = "gi_bleed_admission_colonoscopy"  # a colonoscopy session: the colonoscopy leads, the polypectomy is a chapter-7 add-on at 50 %
 
 
@@ -152,6 +154,8 @@ def test_only_the_pathways_of_patient_2_pin_the_chronic_report() -> None:
     assert {stem: value for stem, value in pinned.items() if value is not None} == {
         S2: True,
         S32: True,
+        S33: True,
+        S34: True,
     }
 
 
@@ -217,6 +221,77 @@ def test_a_chronic_report_pin_that_is_not_a_bool_is_a_bad_value(value: object) -
         load_text(body, f"{S3}.yaml")
     assert [p.check for p in error.value.problems] == ["schema.bad_value"]
     assert "showcase.chronic_health_report" in str(error.value)
+
+
+def test_no_committed_pathway_sets_a_line_flag_of_slice_g5a() -> None:
+    """The flags of slice G5a are fault material: a clean bill bills no exam as a package component and no material
+    that waits for an approval (S34's fault sets the first with `set_flag`); no committed blood line exists yet."""
+    for path in _FILES:
+        pathway = load_pathway(path)
+        assert all(p.flags == ProcedureFlags() for p in pathway.procedures), path.stem
+        assert all(m.flags.requires_pre_auth is None for m in pathway.materials), path.stem
+        assert all(row["flags"] == {} for row in expand(pathway)["procedures"]), path.stem
+
+
+@pytest.mark.parametrize(
+    ("flags", "expected"),
+    [
+        ({"is_package_included": True}, {"is_package_included": True}),
+        ({"is_package_included": False}, {"is_package_included": False}),
+        ({"isbt128_barcode": "=A9999261234560"}, {"isbt128_barcode": "=A9999261234560"}),
+        ({}, {}),
+    ],
+)
+def test_the_flags_of_a_procedure_line_reach_its_expansion_and_no_other_line(
+    flags: dict, expected: dict, catalogs: Catalogs
+) -> None:
+    raw = _raw(S34)
+    raw["procedures"][0]["flags"] = flags
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    pathway = load_text(body, f"{S34}.yaml")
+    assert [row["flags"] for row in expand(pathway)["procedures"]] == [expected]
+    assert run_all(pathway, catalogs) == []
+    s2 = load_pathway(_DIR / f"{S2}.yaml")
+    assert all(row["flags"] == {} for row in expand(s2)["procedures"])
+
+
+def test_a_material_may_be_flagged_as_waiting_for_an_approval(catalogs: Catalogs) -> None:
+    raw = _raw(S5)
+    raw["materials"][0].setdefault("flags", {})["requires_pre_auth"] = True
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    pathway = load_text(body, f"{S5}.yaml")
+    flagged = [m for m in expand(pathway)["materials"] if m["flags"].get("requires_pre_auth")]
+    assert [m["code"] for m in flagged] == [pathway.materials[0].code]
+
+
+@pytest.mark.parametrize(
+    ("flags", "check", "where"),
+    [
+        ({"is_package_included": "evet"}, "schema.bad_value", "flags.is_package_included"),
+        ({"isbt128_barcode": 1234}, "schema.bad_value", "flags.isbt128_barcode"),
+        ({"package_component": True}, "schema.unknown_field", "flags.package_component"),
+    ],
+)
+def test_a_procedure_flag_of_the_wrong_type_or_name_is_refused(flags: dict, check: str, where: str) -> None:
+    raw = _raw(S34)
+    raw["procedures"][0]["flags"] = flags
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S34}.yaml")
+    assert [p.check for p in error.value.problems] == [check]
+    assert where in str(error.value)
+
+
+def test_a_package_line_is_never_its_own_package_component() -> None:
+    """`is_package_included` marks a component bundled into a package, never the package line (#260)."""
+    raw = _raw(S1)
+    raw["procedures"][0]["flags"] = {"is_package_included": True}
+    assert raw["procedures"][0]["kind"] == "package"
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S1}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.line_shape"]
+    assert "never the package line" in str(error.value)
 
 
 def test_the_readme_names_every_check_id_or_its_family() -> None:
@@ -290,8 +365,11 @@ def test_catalogs_are_read_once(catalogs: Catalogs) -> None:
 
 
 def test_flag_names_are_fields_of_the_claim_line_dataclasses() -> None:
+    procedure = {f.name for f in dataclasses.fields(ProcedureClaimLine)}
     material = {f.name for f in dataclasses.fields(MaterialClaimLine)}
     drug = {f.name for f in dataclasses.fields(DrugClaimLine)}
+    assert set(ProcedureFlags.model_fields) == {"is_package_included", "isbt128_barcode"} <= procedure
+    assert "requires_pre_auth" in MaterialFlags.model_fields
     assert set(MaterialFlags.model_fields) <= material
     assert set(DrugFlags.model_fields) <= drug
 

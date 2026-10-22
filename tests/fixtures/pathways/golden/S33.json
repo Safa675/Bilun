@@ -1,0 +1,116 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-04-20",
+      "icd10": "J44.1",
+      "role": "primary"
+    },
+    {
+      "date": "2026-04-20",
+      "icd10": "I10",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-04-20",
+      "icd10": "J96.0",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8699809950696",
+      "date": "2026-04-20",
+      "flags": {},
+      "per_box": 10,
+      "qty": 4,
+      "unit": "syringe"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-04-20",
+    "claim_end_date": "2026-04-23",
+    "claim_start_date": "2026-04-20",
+    "claim_type": "yatis",
+    "department": "Göğüs Hastalıkları",
+    "discharge_date": "2026-04-23",
+    "primary_icd10": "J44.1"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-04-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-04-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "520010",
+      "date": "2026-04-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "530000",
+      "date": "2026-04-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-04-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-04-21",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-04-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-04-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-04-23",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1171"
+    }
+  ],
+  "story": "S33"
+}

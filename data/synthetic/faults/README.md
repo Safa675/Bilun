@@ -29,7 +29,7 @@ Each `FaultSpec` carries:
 - `story`: a showcase story, `S` and a number from 1 up (`S1`..`S8` are the first cohort, `S9`, `S10`, `S11`, `S12`, `S14`, `S22`, `S40` and later are the stories added since; a bill without a fault, S39, has no story entry here; the registry lists the faults in story-number order), or `null`. Each story appears at most once. The first eight stories `S1`..`S8` must be covered (`SHOWCASE_STORIES`); a later story is optional.
 - `title`: short English summary (2–400 characters).
 - `target_pathway`: pathway id in `data/synthetic/pathways/<target_pathway>.yaml`.
-- `mutations`: non-empty list of `MutationOp` entries from the closed six-operation grammar below.
+- `mutations`: non-empty list of `MutationOp` entries from the closed seven-operation grammar below.
 - `expected_finding` (`ExpectedFinding`):
   - `engine_rule`: engine rule identifier (`billing_strategy`, `yatak_puani`, `anestezi_puani`, `refakatci`, `material_bundling`, `drug_indication`, `procedure_capture_gap`, `drg_unbundling`, `session_uplift`, `icu_puani`, `yenidogan_yatak`, `yatak_icu_overlap_510010`, `tablo15_2_duplicate_exam_10day`, `hemogram_unbundling`, `procedure_addon_uplift`).
   - `detectors`: non-empty list of `"<repo module path>:<function name>"` strings.
@@ -40,10 +40,10 @@ Each `FaultSpec` carries:
   - `target_entry_id`: `null` when `line_type` is `fatura`; required pathway line `id` otherwise.
   - `expected_status`: `eksik_faturalama` (missing/under-billed claim-level uplift) or `kismi_red` (line-level deduction or compliance error).
   - `evidence_entry_ids`: optional list of pathway line `id`s in `procedures` or `performed` that serve as evidence of the finding (default `[]`; on S7, `["ct_angiography_pacs"]`).
-  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`, S12 `["yenidogan_yatak_510070"]`, S14 `["yatak_icu_overlap_510010"]`, S40 `["tablo15_2_duplicate_exam_10day"]`, S10 `["hemogram_unbundling", "0901_duplicate_procedure"]` (the lab row and the MEDULA playbook row of the rejection the recipe gives the bill), S22 `["pairing.701450_701460"]`).
+  - `finding_ids`: optional list of the engine's own finding/rule identifiers emitted on the faulty bill (default `[]`; S5 `["3.1.1.(2).titubb_uts_incomplete"]`, S6 `["indication_mismatch", "4.2.36.amantadine_sulfate_report"]`, S8 `["2.2.2.B.a"]`, S9 `["2.2.2.A.(5)"]`, S11 `["icu_puani_510090_p55200x"]`, S12 `["yenidogan_yatak_510070"]`, S14 `["yatak_icu_overlap_510010"]`, S33 `["tablo15_11_drug_quantity_error"]`, S34 `["tablo15_3_vakabasi_wrong_method"]`, S40 `["tablo15_2_duplicate_exam_10day"]`, S10 `["hemogram_unbundling", "0901_duplicate_procedure"]` (the lab row and the MEDULA playbook row of the rejection the recipe gives the bill), S22 `["pairing.701450_701460"]`).
 - `basis` and `source`: provenance using the pathway `Basis` enum (`sut`, `ek2b_aciklama`, `medula_kilavuz`, `guideline`, `judgment`) and `Source` rule (10–160 characters, no TL amounts).
 
-## The six mutation operations (`MutationOp`)
+## The seven mutation operations (`MutationOp`)
 
 Every operation is a mapping discriminated on `op` with `extra="forbid"`, operating on the annotated expansion `expand(pathway, pins, annotate=True)`:
 
@@ -58,10 +58,10 @@ Every operation is a mapping discriminated on `op` with `extra="forbid"`, operat
 3. **`drop_entry`** (`section`: `"procedures" | "materials" | "drugs" | "performed"`, `entry_id`):
    - Meaning: remove every expanded row belonging to pathway line `entry_id` in `section`.
    - Showcase use: `F_S3_ANAESTHESIA_LINE_MISSING` drops `anaesthesia`; `F_S4_COMPANION_NOT_BILLED` drops `companion`; `F_S7_ER_CT_ANGIO_UNBILLED` drops `ct_angiography` from `procedures` while keeping `ct_angiography_pacs` in `performed`; `F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED` drops `polypectomy` (the add-on of the colonoscopy session, billed at 50 % on the clean bill; no `performed` line logs it, so the engine finds the omission by the add-on rule and not as a capture gap). `F_S47_DAY_BED_NOT_BILLED` drops `day_bed`, the day bed 510120 of a stay of one date (`nights: 0`; C000648).
-4. **`set_flag`** (`section`: `"materials" | "drugs"`, `entry_id`, `flag`, `value`):
+4. **`set_flag`** (`section`: `"procedures" | "materials" | "drugs"`, `entry_id`, `flag`, `value`):
    - Meaning: set `flags[flag] = value` on every expanded row of `entry_id` in `section`.
-   - Constraint: `flag` must be a field of `MaterialFlags` (`titubb_registered`, `uts_registered`) or `DrugFlags` (`drug_specialty_board_report_present`, `prescriber_specialty`, `drug_inpatient_supply`) and `value` must match the field's type (`fault.flag`).
-   - Showcase use: `F_S5_IMPLANT_UTS_INCOMPLETE` sets `uts_registered: false` on `femoral_stem`.
+   - Constraint: `flag` must be a field of `ProcedureFlags` (`is_package_included`, `isbt128_barcode`), `MaterialFlags` (`titubb_registered`, `uts_registered`, `requires_pre_auth`) or `DrugFlags` (`drug_specialty_board_report_present`, `prescriber_specialty`, `drug_inpatient_supply`) and `value` must match the field's type (`fault.flag`).
+   - Showcase use: `F_S5_IMPLANT_UTS_INCOMPLETE` sets `uts_registered: false` on `femoral_stem`; `F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT` sets `is_package_included: true` on the `exam` of a control visit (a poliklinik examination flagged as a package component, vakabaşı: El Kitabı Tablo 15 #3; no money moves with the flag).
 5. **`drop_diagnosis`** (`icd10`, `breaks_indication: bool = false`):
    - Meaning: remove secondary diagnosis `icd10` from `diagnoses` (never the primary diagnosis).
    - Constraint: `icd10` must be a secondary diagnosis of the target pathway (`fault.drop_diagnosis`), and `breaks_indication` must be `true` if and only if a kept drug in the pathway names `icd10` as its `indication` (`fault.breaks_indication`).
@@ -70,6 +70,11 @@ Every operation is a mapping discriminated on `op` with `extra="forbid"`, operat
    - Meaning: set `billed_ratio` on every expanded row of procedure line `entry_id`.
    - Constraint: `entry_id` must be a procedure line with a `session_role` (`fault.billed_ratio_target`).
    - Showcase use: `F_S8_SECOND_PACKAGE_FULL_RATE` sets `billed_ratio: "1.0000"` on `hernia_package`; `F_S9_SECOND_OPERATION_UNDERBILLED` sets `billed_ratio: "0.2500"` on `foraminoplasty` (the clean bill pays it at 0.5000, a separate incision); `F_S11_ICU_PACKAGE_DAYS_UNDERBILLED` sets `billed_ratio: "0.5000"` on the three-day `icu_package` line (the target is a line of kind `icu_package`, which takes a ratio without a `session_role`; `fault.billed_ratio_target`).
+
+7. **`set_quantity`** (`section: "drugs"`, `entry_id`, `qty`, a whole number above 999 and at most 99999):
+   - Meaning: set `qty` on every expanded row of drug line `entry_id` to a count no pathway can hold (a pathway drug count is 1 to 999, `Drug.qty`): the fault of a strength or a dose keyed as the count.
+   - Constraint: `entry_id` must be a drug line of the target pathway (`fault.entry_id`); a count inside the pathway bound, a text or a fraction is `schema.bad_value` (such a count is a pathway's or a sibling's, not a fault's).
+   - Showcase use: `F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY` sets `qty: 4000` on `enoxaparin` (4000 anti-Xa IU syringes, four on the clean bill; SUT 5.3.1.C(i), C008282). The engine's `detect_drug_quantity_error` (El Kitabı Tablo 15 #11) reads a count above 999 as a unit confusion.
 
 ## Applying a fault (`apply_fault`, `fault_window`), the injection record and the answer rows
 
@@ -87,6 +92,7 @@ Pins outside the pathway's declared ranges (age, sex, nights, optional ids or dr
 4. **`set_flag`**: sets `row["flags"][flag] = value` on every row of `section` with `entry_id`; raises `FaultApplyError` if there is none or if every such row already has that value.
 5. **`drop_diagnosis`**: removes the diagnosis row with `icd10`; raises `FaultApplyError` if it is absent or is the primary diagnosis.
 6. **`set_billed_ratio`**: sets `billed_ratio` on every `procedures` row with `entry_id`; raises `FaultApplyError` if there is none or if all rows already equal that ratio.
+7. **`set_quantity`**: sets `qty` on every row of `section` with `entry_id`; raises `FaultApplyError` if there is none or if every such row already has that count.
 
 ### Injection record (`scripts/synthetic/faults/records.py`)
 
@@ -130,13 +136,13 @@ Run the checks from the repository root:
 |---|---|
 | `yaml.invalid`, `hygiene.forbidden_key`, `hygiene.anon_text`, `hygiene.price_text`, `hygiene.id_like_number` | strict YAML syntax (no duplicate keys); no key containing `price`, `amount`, `total` or `package_candidate`; no `ANON` identifier, non-zero currency amount (`TL`, `TRY`, `₺`) or 11-digit number in any key, value or comment |
 | `schema.unknown_field`, `schema.missing_field`, `schema.bad_enum`, `schema.bad_value`, `schema.sibling_alone`, `schema.target_entry_shape` | Pydantic model validation, `extra="forbid"`, distinct `keep_day_indices`, `use_sibling_pathway` alone in `mutations`, and `target_entry_id` null iff `line_type == "fatura"` |
-| `fault.target_pathway`, `fault.entry_id`, `fault.keep_day_indices`, `fault.flag`, `fault.drop_diagnosis`, `fault.breaks_indication`, `fault.billed_ratio_target`, `fault.target_entry_id`, `fault.evidence_entry_ids`, `fault.applies` | target/sibling pathway existence and clean load; `entry_id` in stated section; valid strict-subset `keep_day_indices` on `expand(..., annotate=True)`; valid flag name and value type on `MaterialFlags`/`DrugFlags`; secondary diagnosis on `drop_diagnosis` and indication linkage; `session_role` on `set_billed_ratio`; `target_entry_id` and `evidence_entry_ids` present in effective pathway; `apply_fault` succeeds on the target pathway with its showcase pins |
+| `fault.target_pathway`, `fault.entry_id`, `fault.keep_day_indices`, `fault.flag`, `fault.drop_diagnosis`, `fault.breaks_indication`, `fault.billed_ratio_target`, `fault.target_entry_id`, `fault.evidence_entry_ids`, `fault.applies` | target/sibling pathway existence and clean load; `entry_id` in stated section; valid strict-subset `keep_day_indices` on `expand(..., annotate=True)`; valid flag name and value type on `ProcedureFlags`/`MaterialFlags`/`DrugFlags`; `entry_id` of a `set_quantity` in `drugs`; secondary diagnosis on `drop_diagnosis` and indication linkage; `session_role` on `set_billed_ratio`; `target_entry_id` and `evidence_entry_ids` present in effective pathway; `apply_fault` succeeds on the target pathway with its showcase pins |
 | `fault.sut_clauses`, `fault.source_cites`, `fault.detectors` | every `C000000` clause in `sut_clauses` and `source` is in force in `data/gazette/sut_clauses.parquet`; `basis: sut` cites a clause or `EK-` annex; every detector `"<module>:<func>"` exists on disk and contains `def <func>` |
-| `fault.duplicate_id`, `fault.duplicate_story`, `fault.story_coverage`, `fault.op_coverage` | unique `fault_id`; each story at most once and the first eight (`S1`..`S8`) covered; all 6 mutation operations used at least once |
+| `fault.duplicate_id`, `fault.duplicate_story`, `fault.story_coverage`, `fault.op_coverage` | unique `fault_id`; each story at most once and the first eight (`S1`..`S8`) covered; all 7 mutation operations used at least once |
 
 ## Add a fault
 
 1. Verify the target pathway in `data/synthetic/pathways/<target_pathway>.yaml` and inspect its annotated expansion (`expand(load_pathway(path), annotate=True)`) to confirm `entry_id`, `day_index`, `session_role` and `indication` values.
-2. Add a `FaultSpec` entry to `data/synthetic/faults/fault_registry.yaml` using one or more of the six `MutationOp` operations, citing the in-force SUT clause ids in `expected_finding.sut_clauses` and `source` (at most 160 characters, no currency amounts).
+2. Add a `FaultSpec` entry to `data/synthetic/faults/fault_registry.yaml` using one or more of the seven `MutationOp` operations, citing the in-force SUT clause ids in `expected_finding.sut_clauses` and `source` (at most 160 characters, no currency amounts).
 3. Run `.venv/bin/python -m scripts.synthetic.faults.checks` and `.venv/bin/python -m pytest tests/unit/synthetic/test_fault_registry.py -q` until green.
 

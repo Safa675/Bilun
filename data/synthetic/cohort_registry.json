@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 20,
+    "anadata_clean.parquet": 22,
     "lab_clean.parquet": 300,
-    "recete_clean.parquet": 21
+    "recete_clean.parquet": 22
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "737d8af2baf8d6b127e40b92a742ac10e6460e9ddf5d2ef9abeb7c2eb44728f5",
+    "anadata_clean.parquet": "ece374d186951595cf1c6841c687a9d128591b1413e6e1f8f1874d6b2aae22d2",
     "lab_clean.parquet": "f9aa94dbe23329c7222ecc2986fc2ac0ae4fdf79acf32f068675ae2ae4021d7c",
-    "recete_clean.parquet": "17e62c994a68677aedbc96d85597e8b3de7a43fc49574f1016a740a35e6b72c0"
+    "recete_clean.parquet": "56b9706c897766174cd44f1c99a912aa8d6d704302330e3a87c7608a02021f53"
   },
   "counts": {
-    "claim_diagnoses.parquet": 48,
-    "claim_headers.parquet": 20,
-    "drug_claim_lines.parquet": 21,
-    "expected_rule_outputs.parquet": 17,
+    "claim_diagnoses.parquet": 53,
+    "claim_headers.parquet": 22,
+    "drug_claim_lines.parquet": 22,
+    "expected_rule_outputs.parquet": 19,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 1,
     "patient_copay_profiles.parquet": 13,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 180
+    "procedure_claim_lines.parquet": 190
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -47,6 +47,24 @@
       "pathway_id": "copd_exacerbation_post_discharge_control",
       "patient_id": "SENTETIK-HASTA-0002",
       "story": "S32",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0002-003",
+      "fault_id": "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY",
+      "is_clean": false,
+      "pathway_id": "copd_exacerbation_readmission_through_er",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S33",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0002-004",
+      "fault_id": "F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT",
+      "is_clean": false,
+      "pathway_id": "copd_exacerbation_post_readmission_control",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S34",
       "tier": "showcase"
     },
     {
@@ -239,6 +257,42 @@
       "patient_id": "SENTETIK-HASTA-0002",
       "story": "S2",
       "sut_section": "2.2.2.A(1)"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "1487.34",
+      "billed_faulty_try": "1487.34",
+      "claim_id": "F-SENTETIK-HASTA-0002-003",
+      "effect_kind": "compliance_error",
+      "engine_rule": "tablo15_11_drug_quantity_error",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0002-003-F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY",
+      "line_id": "ILC-F-SENTETIK-HASTA-0002-003-001",
+      "line_ids": [],
+      "line_type": "ilac",
+      "pathway_id": "copd_exacerbation_readmission_through_er",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S33",
+      "sut_section": "5.3.1.C"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "85.73",
+      "billed_faulty_try": "85.73",
+      "claim_id": "F-SENTETIK-HASTA-0002-004",
+      "effect_kind": "compliance_error",
+      "engine_rule": "tablo15_3_vakabasi_wrong_method",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0002-004-F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT",
+      "line_id": "ISL-F-SENTETIK-HASTA-0002-004-001",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "copd_exacerbation_post_readmission_control",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S34",
+      "sut_section": "2.2.1.B-1"
     },
     {
       "amount_try": "928.09",
@@ -594,6 +648,18 @@
       ],
       "patient_id": "SENTETIK-HASTA-0002"
     },
+    "S33": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0002-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0002"
+    },
+    "S34": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0002-004"
+      ],
+      "patient_id": "SENTETIK-HASTA-0002"
+    },
     "S39": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0004-002"
@@ -628,14 +694,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "7c95b16d82eaad5fd4f638d0e1c0171d392d541433cd2fc3bbceda030bdc9548",
-    "claim_headers.parquet": "86fc2debd1b720accaf5ba420e9d6e8d68101b42b5b2c31fc914ab3cf91b96d5",
-    "drug_claim_lines.parquet": "a99c6ad4801110956506f2759747c8afd0f210bf15fa29101b15984edf45f4fb",
-    "expected_rule_outputs.parquet": "5382c6a61f58c1a4b76ec167fbb6f6c604de0566319e031689324fafaf564ca2",
+    "claim_diagnoses.parquet": "eaa7b0c83d42cf357fa7ade5a4d6281c4fd85a663296abf7ae151b5383c32962",
+    "claim_headers.parquet": "c4c37b064ac4c0b0c85abe9b5eb327c379364ac833cde863a11355a3bec3c6d3",
+    "drug_claim_lines.parquet": "01d663779eebaf683906e757aea5772cfcdcad0eb987e45095e7f744a610a102",
+    "expected_rule_outputs.parquet": "f22b9a79cc696e1361b5fc4e7bc44ded064248841d7adf791290214fc95df78f",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "3b7c023efc383536c107521c4182001e5e5c3127877e33634778540592092c13",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "27dcf43b1ddf8c8eea6ecc5260728ab4af2385f5204527619fd074d1c6d3ae43"
+    "procedure_claim_lines.parquet": "91cd2142202b93378cea166e9f931d7a0adcf1cf004dd8ba1192a0d9b0e54c8a"
   }
 }

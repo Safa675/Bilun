@@ -279,10 +279,12 @@ OPERATION_GROUP_ID = "6"
 # operation is billed as an `islem`, or as a `paket` when it is an EK-2C package).
 OPERATION_CATEGORIES: tuple[str, ...] = ("islem", "paket")
 
-# material.stray_flag: the flags are the Boolean columns of material_claim_lines except the two
-# structural ones. A flag is healthy when it is false (or missing), except the registration flags,
-# which are healthy when true (or missing). Decisions of the author, from the data audit.
-STRUCTURAL_FLAGS: tuple[str, ...] = ("is_bundled", "requires_pre_auth")
+# material.stray_flag: the flags are the Boolean columns of material_claim_lines except the
+# structural one (what the line is). A flag is healthy when it is false (or missing), except the
+# registration flags, which are healthy when true (or missing). Decisions of the author, from the data
+# audit. `requires_pre_auth` is a compliance flag since a pathway can set it (slice G5a): a line that
+# needs an approval the bill does not record (El Kitabı Tablo 15 #15) is never a clean line.
+STRUCTURAL_FLAGS: tuple[str, ...] = ("is_bundled",)
 REGISTRATION_FLAGS: tuple[str, ...] = ("titubb_registered", "uts_registered")
 
 # price.material_in_force: the curated EK-3/F-1 list is one list, in force from its Yürürlük date

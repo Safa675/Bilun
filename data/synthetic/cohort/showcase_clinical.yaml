@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32 as encounter_no 2, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -70,6 +70,30 @@ patients:
       weight_kg: 67.0
     basis: judgment
     source: "Story S32 control three weeks after discharge (stable COPD on room air, SpO2 93 %, afebrile, a kilo lighter); clinician confirms in issue #309."
+
+  - patient_no: 2
+    encounter_no: 3
+    vitals:
+      sbp: 152
+      dbp: 88
+      pulse: 112
+      spo2: 85
+      height_cm: 170
+      weight_kg: 66.5
+    basis: judgment
+    source: "Story S33 readmission through the ER (an exacerbation with acute respiratory failure: tachycardic, SpO2 85 % on room air); clinician confirms in issue #309."
+
+  - patient_no: 2
+    encounter_no: 4
+    vitals:
+      sbp: 134
+      dbp: 78
+      pulse: 88
+      spo2: 92
+      height_cm: 170
+      weight_kg: 66.0
+    basis: judgment
+    source: "Story S34 control six days after the readmission (off oxygen, SpO2 92 % on room air, afebrile); clinician confirms in issue #309."
 
   - patient_no: 3
     vitals:

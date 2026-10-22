@@ -1297,11 +1297,12 @@ def test_patients_5_and_8_are_package_bills_with_no_lab_rows(built, clean) -> No
     assert billed.filter(pl.col("patient_id").is_in([PATIENT[5], PATIENT[8]])).height == 0
 
 
-def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_stories_s1_and_s10_add(
+def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_and_s10_add_and_the_count_of_s33(
     built, twins
 ) -> None:
     """S1's fault bills two lab lines and three drug lines on a package claim, S10's a third lab line (the manual
-    haematocrit beside the hemogram); the clean tables mirror them."""
+    haematocrit beside the hemogram), S33's the count of one drug line (4000 enoxaparin syringes for 4); the clean
+    tables mirror them."""
     only_faulty_labs = faulty_only_labs(built, twins)
     assert sorted(only_faulty_labs["procedure_code"]) == ["L101850", "L103120", "L107020"]
     assert set(only_faulty_labs["patient_id"]) == {PATIENT[1], PATIENT[12]}
@@ -1310,7 +1311,24 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_stories_s
     )
     assert only_faulty_drugs.height == 3
     assert set(only_faulty_drugs["patient_id"]) == {PATIENT[1]}
-    assert twins[TABLE_DRUGS].height == 18 and built.tables[TABLE_DRUGS].height == 21
+    assert twins[TABLE_DRUGS].height == 19 and built.tables[TABLE_DRUGS].height == 22
+    # S33: the same line, another count
+    counts = built.tables[TABLE_DRUGS].join(
+        twins[TABLE_DRUGS].select("drug_claim_line_id", pl.col("quantity").alias("twin_quantity")),
+        on="drug_claim_line_id",
+    ).filter(pl.col("quantity") != pl.col("twin_quantity"))
+    assert counts.select("claim_id", "quantity", "twin_quantity").rows() == [("F-SENTETIK-HASTA-0002-003", 4000, 4)]
+
+
+_DRUG_KEYS = ["claim_id", "drug_claim_date", "drug_name", "quantity"]
+
+
+def drugs_only_in(first, second) -> pl.DataFrame:
+    """The drug lines of `first` that `second` does not bill with the same claim, date, name and count (anti-join).
+
+    Not by line id: S33's fault keeps the line and changes its count.
+    """
+    return first[TABLE_DRUGS].join(second[TABLE_DRUGS].select(_DRUG_KEYS), on=_DRUG_KEYS, how="anti")
 
 
 def faulty_only(built, twins, table: str, line_id: str) -> pl.DataFrame:
@@ -1329,19 +1347,19 @@ def faulty_only_labs(built, twins) -> pl.DataFrame:
     return labs.join(twins[TABLE_PROCEDURES].select(keys), on=keys, how="anti")
 
 
-def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines_of_s1_and_s10(
+def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines_of_s1_s10_and_s33(
     built, twins, clean, context
 ) -> None:
-    """The clean tables are built from the faulty bills, so against the twin they hold S1's extra lines.
+    """The clean tables are built from the faulty bills, so against the twin they hold S1's extra lines and S33's count.
 
     The footprint is derived here from the faulty-versus-twin anti-join of the billed lines, not
     written down as strings: one result set (with its rows in lab_clean) for each billed lab line the
-    twin lacks, one prescription row for each billed drug line the twin lacks, each found again by the
-    id of its line.
+    twin lacks, one prescription row for each billed drug line the twin lacks (by claim, date, name and
+    count), and for S33 the twin's own drug line, whose count no prescription row has.
     """
     found = check_clean_plausibility(twins, clean, context=context)
     assert only_ids(found) == {SETS, MATCHES}
-    assert {p.patient_id for p in found} == {PATIENT[1], PATIENT[12]}
+    assert {p.patient_id for p in found} == {PATIENT[1], PATIENT[2], PATIENT[12]}
     labs = {p.where: p.message for p in found if p.check == SETS}
     drugs = {p.where: p.message for p in found if p.check == MATCHES}
 
@@ -1369,7 +1387,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
     ]
     assert labs == dict(expected_labs.values())
 
-    drug_lines = faulty_only(built, twins, TABLE_DRUGS, "drug_claim_line_id")
+    drug_lines = drugs_only_in(built.tables, twins)
     expected_drugs = {}
     for line in drug_lines.iter_rows(named=True):
         where = (
@@ -1382,23 +1400,40 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
             f"{line['quantity']}) has no billed drug line of the same patient, episode, date, name "
             "and quantity",
         )
+    twin_lines = drugs_only_in(twins, built.tables)
+    for line in twin_lines.iter_rows(named=True):
+        where = f"{line['patient_id']} drug_claim_lines[{line['drug_claim_line_id']}]"
+        expected_drugs["twin " + line["drug_claim_line_id"]] = (
+            where,
+            f"billed drug line {line['drug_name']} on {line['drug_claim_date']} (quantity {line['quantity']}) has no "
+            "prescription row in recete_clean",
+        )
     assert sorted(expected_drugs) == [
         "ILC-F-SENTETIK-HASTA-0001-001-001",  # NEOFLEKS metronidazole
         "ILC-F-SENTETIK-HASTA-0001-001-002",  # IESEF
         "ILC-F-SENTETIK-HASTA-0001-001-003",  # PARTEMOL
+        "ILC-F-SENTETIK-HASTA-0002-003-001",  # S33's prescription row of 4000 syringes
+        "twin ILC-F-SENTETIK-HASTA-0002-003-001",  # S33's twin line of 4 syringes
     ]
     assert drugs == dict(expected_drugs.values())
-    assert len(found) == len(expected_labs) + len(expected_drugs) == 6
+    assert len(found) == len(expected_labs) + len(expected_drugs) == 8
 
 
 def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
-    """Twin claims and clean tables without S1's lab and prescription rows and S10's manual haematocrit: nothing depends on the fault."""
+    """Twin claims and clean tables without S1's lab and prescription rows and S10's manual haematocrit, and with S33's
+    enoxaparin at the twin's count: nothing depends on the fault."""
     twin_clean = {
         name: (frame.filter(pl.col(_EPISODE_COLUMN[name]) != EPISODE[1]) if name != TABLE_ANADATA else frame)
         for name, frame in clean.items()
     }
     twin_clean[TABLE_LAB] = twin_clean[TABLE_LAB].filter(
         ~((pl.col("basvuru_id") == EPISODE[12]) & (pl.col("SUB_CODE") == "L103120"))
+    )
+    s33 = (pl.col("RF_EPISODE") == "B-SENTETIK-HASTA-0002-003") & (pl.col("miktar") == 4000)
+    assert twin_clean[TABLE_RECETE].filter(s33).height == 1
+    twin_clean[TABLE_RECETE] = twin_clean[TABLE_RECETE].with_columns(
+        pl.when(s33).then(pl.lit(4, dtype=pl.Int64)).otherwise(pl.col("miktar")).alias("miktar"),
+        pl.when(s33).then(pl.lit("4 enjektör")).otherwise(pl.col("dozaj_ham")).alias("dozaj_ham"),
     )
     assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16 - 1  # S1 has 16 lab rows, S10's bill one set of one row it alone bills
     assert twin_clean[TABLE_RECETE].height == RX_ROWS - 3  # and 3 prescription rows
@@ -1497,12 +1532,12 @@ def test_every_committed_lab_row_is_looked_at_by_the_row_checks(
 
 
 RECETE_ROW_BREAKS = {
-    # a row without a line and a line without a row, for each of the 21 rows
-    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 21 * 2),
-    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 21),
-    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 20),  # all but the nebule
-    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 20),  # all but the tablet
-    **{f"null_{column}": (REQUIRED, {column: None}, 21) for column in REQUIRED_RECETE_COLUMNS},
+    # a row without a line and a line without a row, for each of the 22 rows
+    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 22 * 2),
+    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 22),
+    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 21),  # all but the nebule
+    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 21),  # all but the tablet
+    **{f"null_{column}": (REQUIRED, {column: None}, 22) for column in REQUIRED_RECETE_COLUMNS},
 }
 
 
@@ -3565,7 +3600,7 @@ def test_the_committed_units_fit_their_products_by_the_classes_of_the_review(cle
     assert pairs == [
         ("inhaled", "kutu", 1),
         ("injected", "ampul", 1),
-        ("injected", "enjektör", 3),
+        ("injected", "enjektör", 4),
         ("injected", "flakon", 11),
         ("injected", "kutu", 1),
         ("injected", "torba", 1),

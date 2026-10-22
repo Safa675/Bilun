@@ -25,6 +25,7 @@ from .schema import (
     Problem,
     SetBilledRatio,
     SetFlag,
+    SetQuantity,
     TruncateLineDays,
     UseSiblingPathway,
 )
@@ -47,6 +48,7 @@ __all__ = [
     "SHOWCASE_STORIES",
     "SetBilledRatio",
     "SetFlag",
+    "SetQuantity",
     "TruncateLineDays",
     "UseSiblingPathway",
     "apply_fault",

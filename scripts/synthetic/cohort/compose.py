@@ -33,6 +33,9 @@ if TYPE_CHECKING:
 _CENT = Decimal("0.01")
 _ZERO = Decimal("0.00")
 _BED_CODES = frozenset({"510010", "510070", "510081", "510120", "510121", "510090", "530000"})
+# The flags a procedure row of the expansion may carry (slice G5a, `ProcedureFlags`) with the value a line has without
+# them: no money moves with them.
+_PROCEDURE_FLAGS: dict[str, bool | str] = {"is_package_included": False, "isbt128_barcode": ""}
 
 
 class ComposeError(ValueError):
@@ -103,6 +106,17 @@ def _copay_rate(proc_row: dict[str, Any]) -> Decimal | None:
             "in (0, 1) with at most 2 decimals"
         )
     return rate
+
+
+def _procedure_flags(proc_row: dict[str, Any]) -> dict[str, bool | str]:
+    """The line flags of a procedure row over their defaults; a flag the claim line does not have raises."""
+    flags = dict(proc_row.get("flags") or {})
+    unknown = sorted(set(flags) - set(_PROCEDURE_FLAGS))
+    if unknown:
+        raise ComposeError(
+            f"procedure {proc_row.get('code')!r} on {proc_row.get('date')}: unknown flag(s) {', '.join(unknown)}"
+        )
+    return {**_PROCEDURE_FLAGS, **flags}
 
 
 def _require_entry_id(row: dict[str, Any], *, section: str, index: int) -> str:
@@ -176,6 +190,7 @@ def compose_claim(
         # pays the rest; every other line pays what it bills.
         copay_rate = _copay_rate(proc_row)
         payable = billed if copay_rate is None else money(billed * (Decimal(1) - copay_rate))
+        flags = _procedure_flags(proc_row)
         lid = procedure_line_id(ctx.claim_id, idx)
         procedures.append(
             ProcedureClaimLine(
@@ -191,7 +206,7 @@ def compose_claim(
                 unit_price_try=unit,
                 billed_amount_try=billed,
                 expected_payable_try=payable,
-                is_package_included=False,
+                is_package_included=bool(flags["is_package_included"]),
                 package_code="",
                 surcharge_applicable=False,
                 copay_rate_applicable=copay_rate is not None,
@@ -200,6 +215,7 @@ def compose_claim(
                 copay_rate=copay_rate,
                 procedure_specialty_code=proc_row.get("specialty", ""),
                 sag_sol="",
+                isbt128_barcode=str(flags["isbt128_barcode"]),
             )
         )
         entry_lines[entry_id].append(lid)
@@ -218,6 +234,7 @@ def compose_claim(
         flags = {
             "is_ek3b1_bundled": False,
             "is_excluded": False,
+            "requires_pre_auth": False,
             **(mat_row.get("flags") or {}),
         }
         lid = material_line_id(ctx.claim_id, idx)
@@ -237,7 +254,6 @@ def compose_claim(
                 billed_amount_try=billed,
                 expected_payable_try=billed,
                 is_bundled=False,
-                requires_pre_auth=False,
                 denial_reason_expected="",
                 rule_trace_expected="",
                 **flags,

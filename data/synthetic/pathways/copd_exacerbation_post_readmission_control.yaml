@@ -1,0 +1,59 @@
+# Control visit six days after the discharge of story S33 (the readmission of the patient of story S2), outpatient, billed itemized.
+# Showcase story S34 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F2 b4): bill 4 of the patient of S2. The clean bill
+# bills the examination per visit; the faulty bill marks it as a component of a package (vakabaşı), the fault of this story.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: copd_exacerbation_post_readmission_control
+title: "Control visit after a COPD readmission, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Göğüs Hastalıkları"
+  specialty: "1171"                  # EK-2A: Göğüs Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S34 is the man of story S2 (the same patient, a later bill); J44.1 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 55
+    max: 90
+    basis: judgment
+    source: "Story S34 patient is 81, like story S2; the bounds are those of story S2 (the author's judgment)."
+
+diagnoses:
+  - icd10: J44.1
+    name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALEVLENMELERLE, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the control follows the exacerbation of story S33, so J44.1 stays the principal code. Clinician to confirm."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S2 lists I10 as a comorbidity of this patient; it is coded on every bill of his."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+notes:
+  - "The visit is 6 days after the discharge of story S33 (2026-04-23). Story S33 is billed itemized, so no package period (C000714) covers the control: its examination is billed per visit."
+  - "No test is billed: the visit is the clinical control of the readmission, and a test of story S33's stay would be within its seven days. J44.1 and I10 are diagnoses of story S33."
+  - "The examination carries no patient share (no `copay`): the card names none for this bill; the share of story S32's examination is not repeated here."
+
+showcase:
+  story: S34
+  sex: M
+  age: 81
+  admit: "2026-04-29"
+  chronic_health_report: true

@@ -62,6 +62,8 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
 # of patient 12 two days after his ER visit
 _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
     (2, 2): (136, 80, 86, 93, 170, 67.0),
+    (2, 3): (152, 88, 112, 85, 170, 66.5),
+    (2, 4): (134, 78, 88, 92, 170, 66.0),
     (7, 2): (118, 72, 78, 98, 162, 71.0),
     (7, 3): (128, 80, 80, 98, 162, 70.5),
     (4, 2): (126, 72, 76, 96, 155, 57.5),
@@ -169,7 +171,7 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
                 "L107020|MCV": "iron_deficiency",
                 "L107020|MCH": "iron_deficiency",
             }
-        else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode)
+        else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode), S32-S34 none
             assert entry.labs is None
 
 
@@ -273,7 +275,8 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # by patient number only the first encounter answers
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
-    # the committed encounters are numbered 1..n by patient; patient 2 has two (S2 and its control S32), patient 7 three
+    # the committed encounters are numbered 1..n by patient; patient 2 has four (S2, its control S32, its readmission S33
+    # and the control after it S34), patient 7 three
     # (S7, its observation S47 and its follow-up S48), patient 4 three
     # (S4, its control S39 and its second visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two
     # (S10, the ER visit, and S22, the admission)
@@ -281,7 +284,7 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
 
 
 @pytest.mark.parametrize(
