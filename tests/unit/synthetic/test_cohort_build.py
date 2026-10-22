@@ -1428,3 +1428,33 @@ def test_an_event_whose_entry_is_not_one_billed_line_stops_the_build(built_showc
     with pytest.raises(BuildError, match="is not a billed line"):
         _medula_event_rows(recipe, replace(claim, entry_line_ids={"manual_hematocrit": ("EMR-F-SENTETIK-HASTA-0012-001-001",)}))
 
+
+
+def test_the_chronic_report_pin_reaches_the_patients_copay_profile_and_nothing_else(
+    built_showcase: BuildResult,
+) -> None:
+    """The committed cohort knows no report (WP9 pins S2's); a pin on a patient's bill sets that patient's
+    profile row only: every other row and every other table stays as it was."""
+    committed = built_showcase.tables["patient_copay_profiles.parquet"]
+    assert committed.schema["has_chronic_health_report"] == pl.Boolean
+    assert committed["has_chronic_health_report"].null_count() == committed.height
+
+    patient = cohort.role("showcase_S2").patient_id
+    recipes = load_recipes()
+    pinned = [
+        r.model_copy(update={"pins": EncounterPins(chronic_health_report=True)}) if r.patient_no == 2 else r
+        for r in recipes.recipes
+    ]
+    assert sum(r.patient_no == 2 for r in pinned) == 1 and all(r.pins is None for r in recipes.recipes if r.patient_no == 2)
+    built = build_showcase(recipes=recipes.model_copy(update={"recipes": pinned}))
+
+    profiles = built.tables["patient_copay_profiles.parquet"]
+    flags = dict(zip(profiles["patient_id"].to_list(), profiles["has_chronic_health_report"].to_list(), strict=True))
+    assert flags.pop(patient) is True
+    assert set(flags.values()) == {None}
+    assert profiles.drop("has_chronic_health_report").equals(committed.drop("has_chronic_health_report"))
+    for name in TABLE_FILES:
+        if name != "patient_copay_profiles.parquet":
+            assert built.tables[name].equals(built_showcase.tables[name], null_equal=True), name
+    for name in CLEAN_TABLE_FILES:
+        assert built.clean_tables[name].equals(built_showcase.clean_tables[name], null_equal=True), name

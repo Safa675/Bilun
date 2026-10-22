@@ -13,7 +13,8 @@ defaults to 1, so a recipe of a one-bill patient needs none). The recipes are li
 and then by `encounter_no`, without gaps. The claim and episode ids follow `encounter_no` (the build
 order, `claim_id(patient, encounter_no)`), never the date, so a bill added later does not renumber
 the others; the tables are laid out by date (`build.py`). All the encounters of a patient have the
-patient's sex and birth year (`recipe.patient_identity`). A story is the story of one bill
+patient's sex, birth year and chronic-health-report flag (`recipe.patient_identity`: the copay profile
+holds one row per patient, built from the first encounter). A story is the story of one bill
 (`recipe.story`): the second bill of a pathway that is already in use names a story of its own in its
 pins.
 
@@ -31,7 +32,7 @@ from pathlib import Path
 from typing import Annotated, Any, Literal
 
 import yaml
-from pydantic import Field, StringConstraints, ValidationError
+from pydantic import Field, StrictBool, StringConstraints, ValidationError
 
 from scripts.synthetic.faults.loader import REGISTRY_PATH, load_registry, load_siblings
 from scripts.synthetic.faults.mutate import FaultApplyError, apply_fault
@@ -128,6 +129,8 @@ class EncounterPins(_Model):
     nights: int | None = Field(default=None, ge=1, le=60)
     include: list[str] | None = None
     course_days: dict[Slug, int] | None = None
+    # None: the pathway's value (an override cannot reset a known flag to unknown)
+    chronic_health_report: StrictBool | None = None
 
 
 # The MEDULA stages of data/medula/workflow_stages.json, as the table and the rejection playbook spell them.
@@ -406,8 +409,9 @@ def check_recipes(
             )
         )
 
-    # what each encounter is: (where, patient_no, sex, birth year, story), read from its effective pins
-    identities: list[tuple[str, int, str, int, str]] = []
+    # what each encounter is: (where, patient_no, sex, birth year, chronic report, story), read from
+    # its effective pins
+    identities: list[tuple[str, int, str, int, bool | None, str]] = []
 
     for idx, recipe in enumerate(recipes.recipes):
         where = f"recipes[{encounter_label(recipe) if not duplicated_pairs else idx}]"
@@ -471,13 +475,16 @@ def check_recipes(
                     f"fault {recipe.fault!r} is of story {applicable.story}, but this encounter is of story {story}",
                 )
             )
-        identities.append((where, recipe.patient_no, pins.sex, int(pins.admit[:4]) - pins.age, story))
+        birth_year = int(pins.admit[:4]) - pins.age
+        identities.append(
+            (where, recipe.patient_no, pins.sex, birth_year, pins.chronic_health_report, story)
+        )
 
     # "the first encounter" is only defined when each (patient_no, encounter_no) is there once
-    first_of: dict[int, tuple[str, int]] = {}
-    for where, number, sex, birth_year, _story in [] if duplicated_pairs else identities:
-        first = first_of.setdefault(number, (sex, birth_year))
-        if (sex, birth_year) != first:
+    first_of: dict[int, tuple[str, int, bool | None]] = {}
+    for where, number, sex, birth_year, report, _story in [] if duplicated_pairs else identities:
+        first = first_of.setdefault(number, (sex, birth_year, report))
+        if (sex, birth_year) != first[:2]:
             out.append(
                 Problem(
                     "recipe.patient_identity",
@@ -486,10 +493,19 @@ def check_recipes(
                     f"{first[1]} in the first encounter; one patient has one sex and one birth year",
                 )
             )
+        if report != first[2]:
+            out.append(
+                Problem(
+                    "recipe.patient_identity",
+                    where,
+                    f"patient {number} has chronic_health_report {report} here and {first[2]} in the first "
+                    "encounter; the copay profile holds one value per patient",
+                )
+            )
 
     # One story per bill: the roles, the scenarios and the fault accessors name a bill by its story.
     bill_of_story: dict[str, str] = {}
-    for where, _number, _sex, _birth_year, story in identities:
+    for where, _number, _sex, _birth_year, _report, story in identities:
         first_bill = bill_of_story.setdefault(story, where)
         if first_bill != where:
             out.append(

@@ -21,6 +21,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    StrictBool,
     StringConstraints,
     field_validator,
     model_validator,
@@ -466,6 +467,9 @@ class Pins(_Model):
     nights: int | None = Field(default=None, ge=1, le=60)
     include: list[str] = Field(default_factory=list)  # optional ids that are in
     course_days: dict[Slug, int] = Field(default_factory=dict)  # drug id -> chosen course days
+    # A fact about the patient, not the bill: the patient's copay profile row `has_chronic_health_report`
+    # (EK-1/A, SUT §1.8.5(7)). None: not known, the engine claims no EK-1/A waiver.
+    chronic_health_report: StrictBool | None = None  # a number or a string is refused
 
 
 class Pathway(_Model):

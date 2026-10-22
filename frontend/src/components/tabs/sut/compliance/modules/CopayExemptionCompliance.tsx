@@ -10,6 +10,12 @@ import type { PatientAlertsResponse, PatientAlertsStatus } from "@/lib/domains/s
 import { fmtNum } from "../../shared";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { cn } from "@/lib/cn";
+import {
+  formatExemptionCategory,
+  getCopayExemptionState,
+  getPrimaryExemptionGround,
+} from "@/lib/copayExemption";
+import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 
 export interface CopayExemptionComplianceProps {
@@ -128,7 +134,8 @@ export function CopayExemptionCompliance({
               </tr>
             ) : (
               filteredPatients.map((p) => {
-                const isExempt = p.copay_exemption?.exempt;
+                const copayState = p.copay_exemption ? getCopayExemptionState(p.copay_exemption) : "none";
+                const primaryGround = p.copay_exemption ? getPrimaryExemptionGround(p.copay_exemption) : null;
                 const qualifyingDx = p.copay_exemption?.qualifying_diagnoses ?? [];
                 return (
                   <tr key={p.patient_id}>
@@ -141,8 +148,16 @@ export function CopayExemptionCompliance({
                       {t("optimizer.modules.diagnosisCount", { count: p.n_diagnoses })} · {p.icd10_chapters?.join(", ") || "—"}
                     </td>
                     <td>
-                      {isExempt ? (
-                        <Chip variant="success">{t("optimizer.modules.exemptEk1a")}</Chip>
+                      {copayState === "exempt" ? (
+                        <Chip variant="success">
+                          {!primaryGround || primaryGround === "ek1a_chronic"
+                            ? t("optimizer.modules.exemptEk1a")
+                            : t("optimizer.modules.exemptOnGround", {
+                                basis: formatExemptionCategory(primaryGround, t),
+                              })}
+                        </Chip>
+                      ) : copayState === "partial" ? (
+                        <Chip variant="warning">{getSutAlertBadgeLabel("ek1aReportMissing")}</Chip>
                       ) : (
                         <Chip variant="neutral">{t("optimizer.modules.standardCopay")}</Chip>
                       )}
@@ -157,9 +172,11 @@ export function CopayExemptionCompliance({
                       )}
                     </td>
                     <td className="text-[var(--text-secondary)]">
-                      {isExempt
+                      {copayState === "exempt"
                         ? t("optimizer.modules.applyExemption")
-                        : t("optimizer.modules.collectStandardCopay")}
+                        : copayState === "partial"
+                          ? t("optimizer.modules.checkChronicReport")
+                          : t("optimizer.modules.collectStandardCopay")}
                     </td>
                     <td className="text-right">
                       <PatientTabLink

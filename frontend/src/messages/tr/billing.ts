@@ -151,6 +151,7 @@ const billing = {
     "gazetteRate": "Tebliğ oranı",
     "correction": "Açıklama",
     "ek1aScopeNotice": "Bu faturada EK-1A yalnızca ayaktan uzman muayene satırlarına uygulanır (§1.8.5(7)); tetkik, ilaç ve günübirlik/yatış ziyaretleri başka gerekçelerle değerlendirilir.",
+    "ek1aNoWaivableLine": "EK-1A yalnızca ayaktan uzman muayenesini muaf tutar. Bu faturada böyle bir satır yok, bu nedenle tutar düşülmüyor.",
     "inpatientDrugWaiverNotice": "Bu faturadaki reçete muafiyet farkı, satır düzeyinde yatarak ilaç bayrağı olana kadar yatış/günübirlik taleplerindeki ilaçlar için §1.8.5(8) gerekçesiyle hesaplanmıştır.",
     "patientVsClaimExemptionNotice": "Hasta düzeyinde EK-1A uygunluğu, bu faturadaki her satırın EK-1A ile muaf olduğu anlamına gelmez — aşağıdaki satır gerekçelerine bakın.",
     "ilaveReasons": {
@@ -451,6 +452,7 @@ const billing = {
     "title": "SUT optimizasyon bulguları",
     "copayEyebrow": "Katılım payı muafiyeti",
     "ek1aQualifying": "{count} EK-1A uygun tanı",
+    "ek1aReportNeeded": "{count} EK-1A uygun tanı; muafiyet için kronik hastalık raporu gerekir",
     "exemptStatusVisit": "Statü veya ziyaret türü gerekçesiyle muaf",
     "noWaiver": "Muafiyet gerekçesi eşleşmedi",
     "surchargeEyebrow": "Fark ücreti uyumu",

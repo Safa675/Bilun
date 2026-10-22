@@ -19,6 +19,7 @@ import { PatientExemptionRuleSourceAttribution } from "@/components/sut/Regulato
 import { Chip, Eyebrow, ExactnessBlock, Stat, Surface, Button } from "@/components/primitives";
 import {
   formatExemptionBasisSummary,
+  getCopayExemptionState,
   getExemptionCategories,
   hasEk1aExemption,
 } from "@/lib/copayExemption";
@@ -42,6 +43,7 @@ function OptimizationCard({
 function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
   const t = useT();
   const topMatch = copay.qualifying_diagnoses[0];
+  const state = getCopayExemptionState(copay);
   const categories = getExemptionCategories(copay);
   const basisSummary = formatExemptionBasisSummary(categories, t);
   const ek1aOnly =
@@ -50,6 +52,14 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
     copay.n_qualifying === 1
       ? t("patient.workspace.copayCodeSingular")
       : t("patient.workspace.copayCodePlural");
+  const headline =
+    state === "exempt"
+      ? ek1aOnly
+        ? t("patient.workspace.copayExemptEk1aReport")
+        : t("patient.workspace.copayEligible")
+      : state === "partial"
+        ? t("patient.workspace.copayPartialHeadline")
+        : t("patient.workspace.copayNoMatch");
 
   return (
     <Surface variant="soft" padding="md" className="space-y-3">
@@ -57,10 +67,10 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
         <div>
           <Eyebrow>{t("patient.workspace.copayEyebrow")}</Eyebrow>
           <p className="mt-2 font-display text-lg font-medium tracking-normal text-[var(--text-primary)]">
-            {copay.exempt ? t("patient.workspace.copayEligible") : t("patient.workspace.copayNoMatch")}
+            {headline}
           </p>
           <p className="mt-2 text-sm leading-snug text-[var(--text-secondary)]">
-            {copay.exempt
+            {state === "exempt"
               ? ek1aOnly
                 ? t("patient.workspace.copayEk1a", {
                     count: fmtNum(copay.n_qualifying),
@@ -69,7 +79,12 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
                 : basisSummary
                   ? t("patient.workspace.copayWaiverGrounds", { basis: basisSummary })
                   : t("patient.workspace.copayGenericMatch")
-              : t("patient.workspace.copayNoInputs")}
+              : state === "partial"
+                ? t("patient.workspace.copayPartialBody", {
+                    count: fmtNum(copay.n_qualifying),
+                    codeWord,
+                  })
+                : t("patient.workspace.copayNoInputs")}
           </p>
           {copay.exempt && categories.length > 0 && (
             <div className="mt-3 space-y-2">
@@ -78,8 +93,12 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
             </div>
           )}
         </div>
-        <Chip variant={copay.exempt ? "success" : "neutral"}>
-          {copay.exempt ? t("patient.workspace.chipActionable") : t("patient.workspace.chipClear")}
+        <Chip variant={state === "exempt" ? "success" : state === "partial" ? "warning" : "neutral"}>
+          {state === "exempt"
+            ? t("patient.workspace.chipActionable")
+            : state === "partial"
+              ? t("patient.workspace.chipReportNeeded")
+              : t("patient.workspace.chipClear")}
         </Chip>
       </div>
 

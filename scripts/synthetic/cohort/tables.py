@@ -102,12 +102,21 @@ def table_schemas() -> dict[str, dict[str, pl.DataType]]:
     return {name: dict(schema) for name, schema in _TABLE_SCHEMAS.items()}
 
 
-def copay_profile(patient_id: str, birth_year: int | None) -> dict[str, Any]:
-    """Build a standard ``patient_copay_profiles`` row dictionary for one patient."""
+def copay_profile(
+    patient_id: str, birth_year: int | None, has_chronic_health_report: bool | None = None
+) -> dict[str, Any]:
+    """Build a standard ``patient_copay_profiles`` row dictionary for one patient.
+
+    ``has_chronic_health_report`` stays None (unknown) unless the patient's pins set it.
+    """
     if not isinstance(patient_id, str) or not patient_id.strip():
         raise ValueError(f"patient_id must be a non-empty string, got {patient_id!r}")
     if birth_year is not None and (isinstance(birth_year, bool) or not isinstance(birth_year, int)):
         raise ValueError(f"birth_year must be an int or None, got {birth_year!r}")
+    if has_chronic_health_report is not None and not isinstance(has_chronic_health_report, bool):
+        raise ValueError(
+            f"has_chronic_health_report must be a bool or None, got {has_chronic_health_report!r}"
+        )
     return {
         "patient_id": patient_id,
         "sgk_benefit_class": "standard",
@@ -115,6 +124,7 @@ def copay_profile(patient_id: str, birth_year: int | None) -> dict[str, Any]:
         "national_service_status": "none",
         "elderly_allowance_2022": False,
         "birth_year": birth_year,
+        "has_chronic_health_report": has_chronic_health_report,
     }
 
 

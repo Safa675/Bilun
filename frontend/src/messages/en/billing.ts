@@ -151,6 +151,7 @@ const billing = {
     "gazetteRate": "Gazette rate",
     "correction": "Note",
     "ek1aScopeNotice": "EK-1A on this bill applies only to outpatient specialist examination lines (§1.8.5(7)); labs, drugs, and day-case or inpatient visits use other grounds.",
+    "ek1aNoWaivableLine": "EK-1A waives outpatient specialist examinations only. This bill has no such line, so no amount is waived.",
     "inpatientDrugWaiverNotice": "Prescription exemption gap on this bill is attributed to §1.8.5(8) for drugs on inpatient or day-case claims until line-level inpatient-drug flags exist.",
     "patientVsClaimExemptionNotice": "Patient-level EK-1A eligibility does not mean every line on this bill is waived under EK-1A — see per-line waiver grounds below.",
     "ilaveReasons": {
@@ -451,6 +452,7 @@ const billing = {
     "title": "SUT optimization findings",
     "copayEyebrow": "Copay exemption",
     "ek1aQualifying": "{count} EK-1A qualifying diagnoses",
+    "ek1aReportNeeded": "{count} EK-1A qualifying diagnoses; a chronic health report is needed for the waiver",
     "exemptStatusVisit": "Exempt on status or visit-type grounds",
     "noWaiver": "No waiver grounds matched",
     "surchargeEyebrow": "Surcharge compliance",

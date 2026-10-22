@@ -538,7 +538,7 @@
     "expected_rule_outputs.parquet": "07ccec137046a2caa464c6abbb6e9d4b8eb57363c9265e3226ecfc75d3688086",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
-    "patient_copay_profiles.parquet": "82afc3c898039f3e47818cadc94cb11288680014daa60bdc5da098c191c29314",
+    "patient_copay_profiles.parquet": "ce7770766121e41a84f01681a2cf30816d44906127354335eba6182830aa851c",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
     "procedure_claim_lines.parquet": "f26ba1ae51f8806146193321172b2d2b910a87b039fe48a82807401f360f44fe"
   }

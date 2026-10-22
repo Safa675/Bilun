@@ -328,3 +328,36 @@ def test_informational_rate_rows_carry_clause_refs() -> None:
         material_rows[0]["detail"]
         == "SUT §1.8.3(2) material copay reference rate: 20%"
     )
+
+
+@pytest.mark.parametrize(
+    "report,code,words",
+    [
+        (None, "ek1a_report_unknown", "chronic health report status unknown"),
+        (False, "ek1a_report_missing", "no chronic health report on file"),
+    ],
+)
+def test_the_partial_row_says_whether_the_report_is_unknown_or_missing(report, code, words) -> None:
+    """The officer's UI translates the row by its message code (no English prose in the TR page)."""
+    ctx = PatientClaimContext(
+        patient_id="PT-1",
+        claims=(),
+        procedure_lines=(),
+        material_lines=(),
+        drug_lines=(),
+        diagnoses=(),
+    )
+    result = optimize_copay_from_claims(
+        ctx,
+        {
+            "exempt": False,
+            "partial_exempt": True,
+            "has_chronic_health_report": report,
+            "qualifying_diagnoses": [{"icd10": "J44.0", "disease": "KOAH", "range": "J44"}],
+            "exemption_sources": [],
+        },
+    )
+    (row,) = result.rate_corrections
+    assert row["message_code"] == code
+    assert "message_params" not in row
+    assert words in row["detail"] and "§1.8.5(7) waiver is not claimed" in row["detail"]

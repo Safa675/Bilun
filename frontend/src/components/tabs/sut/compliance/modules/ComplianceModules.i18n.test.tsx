@@ -28,7 +28,7 @@ const knownTurkishLabels = [
   "Önerilen aksiyon", "İncele", "Fatura öncesi", "Standart katılım",
   "İlave ücret", "Uygulanabilir işlemler", "En çok eşleşen", "Uyumluluk durumu",
   "Kullanılamıyor", "Kural ihlali yok", "Uyumlu", "Faturaya git", "Ortalama oran",
-  "İşaretli", "Temiz", "Oran sapması", "Seçili filtre",
+  "İşaretli", "Temiz", "Oran sapması", "Seçili filtre", "rapor yok", "Kronik hastalık raporunu", "Muaf (",
 ];
 const modules = [CopayExemptionCompliance, SurchargeCompliance, CopayRateCompliance];
 
@@ -101,5 +101,57 @@ describe("Compliance module language", () => {
     );
     expect(html).toContain("No patients match this filter.");
     expect(html).not.toContain("Seçili filtre");
+  });
+});
+
+describe("Copay exemption states in the cohort table", () => {
+  const unmetEk1a = { category: "ek1a_chronic", counts_toward_exempt: false, missing_requirements: ["chronic_health_report"] };
+  const row = (patientId: string, copay: Record<string, unknown>) => ({
+    patient_id: patientId,
+    n_diagnoses: 2,
+    icd10_chapters: ["I", "J"],
+    copay_exemption: { n_qualifying: 0, qualifying_diagnoses: [], action: null, ...copay },
+    surcharge_exposure: { exposure_rate: 0, n_applicable: 0, top_rules: [] },
+    copay_rate_exposure: { mean_rate: 0, n_applicable: 0, n_violations: 0, top_procedures: [] },
+  });
+  const cells = (html: string, patientId: string) =>
+    html.match(new RegExp(`<tr>(?:(?!</tr>).)*${patientId}(?:(?!</tr>).)*</tr>`, "s"))?.[0].replace(/<[^>]+>/g, "|") ?? "";
+
+  beforeEach(() => {
+    state.data = {
+      patients: [
+        row("P-EK1A", { exempt: true, n_qualifying: 1, qualifying_diagnoses: [{ icd10: "J44.0", disease: sourceText }], exemption_sources: [{ category: "ek1a_chronic", counts_toward_exempt: true }], primary_exemption_category: "ek1a_chronic" }),
+        row("P-PARTIAL", { exempt: false, partial_exempt: true, has_chronic_health_report: null, n_qualifying: 1, qualifying_diagnoses: [{ icd10: "J44.0", disease: sourceText }], exemption_sources: [unmetEk1a], primary_exemption_category: "ek1a_chronic" }),
+        // the patient-alerts rows carry no primary_exemption_category: the ground is the source that counts
+        row("P-ACIL", { exempt: true, exemption_sources: [{ category: "acil_servis", counts_toward_exempt: true }] }),
+        row("P-NONE", { exempt: false, exemption_sources: [] }),
+      ],
+    } as unknown as PatientAlertsResponse;
+  });
+
+  it("tells a partial EK-1A match from a standard copay and names the ground of an exemption", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayExemptionCompliance cohortPatientIds={new Set()} cohortFilterActive={false} />, "en",
+    );
+    expect(cells(html, "P-EK1A")).toContain("|Exempt (EK-1A)|");
+    expect(cells(html, "P-EK1A")).toContain("Apply the exemption flag before billing");
+    expect(cells(html, "P-PARTIAL")).toContain("|EK-1A match, report missing|");
+    expect(cells(html, "P-PARTIAL")).toContain("Check for a chronic health report; if present, set the exemption flag before billing");
+    expect(cells(html, "P-PARTIAL")).not.toContain("Standard copay");
+    expect(cells(html, "P-ACIL")).toContain("|Exempt (Emergency)|");
+    expect(cells(html, "P-ACIL")).not.toContain("EK-1A");
+    expect(cells(html, "P-NONE")).toContain("|Standard copay|");
+    expect(cells(html, "P-NONE")).toContain("Standard copay collection");
+  });
+
+  it("says the same in Turkish", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayExemptionCompliance cohortPatientIds={new Set()} cohortFilterActive={false} />, "tr",
+    );
+    expect(cells(html, "P-PARTIAL")).toContain("|EK-1A eşleşti, rapor yok|");
+    expect(cells(html, "P-PARTIAL")).toContain("Kronik hastalık raporunu kontrol edin; varsa faturadan önce muafiyet bayrağını uygulayın");
+    expect(cells(html, "P-NONE")).toContain("|Standart katılım payı|");
+    expect(cells(html, "P-ACIL")).toMatch(/\|Muaf \([^)]+\)\|/);
+    expect(cells(html, "P-ACIL")).not.toContain("EK-1A");
   });
 });

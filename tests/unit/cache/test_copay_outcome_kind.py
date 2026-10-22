@@ -180,3 +180,63 @@ def test_patient_alerts_summary_exemption_by_category() -> None:
     assert summary["n_exempt_patients"] == 1
     categories = {row["category"] for row in summary["exemption_by_category"]}
     assert "yesil_kart" in categories
+
+
+@pytest.mark.parametrize(
+    "flag,kind",
+    [(None, "partial_exempt"), (False, "partial_exempt"), (True, "exempt")],
+)
+def test_the_cache_reads_the_chronic_report_from_the_patients_profile(flag, kind) -> None:
+    """No caller passes the flag: the cache builds the copay inputs from the claim dataset, so the
+    profile decides. S2's patient (COPD, J44.0, I10) has an EK-1/A match and no other exemption
+    ground: partial without a known report, exempt with one, in the alert row and in both counts of
+    the cohort summary (patients and bills)."""
+    import dataclasses
+
+    import polars as pl
+
+    from src.bilun.cache.sut_context import assemble_sut_context
+    from src.bilun.domain.optimization.aggregator import compute_optimization_summary
+    from tests.fixtures import synthetic_cohort as cohort
+
+    dataset = load_sut_claim_dataset()
+    patient = cohort.role("showcase_S2").patient_id
+    profiles = dict(dataset.copay_profiles_by_patient)
+    assert profiles[patient].has_chronic_health_report is None  # the committed cohort
+    profiles[patient] = dataclasses.replace(profiles[patient], has_chronic_health_report=flag)
+    with_flag = dataclasses.replace(dataset, copay_profiles_by_patient=profiles)
+    diagnoses = [diag.icd10_code for diag in dataset.diagnoses_by_patient[patient]]
+    bills = len(dataset.claims_by_patient[patient])
+
+    context = assemble_sut_context(
+        lab_df=pl.DataFrame(),
+        ana_df=pl.DataFrame({"patient_id": [patient], "TANIKODU": [diagnoses[0]]}),
+        rec_df=pl.DataFrame(),
+        patient_ids=[patient],
+        diagnoses_by_pid={patient: diagnoses},
+        compute_optimization_summary_fn=compute_optimization_summary,
+        evaluate_copay_exemption_fn=evaluate_copay_exemption,
+        analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
+        analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
+        load_sut_claim_dataset_fn=lambda: with_flag,
+    )
+
+    (row,) = context["patient_alerts_cache"]["patients"]
+    copay = row["copay_exemption"]
+    assert copay["outcome_kind"] == kind
+    assert row["copay_primary_outcome"] == kind
+    assert copay["has_chronic_health_report"] is flag
+    assert copay["exempt"] is (flag is True)
+    assert copay["partial_exempt"] is (flag is not True)
+    assert copay["action"] == ("Waive outpatient copay (EK-1A)" if flag else None)
+    from src.bilun.api.public_responses import project_public_response
+
+    (public,) = project_public_response({"patients": [row]}, "/api/patient-alerts")["patients"]
+    assert public["copay_exemption"]["has_chronic_health_report"] is flag
+    assert public["copay_exemption"]["partial_exempt"] is (flag is not True)
+
+    summary = context["optimization_summary"]["copay_exemptions"]
+    assert summary["n_exempt_patients"] == (1 if flag else 0)
+    assert summary["n_exempt_ek1a_patients"] == (1 if flag else 0)
+    assert summary["n_exempt_bills"] == (bills if flag else 0)
+    assert summary["n_exempt_ek1a_bills"] == (bills if flag else 0)

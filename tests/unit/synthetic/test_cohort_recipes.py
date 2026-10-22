@@ -248,6 +248,23 @@ def test_the_pins_of_an_encounter_are_the_pathways_own_with_the_given_fields_lai
     assert pin_overrides(EncounterPins(admit="2026-07-20", nights=7)) == {"admit": "2026-07-20", "nights": 7}
 
 
+def test_the_chronic_report_is_a_pin_of_the_patient_that_every_bill_of_the_patient_carries() -> None:
+    pathway = load_all()[S4]
+    assert pathway.showcase.chronic_health_report is None  # not known unless a story pins it
+    assert effective_pins(pathway, EncounterPins(chronic_health_report=True)).chronic_health_report is True
+    assert effective_pins(pathway, EncounterPins(chronic_health_report=False)).chronic_health_report is False
+    # None is "not given": an override cannot reset a known report to unknown
+    assert pin_overrides(EncounterPins(chronic_health_report=None)) == {}
+    raw = _raw_recipes()
+    _recipe(raw, 4)["pins"] = {"chronic_health_report": True}
+    _insert(raw, _second_stay(chronic_health_report=True))
+    assert _problems(raw) == []
+    _insert(raw, _stay(3))  # a third bill that leaves the report unknown
+    (problem,) = _problems(raw)
+    assert (problem.check, problem.where) == ("recipe.patient_identity", "recipes[4.3]")
+    assert "chronic_health_report None here and True in the first encounter" in problem.message
+
+
 def test_an_encounter_is_named_by_its_patient_and_by_its_number_when_it_is_not_the_first() -> None:
     assert encounter_label(ShowcaseRecipe(patient_no=3, pathway="x_y")) == "3"
     assert encounter_label(ShowcaseRecipe(patient_no=3, encounter_no=2, pathway="x_y")) == "3.2"
@@ -572,6 +589,8 @@ CASES: list[Case] = [
     # --- encounters: one patient, one sex and one birth year
     Case("recipe.patient_identity", lambda r: _insert(r, _second_stay(sex="M")), label="sex_differs"),
     Case("recipe.patient_identity", lambda r: _insert(r, _second_stay(age=80)), label="birth_year_differs"),
+    # the copay profile is one row per patient: the chronic report is the first bill's for every bill
+    Case("recipe.patient_identity", lambda r: _insert(r, _second_stay(chronic_health_report=True)), label="chronic_report_differs"),
     Case(
         "recipe.patient_identity",
         lambda r: _insert(r, _second_stay(admit="2025-12-30")),  # the window is 2026: the stay is off it too
@@ -601,6 +620,7 @@ CASES: list[Case] = [
     Case("schema.unknown_field", lambda r: _recipe(r, 1).update(pins={"temperature": 37}), label="unknown_pin"),
     Case("schema.bad_value", lambda r: _recipe(r, 1).update(pins={"admit": "2026-02-30"}), label="a_pin_date_that_does_not_exist"),
     Case("schema.bad_value", lambda r: _recipe(r, 1).update(pins={"age": 121}), label="a_pin_age_out_of_range"),
+    Case("schema.bad_value", lambda r: _recipe(r, 1).update(pins={"chronic_health_report": "evet"}), label="a_report_pin_that_is_not_a_bool"),
 ]
 
 

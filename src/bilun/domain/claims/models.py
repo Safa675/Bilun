@@ -24,6 +24,8 @@ class PatientCopayProfile:
     national_service_status: str = "none"
     elderly_allowance_2022: bool = False
     birth_year: int | None = None
+    # EK-1/A (SUT §1.8.5(7)) waives the outpatient copay only with a chronic health report: None = not known.
+    has_chronic_health_report: bool | None = None
 
 
 @dataclass(frozen=True)

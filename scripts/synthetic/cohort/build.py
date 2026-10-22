@@ -687,10 +687,13 @@ def build_showcase(
         )
 
         ref_date = faulty_claim.header.admission_date or faulty_claim.header.claim_start_date
-        # One copay profile per patient, with the birth year of the first encounter; the later ones agree
-        # with it (`recipe.patient_identity`, and `patient.age_arithmetic` on the tables).
+        # One copay profile per patient, with the birth year and the chronic-report flag of the first
+        # encounter; the later ones agree with it (`recipe.patient_identity`, and `patient.age_arithmetic`
+        # on the tables).
         if recipe.patient_no not in profile_of:
-            profile_of[recipe.patient_no] = copay_profile(pid, ref_date.year - pins.age)
+            profile_of[recipe.patient_no] = copay_profile(
+                pid, ref_date.year - pins.age, pins.chronic_health_report
+            )
 
         # A story is the story of one bill (`recipe.story`), so a role or a scenario names one claim and a
         # later bill never takes a role over; a patient's other bills are scenarios of their own stories.

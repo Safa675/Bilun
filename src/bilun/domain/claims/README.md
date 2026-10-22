@@ -36,7 +36,9 @@ Required Parquet tables (see `schema.REQUIRED_CLAIM_TABLES`):
 
 Optional tables (see `schema.OPTIONAL_CLAIM_TABLES`):
 
-- `patient_copay_profiles.parquet`
+- `patient_copay_profiles.parquet` (its optional column `has_chronic_health_report`
+  is true, false, or null/absent for not known; only true lets the EK-1/A exemption
+  waive the outpatient copay, SUT §1.8.5(7))
 - `performed_procedure_lines.parquet`
 - `medula_rejection_events.parquet`
 

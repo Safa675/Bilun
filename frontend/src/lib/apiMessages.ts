@@ -508,8 +508,9 @@ type StructuredTranslateFn = (
 
 /**
  * message_code → i18n key + param mapping for the §2.2 billing-prose surface
- * and the material copay rate row. Backend param names (snake_case) map to the
- * existing `api.billingProse.*` template params.
+ * and the copay rows (material copay rate, EK-1/A without a chronic health
+ * report). Backend param names (snake_case) map to the existing
+ * `api.billingProse.*` template params.
  */
 const STRUCTURED_BILLING_PROSE_CODES: Record<
   string,
@@ -567,6 +568,9 @@ const STRUCTURED_BILLING_PROSE_CODES: Record<
     key: "api.billingProse.materialCopayRate",
     paramMap: { rate_pct: "rate" },
   },
+  // EK-1/A matched without a known chronic health report (status unknown / none on file)
+  ek1a_report_unknown: { key: "api.billingProse.ek1aReportUnknown", paramMap: {} },
+  ek1a_report_missing: { key: "api.billingProse.ek1aReportMissing", paramMap: {} },
 };
 
 /**

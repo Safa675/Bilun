@@ -748,13 +748,21 @@ def test_copay_profile_and_row_validation_errors() -> None:
         "national_service_status": "none",
         "elderly_allowance_2022": False,
         "birth_year": 1980,
+        "has_chronic_health_report": None,
     }
     assert copay_profile("SENTETIK-HASTA-0002", None)["birth_year"] is None
+    # The chronic-health-report flag is tri-state: None (not known) unless the pins set it.
+    assert copay_profile("SENTETIK-HASTA-0003", 1950, True)["has_chronic_health_report"] is True
+    assert copay_profile("SENTETIK-HASTA-0003", 1950, False)["has_chronic_health_report"] is False
 
     with pytest.raises(ValueError, match="patient_id"):
         copay_profile("  ", 1980)
     with pytest.raises(ValueError, match="birth_year"):
         copay_profile("SENTETIK-HASTA-0001", True)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="has_chronic_health_report"):
+        copay_profile("SENTETIK-HASTA-0001", 1980, "evet")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="has_chronic_health_report"):
+        copay_profile("SENTETIK-HASTA-0001", 1980, 1)  # type: ignore[arg-type]
 
     with pytest.raises(TableSchemaError, match="unknown columns"):
         build_tables(
