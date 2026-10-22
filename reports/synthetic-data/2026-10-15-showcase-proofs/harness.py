@@ -237,13 +237,16 @@ class Bill:
     def header(self) -> ClaimHeader:
         total = sum((p.billed_amount_try for p in self.procs), Z) + sum(
             (m.billed_amount_try for m in self.mats), Z) + sum((d.billed_amount_try for d in self.drugs), Z)
+        # a line with a patient share (S32's examination) pays less than it bills: the payable total follows the lines
+        payable = sum((p.expected_payable_try for p in self.procs), Z) + sum(
+            (m.expected_payable_try for m in self.mats), Z) + sum((d.expected_payable_try for d in self.drugs), Z)
         return ClaimHeader(
             claim_id=self.cid, patient_id=self.pid, episode_id=self.episode, claim_type=self.claim_type,
             facility_tier=FACILITY_TIER, provider_type=PROVIDER_TYPE, department=self.department,
             admission_date=self.admission, discharge_date=self.discharge,
             claim_start_date=self.start or self.admission, claim_end_date=self.end or self.discharge,
             primary_icd10=self.primary_icd10, package_candidate=self.package_candidate,
-            expected_total_billed_try=total, expected_total_payable_try=total,
+            expected_total_billed_try=total, expected_total_payable_try=payable,
             expected_denial_reason="", scenario_tag="", occupational_context=self.occupational_context,
         )
 

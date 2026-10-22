@@ -202,7 +202,7 @@ def test_the_cache_reads_the_chronic_report_from_the_patients_profile(flag, kind
     dataset = load_sut_claim_dataset()
     patient = cohort.role("showcase_S2").patient_id
     profiles = dict(dataset.copay_profiles_by_patient)
-    assert profiles[patient].has_chronic_health_report is None  # the committed cohort
+    assert profiles[patient].has_chronic_health_report is True  # the committed cohort: S2's report is on file (WP9)
     profiles[patient] = dataclasses.replace(profiles[patient], has_chronic_health_report=flag)
     with_flag = dataclasses.replace(dataset, copay_profiles_by_patient=profiles)
     diagnoses = [diag.icd10_code for diag in dataset.diagnoses_by_patient[patient]]

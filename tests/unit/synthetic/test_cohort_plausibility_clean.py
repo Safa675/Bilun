@@ -261,6 +261,11 @@ def bill_row(story: int, table: str) -> pl.Expr:
     return pl.col(_EPISODE_COLUMN[table]) == EPISODE[story]
 
 
+def of_patient(story: int, table: str) -> pl.Expr:
+    """The rows of every bill of the story's patient in a clean table (a fact of the patient, such as the sex)."""
+    return pl.col("HASTA_ID") == PATIENT[story]
+
+
 def lab_where(story: int, on: str, code: str, parameter: str | None = None) -> str:
     """`Problem.where` of a finding about a result set, or (with `parameter`) about one row of it."""
     text = f"{PATIENT[story]} lab_clean[{EPISODE[story]}|{on}|{code}"
@@ -934,7 +939,7 @@ CASES: list[Case] = [
     ),
     Case(
         MATCHES,
-        _recete(2, "KLACID", RF_EPISODE="B-SENTETIK-HASTA-0002-002"),
+        _recete(2, "KLACID", RF_EPISODE="B-SENTETIK-HASTA-0002-009"),
         where=PATIENT[2],
         says="has no billed drug line of the same patient, episode, date, name and quantity",
         n=2,
@@ -2105,9 +2110,10 @@ def test_a_missing_value_is_named_in_the_message_not_dropped(built, clean, conte
     (problem,) = data.problems(context, only=FLAG_AND_LIMITS)
     assert problem.message.endswith("but the reference gives 60.0..(none) for sex E")
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), CINSIYET=None)
-    (problem,) = data.problems(context, only=VITALS)
-    assert problem.message == "CINSIYET (none) is neither E nor K"
+    edit(data, TABLE_ANADATA, of_patient(2, TABLE_ANADATA), CINSIYET=None)  # the sex is the patient's: every bill
+    problems = data.problems(context, only=VITALS)
+    assert len(problems) == data.clean[TABLE_ANADATA].filter(of_patient(2, TABLE_ANADATA)).height  # one per bill
+    assert {p.message for p in problems} == {"CINSIYET (none) is neither E nor K"}
 
 
 # --- 5. the comparisons, one by one: just inside, just outside, zero and null -------------------------
@@ -2461,14 +2467,18 @@ def ckd_epi(creatinine: float, age: int, sex: str) -> float:
 
 
 def egfr_problems(clean, context, creatinine, egfr, age=60, sex="E") -> list[Problem]:
-    """S2's creatinine set with the given values, for a patient of that age and sex."""
-    patient = pl.col("SQ_EPISODE") == EPISODE[2]  # the row of S2's bill
+    """S2's creatinine set with the given values, for a patient of that age and sex.
+
+    The age is the bill's (the row of S2's bill), the sex the patient's (every bill of S2's patient: two episodes
+    with two sexes would make the sex unknown to the check).
+    """
+    bill = pl.col("SQ_EPISODE") == EPISODE[2]
     anadata = clean[TABLE_ANADATA].with_columns(
-        pl.when(patient)
+        pl.when(bill)
         .then(pl.lit(age, dtype=pl.Int64))
         .otherwise(pl.col("TANI_YASI"))
         .alias("TANI_YASI"),
-        pl.when(patient).then(pl.lit(sex)).otherwise(pl.col("CINSIYET")).alias("CINSIYET"),
+        pl.when(of_patient(2, TABLE_ANADATA)).then(pl.lit(sex)).otherwise(pl.col("CINSIYET")).alias("CINSIYET"),
     )
     rows = [
         {"SUB_CODE": CREATININE_CODE, "parametre": "Kreatinin", "sonuc_sayisal": creatinine},
@@ -2620,7 +2630,7 @@ def test_a_missing_low_limit_means_zero(built, clean, context) -> None:
 
 def test_an_unknown_sex_checks_the_limits_that_do_not_depend_on_it(built, clean, context) -> None:
     data = fresh(built, clean)
-    edit(data, TABLE_ANADATA, bill_row(2, TABLE_ANADATA), CINSIYET="?")
+    edit(data, TABLE_ANADATA, of_patient(2, TABLE_ANADATA), CINSIYET="?")
     assert flag_problems(data, context) == [], (
         "sex-dependent limits cannot be checked, none is wrong"
     )
@@ -2662,7 +2672,7 @@ def test_the_age_comes_from_the_episode_of_the_result_set(built, clean, context)
     """S2 has a second episode at another age; its result sets are judged at that age, not at 81."""
     data = fresh(built, clean)
     second = clean[TABLE_ANADATA].filter(bill_row(2, TABLE_ANADATA)).with_columns(
-        pl.lit("B-SENTETIK-HASTA-0002-002").alias("SQ_EPISODE"),
+        pl.lit("B-SENTETIK-HASTA-0002-009").alias("SQ_EPISODE"),
         pl.lit(40, dtype=pl.Int64).alias("TANI_YASI"),
     )  # fmt: skip
     data.clean[TABLE_ANADATA] = pl.concat([clean[TABLE_ANADATA], second])
@@ -2670,12 +2680,12 @@ def test_the_age_comes_from_the_episode_of_the_result_set(built, clean, context)
     # a creatinine set of the second episode: 0.98 mg/dL in a man of 40 gives an eGFR of 97, not 77
     labs = data.clean[TABLE_LAB]
     again = labs.filter(lab(2, DAY_2, CREATININE_CODE)).with_columns(
-        pl.lit("B-SENTETIK-HASTA-0002-002").alias("basvuru_id")
+        pl.lit("B-SENTETIK-HASTA-0002-009").alias("basvuru_id")
     )
     data.clean[TABLE_LAB] = pl.concat([labs, again])
     found = data.problems(context, only=EGFR_RELATION)
     assert [p.where for p in found] == [
-        f"{PATIENT[2]} lab_clean[B-SENTETIK-HASTA-0002-002|{DAY_2}|{CREATININE_CODE}]"
+        f"{PATIENT[2]} lab_clean[B-SENTETIK-HASTA-0002-009|{DAY_2}|{CREATININE_CODE}]"
     ]
     assert "age 40" in found[0].message
 

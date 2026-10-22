@@ -111,7 +111,7 @@ CHECKS: dict[str, str] = {
     "price.drug_in_force": "a drug line whose barcode has no EK-4A row in force on its day (drug prices are not checked)",
     # money: the arithmetic of the bill
     "money.line_arithmetic": "a line whose billed amount is not unit price x quantity x 1, 0.5 or 0.25, to the cent",
-    "money.payable_equals_billed": "a line whose expected payable differs from its billed amount (the answers live elsewhere)",
+    "money.payable_equals_billed": "a line whose expected payable is not its billed amount, or on a copay-flagged line not billed x (1 - copay_rate)",
     "money.totals": "a claim header whose billed or payable total is not the sum of its procedure, material and drug lines",
     # labels: the answer key and the fault records against the bill (they need the registry)
     "labels.answer_rows": "answer rows that differ from the ones the registry's fault records produce (needs the registry)",
@@ -910,12 +910,28 @@ class _Bill:
 
     @cached_property
     def priced(self) -> pl.DataFrame:
-        """The procedure, material and drug lines in one frame: the columns the money checks read."""
+        """The procedure, material and drug lines in one frame: the columns the money checks read.
+
+        `copay_rate_applicable` and `copay_rate` are the procedure line's patient share (slice G5b); a material
+        or drug line has none (False, null).
+        """
         sources = (
             (TABLE_PROCEDURES, "islem", "procedure_line_id"),
             (TABLE_MATERIALS, "malzeme", "material_line_id"),
             (TABLE_DRUGS, "ilac", "drug_claim_line_id"),
         )
+
+        def share(table: str) -> list[pl.Expr]:
+            if table == TABLE_PROCEDURES:
+                return [
+                    pl.col("copay_rate_applicable").cast(pl.Boolean, strict=False),
+                    pl.col("copay_rate").cast(pl.Float64, strict=False),
+                ]
+            return [
+                pl.lit(False).alias("copay_rate_applicable"),
+                pl.lit(None, dtype=pl.Float64).alias("copay_rate"),
+            ]
+
         return pl.concat(
             [
                 self.table(table).select(
@@ -927,6 +943,7 @@ class _Bill:
                     "unit_price_try",
                     "billed_amount_try",
                     "expected_payable_try",
+                    *share(table),
                 )
                 for table, line_type, key in sources
             ]
@@ -1962,17 +1979,55 @@ def check_line_arithmetic(bill: _Bill) -> list[Problem]:
 
 
 def check_payable_equals_billed(bill: _Bill) -> list[Problem]:
-    """money.payable_equals_billed: the payable of every line is its billed amount."""
+    """money.payable_equals_billed: the payable of every line is its billed amount, except on a line with a
+    patient share (slice G5b).
+
+    A procedure line with the copay flag pays its billed amount less its share: billed x (1 - copay_rate),
+    half up to the cent (the composer's arithmetic); the flag needs a rate above 0 and below 1, and a rate
+    needs the flag (the engine reads no rate without it).
+    """
     payable, billed = _cents(pl.col("expected_payable_try")), _cents(pl.col("billed_amount_try"))
-    found = bill.priced.filter(_differs(payable, billed)).select(
-        _priced_where().alias("where"),
-        _format(
-            "expected_payable_try is {} but billed_amount_try is {}; a line pays what it bills",
-            _tl(payable),
-            _tl(billed),
-        ).alias("message"),
-    )
-    return _problems("money.payable_equals_billed", found)
+    flagged = pl.col("copay_rate_applicable").fill_null(False)
+    rate = pl.col("copay_rate")
+    has_share = rate.is_not_null() & (rate > 0) & (rate < 1)
+    percent = (rate * 100).round(0).cast(pl.Int64, strict=False)
+    shared = (billed * (100 - percent) + 50) // 100  # half up, in whole cents (billed is not negative)
+    rate_text = _tl(percent)  # the rate as text with two decimals: 0.20
+    found = [
+        bill.priced.filter(~flagged & _differs(payable, billed)).select(
+            _priced_where().alias("where"),
+            _format(
+                "expected_payable_try is {} but billed_amount_try is {}; a line pays what it bills",
+                _tl(payable),
+                _tl(billed),
+            ).alias("message"),
+        ),
+        bill.priced.filter(flagged & has_share & _differs(payable, shared)).select(
+            _priced_where().alias("where"),
+            _format(
+                "expected_payable_try is {} but billed_amount_try {} less the copay share {} is {}",
+                _tl(payable),
+                _tl(billed),
+                rate_text,
+                _tl(shared),
+            ).alias("message"),
+        ),
+        bill.priced.filter(flagged & ~has_share.fill_null(False)).select(
+            _priced_where().alias("where"),
+            _format(
+                "copay_rate_applicable is true but copay_rate is {}; a line with the copay flag needs a share above 0 and below 1",
+                rate_text,
+            ).alias("message"),
+        ),
+        bill.priced.filter(~flagged & rate.is_not_null()).select(
+            _priced_where().alias("where"),
+            _format(
+                "copay_rate is {} but copay_rate_applicable is false; a rate needs the copay flag",
+                rate_text,
+            ).alias("message"),
+        ),
+    ]
+    return _problems("money.payable_equals_billed", pl.concat(found))
 
 
 def check_totals(bill: _Bill) -> list[Problem]:

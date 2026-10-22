@@ -60,6 +60,7 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
 # S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
 # of patient 12 two days after his ER visit
 _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
+    (2, 2): (136, 80, 86, 93, 170, 67.0),
     (4, 2): (126, 72, 76, 96, 155, 57.5),
     (4, 3): (122, 70, 88, 95, 155, 57.0),
     (10, 2): (118, 66, 92, 95, 158, 64.0),
@@ -73,6 +74,11 @@ def _raw_clinical() -> dict:
 
 def _patient(raw: dict, patient_no: int) -> dict:
     return next(p for p in raw["patients"] if p["patient_no"] == patient_no)
+
+
+def _position(entries: list, patient_no: int, encounter_no: int) -> int:
+    """The index of the clinical entry of one encounter."""
+    return next(i for i, e in enumerate(entries) if (e.patient_no, e.encounter_no) == (patient_no, encounter_no))
 
 
 def _without_gas_keys(patient: dict) -> None:
@@ -251,7 +257,9 @@ def test_the_model_holds_types_and_the_ranges_belong_to_the_check() -> None:
 def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     recipes, clinical = with_encounters(*STANDARD_EXTRAS)
     assert check_clinical(clinical, recipes=recipes) == []
-    assert [(p.patient_no, p.encounter_no) for p in clinical.patients][3:10] == [
+    pairs = [(p.patient_no, p.encounter_no) for p in clinical.patients]
+    start = pairs.index((4, 1))
+    assert pairs[start : start + 7] == [
         (4, 1), (4, 2), (4, 3), (4, 4), (5, 1), (6, 1), (7, 1)
     ]  # fmt: skip  # (4, 2) and (4, 3) are S39 and S40, (4, 4) is the test extra
     by_encounter = clinical.by_encounter()
@@ -260,20 +268,21 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # by patient number only the first encounter answers
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
-    # the committed encounters are numbered 1..n by patient; patient 4 has three (S4, its control S39 and its second
-    # visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two (S10, the ER visit, and S22, the admission)
+    # the committed encounters are numbered 1..n by patient; patient 2 has two (S2 and its control S32), patient 4 three
+    # (S4, its control S39 and its second visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two
+    # (S10, the ER visit, and S22, the admission)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {4: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2], 4: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
 
 
 @pytest.mark.parametrize(
     "edit",
     [
-        pytest.param(lambda entries: entries.pop(4), id="an_encounter_without_an_entry"),
-        pytest.param(lambda entries: entries.pop(3), id="a_first_encounter_without_an_entry"),
+        pytest.param(lambda entries: entries.pop(_position(entries, 4, 2)), id="an_encounter_without_an_entry"),
+        pytest.param(lambda entries: entries.pop(_position(entries, 3, 1)), id="a_first_encounter_without_an_entry"),
         pytest.param(lambda entries: entries.reverse(), id="the_entries_out_of_order"),
         pytest.param(lambda entries: entries.append(entries[0].model_copy(update={"encounter_no": 2})), id="an_entry_the_recipes_do_not_have"),
         pytest.param(lambda entries: entries.append(entries[4].model_copy()), id="an_entry_twice"),
@@ -288,13 +297,17 @@ def test_the_pairs_of_the_entries_must_be_the_pairs_of_the_recipes(edit) -> None
 
 
 def test_an_encounter_is_named_by_its_patient_and_number_in_a_problem() -> None:
-    recipes, clinical = with_encounters(Extra(2, 2, "copd_exacerbation_pneumonia_ward", {"admit": "2026-06-01"}))
-    # patient 2's second stay bills a blood gas (L103900) and has no labs block: the entry is named 2.2
+    # patient 9 (never extended) gets a COPD stay as its second bill, with the patient's own sex and age
+    recipes, clinical = with_encounters(
+        Extra(9, 2, "copd_exacerbation_pneumonia_ward", {"admit": "2026-06-01", "story": "S94", "sex": "F", "age": 77})
+    )
+    # the second bill bills a blood gas (L103900) and its entry has no labs block: the entry is named 9.2
     found = check_clinical(clinical, recipes=recipes)
-    assert [(p.check, p.where) for p in found] == [("labs.blood_gas", "patients[2.2].labs")]
-    assert "patient 2.2 has an L103900 blood gas line" in found[0].message
+    assert [(p.check, p.where) for p in found] == [("labs.blood_gas", "patients[9.2].labs")]
+    assert "patient 9.2 has an L103900 blood gas line" in found[0].message
     # a first encounter keeps the plain number, a later one carries the dot
-    for index, where in ((1, "patients[2].vitals.sbp"), (2, "patients[2.2].vitals.sbp")):
+    pairs = [(p.patient_no, p.encounter_no) for p in clinical.patients]
+    for index, where in ((pairs.index((9, 1)), "patients[9].vitals.sbp"), (pairs.index((9, 2)), "patients[9.2].vitals.sbp")):
         entries = list(clinical.patients)
         entries[index] = entries[index].model_copy(
             update={"vitals": entries[index].vitals.model_copy(update={"sbp": 300})}
@@ -792,12 +805,14 @@ def test_a_problem_is_located_by_patient_number_unless_the_numbers_repeat() -> N
         ("labs.blood_gas", "patients[2].labs.blood_gas"),
         ("labs.unknown_key", "patients[3].labs.states['L999999|X']"),
     ]
-    # With a number twice (patient 3 is renumbered 1) the number says nothing: the position is used.
+    # With a number twice (patient 3 is renumbered 1) the number says nothing: the position is used (patient 3's
+    # entry comes after the two entries of patient 2).
+    position = [p["patient_no"] for p in raw["patients"]].index(3)
     _patient(raw, 3)["patient_no"] = 1
     assert sorted((p.check, p.where) for p in _problems(raw)) == [
         ("clinical.patient_numbers", "patients"),
         ("labs.blood_gas", "patients[1].labs.blood_gas"),
-        ("labs.unknown_key", "patients[2].labs.states['L999999|X']"),
+        ("labs.unknown_key", f"patients[{position}].labs.states['L999999|X']"),
     ]
 
 

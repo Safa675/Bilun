@@ -1,4 +1,4 @@
-"""Sixteen showcase stories: clean bill + one injected fault each, except S39 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21).
+"""Seventeen showcase stories: clean bill + one injected fault each, except S32 and S39 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32 on 2026-10-22).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -405,6 +405,31 @@ def s22(variant: str) -> Bill:
     return b
 
 
+# ── S32 ─ the control visit three weeks after the discharge of S2, with the chronic health report (a clean bill) ──
+def s32(variant: str) -> Bill:
+    """81 M, the patient of S2: control visit after the COPD exacerbation, 2026-04-06, chest diseases, outpatient.
+
+    A clean bill: it has no fault, so there is no faulty variant (CLEAN_ONLY). The examination carries the
+    patient's share of the visit, modelled as 20 % (the copay flag, rate 0.20: SGK pays 80 % of the line). The
+    patient's chronic health report is on file (a fact of his copay profile, not of the bill), so the EK-1/A
+    exemption (SUT 1.8.5.(7)) waives that share: a patient benefit, not a fault. The stay of S2 (2026-03-09 to
+    03-15) is its history; it is itemized, so no package period (C000714) applies. No test is billed.
+    """
+    if variant != "clean":
+        raise ValueError("S32 is a clean bill: it has no faulty variant")
+    day = D("2026-04-06")
+    b = Bill("SH-02", "C-SH32", "poliklinik", "Göğüs Hastalıkları", None, None, "J44.0", start=day, end=day)
+    b.history = (s2("faulty"),)
+    for i, icd in enumerate(("J44.0", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    lid = b.proc("520030", day, specialty=GOGUS)          # the visit, with the patient's share
+    i = [p.procedure_line_id for p in b.procs].index(lid)
+    p, rate = b.procs[i], Decimal("0.20")
+    b.procs[i] = replace(p, copay_rate_applicable=True, copay_rate=rate,
+                         expected_payable_try=money(p.billed_amount_try * (1 - rate)))
+    return b
+
+
 # ── S39 ─ the control visit nine days after the discharge of S4 (a clean bill) ──
 def s39(variant: str) -> Bill:
     """86 F, the patient of S4: control visit after the pyelonephritis, 2026-05-25, internal medicine, outpatient.
@@ -449,6 +474,6 @@ def s40(variant: str) -> Bill:
 
 
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S39",)
+CLEAN_ONLY: tuple[str, ...] = ("S32", "S39")
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S22": s22, "S39": s39, "S40": s40}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S22": s22, "S32": s32, "S39": s39, "S40": s40}

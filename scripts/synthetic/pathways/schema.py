@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 from typing import Annotated, Literal, Self
 
 from pydantic import (
@@ -332,6 +333,17 @@ class Item(_Model):
     name: Name
 
 
+class Copay(Sourced):
+    """The patient's share of a line (SUT 1.8): the line is billed in full and SGK pays billed x (1 - rate).
+
+    The composer sets `copay_rate_applicable`, `copay_rate` and the payable of the line from it (slice G5b);
+    every other line pays what it bills. A rate is a share above 0 and below 1 with at most 2 decimals (0.20),
+    because the claim loader reads `copay_rate` to the cent (`optional_money`).
+    """
+
+    rate: Annotated[Decimal, Field(gt=0, lt=1, decimal_places=2)]
+
+
 class Procedure(Sourced):
     """An EK-2B/EK-2C line. One entry yields one bill line per day and per item."""
 
@@ -346,6 +358,7 @@ class Procedure(Sourced):
     session_role: SessionRole | None = None
     group: Group | None = None  # anaesthesia: the expected EK-2B group
     operations: list[Slug] | None = Field(default=None, min_length=1)  # anaesthesia: its session
+    copay: Copay | None = None  # the patient's share of every bill line of the entry (slice G5b)
     optional: Chance | None = None
     pending: Pending | None = None
 

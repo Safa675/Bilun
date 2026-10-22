@@ -59,6 +59,7 @@ S11 = "urosepsis_septic_shock_icu_stay"
 S12 = "late_preterm_newborn_incubator_stay"
 S14 = "urosepsis_ward_stay_after_icu_transfer"  # a ward stay that arrives from an ICU bill: its bed starts the day after admission
 S39 = "pyelonephritis_dementia_post_discharge_control"  # a control visit (poliklinik): one date, no stay
+S32 = "copd_exacerbation_post_discharge_control"  # S2's control visit: its examination carries the patient's share (G5b)
 S22 = "gi_bleed_admission_colonoscopy"  # a colonoscopy session: the colonoscopy leads, the polypectomy is a chapter-7 add-on at 50 %
 
 
@@ -142,9 +143,57 @@ def test_a_malformed_showcase_story_is_a_bad_value(story: str) -> None:
     assert "showcase.story" in str(error.value)
 
 
-def test_no_committed_pathway_pins_the_chronic_report_yet() -> None:
-    """The report is a fact about the patient (its copay profile); until a story needs it, it is not known."""
-    assert [p.stem for p in _FILES if load_pathway(p).showcase.chronic_health_report is not None] == []
+def test_only_the_pathways_of_patient_2_pin_the_chronic_report() -> None:
+    """The report is a fact about the patient (its copay profile): S2's stay and its control (S32) carry it, every
+    other pathway leaves it unknown."""
+    pinned = {p.stem: load_pathway(p).showcase.chronic_health_report for p in _FILES}
+    assert {stem: value for stem, value in pinned.items() if value is not None} == {
+        S2: True,
+        S32: True,
+    }
+
+
+def test_the_copay_share_of_a_line_reaches_its_expansion_and_no_other_line(catalogs: Catalogs) -> None:
+    """S32's examination carries the patient's share (slice G5b); the expansion writes `copay_rate` on that line only."""
+    pathway = load_pathway(_DIR / f"{S32}.yaml")
+    (exam,) = pathway.procedures
+    assert (exam.code, exam.copay.rate, exam.copay.basis) == ("520030", Decimal("0.20"), "judgment")
+    assert [row["copay_rate"] for row in expand(pathway)["procedures"]] == ["0.20"]
+    assert run_all(pathway, catalogs) == []
+    with_copay = [p.stem for p in _FILES if any(x.copay is not None for x in load_pathway(p).procedures)]
+    assert with_copay == [S32]
+    assert all("copay_rate" not in row for p in _FILES if p.stem != S32 for row in expand(load_pathway(p))["procedures"])
+
+
+@pytest.mark.parametrize(
+    ("rate", "kind"),
+    [
+        (0, "schema.bad_value"),
+        (1, "schema.bad_value"),
+        (1.2, "schema.bad_value"),
+        (-0.2, "schema.bad_value"),
+        (0.125, "schema.bad_value"),  # the claim loader reads the rate to the cent
+        ("x", "schema.bad_value"),
+        (True, "schema.bad_value"),
+    ],
+)
+def test_a_copay_rate_that_is_no_share_with_two_decimals_is_a_bad_value(rate: object, kind: str) -> None:
+    raw = _raw(S32)
+    raw["procedures"][0]["copay"]["rate"] = rate
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S32}.yaml")
+    assert [p.check for p in error.value.problems] == [kind]
+    assert "procedures[exam].copay.rate" in str(error.value)
+
+
+def test_a_copay_share_needs_its_basis_and_source() -> None:
+    raw = _raw(S32)
+    del raw["procedures"][0]["copay"]["source"]
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S32}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.missing_field"]
 
 
 @pytest.mark.parametrize("value", [True, False])

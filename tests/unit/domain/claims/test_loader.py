@@ -75,11 +75,13 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
 def test_loader_carries_copay_and_surcharge_rates_into_lines() -> None:
     """Rates in the claim tables reach the loaded lines as cent-quantized decimals.
 
-    The cohort tables leave `copay_rate` and `surcharge_rate` empty, so one procedure row and one
-    drug row get rates here.
+    The cohort tables leave `surcharge_rate` empty and `copay_rate` empty but on one procedure line (the examination
+    of S32, 0.20: slice G5b), so one more procedure row and one drug row get rates here.
     """
     tables = read_claim_tables()
     procedures = [dict(row) for row in tables.procedures]
+    committed = [row["procedure_line_id"] for row in procedures if row.get("copay_rate") is not None]
+    assert len(committed) == 1 and committed[0] != procedures[0]["procedure_line_id"]
     drugs = [dict(row) for row in tables.drugs]
     procedures[0].update(copay_rate=0.4, surcharge_rate=0.2)
     drugs[0].update(copay_rate=0.1)
@@ -97,13 +99,14 @@ def test_loader_carries_copay_and_surcharge_rates_into_lines() -> None:
     assert rated.copay_rate == Decimal("0.40")
     assert rated.surcharge_rate == Decimal("0.20")
     assert dataset.drug_lines[drugs[0]["drug_claim_line_id"]].copay_rate == Decimal("0.10")
+    assert dataset.procedure_lines[committed[0]].copay_rate == Decimal("0.20")
     # Every other line keeps the empty rate of its parquet row.
     assert (
         sum(
             line.copay_rate is not None or line.surcharge_rate is not None
             for line in dataset.procedure_lines.values()
         )
-        == 1
+        == 2
     )
     assert sum(line.copay_rate is not None for line in dataset.drug_lines.values()) == 1
 

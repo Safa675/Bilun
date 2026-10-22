@@ -17,6 +17,9 @@ Not written: ids, names, prices, amounts, the synthetic-only package_candidate h
 up to 4 decimals: "1.0000", or "0.2500" for the S8 second operation (25 % of the list amount,
 same session).
 
+A procedure line with the copay flag (S32's examination) also carries `copay_rate`, its rate with two
+decimals ("0.20"); a line without the flag has no such key.
+
 `flags` are the optional fields (those with a default in the dataclass) of the raw bill line,
 b.procs / b.mats / b.drugs (not the enriched context), that differ from that default. Optional
 fields left out because they are not flags, listed in NOT_FLAGS: procedure_specialty_code (it is
@@ -67,6 +70,13 @@ def ratio(line: Any) -> str:
     return str(exact.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
 
+def copay(line: Any) -> dict[str, str]:
+    """`{"copay_rate": "0.20"}` for a procedure line with the copay flag, `{}` otherwise; a flag without a rate raises."""
+    if not line.copay_rate_applicable:
+        return {}
+    return {"copay_rate": str(line.copay_rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))}
+
+
 def flags(line: Any) -> dict[str, Any]:
     """Optional fields of the raw claim line that differ from the dataclass default."""
     out = {}
@@ -102,6 +112,7 @@ def export(sid: str, variant: str = "clean") -> dict[str, Any]:
             "qty": p.quantity,
             "specialty": p.procedure_specialty_code,
             "billed_ratio": ratio(p),
+            **copay(p),
             "flags": flags(p),
         }
         for p in bill.procs

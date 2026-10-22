@@ -38,17 +38,19 @@ pytestmark = pytest.mark.unit
 
 
 def _raw_recipes() -> dict:
-    """The real recipes, without the committed follow-up bills of patient 4 (S39 and S40) and without patient 12 (S10, S22).
+    """The real recipes, without the committed follow-up bills of patients 2 and 4 (S32; S39 and S40) and without
+    patient 12 (S10, S22).
 
-    The cases below add follow-up bills of patient 4 themselves (`_stay`) and the ER visit of patient 12 with its MEDULA
-    events (`_er_visit`): they start from the file as it was before patient 4 had any follow-up and before patient 12,
-    so the encounter numbers and the patient number they write are free. The real file is checked as it is.
+    The cases below add follow-up bills of patient 4 themselves (`_stay`), change patient 2's first bill, and add the ER
+    visit of patient 12 with its MEDULA events (`_er_visit`): they start from the file as it was before patients 2 and 4
+    had any follow-up and before patient 12, so the encounter numbers and the patient number they write are free and a
+    change of a first bill meets no later bill. The real file is checked as it is.
     """
     raw = yaml.safe_load(RECIPES_PATH.read_text(encoding="utf-8"))
     raw["recipes"] = [
         r
         for r in raw["recipes"]
-        if r["patient_no"] != 12 and not (r["patient_no"] == 4 and r.get("encounter_no", 1) > 1)
+        if r["patient_no"] != 12 and not (r["patient_no"] in (2, 4) and r.get("encounter_no", 1) > 1)
     ]
     return raw
 
@@ -224,10 +226,10 @@ def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_ove
     assert "encounter_no" not in _recipe(raw, 1)
     committed = load_recipes().recipes
     assert len(committed) == cohort.claim_count()
-    # a recipe without encounter_no is a first bill; the later bills of the committed cohort (patient 4: S39 and
-    # S40, patient 10: S14, patient 12: S22) write it
+    # a recipe without encounter_no is a first bill; the later bills of the committed cohort (patient 2: S32,
+    # patient 4: S39 and S40, patient 10: S14, patient 12: S22) write it
     assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [
-        (4, 2), (4, 3), (10, 2), (12, 2),
+        (2, 2), (4, 2), (4, 3), (10, 2), (12, 2),
     ]  # fmt: skip
     assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1 and r.patient_no != 12)
     _recipe(raw, 2)["pins"] = {}

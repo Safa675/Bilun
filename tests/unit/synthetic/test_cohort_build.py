@@ -89,7 +89,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S39 is a clean bill (no fault, no record), the others carry one.
+# S32 and S39 are clean bills (no fault, no record), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
@@ -97,6 +97,7 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S14": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-002"]},
     "S10": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-001"]},
     "S22": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-002"]},
+    "S32": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-002"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
     "S40": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-003"]},
 }
@@ -254,7 +255,7 @@ def test_loader_accepts_committed_showcase_dataset_and_matches_composed_claims(
     assert len(dataset.procedure_lines) == expected_counts["procedure_claim_lines.parquet"]
     assert len(dataset.material_lines) == expected_counts["material_claim_lines.parquet"]
     assert len(dataset.drug_lines) == expected_counts["drug_claim_lines.parquet"]
-    # an answer row for every injected fault, none for a clean bill (S39)
+    # an answer row for every injected fault, none for a clean bill (S32, S39)
     assert len(dataset.expected_outputs) == len(cohort.load_registry()["faults"]) == expected_counts["expected_rule_outputs.parquet"]
     assert (
         len(dataset.copay_profiles_by_patient)
@@ -328,7 +329,7 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     # S1, S5, S8 have package_candidate=True in both clean and faulty composed headers; others False.
     story_of_claim = {rec.claim_id: rec.story for rec in built_showcase.records}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
-        story = story_of_claim.get(faulty_c.header.claim_id)  # a clean bill (S39) has no record
+        story = story_of_claim.get(faulty_c.header.claim_id)  # a clean bill (S32, S39) has no record
         expected_pkg_cand = story in {"S1", "S5", "S8"}
         assert clean_c.header.package_candidate is expected_pkg_cand
         assert faulty_c.header.package_candidate is expected_pkg_cand
@@ -697,7 +698,7 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
     assert profiles.height == cohort.patient_count() == 12
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 16
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 17
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1016,7 +1017,10 @@ def two_bills() -> BuildResult:
 def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two_bills: BuildResult) -> None:
     headers = two_bills.tables["claim_headers.parquet"]
     assert headers["claim_id"].to_list() == [
-        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (1, 2, 3)),
+        "F-SENTETIK-HASTA-0001-001",
+        "F-SENTETIK-HASTA-0002-001",
+        "F-SENTETIK-HASTA-0002-002",  # the committed control of patient 2 (S32), three weeks after the stay
+        "F-SENTETIK-HASTA-0003-001",
         "F-SENTETIK-HASTA-0004-001",
         "F-SENTETIK-HASTA-0004-004",  # the extra stay: the last id, the date next to the first stay's
         "F-SENTETIK-HASTA-0004-002",  # the committed control (S39) and second visit (S40), dated later
@@ -1433,25 +1437,27 @@ def test_an_event_whose_entry_is_not_one_billed_line_stops_the_build(built_showc
 def test_the_chronic_report_pin_reaches_the_patients_copay_profile_and_nothing_else(
     built_showcase: BuildResult,
 ) -> None:
-    """The committed cohort knows no report (WP9 pins S2's); a pin on a patient's bill sets that patient's
-    profile row only: every other row and every other table stays as it was."""
+    """The committed cohort knows one report, S2's (WP9: both pathways of patient 2 pin it); a pin on a patient's
+    bill sets that patient's profile row only: every other row and every other table stays as it was."""
     committed = built_showcase.tables["patient_copay_profiles.parquet"]
     assert committed.schema["has_chronic_health_report"] == pl.Boolean
-    assert committed["has_chronic_health_report"].null_count() == committed.height
+    known = dict(zip(committed["patient_id"].to_list(), committed["has_chronic_health_report"].to_list(), strict=True))
+    assert known.pop(cohort.role("showcase_S2").patient_id) is True
+    assert set(known.values()) == {None}
 
-    patient = cohort.role("showcase_S2").patient_id
+    patient = cohort.role("showcase_S3").patient_id  # a one-bill patient with an EK-1/A match and no report
     recipes = load_recipes()
     pinned = [
-        r.model_copy(update={"pins": EncounterPins(chronic_health_report=True)}) if r.patient_no == 2 else r
+        r.model_copy(update={"pins": EncounterPins(chronic_health_report=False)}) if r.patient_no == 3 else r
         for r in recipes.recipes
     ]
-    assert sum(r.patient_no == 2 for r in pinned) == 1 and all(r.pins is None for r in recipes.recipes if r.patient_no == 2)
+    assert sum(r.patient_no == 3 for r in pinned) == 1 and all(r.pins is None for r in recipes.recipes if r.patient_no == 3)
     built = build_showcase(recipes=recipes.model_copy(update={"recipes": pinned}))
 
     profiles = built.tables["patient_copay_profiles.parquet"]
     flags = dict(zip(profiles["patient_id"].to_list(), profiles["has_chronic_health_report"].to_list(), strict=True))
-    assert flags.pop(patient) is True
-    assert set(flags.values()) == {None}
+    assert flags.pop(patient) is False
+    assert flags == {**{pid: v for pid, v in known.items() if pid != patient}, cohort.role("showcase_S2").patient_id: True}
     assert profiles.drop("has_chronic_health_report").equals(committed.drop("has_chronic_health_report"))
     for name in TABLE_FILES:
         if name != "patient_copay_profiles.parquet":

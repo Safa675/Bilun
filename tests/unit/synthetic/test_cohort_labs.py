@@ -4283,7 +4283,8 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
 
 # --- 3.20 Several bills of one patient: the draws, the pins and the order of the rows -----------------
 #
-# Patient 2 gets a second COPD stay (a blood gas, its own lab states: none, so every value is normal),
+# Patient 2 gets a second COPD stay as its third bill (a blood gas, its own lab states: none, so every value is normal;
+# its committed second bill, the control visit S32, bills no test),
 # patient 3 a pyelonephritis stay of the same age and sex as the patient (the pathway's own showcase age is 86,
 # the patient's 77) dated BEFORE its first bill, patient 4 a stay one day after its first (the lab days
 # interleave). Nothing here is committed.
@@ -4291,7 +4292,7 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
 _COPD = "copd_exacerbation_pneumonia_ward"
 _PYELO = "pyelonephritis_dementia_delirium_ward"
 _ALL_NORMAL = {"blood_gas": "arterial", "states": {}, "basis": "judgment", "source": "Test fixture only."}
-_CLAIM_2_2, _CLAIM_3_2 = (f"F-SENTETIK-HASTA-{n:04d}-002" for n in (2, 3))
+_CLAIM_2_3, _CLAIM_3_2 = "F-SENTETIK-HASTA-0002-003", "F-SENTETIK-HASTA-0003-002"
 # patient 4 has three committed bills (the stay, the control S39, the second visit S40): the extra stay is its fourth
 _CLAIM_4_2, _CLAIM_4_4 = "F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0004-004"
 
@@ -4299,7 +4300,7 @@ _CLAIM_4_2, _CLAIM_4_4 = "F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0004-004
 @pytest.fixture(scope="module")
 def extra_bills() -> BuildResult:
     recipes, clinical = with_encounters(
-        Extra(2, 2, _COPD, {"admit": "2026-04-20", "story": "S92"}, labs=_ALL_NORMAL),
+        Extra(2, 3, _COPD, {"admit": "2026-04-20", "story": "S92"}, labs=_ALL_NORMAL),
         Extra(3, 2, _PYELO, {"story": "S93", "age": 77, "sex": "F"}),
         Extra(4, 4, _PYELO, {"admit": "2026-05-12", "story": "S90"}),
     )
@@ -4323,7 +4324,7 @@ def _record_salts(monkeypatch: pytest.MonkeyPatch) -> list[int]:
     ("claim_id", "base"),
     [
         pytest.param("F-SENTETIK-HASTA-0002-001", 0, id="2.1_blood_gas_first_bill"),
-        pytest.param(_CLAIM_2_2, 1000, id="2.2_blood_gas"),
+        pytest.param(_CLAIM_2_3, 2000, id="2.3_blood_gas"),
         pytest.param("F-SENTETIK-HASTA-0003-001", 0, id="3.1"),
         pytest.param(_CLAIM_3_2, 1000, id="3.2_creatinine"),
         pytest.param("F-SENTETIK-HASTA-0004-001", 0, id="4.1"),
@@ -4426,15 +4427,16 @@ def test_the_lab_values_of_a_second_bill_differ_from_the_first_and_the_first_sta
 
 
 def test_a_bill_has_the_lab_states_of_its_own_entry(extra_bills: BuildResult, lab: pl.DataFrame) -> None:
-    """Patient 2's first stay has a bacterial WBC; the second has no states, so its WBC rows are normal."""
+    """Patient 2's first stay has a bacterial WBC; the extra stay (its third bill) has no states, so its WBC rows are normal."""
     lab_table = extra_bills.clean_tables["lab_clean.parquet"]
     wbc = lab_table.filter((pl.col("HASTA_ID") == _pid(2)) & (pl.col("parametre") == "WBC (Lökosit)"))
     by_bill = {
         episode: rows["anormal_mi"].to_list() for (episode,), rows in wbc.group_by("basvuru_id", maintain_order=True)
     }
-    assert any(by_bill["B-SENTETIK-HASTA-0002-001"]) and not any(by_bill["B-SENTETIK-HASTA-0002-002"])
+    assert any(by_bill["B-SENTETIK-HASTA-0002-001"]) and not any(by_bill["B-SENTETIK-HASTA-0002-003"])
+    assert "B-SENTETIK-HASTA-0002-002" not in by_bill  # the control visit (S32) bills no test
     # blood gas: the entry says arterial for the second stay too, so the set is there
-    assert lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0002-002")["SUB_CODE"].is_in(["L103900"]).any()
+    assert lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0002-003")["SUB_CODE"].is_in(["L103900"]).any()
 
 
 def test_a_later_bill_of_another_pathway_is_judged_at_the_age_of_its_pins(extra_bills: BuildResult) -> None:
@@ -4462,7 +4464,7 @@ def test_a_mapping_keyed_by_patient_number_names_the_first_encounter_only(extra_
     claims = extra_bills.claims
     a = build_lab_clean(claims, clinical=by_pair, schema=LAB_CLEAN_SCHEMA)
     assert a.equals(extra_bills.clean_tables["lab_clean.parquet"])
-    # patient 2's second stay has no entry in this form, and a billed blood gas without one is refused
+    # patient 2's extra stay (its third bill) has no entry in this form, and a billed blood gas without one is refused
     with pytest.raises(LabCoherenceError, match="blood_gas"):
         build_lab_clean(claims, clinical=by_number, schema=LAB_CLEAN_SCHEMA)
     # for a patient with one bill the two forms are the same thing

@@ -1,9 +1,10 @@
 """Expand a pathway with its pins into one clean bill, in the golden format (format_version 1).
 
 Pure and deterministic: no catalog, no price, no randomness, no I/O. The result lists line
-identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio), plus
-pathway line annotations when `annotate=True`; the golden files in tests/fixtures/pathways/golden/
-are the contract the default (`annotate=False`) expansion must reproduce.
+identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio; a procedure
+line with a patient share also a `copay_rate`, "0.20"), plus pathway line annotations when
+`annotate=True`; the golden files in tests/fixtures/pathways/golden/ are the contract the default
+(`annotate=False`) expansion must reproduce.
 """
 
 from __future__ import annotations
@@ -39,6 +40,11 @@ class ExpandError(ValueError):
 
 def _ratio(pathway: Pathway, role: str | None) -> str:
     return format(SESSION_RATIOS[pathway.billing_mode][role or "primary"], ".4f")
+
+
+def _copay(line) -> dict[str, str]:
+    """`{"copay_rate": "0.20"}` for a line with a patient share (slice G5b); `{}` for every other line."""
+    return {"copay_rate": format(line.copay.rate, ".2f")} if line.copay is not None else {}
 
 
 def _drug_qty(drug: Drug, pins: Pins) -> int:
@@ -92,6 +98,7 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
             "qty": line.qty,
             "specialty": spec(line),
             "billed_ratio": _ratio(pathway, line.session_role),
+            **_copay(line),
             "flags": {},
             **(
                 {"entry_id": line.id, "kind": line.kind, "day_index": day_index} if annotate else {}
