@@ -1,0 +1,111 @@
+# Readmission of the cirrhotic patient of story S18 with a variceal rebleed, two red-cell units, internal medicine stay billed itemized.
+# Showcase story S24 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S18, bill b2; story ids in section 5.1a): bill 2 of patient 15,
+# four weeks after the discharge of S18. Grammar: README.md next to this file. Every line below is a clean-bill line: each red-cell
+# unit carries its ISBT 128 number (synthetic); the faulty bill bills both units without it (a flag of the lines).
+schema_version: 1
+id: decompensated_cirrhosis_variceal_rebleed_transfusion
+title: "Variceal rebleed in decompensated cirrhosis, two red-cell units, internal medicine stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "İç Hastalıkları"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S24 is the man of story S18 (the same patient, a later bill); I85.0 and K74.6 have no sex gate. Clinician to confirm."
+  age:
+    min: 40
+    max: 85
+    basis: judgment
+    source: "Story S24 patient is 63, like story S18; the bounds are those of story S18 (the author's judgment)."
+
+nights:
+  min: 2
+  max: 8
+  basis: judgment
+  source: "Story S24 has 3 nights (2026-07-13 to 07-16). Min 2: the control blood count is on day 2 and a night follows it. A hepatologist to confirm."
+
+diagnoses:
+  - icd10: I85.0
+    name: "ÖZOFAGUS VARİSLERİ, KANAMALI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the bleeding varices of his cirrhosis, the reason for this admission. A coder to confirm (with cirrhosis ICD-10 also offers I98.3*)."
+  - icd10: K74.6
+    name: "KARACİĞERİN DİĞER VE TANIMLANMAMIŞ SİROZU"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S18 codes the patient's cirrhosis (K74.6); it is coded on every bill of his."
+
+procedures:
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # 4 lines for 3 nights: the discharge day is billed too
+    basis: medula_kilavuz
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day, as story S18."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 3 lines for 3 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the ward doctor's order (an active bleed) and the refakatçi belgesi are assumed, as story S18. Clinician to confirm."
+
+  # --- laboratory: the blood count on arrival and the control after the two units
+  - id: admission_hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: admit
+    basis: judgment
+    source: "Story S24: a blood count on arrival with the rebleed; it is 28 days after the one of story S18, so no duplicate-test window applies."
+  - id: control_hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: admit+1
+    basis: judgment
+    source: "Story S24: the control blood count the day after the two units; no guideline named. A hepatologist to confirm."
+
+  # --- the transfusion on the admission day: two red-cell units, one line each with its own ISBT 128 number (synthetic)
+  - id: red_cells_unit_1
+    kind: procedure
+    code: "705371"
+    name: "Eritrosit Süspansiyonu, Kızılay'dan temin edilen"
+    days: admit
+    flags:
+      isbt128_barcode: "=X99992610001100"
+    basis: sut
+    source: "C007926 (SUT 4.6.(3)): an EK-2B blood component is paid when the epicrisis names it, its count and its ISBT 128 numbers. Synthetic number."
+  - id: red_cells_unit_2
+    kind: procedure
+    code: "705371"
+    name: "Eritrosit Süspansiyonu, Kızılay'dan temin edilen"
+    days: admit
+    flags:
+      isbt128_barcode: "=X99992610001200"
+    basis: sut
+    source: "C007926 (SUT 4.6.(3)): the second unit has its own ISBT 128 number; C007925: blood from a Kızılay unit. Synthetic number."
+
+notes:
+  - "Story S24: 28 days after the discharge of story S18 he vomits blood and comes in pale, hypotensive and tachycardic; two red-cell units are given on arrival and the bleed settles; he leaves on day 4."
+  - "The haemoglobin the cohort draws on arrival is about 9 g/dl (the generator keeps red-cell indices consistent): the two units rest on the haemodynamics of an active bleed, not on a threshold of 7 g/dl. A hepatologist to confirm."
+  - "The endoscopy (band ligation) is not on this bill, as on story S18 (EI-11), and no vasoactive drug or antibiotic is billed: a hepatologist to say what such a stay bills."
+  - "The ISBT 128 numbers are synthetic (a facility code that does not exist); the engine's check accepts an = or A flag and a 13 to 16 character core."
+
+showcase:
+  story: S24
+  sex: M
+  age: 63
+  admit: "2026-07-13"
+  nights: 3

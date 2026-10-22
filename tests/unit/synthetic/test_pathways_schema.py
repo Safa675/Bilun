@@ -43,6 +43,7 @@ from scripts.synthetic.pathways.loader import hygiene
 from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags, ProcedureFlags, pin_problems
 from src.bilun.domain.claims.models import DrugClaimLine, MaterialClaimLine, ProcedureClaimLine
 from src.bilun.domain.materials.ek4a_as_of import ek4a_as_of
+from src.bilun.domain.prose_rules.blood_component_isbt128 import is_valid_isbt128_barcode
 
 pytestmark = pytest.mark.unit
 
@@ -225,14 +226,17 @@ def test_a_chronic_report_pin_that_is_not_a_bool_is_a_bad_value(value: object) -
     assert "showcase.chronic_health_report" in str(error.value)
 
 
-def test_no_committed_pathway_sets_a_line_flag_of_slice_g5a() -> None:
+def test_no_committed_pathway_sets_a_line_flag_of_slice_g5a_but_the_isbt128_numbers_of_s24() -> None:
     """The flags of slice G5a are fault material: a clean bill bills no exam as a package component and no material
-    that waits for an approval (S34's fault sets the first with `set_flag`); no committed blood line exists yet."""
+    that waits for an approval (S34's fault sets the first with `set_flag`). The ISBT 128 number of a blood line is
+    the one clean flag: S24's red-cell units carry theirs (its fault clears them)."""
     for path in _FILES:
         pathway = load_pathway(path)
-        assert all(p.flags == ProcedureFlags() for p in pathway.procedures), path.stem
+        blood = {"705371"} if path.stem == "decompensated_cirrhosis_variceal_rebleed_transfusion" else set()
+        assert all(p.flags == ProcedureFlags() for p in pathway.procedures if p.code not in blood), path.stem
+        assert all(p.flags.isbt128_barcode and not p.flags.is_package_included for p in pathway.procedures if p.code in blood)
         assert all(m.flags.requires_pre_auth is None for m in pathway.materials), path.stem
-        assert all(row["flags"] == {} for row in expand(pathway)["procedures"]), path.stem
+        assert all(row["flags"] == {} for row in expand(pathway)["procedures"] if row["code"] not in blood), path.stem
 
 
 @pytest.mark.parametrize(
@@ -1566,3 +1570,37 @@ def test_the_package_window_leaves_a_haemodialysis_session_alone(catalogs: Catal
 def test_the_haemodialysis_session_packages_are_the_chronic_and_the_emergency_code() -> None:
     sets = yaml.safe_load((_REPO / "data/synthetic/reference/code_sets.yaml").read_text(encoding="utf-8"))
     assert {k: v["code"] for k, v in sets["dialysis_packages"].items()} == {"chronic": "P704230", "emergency": "P704210"}
+
+
+# --- S18 and S24 (WP13): the albumin of a cirrhotic inpatient, the ISBT 128 numbers of two red-cell units ---------
+
+S18 = "decompensated_cirrhosis_gi_bleed_albumin"  # albumin on the specialist report, supplied during the stay
+S24 = "decompensated_cirrhosis_variceal_rebleed_transfusion"  # two red-cell units, one ISBT 128 number each
+
+
+def test_only_s24_sets_isbt128_numbers_one_valid_and_distinct_number_per_red_cell_unit(catalogs: Catalogs) -> None:
+    pathway = load_pathway(_DIR / f"{S24}.yaml")
+    units = [p for p in pathway.procedures if p.code == "705371"]
+    numbers = [p.flags.isbt128_barcode for p in units]
+    assert [(p.id, p.kind, p.days) for p in units] == [
+        ("red_cells_unit_1", "procedure", ["admit"]),
+        ("red_cells_unit_2", "procedure", ["admit"]),
+    ]
+    assert len(set(numbers)) == 2 and all(is_valid_isbt128_barcode(number) for number in numbers)
+    rows = [p for p in expand(pathway)["procedures"] if p["code"] == "705371"]
+    assert [r["flags"] for r in rows] == [{"isbt128_barcode": number} for number in numbers]
+    assert run_all(pathway, catalogs) == []
+    setting = [p.stem for p in _FILES if any(x.flags.isbt128_barcode for x in load_pathway(p).procedures)]
+    assert setting == [S24]
+
+
+def test_s18_bills_three_days_of_albumin_from_day_two_on_the_report(catalogs: Catalogs) -> None:
+    pathway = load_pathway(_DIR / f"{S18}.yaml")
+    (albumin,) = pathway.drugs
+    assert (albumin.flags.drug_specialty_board_report_present, albumin.flags.drug_inpatient_supply) == (True, True)
+    assert (albumin.indication, albumin.per_day, albumin.day) == ("K74.6", 1, "admit+1")
+    (row,) = expand(pathway)["drugs"]
+    assert (row["date"], row["qty"], row["unit"]) == ("2026-06-16", 3, "bottle")
+    labs = [(p.id, [i.code for i in p.items or []]) for p in pathway.procedures if p.kind == "lab"]
+    assert labs == [("admission_labs", ["L107020", "L100320"])]  # the albumin level the SUT asks for, on the admission day
+    assert run_all(pathway, catalogs) == []

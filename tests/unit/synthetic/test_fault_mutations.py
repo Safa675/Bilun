@@ -718,3 +718,59 @@ def test_set_flag_on_a_drug_names_another_prescriber_and_nothing_else(
     assert faulty_esa["flags"] == {**clean_esa["flags"], "prescriber_specialty": "Genel Cerrahi"}
     assert clean_esa["flags"]["drug_report_duration_months"] == 1
     assert {**faulty, "drugs": clean["drugs"]} == clean
+
+
+def test_set_flag_takes_the_report_off_the_albumin_and_nothing_else(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    """S18: the albumin of a cirrhotic inpatient is billed without the specialist report; its supply flag stays."""
+    fault = _fault_by_story(faults, "S18")
+    (op,) = fault.mutations
+    assert isinstance(op, SetFlag) and (op.section, op.entry_id, op.flag, op.value) == (
+        "drugs",
+        "albumin",
+        "drug_specialty_board_report_present",
+        False,
+    )
+    pathway = pathways[fault.target_pathway]
+    clean, faulty = expand(pathway), apply_fault(fault, pathway)
+    (clean_albumin,), (faulty_albumin,) = clean["drugs"], faulty["drugs"]
+    assert clean_albumin["flags"] == {"drug_specialty_board_report_present": True, "drug_inpatient_supply": True}
+    assert faulty_albumin["flags"] == {**clean_albumin["flags"], "drug_specialty_board_report_present": False}
+    assert {**faulty, "drugs": clean["drugs"]} == clean
+
+
+def test_two_set_flag_operations_blank_the_isbt128_number_of_both_red_cell_units_and_nothing_else(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    """S24: one fault, two operations: each red-cell unit of the rebleed loses its ISBT 128 number (SUT 4.6.(3)); an
+    empty text clears the flag, so the faulty units carry the claim line's default, as their golden does."""
+    fault = _fault_by_story(faults, "S24")
+    assert [(op.op, op.section, op.entry_id, op.flag, op.value) for op in fault.mutations] == [
+        ("set_flag", "procedures", "red_cells_unit_1", "isbt128_barcode", ""),
+        ("set_flag", "procedures", "red_cells_unit_2", "isbt128_barcode", ""),
+    ]
+    pathway = pathways[fault.target_pathway]
+    clean, faulty = expand(pathway), apply_fault(fault, pathway)
+
+    def units(bill: dict) -> list[dict]:
+        return [p for p in bill["procedures"] if p["code"] == "705371"]
+
+    assert [p["flags"] for p in units(clean)] == [
+        {"isbt128_barcode": "=X99992610001100"},
+        {"isbt128_barcode": "=X99992610001200"},
+    ]
+    assert [p["flags"] for p in units(faulty)] == [{}, {}]
+    assert [{**p, "flags": {}} for p in faulty["procedures"]] == [{**p, "flags": {}} for p in clean["procedures"]]
+    assert {**faulty, "procedures": clean["procedures"]} == clean
+    # either operation alone leaves the other unit's number on the bill
+    for kept, op in ((1, fault.mutations[0]), (0, fault.mutations[1])):
+        half = apply_fault(fault.model_copy(update={"mutations": [op]}), pathway)
+        assert units(half)[kept]["flags"] == units(clean)[kept]["flags"]
+    # clearing a flag twice, or a flag the line never carried, is refused
+    again = fault.model_copy(update={"mutations": [fault.mutations[0], fault.mutations[0]]})
+    with pytest.raises(FaultApplyError, match="carries no isbt128_barcode to clear"):
+        apply_fault(again, pathway)
+    exam = SetFlag(op="set_flag", section="procedures", entry_id="bed", flag="isbt128_barcode", value="")
+    with pytest.raises(FaultApplyError, match="entry_id 'bed' in procedures carries no isbt128_barcode to clear"):
+        apply_fault(fault.model_copy(update={"mutations": [exam]}), pathway)

@@ -1,0 +1,106 @@
+# Decompensated cirrhosis admitted to internal medicine with a gastrointestinal bleed, albumin given on the ward, billed itemized.
+# Showcase story S18 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S18, bill b1; story ids in section 5.1a): bill 1 of patient 15.
+# Grammar: README.md next to this file. Every line below is a clean-bill line (faults are not part of a pathway): the albumin line
+# carries the specialist report; the faulty bill bills it without (a flag of the line, no line is added or dropped).
+schema_version: 1
+id: decompensated_cirrhosis_gi_bleed_albumin
+title: "Decompensated cirrhosis with a gastrointestinal bleed and a low albumin, internal medicine stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "İç Hastalıkları"
+  specialty: "1000"                  # EK-2A: İç Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Cirrhosis occurs in both sexes; K74.6 and K92.2 have no sex gate. Story S18 is a man born 1963. Clinician to confirm."
+  age:
+    min: 40
+    max: 85
+    basis: judgment
+    source: "Story S18 patient is 63. Decompensated cirrhosis is a disease of middle and later life; the bounds are the author's judgment."
+
+nights:
+  min: 3
+  max: 8
+  basis: judgment
+  source: "Story S18 has 4 nights (2026-06-15 to 06-19). Min 3: the albumin is given on three days after the admission day. A hepatologist to confirm."
+
+diagnoses:
+  - icd10: K74.6
+    name: "KARACİĞERİN DİĞER VE TANIMLANMAMIŞ SİROZU"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (checked against icd10_tr.parquet); the decompensated cirrhosis (ascites, low albumin) the stay treats. Clinician to confirm."
+  - icd10: K92.2
+    name: "GASTROİNTESTİNAL HEMORAJİ, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S18: a melena on admission; the bleeding source is not coded because the endoscopy is not on this bill (card S18, EI-11)."
+
+procedures:
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # a bed for every calendar day: 5 lines for 4 nights
+    basis: medula_kilavuz
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day, as the other stays of the cohort."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 4 lines for 4 nights
+    pending: "#297 Q2"                 # whether hospitals count the discharge day in refakatciGunSayisi
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the ward doctor's order (a bleed, a risk of encephalopathy) and the refakatçi belgesi are assumed. Clinician to confirm."
+
+  # --- laboratory: the blood count and the albumin of the admission day
+  - id: admission_labs
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L100320", name: "Albümin (Serum/Plazma)"}
+    days: admit
+    basis: sut
+    source: "C006389 (SUT 4.2.27.Ç.(1)): albumin is given at a blood albumin of 2.5 g/dl or less, the result goes in the epicrisis; the blood count of a bleed."
+
+drugs:
+  - id: albumin
+    barcode: "8699686690029"
+    name: "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML"
+    inn: "albumin"
+    unit: bottle
+    per_box: 1
+    day: admit+1                       # the day after the albumin result
+    per_day: 1                         # one 100 ml bottle of 20 % (20 g) a day
+    course_days:
+      min: 3
+      max: 3
+      basis: sut
+      source: "C006390 (SUT 4.2.27.Ç.(2)): a report covers at most three days' dose; story S18 gives it on three days. A hepatologist to confirm the dose."
+    indication: K74.6
+    flags:
+      drug_specialty_board_report_present: true
+      drug_inpatient_supply: true      # supplied by the hospital during the stay
+    basis: sut
+    source: "C006389, C006390 (SUT 4.2.27.Ç): an inpatient at albumin 2.5 g/dl or less, on an internal-medicine specialist's report with the daily dose."
+
+notes:
+  - "Story S18: a man of 63 with alcohol-unrelated cirrhosis is admitted with ascites, a melena and an albumin of about 2 g/dl; he gets 20 g of albumin a day for three days and leaves on day 5."
+  - "The endoscopy of the bleed is not on this bill (card S18): the EGD codes 701540/701550 trigger the engine's add-on rule pairing.701540_701410, which cannot know that no biopsy was taken (EI-11 of the coverage plan)."
+  - "No vasoactive drug, antibiotic prophylaxis, proton-pump inhibitor, diuretic or lactulose is billed (the card's lines): a hepatologist to say what such a stay bills."
+
+showcase:
+  story: S18
+  sex: M
+  age: 63
+  admit: "2026-06-15"
+  nights: 4
+  course_days: {albumin: 3}

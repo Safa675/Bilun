@@ -1,0 +1,130 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-06-15",
+      "icd10": "K74.6",
+      "role": "primary"
+    },
+    {
+      "date": "2026-06-15",
+      "icd10": "K92.2",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8699686690029",
+      "date": "2026-06-16",
+      "flags": {
+        "drug_inpatient_supply": true,
+        "drug_specialty_board_report_present": true
+      },
+      "per_box": 1,
+      "qty": 3,
+      "unit": "bottle"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-06-15",
+    "claim_end_date": "2026-06-19",
+    "claim_start_date": "2026-06-15",
+    "claim_type": "yatis",
+    "department": "İç Hastalıkları",
+    "discharge_date": "2026-06-19",
+    "primary_icd10": "K74.6"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L100320",
+      "date": "2026-06-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-06-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-17",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-17",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-18",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-06-18",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510010",
+      "date": "2026-06-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1000"
+    }
+  ],
+  "story": "S18"
+}

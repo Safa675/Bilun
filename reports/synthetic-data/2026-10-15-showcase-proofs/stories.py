@@ -1,4 +1,4 @@
-"""Twenty-four showcase stories: clean bill + one injected fault each, except S23, S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17 and S23 on 2026-10-22).
+"""Twenty-six showcase stories: clean bill + one injected fault each, except S23, S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18 and S24 on 2026-10-22).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -39,6 +39,7 @@ NACL_1000 = "8697637690128"   # NEOFLEKS %0,9 SODYUM KLORUR 1000 ML (SETLI)
 PKMERZ = "8699708690525"      # PK-MERZ IV INF. COZ. 2x500 ML (amantadin sülfat)
 MADOPAR = "8699525094841"     # MADOPAR 125 MG 30 TB (levodopa + benserazid)
 ARANESP = "8699862950046"     # ARANESP 40 MCG 4 KULL HAZ ENJ (darbepoetin alfa), 4 syringes
+ALBUMIN = "8699686690029"     # HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML (20 g), 1 bottle
 
 
 def _days(a, b):
@@ -467,6 +468,54 @@ def s23(variant: str) -> Bill:
     return b
 
 
+# ── S18 ─ decompensated cirrhosis: albumin billed without the specialist report ──
+def s18(variant: str) -> Bill:
+    """63 M, decompensated cirrhosis (K74.6) with a melena (K92.2): internal medicine, 2026-06-15 to 06-19, 4 nights.
+
+    A blood count and the albumin on the admission day (2.2 g/dl: at or under the 2.5 of SUT 4.2.27.Ç.(1), C006389),
+    then one 100 ml bottle of 20 % albumin a day for three days from day 2 (at most three days' dose, C006390). The
+    clean drug line carries the specialist report; the faulty one does not (`missing_board_report`). The endoscopy is
+    not billed (EI-11: the EGD codes trigger an add-on rule that cannot know there was no biopsy). Drug prices enter
+    at 0 TL: no money.
+    """
+    a, d = D("2026-06-15"), D("2026-06-19")
+    b = Bill("SH-15", "C-SH18", "yatis", "İç Hastalıkları", a, d, "K74.6")
+    for i, icd in enumerate(("K74.6", "K92.2")):
+        b.diag(icd, primary=(i == 0))
+    _beds(b, a, d, DAHILIYE)                              # 5 lines, 15-19 June
+    _companion(b, a, d, DAHILIYE)                         # 4 nights
+    _labs(b, a, ("L107020", "L100320"), DAHILIYE)          # the blood count and the albumin of the admission day
+    b.drug(ALBUMIN, a + timedelta(days=1), qty=3, unit="bottle", per_box=1,
+           drug_specialty_board_report_present=(variant == "clean"), drug_inpatient_supply=True)
+    return b
+
+
+# ── S24 ─ the variceal rebleed of the patient of S18: two red-cell units without their ISBT 128 numbers ──
+ISBT128 = ("=X99992610001100", "=X99992610001200")  # synthetic DINs (a facility code that does not exist)
+
+
+def s24(variant: str) -> Bill:
+    """63 M, the patient of S18: readmitted on 2026-07-13 with bleeding oesophageal varices (I85.0), 3 nights.
+
+    Two red-cell units (705371) on arrival and a blood count on arrival and on day 2. SUT 4.6.(3) (C007926) pays an
+    EK-2B blood component when the epicrisis names it, its count and its ISBT 128 numbers: the clean lines carry one
+    number each, the faulty lines none (`blood_component_isbt128_barcode`, a compliance finding without money). The
+    stay of S18 is its history (28 days earlier, so no duplicate-test window applies).
+    """
+    a, d = D("2026-07-13"), D("2026-07-16")
+    b = Bill("SH-15", "C-SH24", "yatis", "İç Hastalıkları", a, d, "I85.0")
+    b.history = (s18("faulty"),)
+    for i, icd in enumerate(("I85.0", "K74.6")):
+        b.diag(icd, primary=(i == 0))
+    _beds(b, a, d, DAHILIYE)                              # 4 lines, 13-16 July
+    _companion(b, a, d, DAHILIYE)                         # 3 nights
+    b.proc("L107020", a, specialty=DAHILIYE)              # the blood count on arrival
+    for number in ISBT128:                                # one line per unit, each with its own number
+        b.proc("705371", a, specialty=DAHILIYE, isbt128_barcode=number if variant == "clean" else "")
+    b.proc("L107020", a + timedelta(days=1), specialty=DAHILIYE)  # the control after the two units
+    return b
+
+
 # ── S47 ─ the day bed of a stay under 24 hours not billed ───────────────────
 def s47(variant: str) -> Bill:
     """58 F, the patient of S7: syncope six days after the ER visit; ER observation under 24 hours, 2026-02-25.
@@ -618,4 +667,4 @@ def s40(variant: str) -> Bill:
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
 CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S48")
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S20": s20, "S22": s22, "S23": s23, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S47": s47, "S48": s48}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S47": s47, "S48": s48}

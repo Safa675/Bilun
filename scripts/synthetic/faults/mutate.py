@@ -175,6 +175,16 @@ def _apply_op(
             raise FaultApplyError(
                 f"{fid} ({op.op}): entry_id {op.entry_id!r} has no rows in {op.section}"
             )
+        if op.value == "":
+            # An empty text clears the flag: the line then has the claim line's default, as a line that never set it
+            # (S24: a red-cell unit without its ISBT 128 number); a line that carries no such flag has nothing to clear.
+            if not all(op.flag in row["flags"] for row in matching):
+                raise FaultApplyError(
+                    f"{fid} ({op.op}): entry_id {op.entry_id!r} in {op.section} carries no {op.flag} to clear"
+                )
+            for row in matching:
+                del row["flags"][op.flag]
+            return bill
         changed = False
         for row in matching:
             flags = row["flags"]

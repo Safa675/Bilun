@@ -229,7 +229,7 @@ def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_ove
     # a recipe without encounter_no is a first bill; the later bills of the committed cohort (patient 2: S32, S33 and
     # S34, patient 4: S39 and S40, patient 7: S47 and S48, patient 10: S14, patient 12: S22, patient 14: S23) write it
     assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [
-        (2, 2), (2, 3), (2, 4), (4, 2), (4, 3), (7, 2), (7, 3), (10, 2), (12, 2), (14, 2),
+        (2, 2), (2, 3), (2, 4), (4, 2), (4, 3), (7, 2), (7, 3), (10, 2), (12, 2), (14, 2), (15, 2),
     ]  # fmt: skip
     assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1 and r.patient_no < 12)
     _recipe(raw, 2)["pins"] = {}

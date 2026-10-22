@@ -17,7 +17,7 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 | `scripts/synthetic/pathways/loader.py` | `load_pathway(path)`, `load_all(directory)`; an error names the file, the field and a check id |
 | `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None, *, annotate=False)`: pins in, clean bill out (golden format, or with pathway line references when `annotate=True`); pure, no catalog, no price, no randomness |
 | `scripts/synthetic/pathways/checks.py` | `Catalogs` and `run_all(pathway, catalogs)`: the pathway against the catalogs and its own logic |
-| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S10.json`, `S11.json`, `S12.json`, `S14.json`, `S17.json`, `S20.json`, `S22.json`, `S23.json`, `S32.json`, `S33.json`, `S34.json`, `S39.json`, `S40.json`, `S47.json`, `S48.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills, all but S23, S32, S39 and S48, clean bills without a fault: `CLEAN_ONLY` in `stories.py`). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
+| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S10.json`, `S11.json`, `S12.json`, `S14.json`, `S17.json`, `S18.json`, `S20.json`, `S22.json`, `S23.json`, `S24.json`, `S32.json`, `S33.json`, `S34.json`, `S39.json`, `S40.json`, `S47.json`, `S48.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills, all but S23, S32, S39 and S48, clean bills without a fault: `CLEAN_ONLY` in `stories.py`). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
 
 ## Read a pathway top to bottom
 
@@ -99,7 +99,7 @@ A procedure line may carry the patient's share of its amount (SUT 1.8; slice G5b
 
 ### Line flags without money (`flags`)
 
-A procedure line may carry the flags of slice G5a, `flags: {is_package_included, isbt128_barcode}` (`ProcedureFlags`; the fields of the claim line of the same names): `is_package_included` marks a line as a component bundled into a package (never the package line itself, #260: a `package` line with it is `schema.line_shape`), `isbt128_barcode` is the ISBT 128 number MEDULA records for a blood component line (SUT 4.6). The expansion writes the flags a line sets in its `flags` (an empty mapping otherwise, so the goldens of every other story stay as they were), and the composer sets them on the claim line; no amount moves with them. No committed pathway sets one: the fault of S34 sets `is_package_included` on a control's examination with `set_flag` (a poliklinik examination flagged as a package component, vakabaşı). An unknown flag or a value of the wrong type is `schema.unknown_field` / `schema.bad_value`.
+A procedure line may carry the flags of slice G5a, `flags: {is_package_included, isbt128_barcode}` (`ProcedureFlags`; the fields of the claim line of the same names): `is_package_included` marks a line as a component bundled into a package (never the package line itself, #260: a `package` line with it is `schema.line_shape`), `isbt128_barcode` is the ISBT 128 number MEDULA records for a blood component line (SUT 4.6). The expansion writes the flags a line sets in its `flags` (an empty mapping otherwise, so the goldens of every other story stay as they were), and the composer sets them on the claim line; no amount moves with them. S24's pathway sets `isbt128_barcode` on its two red-cell units (705371, one synthetic number per unit); its fault blanks both with `set_flag`, and the fault of S34 sets `is_package_included` on a control's examination (a poliklinik examination flagged as a package component, vakabaşı). An unknown flag or a value of the wrong type is `schema.unknown_field` / `schema.bad_value`.
 
 ### Anaesthesia
 
@@ -117,7 +117,7 @@ Operations of one session carry `session_role` on a single-day line: `primary` (
 
 `icd10` must be an active SKRS **leaf** code and `name` its `name_tr`. A drug may name `indication: G20`; that diagnosis must be in the pathway and must not be optional, so the drug can never be billed without it (`drug.indication`).
 
-A drug's `flags` are the fields of `DrugFlags`, the drug claim line's fields of the same names: `drug_specialty_board_report_present`, `prescriber_specialty`, `drug_inpatient_supply` and (slice G9) `drug_report_duration_months`, the months the drug's health report covers, a whole number from 1 to 24 (anything else is `schema.bad_value`); the engine compares it with the duration a SUT rule names (one month for an ESA in chronic kidney disease, SUT 4.2.9.A-1). The ESA of S17 carries all three of the report, its duration and its prescriber.
+A drug's `flags` are the fields of `DrugFlags`, the drug claim line's fields of the same names: `drug_specialty_board_report_present`, `prescriber_specialty`, `drug_inpatient_supply` and (slice G9) `drug_report_duration_months`, the months the drug's health report covers, a whole number from 1 to 24 (anything else is `schema.bad_value`); the engine compares it with the duration a SUT rule names (one month for an ESA in chronic kidney disease, SUT 4.2.9.A-1). The ESA of S17 carries all three of the report, its duration and its prescriber; the albumin of S18 carries the report and `drug_inpatient_supply`.
 
 ### Haemodialysis session packages
 
@@ -194,7 +194,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 - One pathway has one billing mode: an EK-2C package and itemized EK-2B lines in one bill are not expressible (SUT 2.2.2.B(3) c, ç).
 - Itemized lines after the package window (long package stays) are not expressible; `package.window` refuses such a stay.
 - Materials are checked against EK-3/F-1 only.
-- Procedure lines carry the two flags of slice G5a only (`is_package_included`, `isbt128_barcode`), without money; no committed pathway sets one (the fault of S34 does).
+- Procedure lines carry the two flags of slice G5a only (`is_package_included`, `isbt128_barcode`), without money; S24's red-cell units set `isbt128_barcode` (the faults of S24 and S34 set flags too).
 - `showcase` is required, so a pathway without a showcase story (the rest of the first 20) needs the schema relaxed. `Pins.story` is `S` and a number from 1 up (it was limited to `S1`..`S8` until the ninth story).
 - Newborn intensive-care tiers (P552006-8) are modelled as ICU packages (`icu_package`), not as a newborn stay; rooming-in (a baby beside the mother, for whom 510081 is not billed) cannot be shown, because the engine's `rooming_in_claim_ids` has no caller (issue EI-14 of the coverage plan).
 - A drug course that runs to discharge from a later start (S6 levodopa, through the NG tube from day 3) has no "until discharge" form: `course_days` is drawn independently of the nights, so P4 must clamp it to the days left.
@@ -231,3 +231,5 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | S34 | `copd_exacerbation_post_readmission_control` | done (2026-10-22; the control after S33; its fault flags the examination as a package component) |
 | S17 | `end_stage_kidney_disease_haemodialysis_month` | done (2026-10-22; the first span: a month of haemodialysis sessions P704230 as one `gunubirlik` claim, darbepoetin with its one-month report) |
 | S23 | `end_stage_kidney_disease_emergency_haemodialysis` | done (2026-10-22; an emergency session P704210, a package stay of one date, a clean bill) |
+| S18 | `decompensated_cirrhosis_gi_bleed_albumin` | done (2026-10-22; decompensated cirrhosis, the serum albumin L100320 and three days of human albumin with its report) |
+| S24 | `decompensated_cirrhosis_variceal_rebleed_transfusion` | done (2026-10-22; the variceal rebleed of the patient of S18, two red-cell units 705371 with their ISBT 128 numbers) |

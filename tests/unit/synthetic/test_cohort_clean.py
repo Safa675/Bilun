@@ -389,12 +389,12 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         assert p7_row[col] == expected_str, f"Patient 7 {col}"
 
 
-def test_recete_clean_content_rules_for_all_23_billed_drug_lines(
+def test_recete_clean_content_rules_for_all_24_billed_drug_lines(
     built_showcase: BuildResult,
 ) -> None:
     rec_df = built_showcase.clean_tables["recete_clean.parquet"]
     drugs_df = built_showcase.tables["drug_claim_lines.parquet"]
-    assert rec_df.height == drugs_df.height == 23
+    assert rec_df.height == drugs_df.height == 24
 
     cw_df = pl.read_parquet(_REPO / "data/synthetic/reference/drug_crosswalk.parquet").filter(
         pl.col("titck_product_name").is_not_null()

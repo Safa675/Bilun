@@ -1,0 +1,464 @@
+{
+ "story": "S24",
+ "clean": {
+  "total_billed": "10076.50",
+  "rows": [
+   {
+    "date": "2026-07-13",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "4462.65",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "4462.65",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "I85.0",
+    true
+   ],
+   [
+    "K74.6",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "faulty": {
+  "total_billed": "10076.50",
+  "rows": [
+   {
+    "date": "2026-07-13",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-15",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "4462.65",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-13",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "4462.65",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-07-14",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "I85.0",
+    true
+   ],
+   [
+    "K74.6",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "blood_component_isbt128_barcode",
+    "procedure_code": "705371",
+    "barcode_status": "missing",
+    "isbt128_barcode": "",
+    "sut_section_id": "4.6",
+    "savings_category": "audit_exposure",
+    "severity": "error",
+    "detail": "Kan bileşeni 705371 (Eritrosit Süspansiyonu, Kızılay'dan temin edilen) için ISBT 128 barkod numarası MEDULA kaydında bulunmuyor — tüm kan bileşenlerinin ISBT 128 barkod numaralarıyla MEDULA'ya kaydedilmesi zorunludur (SUT §4.6)."
+   },
+   {
+    "rule_id": "blood_component_isbt128_barcode",
+    "procedure_code": "705371",
+    "barcode_status": "missing",
+    "isbt128_barcode": "",
+    "sut_section_id": "4.6",
+    "savings_category": "audit_exposure",
+    "severity": "error",
+    "detail": "Kan bileşeni 705371 (Eritrosit Süspansiyonu, Kızılay'dan temin edilen) için ISBT 128 barkod numarası MEDULA kaydında bulunmuyor — tüm kan bileşenlerinin ISBT 128 barkod numaralarıyla MEDULA'ya kaydedilmesi zorunludur (SUT §4.6)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "only_in_faulty": [
+  [
+   "compliance",
+   "blood_component_isbt128_barcode",
+   "error",
+   "705371",
+   0.0
+  ],
+  [
+   "compliance",
+   "blood_component_isbt128_barcode",
+   "error",
+   "705371",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "blood_component_isbt128_barcode",
+   "705371",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "blood_component_isbt128_barcode",
+   "705371",
+   0.0
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

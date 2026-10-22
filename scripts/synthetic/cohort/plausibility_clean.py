@@ -198,6 +198,7 @@ LAB_HARD_BOUNDS: dict[tuple[str, str], tuple[float, float]] = {
     ("L106150", "Potasyum"): (1.5, 9.0),
     ("L100300", "ALT"): (1.0, 20000.0),
     ("L101280", "AST"): (1.0, 20000.0),
+    ("L100320", "Albümin"): (0.5, 7.0),  # not in the review: this module's decision (WP13, serum albumin in g/dL)
     # blood gas L103900 (arterial and venous)
     (BLOOD_GAS_CODE, PH): (6.60, 7.80),
     (BLOOD_GAS_CODE, PCO2): (8.0, 150.0),

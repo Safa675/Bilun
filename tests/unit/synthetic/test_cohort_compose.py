@@ -727,3 +727,43 @@ def test_in_memory_defects_are_caught(
     wrong_proc_claim = replace(s5_clean, materials=wrong_proc_mats)
     with pytest.raises(AssertionError):
         _assert_claim_invariants(wrong_proc_claim, s5_bill)
+
+
+def test_the_red_cell_units_of_s24_carry_their_isbt128_numbers_and_the_fault_blanks_both(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway], faults_by_story: dict[str, FaultSpec]
+) -> None:
+    """S24: one line per red-cell unit, each with its own ISBT 128 number; the faulty bill carries neither (SUT 4.6.(3))."""
+    pathway = pathways["decompensated_cirrhosis_variceal_rebleed_transfusion"]
+    pid = patient_id(15)
+    ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 2), episode_id=episode_id(pid, 2), scenario_tag=pathway.id)
+    bill = expand(pathway, annotate=True)
+    clean = compose_claim(bill, ctx, catalogs)
+    units = [p for p in clean.procedures if p.procedure_code == "705371"]
+    assert [p.isbt128_barcode for p in units] == ["=X99992610001100", "=X99992610001200"]
+    assert {(p.quantity, p.billed_amount_try, p.expected_payable_try) for p in units} == {
+        (1, Decimal("4462.65"), Decimal("4462.65"))
+    }
+    assert {p.isbt128_barcode for p in clean.procedures if p.procedure_code != "705371"} == {""}
+    faulty_bill = apply_fault(faults_by_story["S24"], pathway, annotate=True)
+    faulty = compose_claim(faulty_bill, ctx, catalogs)
+    assert [p.isbt128_barcode for p in faulty.procedures if p.procedure_code == "705371"] == ["", ""]
+    assert [replace(p, isbt128_barcode="") for p in clean.procedures] == list(faulty.procedures)
+    assert faulty.header == clean.header
+    _assert_claim_invariants(faulty, faulty_bill)
+
+
+def test_the_albumin_of_s18_is_supplied_during_the_stay_and_the_fault_takes_its_report_away(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway], faults_by_story: dict[str, FaultSpec]
+) -> None:
+    """S18: three bottles of 20 % albumin from day 2, at 0 TL; the faulty line has no specialist report (SUT 4.2.27.Ç)."""
+    pathway = pathways["decompensated_cirrhosis_gi_bleed_albumin"]
+    pid = patient_id(15)
+    ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 1), episode_id=episode_id(pid, 1), scenario_tag=pathway.id)
+    (clean_albumin,) = compose_claim(expand(pathway, annotate=True), ctx, catalogs).drugs
+    assert (clean_albumin.drug_claim_date, clean_albumin.quantity, clean_albumin.billed_amount_try) == (
+        date(2026, 6, 16), 3, Decimal("0.00")
+    )
+    assert (clean_albumin.drug_specialty_board_report_present, clean_albumin.drug_inpatient_supply) == (True, True)
+    assert clean_albumin.drug_name.startswith("HUMAN ALBUMIN")
+    (faulty_albumin,) = compose_claim(apply_fault(faults_by_story["S18"], pathway, annotate=True), ctx, catalogs).drugs
+    assert faulty_albumin == replace(clean_albumin, drug_specialty_board_report_present=False)

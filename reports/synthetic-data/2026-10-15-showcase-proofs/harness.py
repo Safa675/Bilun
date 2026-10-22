@@ -163,7 +163,7 @@ class Bill:
     def proc(self, code: str, on: date, qty: int = 1, *, category: str | None = None,
              unit_price: float | None = None, line_id: str | None = None, specialty: str = "",
              package_code: str = "", is_package_included: bool = False, sag_sol: str = "",
-             name: str | None = None) -> str:
+             name: str | None = None, isbt128_barcode: str = "") -> str:
         row = catalog_row(code, on)
         unit = money(row["price_try"] if unit_price is None else unit_price)
         lid = line_id or f"{self.cid}-P{len(self.procs) + 1:02d}"
@@ -176,7 +176,7 @@ class Bill:
             is_package_included=is_package_included, package_code=package_code,
             surcharge_applicable=False, copay_rate_applicable=False,
             denial_reason_expected="", rule_trace_expected="", procedure_specialty_code=specialty,
-            sag_sol=sag_sol,
+            sag_sol=sag_sol, isbt128_barcode=isbt128_barcode,
         ))
         self.sources[lid] = row
         return lid

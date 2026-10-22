@@ -57,6 +57,7 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     12: (122, 74, 98, 97, 176, 84.0),  # S10, melena in the ER
     13: (126, 78, 72, 98, 176, 84.0),  # S20, a day-case hernia repair
     14: (148, 82, 76, 96, 172, 70.0),  # S17, a haemodialysis patient before a session
+    15: (104, 62, 98, 96, 174, 79.0),  # S18, decompensated cirrhosis with a melena (the weight carries ascites)
 }
 # the later bills of the committed cohort, by (patient, encounter): the vitals of S39 (the control of patient 4) and
 # S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
@@ -66,6 +67,7 @@ _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, in
     (2, 3): (152, 88, 112, 85, 170, 66.5),
     (2, 4): (134, 78, 88, 92, 170, 66.0),
     (14, 2): (164, 94, 58, 94, 172, 72.5),
+    (15, 2): (86, 52, 124, 95, 174, 77.5),  # S24, an active variceal bleed on arrival
     (7, 2): (118, 72, 78, 98, 162, 71.0),
     (7, 3): (128, 80, 80, 98, 162, 70.5),
     (4, 2): (126, 72, 76, 96, 155, 57.5),
@@ -168,6 +170,12 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
         elif key == (7, 2):  # the observation repeats the D-dimer of S7: the same age-related elevation, a normal troponin
             assert entry.labs is not None and entry.labs.states == {"L102090|D-dimer": "elderly_without_vte"}
         elif key == (12, 2):  # the admission bills a blood count: the haemoglobin of a bleed and the small red cells of a slow loss
+            assert entry.labs is not None and entry.labs.states == {
+                "L107020|HGB (Hemoglobin)": "acute_gi_bleed",
+                "L107020|MCV": "iron_deficiency",
+                "L107020|MCH": "iron_deficiency",
+            }
+        elif key == (15, 2):  # the rebleed bills two blood counts: the haemoglobin of a bleed, the small red cells, on both
             assert entry.labs is not None and entry.labs.states == {
                 "L107020|HGB (Hemoglobin)": "acute_gi_bleed",
                 "L107020|MCV": "iron_deficiency",
@@ -286,7 +294,7 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2], 14: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
 
 
 @pytest.mark.parametrize(
