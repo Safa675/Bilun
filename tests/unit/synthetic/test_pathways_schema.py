@@ -142,6 +142,32 @@ def test_a_malformed_showcase_story_is_a_bad_value(story: str) -> None:
     assert "showcase.story" in str(error.value)
 
 
+def test_no_committed_pathway_pins_the_chronic_report_yet() -> None:
+    """The report is a fact about the patient (its copay profile); until a story needs it, it is not known."""
+    assert [p.stem for p in _FILES if load_pathway(p).showcase.chronic_health_report is not None] == []
+
+
+@pytest.mark.parametrize("value", [True, False])
+def test_the_chronic_report_pin_is_a_bool_and_trips_no_check(value: bool, catalogs: Catalogs) -> None:
+    raw = _raw(S3)
+    raw["showcase"]["chronic_health_report"] = value
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    pathway = load_text(body, f"{S3}.yaml")
+    assert pathway.showcase.chronic_health_report is value
+    assert run_all(pathway, catalogs) == []
+
+
+@pytest.mark.parametrize("value", ["evet", "true", 1, 0])
+def test_a_chronic_report_pin_that_is_not_a_bool_is_a_bad_value(value: object) -> None:
+    raw = _raw(S3)
+    raw["showcase"]["chronic_health_report"] = value
+    body = yaml.safe_dump(raw, allow_unicode=True, sort_keys=False)
+    with pytest.raises(PathwayLoadError) as error:
+        load_text(body, f"{S3}.yaml")
+    assert [p.check for p in error.value.problems] == ["schema.bad_value"]
+    assert "showcase.chronic_health_report" in str(error.value)
+
+
 def test_the_readme_names_every_check_id_or_its_family() -> None:
     readme = (_DIR / "README.md").read_text(encoding="utf-8")
     unnamed = [i for i in CHECKS if i not in readme and f"{i.split('.')[0]}.*" not in readme]

@@ -3,7 +3,9 @@ import { setModuleLocale } from "@/lib/i18n/localeModule";
 import {
   formatExemptionCategory,
   formatExemptionBasisSummary,
+  getCopayExemptionState,
   getExemptionCategories,
+  getPrimaryExemptionGround,
   hasEk1aExemption,
 } from "./copayExemption";
 
@@ -48,5 +50,31 @@ describe("copayExemption helpers", () => {
     });
     expect(categories).toEqual(["ek1a_chronic"]);
     expect(hasEk1aExemption(categories)).toBe(true);
+  });
+
+  it("tells exempt, partial (EK-1A without a known report) and none apart", () => {
+    const unmetEk1a = { category: "ek1a_chronic", counts_toward_exempt: false, missing_requirements: ["chronic_health_report"] };
+    expect(getCopayExemptionState({ exempt: true, exemption_sources: [{ category: "acil_servis" }] })).toBe("exempt");
+    // an exemption on another ground outranks the unmet EK-1A source
+    expect(getCopayExemptionState({ exempt: true, exemption_sources: [unmetEk1a, { category: "acil_servis" }] })).toBe("exempt");
+    expect(getCopayExemptionState({ exempt: false, partial_exempt: true })).toBe("partial");
+    // a payload without the flag (the billing report's copay block): the EK-1A source that does not count
+    expect(getCopayExemptionState({ exempt: false, exemption_sources: [unmetEk1a] })).toBe("partial");
+    expect(getCopayExemptionState({ exempt: false, partial_exempt: false, exemption_sources: [] })).toBe("none");
+    expect(getCopayExemptionState({ exempt: false })).toBe("none");
+    // a source without the flag is an older payload: it is not read as unmet
+    expect(getCopayExemptionState({ exempt: false, exemption_sources: [{ category: "ek1a_chronic" }] })).toBe("none");
+    expect(getCopayExemptionState({ exempt: false, exemption_sources: [{ category: "ek4d_partial", counts_toward_exempt: false }] })).toBe("none");
+  });
+
+  it("names the ground of an exemption when the payload gives no primary category", () => {
+    const unmetEk1a = { category: "ek1a_chronic", counts_toward_exempt: false };
+    expect(getPrimaryExemptionGround({ exempt: true, primary_exemption_category: "yesil_kart" })).toBe("yesil_kart");
+    // an alert row: the EK-1/A source that does not count is skipped
+    expect(getPrimaryExemptionGround({ exempt: true, exemption_sources: [unmetEk1a, { category: "acil_servis", counts_toward_exempt: true }] })).toBe("acil_servis");
+    expect(getPrimaryExemptionGround({ exempt: true, exemption_sources: [{ category: "ek1a_chronic" }] })).toBe("ek1a_chronic");
+    expect(getPrimaryExemptionGround({ exempt: true, n_qualifying: 1 })).toBe("ek1a_chronic");
+    expect(getPrimaryExemptionGround({ exempt: false, exemption_sources: [unmetEk1a] })).toBeNull();
+    expect(getPrimaryExemptionGround({ exempt: true })).toBeNull();
   });
 });

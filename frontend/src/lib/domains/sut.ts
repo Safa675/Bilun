@@ -185,6 +185,11 @@ export interface ExemptionSource {
   category: string;
   rule_source?: string;
   evidence?: Record<string, unknown>;
+  /** False when the ground matched but does not exempt (EK-1/A without a chronic health report). */
+  counts_toward_exempt?: boolean;
+  exemption_strength?: string;
+  waives_sections?: string[];
+  missing_requirements?: string[];
 }
 
 export interface ExemptionCategoryGap {
@@ -259,6 +264,10 @@ export interface CopayExemptionResult {
   categories_not_evaluated?: ExemptionCategoryGap[];
   primary_exemption_category?: string | null;
   action?: string | null;
+  /** An EK-1/A diagnosis matched but no exemption ground counts (the chronic health report is not on file). */
+  partial_exempt?: boolean;
+  /** The patient's chronic health report: true, false, or null when not known. */
+  has_chronic_health_report?: boolean | null;
 }
 
 export interface SurchargeRule {
@@ -335,6 +344,8 @@ export interface PatientAlertCopay {
   categories_not_evaluated?: ExemptionCategoryGap[];
   primary_exemption_category?: string | null;
   action: string | null;
+  partial_exempt?: boolean;
+  has_chronic_health_report?: boolean | null;
 }
 
 export interface PatientAlertSurcharge extends ExactnessState {
@@ -655,6 +666,11 @@ export interface CopayOptimization extends ExactnessState {
       | "none";
     /** §1.9 surcharge clause cite backing ilave_ucret_status. */
     ilave_clause_ref?: SutClauseReference | null;
+    rule_id?: string;
+    expected_copay_rate_pct?: number;
+    /** Structured text (material copay rate, EK-1/A without a chronic health report): see apiMessages. */
+    message_code?: string | null;
+    message_params?: Record<string, unknown> | null;
   }>;
 }
 

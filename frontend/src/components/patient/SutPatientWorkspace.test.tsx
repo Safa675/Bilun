@@ -161,3 +161,80 @@ describe("PatientOptimizationSnapshot", () => {
     expect(html).not.toContain("Real savings");
   });
 });
+
+describe("PatientOptimizationSnapshot copay exemption states", () => {
+  const unavailable = {
+    exactness_status: "missing_exact_inputs" as const,
+    unavailable_reason: "Needs exact billed procedure lines.",
+    required_inputs_missing: [],
+  };
+  const copd = [
+    { icd10: "J44.0", disease: "Kronik obstrüktif akciğer hastalığı", range: "J44" },
+    { icd10: "I10", disease: "Hipertansiyon", range: "I10-I15" },
+  ];
+  const snapshot = (copay: Record<string, unknown>, locale: "en" | "tr" = "en") =>
+    renderToStaticMarkupWithLocale(
+      <PatientOptimizationSnapshot
+        optimization={{
+          patient_id: "P-002",
+          n_diagnoses: 3,
+          diagnoses: ["J44.0", "I10", "J18.9"],
+          icd10_chapters: ["I", "J"],
+          copay_exemptions: { n_qualifying: 2, qualifying_diagnoses: copd, ...copay } as never,
+          surcharge_exposure: { ...unavailable, n_applicable_procedures: null, n_total_ek2g: null, exposure_rate: null, applicable_rules: [] },
+          copay_rate_exposure: { ...unavailable, n_applicable_procedures: null, n_total_ek2c1: null, procedures_with_rates: [], mean_rate: null, rate_distribution: {} },
+          drg_unbundling: { ...unavailable, has_unbundling_risk: null, n_chapters_analyzed: null, chapter_analysis: [], total_potential_savings: null },
+        }}
+      />,
+      locale,
+    );
+  const unmetEk1a = { category: "ek1a_chronic", counts_toward_exempt: false, missing_requirements: ["chronic_health_report"] };
+
+  it("says an EK-1A match without a recorded report is no waiver, not 'nothing matched'", () => {
+    const html = snapshot({ exempt: false, partial_exempt: true, has_chronic_health_report: null, exemption_sources: [unmetEk1a] });
+    expect(html).toContain("EK-1A diagnosis matched; chronic health report not recorded");
+    expect(html).toContain(
+      "2 qualifying EK-1A codes. The outpatient copay waiver (§1.8.5(7)) needs a chronic health report; none is recorded, so no waiver is claimed.",
+    );
+    expect(html).toContain("Report needed");
+    expect(html).toContain("Kronik obstrüktif akciğer hastalığı"); // the matched disease still shows
+    expect(html).not.toContain("No exemption ground matched");
+    expect(html).not.toContain("No EK-1A, visit-type, or status exemption matched");
+    expect(html).not.toContain(">Clear<");
+  });
+
+  it("derives the partial state from the EK-1A source when the payload has no partial flag", () => {
+    const html = snapshot({ exempt: false, exemption_sources: [unmetEk1a] }, "tr");
+    expect(html).toContain("EK-1A tanısı eşleşti; kronik hastalık raporu kayıtlı değil");
+    expect(html).toContain(
+      "2 EK-1A tanısı eşleşti. Ayakta katılım payı muafiyeti (§1.8.5(7)) kronik hastalık raporu gerektirir; kayıtlı rapor yok, bu yüzden muafiyet öne sürülmüyor.",
+    );
+    expect(html).toContain("Rapor gerekli");
+    expect(html).not.toContain("Muafiyet gerekçesi eşleşmedi");
+  });
+
+  it("names the report when EK-1A exempts, and keeps 'Eligible' for other grounds", () => {
+    const ek1a = snapshot({
+      exempt: true,
+      has_chronic_health_report: true,
+      exemption_sources: [{ category: "ek1a_chronic", counts_toward_exempt: true }],
+    });
+    expect(ek1a).toContain("Exempt: EK-1A, chronic health report on file");
+    expect(ek1a).toContain("Actionable");
+    const emergency = snapshot({
+      exempt: true,
+      n_qualifying: 0,
+      qualifying_diagnoses: [],
+      exemption_sources: [{ category: "acil_servis", counts_toward_exempt: true }],
+    });
+    expect(emergency).toContain("Eligible");
+    expect(emergency).not.toContain("chronic health report");
+  });
+
+  it("keeps the no-match wording when nothing matched", () => {
+    const html = snapshot({ exempt: false, n_qualifying: 0, qualifying_diagnoses: [], exemption_sources: [] });
+    expect(html).toContain("No exemption ground matched");
+    expect(html).toContain("Clear");
+    expect(html).not.toContain("Report needed");
+  });
+});

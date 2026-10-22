@@ -6,6 +6,7 @@ const labels = {
     "alertBadge": {
       "exempt": "Exempt",
       "notExempt": "Not exempt",
+      "ek1aReportMissing": "EK-1A match, report missing",
       "flagged": "Flagged",
       "clear": "Clear",
       "unavailable": "Unavailable"

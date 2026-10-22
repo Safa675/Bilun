@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n/useTranslations";
 import { isExactOutput } from "@/lib/sutExactness";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { Chip, ExactnessBlock as ExactnessNotice, Eyebrow } from "@/components/primitives";
-import { getExemptionCategories } from "@/lib/copayExemption";
+import { getCopayExemptionState, getExemptionCategories } from "@/lib/copayExemption";
 import { fmtNum, fmtRiskLabel, fmtTRY2OrUnavailable } from "@/components/tabs/sut/shared";
 import { BillingSectionShell } from "./shared";
 
@@ -29,6 +29,8 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
   const surchargeCount = optimization.surcharge_exposure.n_applicable_procedures;
   const rateCount = optimization.copay_rate_exposure.n_applicable_procedures;
   const drgRiskLabel = optimization.drg_unbundling?.has_unbundling_risk ? fmtRiskLabel("high") : fmtRiskLabel("low");
+  const copayState = getCopayExemptionState(optimization.copay_exemptions);
+  const ek1aCount = fmtNum(optimization.copay_exemptions.qualifying_diagnoses.length);
 
   return (
     <BillingSectionShell title={t("billing.sutOptimization.title")}>
@@ -37,23 +39,25 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
           <dt><Eyebrow className="tracking-normal">{t("billing.sutOptimization.copayEyebrow")}</Eyebrow></dt>
           <dd className="min-w-0 space-y-2 @min-[400px]/optimization:max-w-80">
           <div className="flex flex-wrap items-center gap-2">
-            <Chip variant={optimization.copay_exemptions.exempt ? "success" : "neutral"}>
-              {optimization.copay_exemptions.exempt
+            <Chip variant={copayState === "exempt" ? "success" : copayState === "partial" ? "warning" : "neutral"}>
+              {copayState === "exempt"
                 ? getSutAlertBadgeLabel("exempt")
-                : getSutAlertBadgeLabel("notExempt")}
+                : copayState === "partial"
+                  ? getSutAlertBadgeLabel("ek1aReportMissing")
+                  : getSutAlertBadgeLabel("notExempt")}
             </Chip>
             {optimization.copay_exemptions.exempt && (
               <ExemptionBasisChips copay={optimization.copay_exemptions} max={3} />
             )}
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
-            {getExemptionCategories(optimization.copay_exemptions).includes("ek1a_chronic")
-              ? t("billing.sutOptimization.ek1aQualifying", {
-                  count: fmtNum(optimization.copay_exemptions.qualifying_diagnoses.length),
-                })
-              : optimization.copay_exemptions.exempt
-                ? t("billing.sutOptimization.exemptStatusVisit")
-                : t("billing.sutOptimization.noWaiver")}
+            {copayState === "partial"
+              ? t("billing.sutOptimization.ek1aReportNeeded", { count: ek1aCount })
+              : getExemptionCategories(optimization.copay_exemptions).includes("ek1a_chronic")
+                ? t("billing.sutOptimization.ek1aQualifying", { count: ek1aCount })
+                : optimization.copay_exemptions.exempt
+                  ? t("billing.sutOptimization.exemptStatusVisit")
+                  : t("billing.sutOptimization.noWaiver")}
           </p>
           </dd>
         </div>

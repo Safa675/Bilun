@@ -164,6 +164,10 @@ const api = {
     billedCorrectlyPackage: "Paket olarak doğru faturalandırılmış.",
     billedCorrectlyItemized: "Kalemli olarak doğru faturalandırılmış.",
     materialCopayRate: "SUT §1.8.3(2) malzeme katılım payı referans oranı: %{rate}",
+    ek1aReportUnknown:
+      "EK-1/A tanısı eşleşti; kronik hastalık raporu durumu bilinmiyor, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor.",
+    ek1aReportMissing:
+      "EK-1/A tanısı eşleşti; kayıtlı kronik hastalık raporu yok, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor.",
     ek1aChronic: "SUT §1.8.5(7) + EK-1/A kronik hastalık katılım payı muafiyetleri",
     emergencyWaiver: "SUT §1.8.5(5) acil ziyaret katılım payı muafiyeti (520021 hariç)",
     preventiveWaiver: "SUT §1.8.5(6) koruyucu sağlık katılım payı muafiyeti",

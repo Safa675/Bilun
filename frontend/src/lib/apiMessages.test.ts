@@ -244,6 +244,16 @@ describe("translateStructuredApiMessage (§2.2 message contract)", () => {
         message_params: { rate_pct: 20 },
       }),
     ).toBe("SUT §1.8.3(2) material copay reference rate: 20%");
+    expect(
+      translateStructuredApiMessage(enT, { message_code: "ek1a_report_unknown", detail: "x" }),
+    ).toBe(
+      "EK-1/A diagnosis matched; chronic health report status unknown, so the §1.8.5(7) waiver is not claimed.",
+    );
+    expect(
+      translateStructuredApiMessage(enT, { message_code: "ek1a_report_missing", detail: "x" }),
+    ).toBe(
+      "EK-1/A diagnosis matched; no chronic health report on file, so the §1.8.5(7) waiver is not claimed.",
+    );
   });
 
   it("renders each §2.2 message code in Turkish", () => {
@@ -326,6 +336,16 @@ describe("translateStructuredApiMessage (§2.2 message contract)", () => {
         message_params: { rate_pct: 20 },
       }),
     ).toContain("%20");
+    expect(
+      translateStructuredApiMessage(trT, { message_code: "ek1a_report_unknown", detail: "x" }),
+    ).toBe(
+      "EK-1/A tanısı eşleşti; kronik hastalık raporu durumu bilinmiyor, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor.",
+    );
+    expect(
+      translateStructuredApiMessage(trT, { message_code: "ek1a_report_missing", detail: "x" }),
+    ).toBe(
+      "EK-1/A tanısı eşleşti; kayıtlı kronik hastalık raporu yok, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor.",
+    );
   });
 
   it("falls back to prose translation when the code is unknown or absent", () => {

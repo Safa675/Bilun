@@ -109,7 +109,7 @@ Operations of one session carry `session_role` on a single-day line: `primary` (
 
 ### Optional items and the pins
 
-An item with `optional: {probability, basis, source}` is in the bill only when its id is in `showcase.include` (a diagnosis is identified by its ICD code). The pins are `story`, `sex`, `age`, `admit` (first day), `nights`, `include` and `course_days` (drug id to days). Every pin must lie inside the declared range (`pins.*`), and the stay inside the window.
+An item with `optional: {probability, basis, source}` is in the bill only when its id is in `showcase.include` (a diagnosis is identified by its ICD code). The pins are `story`, `sex`, `age`, `admit` (first day), `nights`, `include` and `course_days` (drug id to days). Every pin must lie inside the declared range (`pins.*`), and the stay inside the window. One more pin is a fact about the patient, not the bill: `chronic_health_report` (`true`, `false`, or absent: not known) becomes the column `has_chronic_health_report` of the patient's copay profile, which the EK-1/A exemption needs before it waives the outpatient copay (SUT §1.8.5(7)); without a known report an EK-1/A match stays partial. A recipe may override it like the other pins (but cannot reset it to unknown), and every bill of one patient carries the same value (`recipe.patient_identity`), since the profile is one row per patient, written from the first bill. No pathway sets it yet.
 
 ### Provenance: `basis` and `source`
 

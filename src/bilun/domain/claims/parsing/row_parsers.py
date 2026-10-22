@@ -154,6 +154,7 @@ def parse_copay_profile(row: RowDict, errors: list[str]) -> PatientCopayProfile 
             ),
             elderly_allowance_2022=parse_bool(row.get("elderly_allowance_2022")),
             birth_year=birth_year,
+            has_chronic_health_report=optional_bool(row.get("has_chronic_health_report")),
         )
     except KeyError as exc:
         errors.append(f"patient_copay_profiles missing field {exc.args[0]}")

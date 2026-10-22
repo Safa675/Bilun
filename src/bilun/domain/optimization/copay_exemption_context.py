@@ -41,6 +41,10 @@ def build_copay_exemption_input(
     ):
         resolved_age = float(latest_year - int(patient_profile.birth_year))
 
+    # An explicit argument wins, even False; otherwise the profile's flag (None when unknown).
+    if has_chronic_health_report is None and patient_profile is not None:
+        has_chronic_health_report = patient_profile.has_chronic_health_report
+
     return CopayExemptionInput(
         diagnoses=list(diagnoses),
         patient_profile=patient_profile,

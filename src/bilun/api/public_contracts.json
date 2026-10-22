@@ -117,7 +117,9 @@
       }
     },
     "primary_exemption_category": true,
-    "action": true
+    "action": true,
+    "partial_exempt": true,
+    "has_chronic_health_report": true
   },
   "QualifyingDiagnosis": {
     "icd10": true,
@@ -309,7 +311,9 @@
       }
     },
     "primary_exemption_category": true,
-    "action": true
+    "action": true,
+    "partial_exempt": true,
+    "has_chronic_health_report": true
   },
   "PatientAlertSurcharge": {
     "n_applicable": true,

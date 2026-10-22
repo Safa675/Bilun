@@ -1750,3 +1750,108 @@ describe("RecommendedActionsPanel day-bed rows", () => {
     }
   });
 });
+
+describe("copay exemption without a chronic health report on the bill", () => {
+  const exact = { exactness_status: "exact" as const };
+  const unmetEk1a = { category: "ek1a_chronic", counts_toward_exempt: false, missing_requirements: ["chronic_health_report"] };
+
+  it.each(["en", "tr"] as const)("the optimization chip and line say 'report missing' in %s", (locale) => {
+    const labels = (locale === "en" ? enBilling : trBilling).sutOptimization;
+    const optimization = {
+      patient_id: "P-2", n_diagnoses: 3, diagnoses: [], icd10_chapters: [],
+      copay_exemptions: {
+        exempt: false, partial_exempt: true, has_chronic_health_report: null,
+        n_qualifying: 2, qualifying_diagnoses: [{}, {}], exemption_sources: [unmetEk1a],
+      },
+      surcharge_exposure: { ...exact, n_applicable_procedures: 0, n_total_ek2g: 0, exposure_rate: 0, applicable_rules: [] },
+      copay_rate_exposure: { ...exact, n_applicable_procedures: 0, n_total_ek2c1: 0, procedures_with_rates: [], mean_rate: 0, rate_distribution: {} },
+      drg_unbundling: { ...exact, has_unbundling_risk: false, n_chapters_analyzed: 0, chapter_analysis: [], total_potential_savings: 0 },
+    } as unknown as PatientOptimization;
+    const html = renderToStaticMarkupWithLocale(<SutOptimizationSection optimization={optimization} />, locale);
+    const copay = html.match(/data-optimization-metric="copay"([\s\S]*?)(?=<div data-optimization-metric=)/)?.[1] ?? "";
+    expect(copay).toContain(">ek1aReportMissing<"); // the badge label key (the label module is mocked here)
+    expect(copay).not.toContain("notExempt");
+    expect(copay).toContain(labels.ek1aReportNeeded.replace("{count}", "2"));
+    expect(copay).not.toContain(`>${labels.ek1aQualifying.replace("{count}", "2")}<`);
+    expect(copay).not.toContain(labels.noWaiver);
+  });
+
+  it.each([
+    ["en", "ek1a_report_unknown", "EK-1/A diagnosis matched; chronic health report status unknown, so the §1.8.5(7) waiver is not claimed."],
+    ["tr", "ek1a_report_unknown", "EK-1/A tanısı eşleşti; kronik hastalık raporu durumu bilinmiyor, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor."],
+    ["en", "ek1a_report_missing", "EK-1/A diagnosis matched; no chronic health report on file, so the §1.8.5(7) waiver is not claimed."],
+    ["tr", "ek1a_report_missing", "EK-1/A tanısı eşleşti; kayıtlı kronik hastalık raporu yok, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor."],
+  ] as const)("the copay block chip and the partial row read in %s (%s)", (locale, code, text) => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          ...exact,
+          is_exempt: false,
+          copay_primary_outcome: "partial_exempt",
+          exemption_disease: "Kronik obstrüktif akciğer hastalığı",
+          exemption_range: "J44",
+          exemption_sources: [unmetEk1a],
+          visit_copay_savings_try: 0,
+          rx_copay_savings_try: 0,
+          total_copay_savings_try: 0,
+          rate_corrections: [
+            {
+              detail: "EK-1/A diagnosis matched; the English text of the backend.",
+              sut_section: "1.8.5(7)",
+              message_code: code,
+            },
+          ],
+        }}
+      />,
+      locale,
+    );
+    expect(html).toContain(">ek1aReportMissing<");
+    expect(html).not.toContain(">notExempt<");
+    expect(html).toContain(text);
+    expect(html).not.toContain("the English text of the backend");
+    expect(html).not.toContain((locale === "en" ? enBilling : trBilling).copay.ek1aNoWaivableLine);
+  });
+
+  it("an EK-1A exemption on a bill without an outpatient exam says no amount is waived", () => {
+    const labels = enBilling.copay;
+    const base = {
+      ...exact,
+      is_exempt: true,
+      copay_primary_outcome: "exempt" as const,
+      exemption_disease: "Kronik obstrüktif akciğer hastalığı",
+      exemption_range: "J44",
+      exemption_sources: [{ category: "ek1a_chronic", counts_toward_exempt: true }],
+      visit_copay_savings_try: 0,
+      rx_copay_savings_try: 0,
+      total_copay_savings_try: 0,
+      rate_corrections: [],
+    };
+    const noExam = renderToStaticMarkupWithLocale(<CopayOptimizationSection copayData={base} />);
+    expect(noExam).toContain(labels.ek1aNoWaivableLine);
+    expect(noExam).not.toContain(labels.ek1aScopeNotice);
+    expect(noExam).toContain(">exempt<");
+
+    const withExam = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          ...base,
+          visit_copay_savings_try: 17.15,
+          rate_corrections: [
+            { code: "520030", name: "Muayene", billed_try: 85.73, payable_try: 68.58, copay_component_try: 17.15, exemption_ground: "ek1a_muayene" },
+          ],
+        }}
+      />,
+    );
+    expect(withExam).toContain(labels.ek1aScopeNotice);
+    expect(withExam).not.toContain(labels.ek1aNoWaivableLine);
+
+    const alsoEmergency = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{ ...base, exemption_sources: [...base.exemption_sources, { category: "acil_servis", counts_toward_exempt: true }] }}
+      />,
+    );
+    expect(alsoEmergency).not.toContain(labels.ek1aNoWaivableLine);
+    const trNoExam = renderToStaticMarkupWithLocale(<CopayOptimizationSection copayData={base} />, "tr");
+    expect(trNoExam).toContain(trBilling.copay.ek1aNoWaivableLine);
+  });
+});

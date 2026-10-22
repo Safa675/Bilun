@@ -546,9 +546,29 @@ def fake_measure(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         "P2": cm.patient_metrics(_patient_b(), claims=1),
     }
 
-    def measure_patients(claims_dir: Path, patient_ids: list[str] | None = None) -> dict[str, Any]:
+    def measure_patients(
+        claims_dir: Path,
+        patient_ids: list[str] | None = None,
+        *,
+        app_path: bool = False,
+        clean_dir: Path | None = None,
+    ) -> dict[str, Any]:
         calls["claims_dir"], calls["patient_ids"] = claims_dir, patient_ids
-        return {k: v for k, v in per_patient.items() if patient_ids is None or k in patient_ids}
+        calls["app_path"], calls["clean_dir"] = app_path, clean_dir
+        copay = {
+            "outcome": "partial_exempt",
+            "exempt": False,
+            "partial_exempt": True,
+            "has_chronic_health_report": None,
+            "n_qualifying": 1,
+            "rate_corrections": 1,
+            "rate_correction_codes": ["ek1a_report_unknown"],
+        }
+        return {
+            k: {**v, "copay": copay} if app_path else v
+            for k, v in per_patient.items()
+            if patient_ids is None or k in patient_ids
+        }
 
     monkeypatch.setattr(cm, "measure_patients", measure_patients)
     return calls
@@ -614,6 +634,66 @@ def test_the_command_refuses_a_file_it_cannot_compare_with(
     missing = tmp_path / "missing.json"
     assert cm.main(["--compare", str(missing)]) == 2
     assert "missing.json" in capsys.readouterr().err
+
+
+def test_the_command_forwards_the_app_path_mode_and_writes_its_copay_facts(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], fake_measure: dict[str, Any]
+) -> None:
+    out = tmp_path / "app.json"
+    clean = tmp_path / "clean"
+    assert cm.main(["--app-path", "--clean-dir", str(clean), "--out", str(out)]) == 0
+    assert (fake_measure["app_path"], fake_measure["clean_dir"]) == (True, clean)
+    document = json.loads(out.read_text(encoding="utf-8"))
+    assert document["mode"] == "app_path"
+    assert document["limits"] == list(cm.APP_PATH_LIMITS)
+    assert document["cohort"]["copay"] == {"rate_corrections": 2, "outcomes": {"partial_exempt": 2}}
+    text = capsys.readouterr().out
+    assert "mode: app path; copay rate corrections: 2; copay outcomes: partial_exempt 2" in text
+    # the claims-only document is the one it always was: no mode, no copay entries
+    plain = tmp_path / "plain.json"
+    assert cm.main(["--out", str(plain)]) == 0
+    assert fake_measure["app_path"] is False
+    document = json.loads(plain.read_text(encoding="utf-8"))
+    assert "mode" not in document and "copay" not in document["cohort"]
+    assert all("copay" not in entry for entry in document["patients"].values())
+
+
+def test_the_command_compares_documents_of_one_mode_only(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], fake_measure: dict[str, Any]
+) -> None:
+    plain, app = tmp_path / "plain.json", tmp_path / "app.json"
+    assert cm.main(["--out", str(plain)]) == 0
+    assert cm.main(["--app-path", "--out", str(app)]) == 0
+    capsys.readouterr()
+    assert cm.main(["--app-path", "--compare", str(plain)]) == 2
+    assert "claims_only document" in capsys.readouterr().err
+    assert cm.main(["--compare", str(app)]) == 2
+    assert "app_path document" in capsys.readouterr().err
+    assert cm.main(["--app-path", "--compare", str(app)]) == 0
+    assert "no change against" in capsys.readouterr().out
+    with pytest.raises(SystemExit):
+        cm.main(["--clean-dir", str(tmp_path)])  # a clean folder means nothing without the app path
+
+
+def test_the_app_path_diff_names_a_patient_whose_copay_moved() -> None:
+    entry = cm.patient_metrics(_patient_a(), claims=1)
+    partial = {
+        "outcome": "partial_exempt", "exempt": False, "partial_exempt": True, "has_chronic_health_report": None,
+        "n_qualifying": 2, "rate_corrections": 2, "rate_correction_codes": ["ek1a_report_unknown", "sut:1.8.2.(1)"],
+    }  # fmt: skip
+    exempt = {
+        **partial, "outcome": "exempt", "exempt": True, "partial_exempt": False, "has_chronic_health_report": True,
+        "rate_corrections": 0, "rate_correction_codes": [],
+    }  # fmt: skip
+    before = {"P1": {**entry, "copay": partial}}
+    after = {"P1": {**entry, "copay": exempt}}
+    lines = cm.diff(_document(before), _document(after))
+    assert "copay rate corrections: 2 -> 0" in lines
+    assert "copay outcomes: {'partial_exempt': 1} -> {'exempt': 1}" in lines
+    assert (
+        "P1: copay partial_exempt -> exempt; chronic report None -> True; "
+        "rate corrections: 2 -> 0 (-ek1a_report_unknown, -sut:1.8.2.(1))"
+    ) in lines
 
 
 def test_an_unknown_patient_is_an_error_not_a_silent_zero(tmp_path: Path) -> None:
@@ -806,3 +886,115 @@ def test_patient_12_is_measured_over_its_two_bills_and_alone_lights_the_three_bl
     assert not new_ids & set(cm.summarize(others)["wavea"]["matched_ids"])
     assert entry["wavea"]["financial"] == 0  # the two reviews are reviews, not money
 
+
+
+# --- the app path (G12b): the copay exemption and the lab feed of the app's cache path ----------
+
+
+@pytest.fixture(scope="module")
+def measured_app_path() -> dict[str, dict[str, Any]]:
+    """The real engine over the committed claims, with the app path's copay exemption and lab feed."""
+    return cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
+
+
+def _partial_patients() -> set[str]:
+    """S2-S6 (the plan's table, 7.4) and S9 (M48.06 with I10): an EK-1/A match and no report on file."""
+    stories = ("showcase_S2", "showcase_S3", "showcase_S4", "showcase_S5", "showcase_S6")
+    return {cohort.role(story).patient_id for story in stories} | {cohort.scenario("S9").patient_id}
+
+
+def test_the_app_path_shows_the_partial_ek1a_state_of_the_plan_and_no_report(
+    measured_app_path: dict[str, dict[str, Any]],
+) -> None:
+    copay = {pid: entry["copay"] for pid, entry in measured_app_path.items()}
+    assert all(item["has_chronic_health_report"] is None for item in copay.values())  # no patient carries the flag yet
+    assert {pid for pid, item in copay.items() if item["outcome"] == "partial_exempt"} == _partial_patients()
+    # the two emergency visits (S7, and S10 of patient 12) are exempt on the visit type, not on EK-1/A
+    exempt = {cohort.role("showcase_S7").patient_id, cohort.scenario("S10").patient_id}
+    assert {pid for pid, item in copay.items() if item["outcome"] == "exempt"} == exempt
+    for pid in _partial_patients():
+        assert "ek1a_report_unknown" in copay[pid]["rate_correction_codes"]
+    # the plan's 11 rate corrections of the app path on the eight showcase patients (P1 1, P2-P6 2 each), and 13 with S9
+    eight = cohort.patient_ids()[:8]
+    assert [copay[pid]["rate_corrections"] for pid in eight] == [1, 2, 2, 2, 2, 2, 0, 0]
+    assert sum(item["rate_corrections"] for item in copay.values()) == 13
+    assert cm.summarize(measured_app_path)["copay"] == {
+        "rate_corrections": 13,
+        "outcomes": {"exempt": 2, "none": 4, "partial_exempt": 6},
+    }
+
+
+def test_the_app_path_moves_no_block_and_no_wave_a_rule_of_the_claims_only_measurement(
+    measured: dict[str, dict[str, Any]], measured_app_path: dict[str, dict[str, Any]]
+) -> None:
+    plain, app = cm.summarize(measured), cm.summarize(measured_app_path)
+    assert app["blocks"] == plain["blocks"]
+    assert app["wavea"] == plain["wavea"]
+    # the copay exemption adds one kind: the exemption review of the two exempt emergency patients
+    assert set(app["finding_kinds"]["kinds"]) - set(plain["finding_kinds"]["kinds"]) == {"action:copay:exemption_review"}
+    assert set(plain["finding_kinds"]["kinds"]) <= set(app["finding_kinds"]["kinds"])
+
+
+def test_a_chronic_report_on_a_profile_turns_the_partial_match_into_an_exemption(tmp_path: Path) -> None:
+    """What WP9 will show for S2, measured on a copy of the claims with S2's profile flag set (EI-25 included):
+    the patient is exempt, the partial row and the generic drug-copay row leave its copay block, the exemption
+    review appears, and no other patient moves."""
+    import polars as pl
+
+    from src.bilun.domain.claims.schema import OPTIONAL_CLAIM_TABLES, REQUIRED_CLAIM_TABLES
+
+    claims = tmp_path / "claims"
+    claims.mkdir()
+    for spec in (*REQUIRED_CLAIM_TABLES, *OPTIONAL_CLAIM_TABLES):
+        source = cm.DEFAULT_CLAIMS_DIR / spec.filename
+        if source.is_file():
+            claims.joinpath(spec.filename).write_bytes(source.read_bytes())
+    patient = cohort.role("showcase_S2").patient_id
+    profiles = pl.read_parquet(claims / "patient_copay_profiles.parquet")
+    profiles.with_columns(
+        pl.when(pl.col("patient_id") == patient)
+        .then(True)
+        .otherwise(pl.col("has_chronic_health_report"))
+        .alias("has_chronic_health_report")
+    ).write_parquet(claims / "patient_copay_profiles.parquet")
+    clean = cm.DEFAULT_CLAIMS_DIR.parent / "clean"
+
+    flagged = cm.measure_patients(claims, app_path=True, clean_dir=clean)
+    unflagged = cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
+    lines = cm.diff(
+        {"cohort": cm.summarize(unflagged), "patients": unflagged},
+        {"cohort": cm.summarize(flagged), "patients": flagged},
+    )
+    copay = flagged[patient]["copay"]
+    assert (copay["outcome"], copay["has_chronic_health_report"]) == ("exempt", True)
+    assert unflagged[patient]["copay"]["rate_correction_codes"] == ["ek1a_report_unknown", "sut:1.8.2.(1)"]
+    assert copay["rate_correction_codes"] == []
+    assert "action:copay:exemption_review" in flagged[patient]["finding_kinds"]
+    assert [line for line in lines if line.startswith("SENTETIK-HASTA-")] == [
+        f"{patient}: finding kinds: 4 -> 5 (+action:copay:exemption_review); copay partial_exempt -> exempt; "
+        "chronic report None -> True; rate corrections: 2 -> 0 (-ek1a_report_unknown, -sut:1.8.2.(1))"
+    ]
+
+
+def test_the_app_path_hands_the_report_the_clean_lab_table_and_the_patients_copay(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The lab feed changes no report of the committed cohort today, so the metrics cannot show it: the call can."""
+    from src.bilun.domain.billing import patient_report
+
+    seen: dict[str, dict[str, Any]] = {}
+    real = patient_report.compute_patient_billing_report
+
+    def spy(pid: str, **kwargs: Any) -> Any:
+        seen[pid] = kwargs
+        return real(pid, **kwargs)
+
+    monkeypatch.setattr(patient_report, "compute_patient_billing_report", spy)
+    patient = cohort.role("showcase_S2").patient_id
+    cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, [patient], app_path=True)
+    lab = seen[patient]["lab_df_pl"]
+    assert lab.height == cohort.load_registry()["clean_counts"]["lab_clean.parquet"]
+    assert {"patient_id", "visit_id", "test_name", "value"} <= set(lab.columns)
+    assert seen[patient]["copay_exemption"]["partial_exempt"] is True
+    cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, [patient])
+    assert "lab_df_pl" not in seen[patient] and "copay_exemption" not in seen[patient]  # the claims-only path

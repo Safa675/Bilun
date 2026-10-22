@@ -234,15 +234,23 @@ def optimize_copay_from_claims(
         if qualifying:
             result.exemption_disease = qualifying[0].get("disease", "")
             result.exemption_range = qualifying[0].get("range", "")
+            # The report is not on file (False) or not known (None): no waiver is claimed.
+            report_missing = has_health_report is False
             result.rate_corrections.append(
                 {
                     "detail": (
-                        "EK-1/A ICD match without chronic health report — "
-                        "§1.8.5(7) savings not asserted"
+                        "EK-1/A diagnosis matched; no chronic health report on file, "
+                        "so the §1.8.5(7) waiver is not claimed."
+                        if report_missing
+                        else "EK-1/A diagnosis matched; chronic health report status unknown, "
+                        "so the §1.8.5(7) waiver is not claimed."
                     ),
                     "sut_section": "1.8.5(7)",
                     "rule_id": "copay_exemption_ek1a",
                     "clause_ref": _ek1a_partial_clause_ref().to_dict(),
+                    "message_code": (
+                        "ek1a_report_missing" if report_missing else "ek1a_report_unknown"
+                    ),
                 }
             )
 

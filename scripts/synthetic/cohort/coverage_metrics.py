@@ -31,6 +31,14 @@ exemption money. The lab feed `lab_df_pl` (the lab results that the cache path m
 and capture-gap blocks) is not passed either. A block with output says that the engine produced a
 row, not that the row is money or clinically right; and the metrics do not test the correctness of
 a finding (the engine proof does). `LIMITS` repeats this for the JSON.
+
+**App-path mode** (`--app-path`, G12b). The report is computed with what the app's cache path passes:
+each patient's `copay_exemption`, built as `assemble_sut_context` builds it (the diagnoses of the clean
+anadata, `build_copay_inputs_by_patient` over the claim dataset and its copay profiles, then the alerts
+cache), and the lab feed (the clean lab table, normalized as the cache normalizes it). Each patient then
+also has a `copay` entry: the copay status the app shows (`exempt`, `partial_exempt` or `none`), the
+chronic-health-report flag, and the rate corrections of the copay block. Compare an app-path document
+with an app-path document only (`APP_PATH_LIMITS`).
 """
 
 from __future__ import annotations
@@ -45,6 +53,7 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[3]
 DEFAULT_CLAIMS_DIR = REPO / "data" / "synthetic" / "sut" / "claims"
 SCHEMA_VERSION = 1
+MODES = ("claims_only", "app_path")
 
 # Names shown on one line of a diff before "... N more".
 LIST_CAP = 12
@@ -107,6 +116,14 @@ LIMITS: tuple[str, ...] = (
     "A block with output means the engine produced a row, not that the row is money or correct.",
     "A Wave A rule id is evaluated when one of its evaluations has the status `evaluated`; a rule "
     "that looked and found nothing is evaluated and not matched.",
+)
+
+APP_PATH_LIMITS: tuple[str, ...] = (
+    "App-path mode: each patient's `copay_exemption` is the one the app's cache builds (clean anadata "
+    "diagnoses, the claim dataset's claims, procedure lines and copay profiles, then the alerts cache), "
+    "and the lab feed is the clean lab table normalized like the cache. It is not the whole cache: no "
+    "cohort percentile priority and no API projection.",
+    *LIMITS[2:],
 )
 
 
@@ -200,6 +217,30 @@ def finding_kinds(report: Mapping[str, Any]) -> set[str]:
     return kinds
 
 
+def copay_metrics(report: Mapping[str, Any], copay_exemption: Mapping[str, Any]) -> dict[str, Any]:
+    """The copay facts of the app path: the status the app shows, the report flag, the rate corrections."""
+    block = report.get("copay")
+    rows = _rows(block.get("rate_corrections")) if isinstance(block, Mapping) else []
+    return {
+        "outcome": str(copay_exemption.get("outcome_kind") or "none"),
+        "exempt": bool(copay_exemption.get("exempt")),
+        "partial_exempt": bool(copay_exemption.get("partial_exempt")),
+        "has_chronic_health_report": copay_exemption.get("has_chronic_health_report"),
+        "n_qualifying": int(copay_exemption.get("n_qualifying") or 0),
+        "rate_corrections": len(rows),
+        # what each row is: its message code, else its rule, waiver ground or SUT section
+        "rate_correction_codes": sorted(
+            str(
+                row.get("message_code")
+                or row.get("rule_id")
+                or row.get("exemption_ground")
+                or (f"sut:{row['sut_section']}" if row.get("sut_section") else "")
+            )
+            for row in rows
+        ),
+    }
+
+
 def patient_metrics(report: Mapping[str, Any], *, claims: int) -> dict[str, Any]:
     """The metrics of one patient's report (as plain dicts); the result is plain JSON."""
     sets = wavea_sets(report.get("wavea_evidence_detail"))
@@ -239,7 +280,22 @@ def summarize(per_patient: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
     review, advisory, financial = union("review_ids"), union("advisory_ids"), union("financial_ids")
     row_ids = sorted({*review, *advisory, *financial})
     kinds = sorted({kind for entry in entries for kind in entry["finding_kinds"]})
+    copay = [entry["copay"] for entry in entries if "copay" in entry]
+    app_path = (
+        {
+            "copay": {
+                "rate_corrections": sum(item["rate_corrections"] for item in copay),
+                "outcomes": {
+                    outcome: sum(item["outcome"] == outcome for item in copay)
+                    for outcome in sorted({item["outcome"] for item in copay})
+                },
+            }
+        }
+        if copay
+        else {}
+    )
     return {
+        **app_path,
         "patients": len(entries),
         "claims": sum(entry["claims"] for entry in entries),
         "blocks": {
@@ -267,10 +323,69 @@ def summarize(per_patient: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
 # --- the engine run ------------------------------------------------------------------------------
 
 
+def app_path_inputs(
+    dataset: Any, clean_dir: Path | str, patient_ids: Sequence[str]
+) -> tuple[dict[str, dict[str, Any]], Any]:
+    """Each patient's `copay_exemption` and the lab feed, built the way the app's cache builds them.
+
+    The steps of `src/bilun/cache/context.py` and `assemble_sut_context`: the clean anadata, lab and
+    recete tables normalized by `load_normalized_raw_data`, the diagnoses by `_build_diagnoses_by_pid`,
+    the copay inputs by `build_copay_inputs_by_patient` (no report flag passed: the profile's is read),
+    and the alert rows of `build_sut_patient_alerts_cache`, whose `copay_exemption` the billing reports take.
+    """
+    from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
+    from src.bilun.cache.loaders import load_normalized_raw_data
+    from src.bilun.cache.patient_slice import _build_diagnoses_by_pid
+    from src.bilun.cache.sut_context import build_sut_patient_alerts_cache
+    from src.bilun.domain.optimization import (
+        analyze_copay_rate_exposure,
+        analyze_surcharge_exposure,
+        evaluate_copay_exemption,
+    )
+    from src.bilun.domain.optimization.copay_exemption_context import build_copay_inputs_by_patient
+
+    clean = Path(clean_dir)
+    ana_df, lab_df, _ = load_normalized_raw_data(
+        load_anadata_fn=lambda include_text=True: load_anadata(
+            path=clean / "anadata_clean.parquet", include_text=include_text
+        ),
+        load_labdata_fn=lambda: load_labdata(path=clean / "lab_clean.parquet"),
+        load_recete_fn=lambda: load_recete(path=clean / "recete_clean.parquet"),
+    )
+    pids = list(patient_ids)
+    diagnoses_by_pid = _build_diagnoses_by_pid(ana_df)
+    copay_inputs = build_copay_inputs_by_patient(
+        pids,
+        diagnoses_by_pid,
+        claims_by_patient=dataset.claims_by_patient,
+        copay_profiles_by_patient=dataset.copay_profiles_by_patient,
+        procedure_lines_by_patient=dataset.procedure_lines_by_patient,
+    )
+    alerts = build_sut_patient_alerts_cache(
+        pids,
+        diagnoses_by_pid,
+        evaluate_copay_exemption_fn=evaluate_copay_exemption,
+        analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
+        analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
+        procedure_lines_by_patient=dataset.procedure_lines_by_patient,
+        copay_inputs_by_pid=copay_inputs,
+    )
+    return {row["patient_id"]: row["copay_exemption"] for row in alerts["patients"]}, lab_df
+
+
 def measure_patients(
-    claims_dir: Path | str = DEFAULT_CLAIMS_DIR, patient_ids: Sequence[str] | None = None
+    claims_dir: Path | str = DEFAULT_CLAIMS_DIR,
+    patient_ids: Sequence[str] | None = None,
+    *,
+    app_path: bool = False,
+    clean_dir: Path | str | None = None,
 ) -> dict[str, dict[str, Any]]:
-    """Run the patient report over `claims_dir` and return the metrics of each patient (all, or `patient_ids`)."""
+    """Run the patient report over `claims_dir` and return the metrics of each patient (all, or `patient_ids`).
+
+    With `app_path`, the report gets the copay exemption and the lab feed of the app's cache path
+    (`app_path_inputs`, from `clean_dir`, by default the `clean` folder beside the claims folder), and
+    each patient's metrics gain a `copay` entry.
+    """
     from src.bilun.cache.build_streaming import json_ready
     from src.bilun.domain.billing.patient_report import compute_patient_billing_report
     from src.bilun.domain.claims.patient_context import build_patient_claim_context
@@ -282,25 +397,56 @@ def measure_patients(
     unknown = [pid for pid in wanted if pid not in dataset.claims_by_patient]
     if unknown:
         raise ValueError(f"not a patient of {claims_dir}: {', '.join(unknown)}")
+    pids = sorted(set(wanted))
+    copay_by_pid: dict[str, dict[str, Any]] = {}
+    lab_df = None
+    if app_path:
+        clean = Path(claims_dir).parent / "clean" if clean_dir is None else Path(clean_dir)
+        copay_by_pid, lab_df = app_path_inputs(dataset, clean, pids)
     measured: dict[str, dict[str, Any]] = {}
-    for pid in sorted(set(wanted)):
+    for pid in pids:
         context = build_patient_claim_context(pid, dataset)
-        report = compute_patient_billing_report(pid, claim_context=context)
-        measured[pid] = patient_metrics(json_ready(report), claims=len(context.claims))
+        if app_path:
+            report = json_ready(
+                compute_patient_billing_report(
+                    pid, claim_context=context, copay_exemption=copay_by_pid[pid], lab_df_pl=lab_df
+                )
+            )
+            measured[pid] = {
+                **patient_metrics(report, claims=len(context.claims)),
+                "copay": copay_metrics(report, copay_by_pid[pid]),
+            }
+        else:
+            report = compute_patient_billing_report(pid, claim_context=context)
+            measured[pid] = patient_metrics(json_ready(report), claims=len(context.claims))
     return measured
 
 
 def measure(
-    claims_dir: Path | str = DEFAULT_CLAIMS_DIR, patient_ids: Sequence[str] | None = None
+    claims_dir: Path | str = DEFAULT_CLAIMS_DIR,
+    patient_ids: Sequence[str] | None = None,
+    *,
+    app_path: bool = False,
+    clean_dir: Path | str | None = None,
 ) -> dict[str, Any]:
-    """The metrics document: per patient and for the cohort, with the stated limits."""
-    per_patient = measure_patients(claims_dir, patient_ids)
+    """The metrics document: per patient and for the cohort, with the stated limits.
+
+    The claims-only document has no `mode` key, as before the app-path mode existed.
+    """
+    per_patient = measure_patients(claims_dir, patient_ids, app_path=app_path, clean_dir=clean_dir)
+    mode = {"mode": "app_path"} if app_path else {}
     return {
         "schema_version": SCHEMA_VERSION,
-        "limits": list(LIMITS),
+        **mode,
+        "limits": list(APP_PATH_LIMITS if app_path else LIMITS),
         "cohort": summarize(per_patient),
         "patients": per_patient,
     }
+
+
+def document_mode(document: Mapping[str, Any]) -> str:
+    """`app_path` or `claims_only` (a document without the key)."""
+    return str(document.get("mode") or "claims_only")
 
 
 # --- the difference between two documents --------------------------------------------------------
@@ -335,6 +481,25 @@ def _row_ids(entry: Mapping[str, Any]) -> set[str]:
     return {*wavea["review_ids"], *wavea["advisory_ids"], *wavea["financial_ids"]}
 
 
+def _copay_change(was: Mapping[str, Any], now: Mapping[str, Any]) -> list[str]:
+    """The app-path copay facts of one patient that moved (outcome, report flag, rate corrections)."""
+    parts = []
+    if was["outcome"] != now["outcome"]:
+        parts.append(f"copay {was['outcome']} -> {now['outcome']}")
+    if was["has_chronic_health_report"] != now["has_chronic_health_report"]:
+        parts.append(
+            f"chronic report {was['has_chronic_health_report']} -> {now['has_chronic_health_report']}"
+        )
+    moved = _change(
+        "rate corrections",
+        was["rate_correction_codes"],
+        now["rate_correction_codes"],
+        was["rate_corrections"],
+        now["rate_corrections"],
+    )
+    return [*parts, moved] if moved else parts
+
+
 def diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> list[str]:
     """What moved from the metrics document `before` to `after`; an empty list when nothing did."""
     old, new = before["cohort"], after["cohort"]
@@ -352,6 +517,19 @@ def diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> list[str]:
         _change("Wave A rule ids with a row", old["wavea"]["row_ids"], new["wavea"]["row_ids"]),
         _change("finding kinds", old["finding_kinds"]["kinds"], new["finding_kinds"]["kinds"]),
     ]
+    if "copay" in old and "copay" in new:
+        old_copay, new_copay = old["copay"], new["copay"]
+        candidates.append(
+            _change(
+                "copay rate corrections",
+                [],
+                [],
+                old_copay["rate_corrections"],
+                new_copay["rate_corrections"],
+            )
+        )
+        if old_copay["outcomes"] != new_copay["outcomes"]:
+            candidates.append(f"copay outcomes: {old_copay['outcomes']} -> {new_copay['outcomes']}")
     lines = [line for line in candidates if line]
     for pid in sorted({*old_patients, *new_patients}):
         if pid not in old_patients:
@@ -372,6 +550,8 @@ def diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> list[str]:
                 _change("with a row", _row_ids(was), _row_ids(now)),
                 _change("finding kinds", was["finding_kinds"], now["finding_kinds"]),
             ]
+            if "copay" in was and "copay" in now:
+                parts.extend(_copay_change(was["copay"], now["copay"]))
             changed = [part for part in parts if part]
             if changed:
                 lines.append(f"{pid}: " + "; ".join(changed))
@@ -385,7 +565,17 @@ def summary_lines(document: Mapping[str, Any]) -> list[str]:
     """The cohort numbers of a metrics document, as printed by the command."""
     cohort = document["cohort"]
     blocks, wavea = cohort["blocks"], cohort["wavea"]
+    copay = cohort.get("copay")
+    app_path = (
+        [
+            f"mode: app path; copay rate corrections: {copay['rate_corrections']}; copay outcomes: "
+            + ", ".join(f"{outcome} {count}" for outcome, count in copay["outcomes"].items())
+        ]
+        if copay is not None
+        else []
+    )
     return [
+        *app_path,
         f"patients: {cohort['patients']}, claims: {cohort['claims']}",
         f"blocks with output: {blocks['with_output']} of {blocks['total']} "
         f"({', '.join(blocks['with_output_names'])})",
@@ -412,7 +602,8 @@ def load_document(path: Path) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """`python -m scripts.synthetic.cohort.coverage_metrics [--claims-dir DIR] [--out FILE] [--compare FILE]`."""
+    """`python -m scripts.synthetic.cohort.coverage_metrics [--claims-dir DIR] [--out FILE] [--compare FILE]
+    [--app-path [--clean-dir DIR]]`."""
     parser = argparse.ArgumentParser(
         prog="python -m scripts.synthetic.cohort.coverage_metrics",
         description="Measure which report blocks and Wave A rules the demo patients light up.",
@@ -421,7 +612,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, help="write the metrics JSON here")
     parser.add_argument("--compare", type=Path, help="print the difference from this earlier JSON")
     parser.add_argument("--patients", nargs="+", help="measure only these patient ids")
+    parser.add_argument(
+        "--app-path",
+        action="store_true",
+        help="pass each patient's copay exemption and the lab feed, as the app's cache path does",
+    )
+    parser.add_argument(
+        "--clean-dir", type=Path, help="clean tables for --app-path (default: <claims-dir>/../clean)"
+    )
     args = parser.parse_args(argv)
+    if args.clean_dir is not None and not args.app_path:
+        parser.error("--clean-dir needs --app-path")
 
     earlier = None
     if args.compare is not None:  # fail before the engine runs, not after
@@ -430,8 +631,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
             return 2
+        mode = "app_path" if args.app_path else "claims_only"
+        if document_mode(earlier) != mode:
+            print(
+                f"{args.compare} is a {document_mode(earlier)} document; this run is {mode}: "
+                "compare documents of one mode",
+                file=sys.stderr,
+            )
+            return 2
 
-    document = measure(args.claims_dir, args.patients)
+    document = measure(args.claims_dir, args.patients, app_path=args.app_path, clean_dir=args.clean_dir)
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         text = json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + "\n"

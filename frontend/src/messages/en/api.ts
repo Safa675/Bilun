@@ -161,6 +161,10 @@ const api = {
     billedCorrectlyPackage: "Billed correctly as package.",
     billedCorrectlyItemized: "Billed correctly as itemized.",
     materialCopayRate: "SUT §1.8.3(2) material copay reference rate: {rate}%",
+    ek1aReportUnknown:
+      "EK-1/A diagnosis matched; chronic health report status unknown, so the §1.8.5(7) waiver is not claimed.",
+    ek1aReportMissing:
+      "EK-1/A diagnosis matched; no chronic health report on file, so the §1.8.5(7) waiver is not claimed.",
     ek1aChronic: "SUT §1.8.5(7) + EK-1/A chronic disease copay exemptions",
     emergencyWaiver: "SUT §1.8.5(5) emergency visit copay waiver (520021 excluded)",
     preventiveWaiver: "SUT §1.8.5(6) preventive health copay waiver",

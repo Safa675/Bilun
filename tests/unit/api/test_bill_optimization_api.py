@@ -122,3 +122,48 @@ def test_bill_optimization_unknown_bill_raises(bill_opt_cache):
     pid = bill_opt_cache["patient_id"]
     with pytest.raises(PatientNotFound):
         opt_mod.get_bill_optimization(pid, "F-DOES-NOT-EXIST-999")
+
+
+def test_bill_optimization_reads_the_chronic_report_from_the_patients_profile(
+    bill_opt_cache, monkeypatch
+):
+    """The cached diagnosis E11.9 is an EK-1/A match (E10-E14). The route passes no report flag, so
+    the patient's copay profile decides: partial while the report is not known, exempt with it."""
+    import dataclasses
+
+    import src.bilun.api.routes.optimization as opt_mod
+
+    pid = bill_opt_cache["patient_id"]
+    claim_id = bill_opt_cache["claim_id"]
+    live = load_sut_claim_dataset()  # the object the route reads (the loader caches it)
+    assert all(claim.claim_type != "acil" for claim in live.claims_by_patient[pid])  # no other ground
+
+    def ek1a(copay: dict) -> dict:
+        (source,) = [s for s in copay["exemption_sources"] if s["category"] == "ek1a_chronic"]
+        return source
+
+    unknown = opt_mod.get_bill_optimization(pid, claim_id)["copay_exemptions"]
+    assert unknown["has_chronic_health_report"] is None
+    assert (unknown["exempt"], unknown["partial_exempt"]) == (False, True)
+    assert ek1a(unknown)["counts_toward_exempt"] is False
+
+    profile = live.copay_profiles_by_patient[pid]
+    monkeypatch.setitem(
+        live.copay_profiles_by_patient,
+        pid,
+        dataclasses.replace(profile, has_chronic_health_report=True),
+    )
+    known = opt_mod.get_bill_optimization(pid, claim_id)["copay_exemptions"]
+    assert known["has_chronic_health_report"] is True
+    assert (known["exempt"], known["partial_exempt"]) == (True, False)
+    assert ek1a(known)["counts_toward_exempt"] is True
+    assert known["primary_exemption_category"] == "ek1a_chronic"
+
+    # The public contract keeps both states for the officer's page: the partial match and the flag.
+    from src.bilun.api.public_responses import project_public_response
+
+    surface = "/api/patient/{patient_id}/bills/{claim_id}/optimization"
+    for payload, flag, partial in ((unknown, None, True), (known, True, False)):
+        public = project_public_response({"copay_exemptions": payload}, surface)["copay_exemptions"]
+        assert (public["has_chronic_health_report"], public["partial_exempt"]) == (flag, partial)
+        assert ek1a(public)["counts_toward_exempt"] is not partial

@@ -6,6 +6,7 @@ const labels = {
     "alertBadge": {
       "exempt": "Muaf",
       "notExempt": "Muaf değil",
+      "ek1aReportMissing": "EK-1A eşleşti, rapor yok",
       "flagged": "İşaretli",
       "clear": "Temiz",
       "unavailable": "Kullanılamıyor"

@@ -39,6 +39,8 @@ export function CopayOptimizationSection({ copayData, onOpenClause }: {
     hasWaiverGroundColumn,
     inpatientDrugGroundTotal,
     hasEk1aVisitSavings,
+    ek1aWithoutWaivableLine,
+    copayState,
     usesClaimTableHeader,
   } = model;
   const savingsColor = exemptionGapTotal != null && exemptionGapTotal > 0 ? ACCENT : "var(--text-muted)";
@@ -71,9 +73,13 @@ export function CopayOptimizationSection({ copayData, onOpenClause }: {
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <Chip variant={chipVariantFromColor(copayData.is_exempt ? ACCENT : "var(--text-disabled)")}>
-            {copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
-          </Chip>
+          {copayState === "partial" ? (
+            <Chip variant="warning">{getSutAlertBadgeLabel("ek1aReportMissing")}</Chip>
+          ) : (
+            <Chip variant={chipVariantFromColor(copayData.is_exempt ? ACCENT : "var(--text-disabled)")}>
+              {copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
+            </Chip>
+          )}
           {copayData.is_exempt && (
             <Chip variant="outline">{t("billing.copay.medulaActionChip")}</Chip>
           )}
@@ -137,6 +143,11 @@ export function CopayOptimizationSection({ copayData, onOpenClause }: {
             {hasEk1aVisitSavings && (
               <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
                 {t("billing.copay.ek1aScopeNotice")}
+              </p>
+            )}
+            {ek1aWithoutWaivableLine && (
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                {t("billing.copay.ek1aNoWaivableLine")}
               </p>
             )}
             {inpatientDrugGroundTotal > 0 && (

@@ -238,3 +238,40 @@ Story: a new patient, patient 12, a man of 58 (born 1968). **S10**, the ER visit
 - Side rows, none of them the faults: on S10 the Wave A reviews `1.9.1.(1)`, `ORTAK-13`, `ORTAK-14`, `ORTAK-28` and the `acil` evaluations the engine does not recognise (EI-1, #335); on S22 two checklist actions, the Wave A reviews `1.9.1.(1)`, `GENEL CERRAHİ-2` (new for the cohort), `ORTAK-14`, `-19`, `-22`, `-25`, `-28` and `tablo15_12_duplicate_test` (new for the cohort), the advisories `2.2.1.B-2.a`, `2.2.2.A(1)`, `2.2.2.A(2)`; 0 TL rows of `refakatci`, `yatak_puani` and `billing_strategy`. Both bills' clean twins show the same side rows.
 - The ER bill's own report does not move with the admission after it (a later bill is history of the earlier one; the duplicate-test rule names the later line).
 - G12 (patient-level, both bills read together): patient 12 lights 7 blocks (3 new for the cohort: `lab`, `procedure_addon_uplift`, `medula_rejection_playbook`), evaluates 260 Wave A ids and matches 12 (2 new: `GENEL CERRAHİ-2`, `tablo15_12_duplicate_test`).
+
+## WP8 — the chronic-health-report slice (G13): no story, the wording the billing officer reads
+
+No new bill and no clinical item: WP8 adds the nullable column `has_chronic_health_report` to the patient copay profile (null = not known, for all 12 patients), the generator pin that will carry it (`chronic_health_report`; no pathway sets it yet, WP9 sets it for S2), and the wording of the partial state (an EK-1/A diagnosis matched, the report the §1.8.5(7) waiver needs is not on file or not known). The plan names no clinician for this slice; **the billing officer reads the wording and the premises below.** Patients in the partial state on the app path: S2 to S6 and S9 (the EK-1/A matches of the plan's table 7.4, plus S9: M48.06 in M00–M99 and I10).
+
+### Premises the billing officer confirms
+
+- [ ] **The report is a fact about the patient, one state per patient.** The profile holds one row per patient, so every bill of a patient carries the same flag (`recipe.patient_identity` refuses two values). A real chronic-disease report (sağlık kurulu raporu) has a validity period and may be issued between two bills; the demo cannot show a report that starts in the middle of a patient's history.
+- [ ] **Unknown and "no report" are not claimed alike in the wording but alike in money.** With the flag null the backend row says "chronic health report status unknown", with false "no chronic health report on file"; both claim no waiver and no money (`exemption_strength: partial`, `missing_requirements: ["chronic_health_report"]`). Is "not known" the right reading of an export that has no column (a real MEDULA/HBYS export: is the report a field anywhere)?
+- [ ] **The EK-1/A waiver is outpatient examinations only.** With a report the engine waives the copay of a `poliklinik` bill's examination line only (§1.8.5(7); `copay_line_waivers.py`); a bill without one gets the new notice "EK-1A waives outpatient specialist examinations only. This bill has no such line, so no amount is waived." (S2's admission b1 in WP9). Is that the whole scope?
+- [ ] **EK-4/D conflation (accepted in the plan).** An exempt patient loses the generic §1.8.2 drug-copay row although EK-1/A waives §1.8.1 only (EI-25): measured on a copy of the claims with S2's flag set, S2's copay block goes from 2 rows (the partial row and the §1.8.2 row) to 0 and gains the 0 TL action `copay/exemption_review`; no other patient moves.
+
+### The wording (EN / TR) to read
+
+| Where | EN | TR |
+|---|---|---|
+| Patient workspace, headline, partial | EK-1A diagnosis matched; chronic health report not recorded | EK-1A tanısı eşleşti; kronik hastalık raporu kayıtlı değil |
+| Patient workspace, body, partial | {count} qualifying EK-1A codes. The outpatient copay waiver (§1.8.5(7)) needs a chronic health report; none is recorded, so no waiver is claimed. | {count} EK-1A tanısı eşleşti. Ayakta katılım payı muafiyeti (§1.8.5(7)) kronik hastalık raporu gerektirir; kayıtlı rapor yok, bu yüzden muafiyet öne sürülmüyor. |
+| Patient workspace, chip, partial | Report needed | Rapor gerekli |
+| Patient workspace, headline, EK-1A exempt | Exempt: EK-1A, chronic health report on file | Muaf: EK-1A, kronik hastalık raporu kayıtlı |
+| Bill: optimization chip, copay block chip, cohort chip, partial | EK-1A match, report missing | EK-1A eşleşti, rapor yok |
+| Bill: optimization line, partial | {count} EK-1A qualifying diagnoses; a chronic health report is needed for the waiver | {count} EK-1A uygun tanı; muafiyet için kronik hastalık raporu gerekir |
+| Bill: copay block row, report unknown (`ek1a_report_unknown`) | EK-1/A diagnosis matched; chronic health report status unknown, so the §1.8.5(7) waiver is not claimed. | EK-1/A tanısı eşleşti; kronik hastalık raporu durumu bilinmiyor, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor. |
+| Bill: copay block row, no report (`ek1a_report_missing`) | EK-1/A diagnosis matched; no chronic health report on file, so the §1.8.5(7) waiver is not claimed. | EK-1/A tanısı eşleşti; kayıtlı kronik hastalık raporu yok, bu yüzden §1.8.5(7) muafiyeti öne sürülmüyor. |
+| Bill: copay block notice, EK-1A exempt, no exam line | EK-1A waives outpatient specialist examinations only. This bill has no such line, so no amount is waived. | EK-1A yalnızca ayaktan uzman muayenesini muaf tutar. Bu faturada böyle bir satır yok, bu nedenle tutar düşülmüyor. |
+| Cohort table, action, partial | Check for a chronic health report; if present, set the exemption flag before billing | Kronik hastalık raporunu kontrol edin; varsa faturadan önce muafiyet bayrağını uygulayın |
+| Cohort table, chip, exempt on another ground | Exempt ({ground}), e.g. Exempt (Emergency) | Muaf ({ground}) |
+| Cohort KPI, EK-1A exempt (sub) | Chronic ICD-10 + health report | Kronik ICD-10 + sağlık raporu |
+| Cohort KPIs, non-exempt patients and bills (sub) | Standard copay applies (includes EK-1A matches without a report) | Standart katılım payı uygulanır (raporsuz EK-1A eşleşmeleri dahil) |
+
+Before WP8 the TR page showed the copay row in English (it had no message code), the workspace said "No exemption ground matched" while printing the matched disease below, and the cohort table labelled an emergency exemption "Exempt (EK-1A)" (patients 7 and 12).
+
+### What WP8 does not claim
+
+- No money and no new row: the app path keeps its 13 copay rate corrections (11 on S1 to S8, as the plan measured, and 2 on S9); only the text and the message code of the six partial rows changed. Blocks, Wave A ids and every bill-level number of the 16 bills are unchanged (claims-only G12 document byte-identical; the two bill dumps byte-identical).
+- Not changed (out of the slice): the chat assistant still sees `exempt: false` without the partial flag (`chat.py`), a partial alert row has `action: null` (`sut_context.py`), the alert filter counts a partial patient as `not_exempt` ("Not Exempt (10)" includes the six), and no cohort KPI counts partial patients. The patient-alerts endpoint serves the persisted alert rows, which keep neither `partial_exempt`, the report flag nor the primary category: the cohort table reads the partial state and the exemption ground from the exemption sources (`counts_toward_exempt`). The KPI subtitles of the plan's wording table live in a component (`ComplianceAlerts`) that no page mounts today; they are changed but not on screen. The generic §1.8.2 drug-copay row of the copay block is still English on the TR page (no message code; not in the slice).
+- A patient exempt on another ground (an ER visit) who also has an EK-1/A match without a report would see "EK-1A" among the basis chips and "Waiver grounds: EK-1A · Emergency" (the helpers list every source, counting or not); no committed patient is in that state.
