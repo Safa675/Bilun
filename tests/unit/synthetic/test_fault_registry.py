@@ -303,6 +303,30 @@ PINNED_FINDINGS: dict[
         [],
         ["tablo15_2_duplicate_exam_10day"],
     ),
+    "S33": (
+        "tablo15_11_drug_quantity_error",
+        "ilac",
+        "enoxaparin",
+        "kismi_red",
+        "compliance_error",
+        ["C008282"],
+        "5.3.1.C",
+        ["src/bilun/domain/prose_rules/common_billing_errors.py:detect_drug_quantity_error"],
+        [],
+        ["tablo15_11_drug_quantity_error"],
+    ),
+    "S34": (
+        "tablo15_3_vakabasi_wrong_method",
+        "islem",
+        "exam",
+        "kismi_red",
+        "compliance_error",
+        ["C000572"],
+        "2.2.1.B-1",
+        ["src/bilun/domain/prose_rules/common_billing_errors.py:detect_vakabasi_wrong_method"],
+        [],
+        ["tablo15_3_vakabasi_wrong_method"],
+    ),
 }
 
 S9_FAULT = "F_S9_SECOND_OPERATION_UNDERBILLED"
@@ -357,7 +381,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S22", "S40"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S22", "S33", "S34", "S40"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:
@@ -820,6 +844,46 @@ CASES: list[Case] = [
     Case(
         "fault.story_coverage",
         lambda r: _fault(r, "F_S2_BED_DAYS_UNDERBILLED").update(story=None),
+    ),
+    Case(
+        "fault.op_coverage",
+        # set_quantity is used by S33's fault alone (the enoxaparin count): another op on the same line leaves it unused
+        lambda r: _fault(r, "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY").update(
+            mutations=[
+                {"op": "set_flag", "section": "drugs", "entry_id": "enoxaparin", "flag": "drug_inpatient_supply", "value": True}
+            ]
+        ),
+        label="set_quantity_unused",
+    ),
+    Case(
+        "fault.entry_id",
+        lambda r: _fault(r, "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY")["mutations"][0].update(entry_id="heparin"),
+        label="set_quantity_on_a_drug_the_pathway_lacks",
+    ),
+    Case(
+        "fault.flag",
+        lambda r: _fault(r, "F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT")["mutations"][0].update(flag="uts_registered"),
+        label="a_material_flag_on_a_procedure_line",
+    ),
+    Case(
+        "fault.flag",
+        lambda r: _fault(r, "F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT")["mutations"][0].update(value="evet"),
+        label="a_procedure_flag_of_the_wrong_type",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY")["mutations"][0].update(qty=999),
+        label="a_count_a_pathway_can_hold",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY")["mutations"][0].update(qty="4000"),
+        label="a_count_that_is_text",
+    ),
+    Case(
+        "schema.bad_value",
+        lambda r: _fault(r, "F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY")["mutations"][0].update(qty=100000),
+        label="a_count_of_six_digits",
     ),
     Case(
         "fault.op_coverage",

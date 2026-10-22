@@ -16,6 +16,7 @@ from scripts.synthetic.faults import (
     FaultSpec,
     SetBilledRatio,
     SetFlag,
+    SetQuantity,
     TruncateLineDays,
     apply_fault,
     fault_window,
@@ -24,6 +25,7 @@ from scripts.synthetic.faults import (
 )
 from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.expand import expand
+from tests.fixtures.pathway_goldens import faulty_golden_stories
 
 pytestmark = pytest.mark.unit
 
@@ -72,7 +74,7 @@ def _strip_annotations(bill: dict) -> dict:
 # --- golden faulty equality & annotation stripping across all 8 faults -------------------------
 
 
-@pytest.mark.parametrize("story", [f"S{n}" for n in range(1, 9)])
+@pytest.mark.parametrize("story", faulty_golden_stories())  # every story with a fault, not the first eight only
 def test_apply_fault_equals_golden_faulty_and_differs_from_clean(
     story: str,
     faults: tuple[FaultSpec, ...],
@@ -631,3 +633,68 @@ def test_the_window_of_a_fault_on_a_session_claim_is_checked_to_the_end_of_its_s
     assert fits["header"]["claim_end_date"] == "2026-09-30"  # admit + 3, the last day of the window
     with pytest.raises(FaultApplyError, match="outside the window"):
         apply_fault(fault, pathway, pathway.showcase.model_copy(update={"admit": "2026-09-28"}))
+
+
+# --- slice G6: a drug count no pathway can hold; slice G5a: a flag on a procedure line ------------------
+
+
+def test_set_quantity_sets_the_count_of_the_drug_line_and_nothing_else(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    """S33: the strength of the enoxaparin syringe (4000 anti-Xa IU) keyed as its count."""
+    fault = _fault_by_story(faults, "S33")
+    (op,) = fault.mutations
+    assert isinstance(op, SetQuantity) and (op.section, op.entry_id, op.qty) == ("drugs", "enoxaparin", 4000)
+    pathway = pathways[fault.target_pathway]
+    clean, faulty = expand(pathway), apply_fault(fault, pathway)
+    assert [d["qty"] for d in clean["drugs"]] == [4]  # one syringe a day for the four days of the stay
+    assert [d["qty"] for d in faulty["drugs"]] == [4000]
+    assert {**faulty, "drugs": clean["drugs"]} == clean  # every other row and the header are the clean bill's
+    assert [{k: v for k, v in d.items() if k != "qty"} for d in faulty["drugs"]] == [
+        {k: v for k, v in d.items() if k != "qty"} for d in clean["drugs"]
+    ]
+
+
+def test_error_set_quantity_unknown_entry_and_a_count_set_twice(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    fault = _fault_by_story(faults, "S33")
+    pathway = pathways[fault.target_pathway]
+    unknown = fault.model_copy(
+        update={"mutations": [SetQuantity(op="set_quantity", section="drugs", entry_id="heparin", qty=4000)]}
+    )
+    with pytest.raises(FaultApplyError, match="F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY.*set_quantity.*heparin"):
+        apply_fault(unknown, pathway)
+    twice = fault.model_copy(update={"mutations": [fault.mutations[0], fault.mutations[0]]})
+    with pytest.raises(FaultApplyError, match="set_quantity.*already has qty=4000"):
+        apply_fault(twice, pathway)
+
+
+@pytest.mark.parametrize("qty", [999, 1, 100_000, True, 4000.0])
+def test_a_set_quantity_count_inside_the_pathway_bound_or_not_a_whole_number_is_refused(qty: object) -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        SetQuantity(op="set_quantity", section="drugs", entry_id="enoxaparin", qty=qty)
+
+
+def test_set_flag_on_a_procedure_line_flags_that_line_only(
+    faults: tuple[FaultSpec, ...], pathways: dict[str, Pathway]
+) -> None:
+    """S34: the control's examination flagged as a component of a package (vakabaşı); no other field moves."""
+    fault = _fault_by_story(faults, "S34")
+    (op,) = fault.mutations
+    assert isinstance(op, SetFlag) and (op.section, op.entry_id, op.flag, op.value) == (
+        "procedures",
+        "exam",
+        "is_package_included",
+        True,
+    )
+    pathway = pathways[fault.target_pathway]
+    clean, faulty = expand(pathway), apply_fault(fault, pathway)
+    assert [p["flags"] for p in clean["procedures"]] == [{}]
+    assert [p["flags"] for p in faulty["procedures"]] == [{"is_package_included": True}]
+    assert [{**p, "flags": {}} for p in faulty["procedures"]] == clean["procedures"]
+    again = fault.model_copy(update={"mutations": [op, op]})
+    with pytest.raises(FaultApplyError, match="set_flag.*already has is_package_included=True"):
+        apply_fault(again, pathway)

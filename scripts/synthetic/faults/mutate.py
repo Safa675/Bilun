@@ -26,6 +26,7 @@ from .schema import (
     MutationOp,
     SetBilledRatio,
     SetFlag,
+    SetQuantity,
     TruncateLineDays,
     UseSiblingPathway,
 )
@@ -214,6 +215,20 @@ def _apply_op(
             )
         for row in matching:
             row["billed_ratio"] = op.billed_ratio
+        return bill
+
+    if isinstance(op, SetQuantity):
+        matching = [r for r in bill[op.section] if r["entry_id"] == op.entry_id]
+        if not matching:
+            raise FaultApplyError(
+                f"{fid} ({op.op}): entry_id {op.entry_id!r} has no rows in {op.section}"
+            )
+        if all(r["qty"] == op.qty for r in matching):
+            raise FaultApplyError(
+                f"{fid} ({op.op}): entry_id {op.entry_id!r} in {op.section} already has qty={op.qty}"
+            )
+        for row in matching:
+            row["qty"] = op.qty
         return bill
 
     raise FaultApplyError(f"{fid}: unsupported mutation op {op!r}")

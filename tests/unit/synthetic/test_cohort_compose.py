@@ -355,6 +355,52 @@ def test_a_copay_rate_that_is_no_share_with_two_decimals_is_refused(
         compose_claim(bill, ctx, catalogs)
 
 
+def test_the_faulty_control_of_s34_is_a_package_component_without_money(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway], faults_by_story: dict[str, FaultSpec]
+) -> None:
+    """Slice G5a: the fault's `is_package_included` reaches the claim line; billed and payable stay the clean line's."""
+    pathway = pathways["copd_exacerbation_post_readmission_control"]
+    pid = patient_id(2)
+    ctx = EncounterContext(
+        patient_id=pid, claim_id=claim_id(pid, 4), episode_id=episode_id(pid, 4), scenario_tag=pathway.id
+    )
+    clean = compose_claim(expand(pathway, annotate=True), ctx, catalogs)
+    faulty_bill = apply_fault(faults_by_story["S34"], pathway, annotate=True)
+    faulty = compose_claim(faulty_bill, ctx, catalogs)
+    (clean_exam,), (faulty_exam,) = clean.procedures, faulty.procedures
+    assert (clean_exam.is_package_included, faulty_exam.is_package_included) == (False, True)
+    assert faulty_exam == replace(clean_exam, is_package_included=True)  # nothing else of the line moves
+    assert faulty.header == clean.header
+    _assert_claim_invariants(faulty, faulty_bill)
+
+
+def test_the_blood_barcode_of_a_line_reaches_the_claim_and_an_unknown_procedure_flag_is_refused(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    bill, ctx = _s32_bill(pathways)
+    assert compose_claim(bill, ctx, catalogs).procedures[0].isbt128_barcode == ""  # no flag: the claim line's default
+    bill["procedures"][0]["flags"] = {"isbt128_barcode": "=A9999261234560"}
+    (line,) = compose_claim(bill, ctx, catalogs).procedures
+    assert (line.isbt128_barcode, line.is_package_included) == ("=A9999261234560", False)
+    bill["procedures"][0]["flags"] = {"package_component": True}
+    with pytest.raises(ComposeError, match="unknown flag.*package_component"):
+        compose_claim(bill, ctx, catalogs)
+
+
+def test_a_material_flagged_as_waiting_for_an_approval_reaches_the_claim(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    """`requires_pre_auth` is a material flag of a pathway since slice G5a: it overrides the default False once."""
+    pathway = pathways["femoral_neck_fracture_cemented_hemiarthroplasty_package"]
+    pid = patient_id(5)
+    ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 1), episode_id=episode_id(pid, 1), scenario_tag=pathway.id)
+    bill = expand(pathway, annotate=True)
+    assert not any(m.requires_pre_auth for m in compose_claim(bill, ctx, catalogs).materials)
+    bill["materials"][0]["flags"] = {**bill["materials"][0]["flags"], "requires_pre_auth": True}
+    flagged = compose_claim(bill, ctx, catalogs).materials
+    assert [m.requires_pre_auth for m in flagged] == [True] + [False] * (len(flagged) - 1)
+
+
 _BED_LINE_CODES = {"510010", "510070", "510081", "510120", "510121", "510090", "530000"}
 
 

@@ -2,7 +2,8 @@
 
 Pure and deterministic: no catalog, no price, no randomness, no I/O. The result lists line
 identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio; a procedure
-line with a patient share also a `copay_rate`, "0.20"), plus pathway line annotations when
+line with a patient share also a `copay_rate`, "0.20"; the flags of a line are the ones its entry sets,
+slice G5a for procedures), plus pathway line annotations when
 `annotate=True`; the golden files in tests/fixtures/pathways/golden/ are the contract the default
 (`annotate=False`) expansion must reproduce.
 """
@@ -101,7 +102,7 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
             "specialty": spec(line),
             "billed_ratio": _ratio(pathway, line.session_role),
             **_copay(line),
-            "flags": {},
+            "flags": line.flags.model_dump(exclude_none=True),
             **(
                 {"entry_id": line.id, "kind": line.kind, "day_index": day_index} if annotate else {}
             ),

@@ -1,6 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 2 has a second bill, a control visit S32 (encounter_no 2, a clean bill), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 2 has three more bills, a control visit S32 (encounter_no 2, a clean bill), a readmission through the ER S33 and the control after it S34 (encounter_no 3 and 4), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -15,6 +15,16 @@ recipes:
   - patient_no: 2
     encounter_no: 2
     pathway: copd_exacerbation_post_discharge_control
+
+  - patient_no: 2
+    encounter_no: 3
+    pathway: copd_exacerbation_readmission_through_er
+    fault: F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY
+
+  - patient_no: 2
+    encounter_no: 4
+    pathway: copd_exacerbation_post_readmission_control
+    fault: F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT
 
   - patient_no: 3
     pathway: lumbar_stenosis_decompression_itemized

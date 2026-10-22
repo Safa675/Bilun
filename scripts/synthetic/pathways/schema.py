@@ -352,6 +352,18 @@ class Copay(Sourced):
     rate: Annotated[Decimal, Field(gt=0, lt=1, decimal_places=2)]
 
 
+class ProcedureFlags(_Model):
+    """Optional ProcedureClaimLine fields a story sets, without money (slice G5a; src/bilun/domain/claims/models.py).
+
+    `is_package_included` marks a line as a component bundled into a package (never the package line itself, #260):
+    an outpatient examination flagged so is the vakabaşı error (El Kitabı Tablo 15 #3). `isbt128_barcode` is the
+    ISBT 128 number MEDULA records for a blood component line (SUT 4.6).
+    """
+
+    is_package_included: bool | None = None
+    isbt128_barcode: str | None = None
+
+
 class Procedure(Sourced):
     """An EK-2B/EK-2C line. One entry yields one bill line per day and per item."""
 
@@ -367,6 +379,7 @@ class Procedure(Sourced):
     group: Group | None = None  # anaesthesia: the expected EK-2B group
     operations: list[Slug] | None = Field(default=None, min_length=1)  # anaesthesia: its session
     copay: Copay | None = None  # the patient's share of every bill line of the entry (slice G5b)
+    flags: ProcedureFlags = Field(default_factory=ProcedureFlags)  # line flags without money (slice G5a)
     optional: Chance | None = None
     pending: Pending | None = None
 
@@ -396,6 +409,8 @@ class Procedure(Sourced):
                 return "an anaesthesia line needs group and operations"
         elif self.group is not None or self.operations is not None:
             return "group and operations are only for kind anaesthesia"
+        if self.kind == "package" and self.flags.is_package_included:
+            return "is_package_included marks a component bundled into a package, never the package line"
         if self.session_role is not None:
             if self.kind not in SESSION_KINDS:
                 return "session_role is only for kind package, operation or procedure"
@@ -409,6 +424,8 @@ class MaterialFlags(_Model):
 
     titubb_registered: bool | None = None
     uts_registered: bool | None = None
+    # the material needs an approval (a board decision) before it is billed (El Kitabı Tablo 15 #15; slice G5a)
+    requires_pre_auth: bool | None = None
 
 
 class DrugFlags(_Model):

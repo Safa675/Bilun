@@ -41,7 +41,11 @@ from src.bilun.domain.claims.schema import (
     REQUIRED_CLAIM_TABLES,
 )
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
-from src.bilun.domain.prose_rules.common_billing_errors import detect_duplicate_exam_10day
+from src.bilun.domain.prose_rules.common_billing_errors import (
+    detect_drug_quantity_error,
+    detect_duplicate_exam_10day,
+    detect_vakabasi_wrong_method,
+)
 from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
@@ -807,6 +811,31 @@ def _direct_rows_s40(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s33(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return [
+        _keep(o, ("rule_id", "drug_name", "quantity", "severity", "sut_section_id", "detail"))
+        for o in detect_drug_quantity_error(list(ctx.claims), tuple(ctx.drug_lines))
+    ]
+
+
+def _direct_rows_s34(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "procedure_category",
+                "is_package_included",
+                "severity",
+                "sut_section_id",
+                "detail",
+            ),
+        )
+        for o in detect_vakabasi_wrong_method(list(ctx.claims), list(ctx.procedure_lines))
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -823,6 +852,8 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S14": _direct_rows_s14,
     "S20": _direct_rows_s20,
     "S22": _direct_rows_s22,
+    "S33": _direct_rows_s33,
+    "S34": _direct_rows_s34,
     "S40": _direct_rows_s40,
     "S47": _direct_rows_s47,
 }

@@ -342,3 +342,37 @@ Patient 2 (S2: a man of 81, COPD exacerbation with pneumonia, itemized stay 2026
 
 - The span grammar (a `gunubirlik`/`poliklinik` session claim over several dates) is built and tested but no committed bill uses it yet (S17 will).
 - The Wave A rules for a day case (2.2.2.(4)/(5)) are evaluated and cannot match a plain `gunubirlik` claim (EI-20); `care_setting_review` stays dark. The bill-level reports of every earlier bill are unchanged.
+
+## S33 and S34 (WP11) — the readmission of patient 2 through the ER and the control after it
+
+**S33** (F2 b3): the man of 81 of S2 (COPD exacerbation with pneumonia, 2026-03-09 to 03-15; control S32 on 04-06 with his chronic health report) comes back through the ER on Monday 2026-04-20 with an exacerbation and acute respiratory failure (J44.1 + J96.0, his I10). An emergency physician follows him on the ER's critical bed that day (530000, Acil Tıp), the chest-disease consultation 520010 admits him, and he stays three nights in `Göğüs Hastalıkları`: the ward bed 510010 on 04-20 to 04-23, the companion 510121 on three nights, enoxaparin one 40 mg syringe a day (4). The faulty bill keys the syringe's strength as its count, **4000 syringes** (C008282; El Kitabı Tablo 15 #11); the engine shows the review `tablo15_11_drug_quantity_error` (no money: drugs enter at 0). **S34** (F2 b4): a chest-disease control on 2026-04-29, six days after the discharge: the examination 520030 only, J44.1 + I10. The faulty bill flags the examination as a component of a package (**vakabaşı**, El Kitabı Tablo 15 #3; C000572: an outpatient visit is paid per application, and S33 is itemized, so no package period, C000714, covers the control); the engine shows the compliance finding `tablo15_3_vakabasi_wrong_method` (no money). **A pulmonologist reads S33 and S34, the billing officer the billing premises.**
+
+### Premises the pulmonologist confirms
+
+- [ ] **A readmission five weeks after the first exacerbation**, 14 days after a stable control (S32: SpO2 93 %), with acute respiratory failure on arrival (SpO2 85 % on room air, pulse 112, 152/88): J44.1 (an exacerbation without a coded infection this time) with J96.0. Is J96.0 coded on a ward admission like this one, or only when he is ventilated?
+- [ ] **Three nights on the ward** and discharge on 04-23 (the range of the pathway: 3 to 8 nights).
+- [ ] **The bill's lines are the card's only**: the critical ER bed, the consultation, the ward bed, the companion and enoxaparin. A readmitted exacerbation normally bills a blood gas, a blood count and CRP, a chest film, a nebuliser, a steroid and often an antibiotic; none is on this bill (the plan's skeleton, and a test here would be repeated by nothing: the control S34 bills none). Which of them should the bill carry? (Each test added moves the lab tables and may light other Wave A rules.)
+- [ ] **Enoxaparin one syringe a day, four for three nights** (the discharge morning included). S2's first stay billed one per night (six for six nights); the two bills of one patient count differently.
+- [ ] **The control S34 six days after the discharge**: an examination and no test, J44.1 + I10, SpO2 92 % on room air, 134/78, pulse 88. Would the pulmonologist see him this early, and without a test?
+
+### Premises the billing officer confirms
+
+- [ ] **530000 (critical ER bed, emergency physician, once a day) on the day of arrival beside the ward bed 510010 of the same day**: EK-2B excludes it with 510120 and 530003 only. Is it billed on the inpatient bill (`yatis`), or as an `acil` takip of its own before the admission? The engine is silent on it.
+- [ ] **The drug count fault**: a parenteral dose (4000 anti-Xa IU) keyed as the count (SUT 5.3.1.C(i), C008282: the dose goes in the service detail, price and count go by box or unit). The engine reads any count above 999 as a unit confusion (a local heuristic, not a SUT number); MEDULA would reject the line. The prescription table (`recete_clean`) follows the billed line and shows 4000 too.
+- [ ] **The vakabaşı fault keeps the examination's amount**: the flag moves no money in the demo (the line is billed and payable as on the clean bill). In MEDULA a line marked as a package component would carry no amount of its own; is the demo's form acceptable, or should the faulty line be billed at 0 (then the record would carry the examination fee as an uplift)?
+- [ ] **No patient share on S34's examination**, although S32's examination carries one (20 %, waived by EK-1/A): the card names none for S34. Should every control of this patient carry the share (then the app would show a second waiver)?
+- [ ] **GÖĞÜS HASTALIKLARI-6** (deep tracheal aspiration of a ward patient is not paid) is shown as a review on the readmission although it bills no aspiration: the Fatura İnceleme rule's only condition is an inpatient bill of the branch (EI-24 of the coverage plan). S2's first stay escapes it only because its department is written without Turkish letters.
+
+### Items with `basis: judgment` in the pathways
+
+- S33: `patient.sex`/`age`, `nights`, J96.0, the consultation 520010, the enoxaparin course (4 to 9 days) and its dose. S34: `patient.sex`/`age`, J44.1 and I10 on the control.
+
+### Clinical context (`data/synthetic/cohort/showcase_clinical.yaml`, `basis: judgment`)
+
+- Patient 2, encounter 3: 152/88, 112, SpO2 85 %, 170 cm, 66.5 kg, no labs. Encounter 4: 134/78, 88, SpO2 92 %, 170 cm, 66.0 kg, no labs.
+
+### What WP11 does not claim
+
+- The flags `isbt128_barcode` (procedures) and `requires_pre_auth` (materials) are built and tested but no committed bill sets them yet (S18's blood, WP13, and F2 b5's BPAP device would).
+- No cohort check bounds a drug count or reads a procedure flag: the two faults are found by the engine only (`EXPECTED_FAULT_TRIPS` of S33 and S34 are empty).
+- The reports of S2's stay and of S32 are unchanged at bill level; the patient-level report of patient 2 gains the two findings and GÖĞÜS-6.

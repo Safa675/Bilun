@@ -23,13 +23,16 @@ decimals ("0.20"); a line without the flag has no such key.
 `flags` are the optional fields (those with a default in the dataclass) of the raw bill line,
 b.procs / b.mats / b.drugs (not the enriched context), that differ from that default. Optional
 fields left out because they are not flags, listed in NOT_FLAGS: procedure_specialty_code (it is
-the `specialty` key), lab_result_id and isbt128_barcode (identifiers), copay_rate and
-surcharge_rate (money rates). They are excluded by name, not by pattern: boolean flags such as
-`ek3c_list_price_missing` or `barcode_sut_mismatch` contain price or barcode words and stay.
+the `specialty` key), lab_result_id (an identifier), copay_rate and surcharge_rate (money rates).
+They are excluded by name, not by pattern: boolean flags such as `ek3c_list_price_missing` or
+`barcode_sut_mismatch` contain price or barcode words and stay. The pathways set
+`isbt128_barcode` as a line flag (slice G5a), so it is a flag when it is not empty.
 Required fields (no default) are never flags: they are identity, name, date, quantity, price,
-amount, or values the Bill builder derives or fixes (category, package and bundle booleans). A
-flag value that is not JSON-native (a Decimal, a date, an evidence object) makes json.dumps
-raise, so it cannot be exported by mistake.
+amount, or values the Bill builder derives or fixes (category, package and bundle booleans), but
+for the two that a pathway sets as line flags (slice G5a), listed in REQUIRED_FLAGS with the value
+a line has without them: `is_package_included` of a procedure line and `requires_pre_auth` of a
+material line. A flag value that is not JSON-native (a Decimal, a date, an evidence object) makes
+json.dumps raise, so it cannot be exported by mistake.
 """
 
 from __future__ import annotations
@@ -54,10 +57,11 @@ LISTS = ("diagnoses", "procedures", "materials", "drugs", "performed")
 NOT_FLAGS = {
     "procedure_specialty_code",
     "lab_result_id",
-    "isbt128_barcode",
     "copay_rate",
     "surcharge_rate",
 }
+# Required fields of a claim line that a pathway sets as line flags (slice G5a), with their value without the flag.
+REQUIRED_FLAGS = {"is_package_included": False, "requires_pre_auth": False}
 
 
 def iso(day: date | None) -> str | None:
@@ -81,9 +85,12 @@ def flags(line: Any) -> dict[str, Any]:
     """Optional fields of the raw claim line that differ from the dataclass default."""
     out = {}
     for f in fields(line):
-        if f.name in NOT_FLAGS or (f.default is MISSING and f.default_factory is MISSING):
+        if f.name in REQUIRED_FLAGS:
+            default = REQUIRED_FLAGS[f.name]
+        elif f.name in NOT_FLAGS or (f.default is MISSING and f.default_factory is MISSING):
             continue
-        default = f.default if f.default is not MISSING else f.default_factory()
+        else:
+            default = f.default if f.default is not MISSING else f.default_factory()
         if getattr(line, f.name) != default:
             out[f.name] = getattr(line, f.name)
     return out

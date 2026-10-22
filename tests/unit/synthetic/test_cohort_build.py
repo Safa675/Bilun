@@ -86,6 +86,8 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S14": "222.36",
     "S20": "4724.84",
     "S22": "439.86",
+    "S33": "0.00",  # the enoxaparin count: a drug line, and drugs enter at 0 TL
+    "S34": "0.00",  # the examination flagged as a package component: a flag without money
     "S40": "0.00",
     "S47": "44.45",
 }
@@ -100,6 +102,8 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S10": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-001"]},
     "S22": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-002"]},
     "S32": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-002"]},
+    "S33": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-003"]},
+    "S34": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-004"]},
     "S20": {"patient_id": "SENTETIK-HASTA-0013", "claim_ids": ["F-SENTETIK-HASTA-0013-001"]},
     "S47": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
     "S48": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-003"]},
@@ -703,7 +707,7 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
     assert profiles.height == cohort.patient_count() == 13
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 20
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 22
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1025,6 +1029,8 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0001-001",
         "F-SENTETIK-HASTA-0002-001",
         "F-SENTETIK-HASTA-0002-002",  # the committed control of patient 2 (S32), three weeks after the stay
+        "F-SENTETIK-HASTA-0002-003",  # its readmission through the ER (S33) and the control after it (S34)
+        "F-SENTETIK-HASTA-0002-004",
         "F-SENTETIK-HASTA-0003-001",
         "F-SENTETIK-HASTA-0004-001",
         "F-SENTETIK-HASTA-0004-004",  # the extra stay: the last id, the date next to the first stay's

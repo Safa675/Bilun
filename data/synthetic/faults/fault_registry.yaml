@@ -333,6 +333,53 @@ faults:
     basis: sut
     source: "C000659, C000661 (SUT 2.2.2.A(5)): the later procedure of a session is paid at 30 % or 50 % of its puan; this colonoscopy bill has no polypectomy (story S22)."
 
+  - fault_id: F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY
+    story: S33
+    title: "Enoxaparin strength keyed as the quantity: 4000 syringes instead of 4 (the readmission of the patient of story S2)"
+    target_pathway: copd_exacerbation_readmission_through_er
+    mutations:
+      - op: set_quantity
+        section: drugs
+        entry_id: enoxaparin
+        qty: 4000
+    expected_finding:
+      engine_rule: tablo15_11_drug_quantity_error
+      detectors:
+        - "src/bilun/domain/prose_rules/common_billing_errors.py:detect_drug_quantity_error"
+      sut_section: "5.3.1.C"
+      sut_clauses: ["C008282"]
+      effect_kind: compliance_error
+      line_type: ilac
+      target_entry_id: enoxaparin
+      expected_status: kismi_red
+      finding_ids: ["tablo15_11_drug_quantity_error"]
+    basis: sut
+    source: "C008282 (SUT 5.3.1.C(i)): a parenteral dose (mg, IU) goes in the service detail, price and count by box/unit; 4000 IU keyed as the count."
+
+  - fault_id: F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT
+    story: S34
+    title: "Control examination flagged as a package component (vakabaşı) instead of billed per visit (the fourth bill of the patient of story S2)"
+    target_pathway: copd_exacerbation_post_readmission_control
+    mutations:
+      - op: set_flag
+        section: procedures
+        entry_id: exam
+        flag: is_package_included
+        value: true
+    expected_finding:
+      engine_rule: tablo15_3_vakabasi_wrong_method
+      detectors:
+        - "src/bilun/domain/prose_rules/common_billing_errors.py:detect_vakabasi_wrong_method"
+      sut_section: "2.2.1.B-1"
+      sut_clauses: ["C000572"]
+      effect_kind: compliance_error
+      line_type: islem
+      target_entry_id: exam
+      expected_status: kismi_red
+      finding_ids: ["tablo15_3_vakabasi_wrong_method"]
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient visit is paid per application; the package period of C000714 covers a package stay, not the itemized S33."
+
   - fault_id: F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS
     story: S40
     title: "Examination fee billed on a second outpatient visit to the same branch within 10 days (the third bill of the patient of story S4)"

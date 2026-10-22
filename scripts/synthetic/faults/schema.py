@@ -46,6 +46,7 @@ MUTATION_OPS: tuple[str, ...] = (
     "set_flag",
     "drop_diagnosis",
     "set_billed_ratio",
+    "set_quantity",
 )
 
 # Every check id a fault-registry Problem may carry. A meta-test requires a mutation case for each.
@@ -144,7 +145,7 @@ class SetFlag(_Model):
     """Set `flags[flag] = value` on every expanded row of `entry_id` in `section`."""
 
     op: Literal["set_flag"]
-    section: Literal["materials", "drugs"]
+    section: Literal["procedures", "materials", "drugs"]
     entry_id: Slug
     flag: FlagName
     value: StrictBool | StrictStr
@@ -166,8 +167,32 @@ class SetBilledRatio(_Model):
     billed_ratio: BilledRatio
 
 
+# The largest unit count a pathway drug line holds (`Drug.qty`, 1..999); the engine reads a count above it as a
+# unit confusion (El Kitabı Tablo 15 #11, `detect_drug_quantity_error`).
+PATHWAY_MAX_DRUG_QTY = 999
+
+
+class SetQuantity(_Model):
+    """Set `qty` on every expanded row of drug line `entry_id` to a count no pathway can hold (above 999).
+
+    The fault of a strength keyed as the count (4,000 for four syringes of 4000 anti-Xa IU): a count inside the
+    pathway bound is a pathway's (or a sibling's), not a fault's.
+    """
+
+    op: Literal["set_quantity"]
+    section: Literal["drugs"]
+    entry_id: Slug
+    qty: Annotated[int, Field(gt=PATHWAY_MAX_DRUG_QTY, le=99_999, strict=True)]
+
+
 MutationOp = Annotated[
-    UseSiblingPathway | TruncateLineDays | DropEntry | SetFlag | DropDiagnosis | SetBilledRatio,
+    UseSiblingPathway
+    | TruncateLineDays
+    | DropEntry
+    | SetFlag
+    | DropDiagnosis
+    | SetBilledRatio
+    | SetQuantity,
     Field(discriminator="op"),
 ]
 

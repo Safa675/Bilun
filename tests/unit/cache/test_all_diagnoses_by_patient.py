@@ -160,7 +160,9 @@ def test_the_demo_patients_list_all_their_diagnoses() -> None:
     ana = pl.read_parquet(ANADATA).rename({"HASTA_ID": "patient_id"})
     got = _build_diagnoses_by_pid(ana)
     assert got["SENTETIK-HASTA-0001"] == ["K35.9"]
-    assert got["SENTETIK-HASTA-0002"] == ["J44.0", "I10", "J18.9"]
+    # the principal codes of the four bills first (the stay and its control J44.0, the readmission S33 and its control
+    # J44.1), then the others: the readmission adds the acute respiratory failure J96.0
+    assert got["SENTETIK-HASTA-0002"] == ["J44.0", "J44.1", "I10", "J18.9", "J96.0"]
     assert got["SENTETIK-HASTA-0004"] == ["N10", "F05.1", "G30.1", "I10"]
     assert got["SENTETIK-HASTA-0005"] == ["S72.00", "I10", "M81.09", "W19"]
     assert got["SENTETIK-HASTA-0008"] == ["K80.2", "K42.9"]

@@ -19,7 +19,7 @@ from scripts.synthetic.pathways import Pathway, PathwayLoadError, load_pathway
 from scripts.synthetic.pathways.checks import Catalogs
 from scripts.synthetic.pathways.expand import expand
 from scripts.synthetic.pathways.loader import PATHWAYS_DIR
-from scripts.synthetic.pathways.schema import DrugFlags, MaterialFlags
+from scripts.synthetic.pathways.schema import DrugFlags, MaterialFlags, ProcedureFlags
 
 from .loader import REGISTRY_PATH, SIBLINGS_DIR, FaultRegistryLoadError, load_registry
 from .mutate import FaultApplyError, apply_fault
@@ -32,6 +32,7 @@ from .schema import (
     Problem,
     SetBilledRatio,
     SetFlag,
+    SetQuantity,
     TruncateLineDays,
     UseSiblingPathway,
 )
@@ -43,6 +44,7 @@ _LINE_TYPE_SECTION = {
 }
 
 _FLAG_MODELS = {
+    "procedures": ProcedureFlags,
     "materials": MaterialFlags,
     "drugs": DrugFlags,
 }
@@ -172,6 +174,17 @@ def check_mutations(registry: FaultRegistry, cat: Catalogs) -> list[Problem]:
                     )
 
             elif isinstance(op, DropEntry):
+                section_ids = {x.id for x in getattr(pathway, op.section)}
+                if op.entry_id not in section_ids:
+                    out.append(
+                        Problem(
+                            "fault.entry_id",
+                            f"{where}.entry_id",
+                            f"{op.entry_id!r} is not in {op.section} of {pathway.id}",
+                        )
+                    )
+
+            elif isinstance(op, SetQuantity):
                 section_ids = {x.id for x in getattr(pathway, op.section)}
                 if op.entry_id not in section_ids:
                     out.append(

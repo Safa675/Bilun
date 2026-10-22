@@ -1,0 +1,114 @@
+# Readmission through the ER five weeks after the discharge of story S2 (COPD exacerbation with pneumonia), ward stay, billed itemized.
+# Showcase story S33 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F2 b3): bill 3 of the patient of S2. He comes to the
+# ER with an exacerbation and acute respiratory failure, is followed on the ER's critical bed on the day he arrives and is admitted
+# to chest diseases the same day. Grammar: README.md next to this file. Every line below is a clean-bill line.
+schema_version: 1
+id: copd_exacerbation_readmission_through_er
+title: "COPD exacerbation with acute respiratory failure, readmitted through the ER, ward stay billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Göğüs Hastalıkları"
+  specialty: "1171"                  # EK-2A: Göğüs Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S33 is the man of story S2 (the same patient, a later bill); J44.1, J96.0 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 55
+    max: 90
+    basis: judgment
+    source: "Story S33 patient is 81, like story S2; the bounds are those of story S2 (the author's judgment)."
+
+nights:
+  min: 3
+  max: 8
+  basis: judgment
+  source: "Story S33 has 3 nights (2026-04-20 to 04-23); the range is the author's judgment of a readmitted exacerbation. Clinician to confirm."
+
+diagnoses:
+  - icd10: J44.1
+    name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALEVLENMELERLE, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code (checked against icd10_tr.parquet); an exacerbation without a coded infection this time (GOLD). Clinician to confirm."
+  - icd10: J96.0
+    name: "AKUT SOLUNUM YETMEZLİĞİ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the hypoxaemia on arrival that put him on the ER's critical bed. A pulmonologist to confirm the coding."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S2 lists I10 as a comorbidity of this patient; it is coded on every bill of his."
+
+procedures:
+  # --- the ER on the day of arrival: the critical bed of an emergency physician and the consultation that admits him
+  - id: er_critical_bed
+    kind: procedure
+    code: "530000"
+    name: "Acil serviste kritik hasta yatak ve takibi"
+    days: admit
+    specialty: "4400"                  # EK-2A: Acil Tıp (the ER, not the ward's branch)
+    basis: ek2b_aciklama
+    source: "530000 açıklama (code_sets.yaml emergency.critical_bed): by an emergency physician, once a day; not with 510120 or 530003."
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    basis: judgment
+    source: "The chest-disease consultation in the ER that admits him; the examination of a stay is the consultation 520010 (code_sets.yaml visits)."
+  # --- the stay: one bed line per calendar day, one companion line per night
+  - id: bed
+    kind: bed
+    code: "510010"
+    name: "Standart yatak tarifesi"
+    days: admit..discharge             # 4 lines for 3 nights: the discharge day is billed too
+    basis: medula_kilavuz
+    source: "Kılavuz p.62, p.168 (stay range, discharge date); El Kitabı: bed on the discharge day, as story S2."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 3 lines for 3 nights
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): doctor's order and refakatçi belgesi; a man of 81 with respiratory failure, as story S2."
+
+drugs:
+  - id: enoxaparin
+    barcode: "8699809950696"
+    name: "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ"
+    inn: "enoksaparin sodyum"
+    unit: syringe
+    per_box: 10
+    day: admit
+    per_day: 1                         # one 40 mg syringe on each day of the stay, the discharge morning included
+    course_days:
+      min: 4
+      max: 9
+      basis: judgment
+      source: "Card F2 b3: four syringes for the stay of 3 nights (one on each calendar day). Story S2 billed one per night. Clinician to confirm."
+    basis: judgment
+    source: "Thromboprophylaxis of an immobile medical inpatient, 40 mg a day, as story S2 (review 2026-10-16); guideline not named."
+
+notes:
+  - "The readmission is 36 days after the discharge of story S2 (2026-03-15) and 14 days after the control of story S32: no package period (story S2 is itemized) and no 10-day window of an outpatient visit applies."
+  - "The critical ER bed 530000 is filed as a bed line (category yatak) by the composer; EK-2B does not bill it with the day bed 510120 or 530003, and the ward bed 510010 begins the same day."
+  - "No test, film or nebuliser is billed on this bill (the card's lines): a pulmonologist to say what a readmitted exacerbation bills."
+
+showcase:
+  story: S33
+  sex: M
+  age: 81
+  admit: "2026-04-20"
+  nights: 3
+  course_days: {enoxaparin: 4}
+  chronic_health_report: true        # the patient's report is on file (EK-1/A); every bill of his carries it

@@ -157,6 +157,8 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S12": {"stay.bed_coverage"},  # the first three incubator days are not billed: a bed day is missing (as S2)
     "S14": {"stay.bed_coverage"},  # the ward bed on the day the ICU bill ends: the ICU bill's 510090 already pays it
     "S22": set(),  # the polypectomy beside the colonoscopy is not billed: a line is missing, only the engine (procedure_addon_uplift) sees it
+    "S33": set(),  # the enoxaparin strength keyed as the count (4000 syringes): no check bounds a drug count, only the engine (tablo15_11) sees it
+    "S34": set(),  # the control examination flagged as a package component: no check reads a procedure flag, only the engine (tablo15_3) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
     "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
     "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
@@ -738,7 +740,10 @@ def _forget_a_record(d: Data) -> None:
 
 def _swap_two_answer_rows(d: Data) -> None:
     rows = d.tables[TABLE_ANSWERS]
-    d.tables[TABLE_ANSWERS] = rows[[0, 2, 1, *range(3, rows.height)]]  # S2's and S3's rows swap
+    after = rows["claim_id"].to_list().index(CLAIM[3])  # S3's row and the one before it (S34's, the last bill of S2's patient)
+    order = list(range(rows.height))
+    order[after - 1], order[after] = after, after - 1
+    d.tables[TABLE_ANSWERS] = rows[order]
 
 
 I10_OF_2 = of(2) & (pl.col("icd10_code") == "I10")  # S2's primary diagnosis
@@ -4205,13 +4210,14 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
 # --- 4b. slice E2: the meaning of the checks, beyond the mutation cases -----------------------------
 
 
-def test_the_flag_columns_are_the_boolean_columns_but_the_two_structural_ones(twins) -> None:
+def test_the_flag_columns_are_the_boolean_columns_but_the_structural_one(twins) -> None:
     schema = twins[TABLE_MATERIALS].schema
     booleans = [column for column, dtype in schema.items() if dtype == pl.Boolean]
     assert set(STRUCTURAL_FLAGS) | set(REGISTRATION_FLAGS) <= set(booleans)
     flags = [column for column in booleans if column not in STRUCTURAL_FLAGS]
-    assert len(flags) == 85, "a new Boolean column of material_claim_lines needs a healthy value"
-    assert STRUCTURAL_FLAGS == ("is_bundled", "requires_pre_auth")
+    assert len(flags) == 86, "a new Boolean column of material_claim_lines needs a healthy value"
+    # requires_pre_auth is a compliance flag since a pathway can set it (slice G5a): healthy when false
+    assert STRUCTURAL_FLAGS == ("is_bundled",) and "requires_pre_auth" in flags
     assert REGISTRATION_FLAGS == ("titubb_registered", "uts_registered")
 
 
@@ -4222,13 +4228,22 @@ def test_missing_flags_and_structural_flags_are_healthy(twins, anadata, context)
         TABLE_MATERIALS,
         mat(1),
         is_bundled=True,  # structural: what the line is, not a compliance flag
-        requires_pre_auth=True,
-        titubb_registered=None,  # a missing flag is not a stray one
+        requires_pre_auth=None,  # a missing flag is not a stray one
+        titubb_registered=None,
         uts_registered=None,
         foreign_facility=None,
         medical_necessity_board_report=False,
     )
     assert data.problems(context, only="material.stray_flag") == []
+
+
+def test_a_material_that_waits_for_an_approval_is_a_stray_flag(twins, anadata, context) -> None:
+    """Slice G5a: a pathway may set `requires_pre_auth`; on a bill it is the material no board has approved (Tablo 15 #15)."""
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_MATERIALS, mat(1), requires_pre_auth=True)
+    (problem,) = data.problems(context, only="material.stray_flag")
+    assert problem.where == mat_at(1)
+    assert problem.message.endswith("has flag(s) off the healthy value: requires_pre_auth is true")
 
 
 def test_the_committed_faulty_s5_bill_has_exactly_one_stray_flag(built, anadata, context) -> None:
@@ -4625,7 +4640,7 @@ def test_an_entry_that_is_no_valid_record_is_reported_with_its_reason_not_raised
     data = faulty_data(built, anadata)
     edit_fault(data, 3, relabel=False, amount_try="928.10")
     row_problem, entry_problem = _answer_rows_of(data, context)  # sorted by where: rows, registry
-    assert entry_problem.where == f"{CLAIM[3]} registry faults[2]"
+    assert entry_problem.where == f"{CLAIM[3]} registry faults[4]"  # after S1, S2 and the two faulty later bills of S2's patient
     assert entry_problem.message == (
         "the entry is no valid fault record: revenue_uplift amount_try '928.10' must equal "
         "billed_clean_try - billed_faulty_try (928.09)"

@@ -389,12 +389,12 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         assert p7_row[col] == expected_str, f"Patient 7 {col}"
 
 
-def test_recete_clean_content_rules_for_all_21_billed_drug_lines(
+def test_recete_clean_content_rules_for_all_22_billed_drug_lines(
     built_showcase: BuildResult,
 ) -> None:
     rec_df = built_showcase.clean_tables["recete_clean.parquet"]
     drugs_df = built_showcase.tables["drug_claim_lines.parquet"]
-    assert rec_df.height == drugs_df.height == 21
+    assert rec_df.height == drugs_df.height == 22
 
     cw_df = pl.read_parquet(_REPO / "data/synthetic/reference/drug_crosswalk.parquet").filter(
         pl.col("titck_product_name").is_not_null()
@@ -615,14 +615,14 @@ def test_product_routes_come_from_the_titck_name_or_from_drug_routes(
     assert rec_df["verilis_yolu"].null_count() == 0
 
     clexane = rec_df.filter(pl.col("ilac_adi_ham").str.contains("CLEXANE"))
-    assert clexane["verilis_yolu"].to_list() == ["Subkütan"] * 3
+    assert clexane["verilis_yolu"].to_list() == ["Subkütan"] * 4
     neofleks_saline = rec_df.filter(pl.col("ilac_adi_ham").str.contains("NEOFLEKS %0,9"))
     assert neofleks_saline["verilis_yolu"].to_list() == ["Intravenöz"]
 
-    # The declared routes serve exactly the four rows whose TITCK name states no route.
+    # The declared routes serve exactly the five rows whose TITCK name states no route.
     names = rec_df["ilac_adi_ham"].to_list()
     without_route_in_name = [name for name in names if derive_route_from_titck(name) is None]
-    assert len(without_route_in_name) == 4
+    assert len(without_route_in_name) == 5
     assert all(("CLEXANE" in name) or ("NEOFLEKS %0,9" in name) for name in without_route_in_name)
 
     declared = load_clinical().drug_routes
@@ -1533,17 +1533,19 @@ def test_a_claim_id_that_is_no_claim_id_is_a_clean_table_error() -> None:
 
 
 def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
-    """Patient 2's second stay is 8 nights (the first, 6) with a 6-day ceftriaxone course (the first, 7).
+    """Patient 2's second COPD stay is 8 nights (the first, 6) with a 6-day ceftriaxone course (the first, 7).
 
-    It is a test-only third bill: the committed second bill of patient 2 is its control visit (S32), which has no drug.
+    It is a test-only fifth bill: the committed bills 2 to 4 of patient 2 are its control visit (S32, no drug), its
+    readmission (S33, the enoxaparin of its fault: 4000 syringes over a course of 4 days) and the control after it
+    (S34, no drug).
     """
     recipes, clinical = with_encounters(
         Extra(
             2,
-            3,
+            5,
             "copd_exacerbation_pneumonia_ward",
             {
-                "admit": "2026-04-20",
+                "admit": "2026-05-11",
                 "story": "S92",
                 "nights": 8,
                 "course_days": {"ceftriaxone": 6, "clarithromycin": 5, "methylprednisolone": 5},
@@ -1553,7 +1555,8 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
     )
     built = build_showcase(recipes=recipes, clinical=clinical)
     headers = built.tables["claim_headers.parquet"].filter(pl.col("patient_id") == "SENTETIK-HASTA-0002")
-    assert headers["discharge_date"].to_list() == ["2026-03-15", None, "2026-04-28"]  # 6 nights, the visit, then 8
+    # 6 nights, the visit, the readmission of 3 nights, the visit, then 8
+    assert headers["discharge_date"].to_list() == ["2026-03-15", None, "2026-04-23", None, "2026-05-19"]
     rec = built.clean_tables["recete_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0002")
 
     def days(episode: str) -> dict[str, int | None]:
@@ -1562,7 +1565,9 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
 
     assert days(_episode_of(2, 1)) == {"IPRAVENT": None, "IESEF": 7, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 6}
     assert days(_episode_of(2, 2)) == {}  # the control visit bills no drug
-    assert days(_episode_of(2, 3)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
+    assert days(_episode_of(2, 3)) == {"CLEXANE": 4}  # one syringe a day, the days of its own pins
+    assert days(_episode_of(2, 4)) == {}
+    assert days(_episode_of(2, 5)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
 
 
 def test_a_later_bill_of_another_pathway_has_the_age_and_sex_of_its_pins() -> None:

@@ -1,4 +1,4 @@
-"""Twenty showcase stories: clean bill + one injected fault each, except S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47 and S48 on 2026-10-22).
+"""Twenty-two showcase stories: clean bill + one injected fault each, except S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33 and S34 on 2026-10-22).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -490,6 +490,46 @@ def s32(variant: str) -> Bill:
     return b
 
 
+# ── S33 ─ the readmission of the patient of S2 through the ER: the enoxaparin strength keyed as the count ──
+def s33(variant: str) -> Bill:
+    """81 M, the patient of S2: readmitted through the ER on 2026-04-20 with a COPD exacerbation and acute respiratory
+    failure; followed on the ER's critical bed that day and admitted to chest diseases, 3 nights, itemized.
+
+    The clean bill gives four enoxaparin syringes (one 40 mg syringe a day, the discharge morning included); the faulty
+    one keys the strength of the syringe (4000 anti-Xa IU) as the count, 4000 syringes: a parenteral dose belongs in
+    the service detail, price and count go by box/unit (C008282, SUT 5.3.1.C(i); El Kitabı Tablo 15 #11). Drug prices
+    enter at 0 TL, so the fault has no money. The stay of S2 and the control of S32 are its history.
+    """
+    a, d = D("2026-04-20"), D("2026-04-23")
+    b = Bill("SH-02", "C-SH33", "yatis", "Göğüs Hastalıkları", a, d, "J44.1")
+    b.history = (s2("faulty"), s32("clean"))
+    for i, icd in enumerate(("J44.1", "J96.0", "I10")):
+        b.diag(icd, primary=(i == 0))
+    b.proc("530000", a, specialty=ACIL)             # the ER's critical bed on the day of arrival
+    b.proc("520010", a, specialty=GOGUS)            # the chest-disease consultation that admits him
+    _beds(b, a, d, GOGUS)                           # 4 lines, 20-23 April
+    _companion(b, a, d, GOGUS)                      # 3 nights
+    b.drug(CLEXANE, a, qty=4 if variant == "clean" else 4000, unit="syringe", per_box=10)
+    return b
+
+
+# ── S34 ─ the control after the readmission: the examination flagged as a package component (vakabaşı) ──
+def s34(variant: str) -> Bill:
+    """81 M, the patient of S2: control visit six days after the discharge of S33, 2026-04-29, chest diseases.
+
+    S33 is itemized, so no package period (C000714) covers the control: its examination is billed per visit
+    (C000572, SUT 2.2.1.B-1.(1)). The faulty bill marks the examination as a component of a package (vakabaşı,
+    El Kitabı Tablo 15 #3); the flag moves no money. The three earlier bills of the patient are its history. No test.
+    """
+    day = D("2026-04-29")
+    b = Bill("SH-02", "C-SH34", "poliklinik", "Göğüs Hastalıkları", None, None, "J44.1", start=day, end=day)
+    b.history = (s2("faulty"), s32("clean"), s33("faulty"))
+    for i, icd in enumerate(("J44.1", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=GOGUS, is_package_included=(variant != "clean"))
+    return b
+
+
 # ── S39 ─ the control visit nine days after the discharge of S4 (a clean bill) ──
 def s39(variant: str) -> Bill:
     """86 F, the patient of S4: control visit after the pyelonephritis, 2026-05-25, internal medicine, outpatient.
@@ -536,4 +576,4 @@ def s40(variant: str) -> Bill:
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
 CLEAN_ONLY: tuple[str, ...] = ("S32", "S39", "S48")
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S20": s20, "S22": s22, "S32": s32, "S39": s39, "S40": s40, "S47": s47, "S48": s48}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S20": s20, "S22": s22, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S47": s47, "S48": s48}

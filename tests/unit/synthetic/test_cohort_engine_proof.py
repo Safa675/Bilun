@@ -394,7 +394,12 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             f"got {diff_tuples}"
         )
     else:  # a fault without money of its own: the finding itself is the signal
-        marker = {"S6": "drug_indication", "S40": "tablo15_2_duplicate_exam_10day"}[story]
+        marker = {
+            "S6": "drug_indication",
+            "S33": "tablo15_11_drug_quantity_error",
+            "S34": "tablo15_3_vakabasi_wrong_method",
+            "S40": "tablo15_2_duplicate_exam_10day",
+        }[story]
         assert any(marker in t for t in diff_tuples), (
             f"{story}: expected {marker!r} in a tuple of F - C, got {diff_tuples}"
         )

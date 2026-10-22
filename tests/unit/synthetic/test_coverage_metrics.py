@@ -758,9 +758,11 @@ def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_their_l
     wavea = summary["wavea"]
     assert wavea["rule_ids"] == 528
     # +13 evaluated (the first outpatient claims), +2 matched (the duplicate exam, ORTAK-20), +1 with a row (ORTAK-20);
-    # patient 7's observation (S47) adds the duplicate test: +1 evaluated, +1 matched, +1 with a row (a review)
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 14, 14 + 3, 14 + 2)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (10, 6, 0)
+    # patient 7's observation (S47) adds the duplicate test: +1 evaluated, +1 matched, +1 with a row (a review);
+    # patient 2's readmission (S33) and its control (S34) add the drug count and the vakabaşı examination: +2 evaluated,
+    # +3 matched (the two and GÖĞÜS-6, which matches any inpatient chest-disease bill: EI-24), +2 with a row (reviews)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 16, 14 + 6, 14 + 4)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (12, 6, 0)
 
 
 def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
@@ -774,7 +776,7 @@ def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_f
     rows = [_row(entry) for _, entry in sorted(showcase_eight.items())]
     second, fourth = cohort.role("showcase_S2").patient_id, cohort.role("showcase_S4").patient_id
     seventh = cohort.role("showcase_S7").patient_id
-    assert [showcase_eight[p]["claims"] for p in (second, fourth, seventh)] == [2, 3, 3]
+    assert [showcase_eight[p]["claims"] for p in (second, fourth, seventh)] == [4, 3, 3]
     # the plan's table is the first bill of each patient: the five patients with one bill still give it
     several = (second, fourth, seventh)
     assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid not in several] == [
@@ -784,9 +786,11 @@ def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_f
     # stay (claim checklist, companion, bed days), 48 more rules evaluated, 8 more matched (the duplicate test, the
     # inpatient itemized basis, ORTAK-19/20/22/25)
     assert _row(showcase_eight[seventh]) == (4 + 3, 231 + 48, 4 + 8, 4 + 5, 0 + 3)
-    # patient 2 is read over its stay and its control (S32, its first outpatient bill): 86 more rules evaluated (the
-    # outpatient rules, already evaluated on patient 4), 2 more matched with a row (ORTAK-13 and ORTAK-20, reviews)
-    assert _row(showcase_eight[second]) == (6, 191 + 86, 9 + 2, 6 + 2, 3)
+    # patient 2 is read over its stay, its control (S32, its first outpatient bill), its readmission (S33) and the control
+    # after it (S34): 86 more rules evaluated with S32 (the outpatient rules, already evaluated on patient 4), 2 more
+    # matched with a row (ORTAK-13 and ORTAK-20, reviews); 2 more evaluated with S33 and S34 (the drug count, the vakabaşı
+    # examination), 3 more matched (the two and GÖĞÜS-6, EI-24), 2 of them with a row (the drug count, GÖĞÜS-6: reviews)
+    assert _row(showcase_eight[second]) == (6, 191 + 86 + 2, 9 + 2 + 3, 6 + 2 + 2, 3)
     # patient 4 is read over its stay, its control and its second visit: 14 more rules evaluated, 3 more matched
     assert _row(showcase_eight[fourth]) == (6, 191 + 14, 9 + 3, 6 + 2, 3)
 
@@ -819,15 +823,27 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
 
     After F7 b2, b3 and S20 (WP10): patients 12 -> 13, bills 17 -> 20, finding kinds 24 -> 25 (the day bed of a stay
     of one date, `yatak_puani_day_bed`); blocks and Wave A unchanged (every rule the new bills match is matched elsewhere).
+
+    After F2 b3 and b4 (WP11, S33 and S34, patient 2's readmission and its control): bills 20 -> 22, evaluated 288 -> 290
+    and matched 19 -> 22 (the drug count `tablo15_11`, the vakabaşı examination `tablo15_3`, and GÖĞÜS-6, a Fatura
+    İnceleme rule with no condition but the inpatient setting of the branch: EI-24), with a row 18 -> 20 (the drug
+    count and GÖĞÜS-6, reviews; the vakabaşı examination is a compliance finding), finding kinds 25 -> 26.
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (13, 20)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (13, 22)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (288, 19, 18)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (11, 6, 1)
-    assert summary["finding_kinds"]["count"] == 25
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (290, 22, 20)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (13, 6, 1)
+    assert summary["finding_kinds"]["count"] == 26
     assert "action:yatak_puani:yatak_puani_day_bed" in summary["finding_kinds"]["kinds"]
+    assert "compliance:tablo15_3_vakabasi_wrong_method" in summary["finding_kinds"]["kinds"]
+    assert {"tablo15_11_drug_quantity_error", "tablo15_3_vakabasi_wrong_method"} <= set(wavea["matched_ids"])
+    second = measured[cohort.role("showcase_S2").patient_id]["wavea"]
+    assert {"tablo15_11_drug_quantity_error", "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon"} <= set(
+        second["review_ids"]
+    )  # two rows of patient 2; the vakabaşı examination has none (a compliance finding)
+    assert "tablo15_3_vakabasi_wrong_method" not in wavea["row_ids"]
     assert "yatak_icu_overlap_510010" in wavea["row_ids"]
     # the eight of the plan's baseline plus S9, S11 and S12 had 273 / 14: the one new id is the financial one
     without_s14 = {pid: entry for pid, entry in measured.items() if pid != cohort.scenario("S14").patient_id}
@@ -845,11 +861,11 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
     assert entry["claims"] == 2
     assert entry["wavea"]["financial_ids"] == ["yatak_icu_overlap_510010"]
     assert {pid for pid, e in measured.items() if e["wavea"]["financial"]} == {patient}
-    # the other patients with several bills: patient 4 (the stay, the control, the second visit), patient 2 (the stay
-    # and its control) and patient 12 (the ER visit and the admission)
+    # the other patients with several bills: patient 4 (the stay, the control, the second visit), patient 2 (the stay,
+    # its control, its readmission and the control after it) and patient 12 (the ER visit and the admission)
     assert {pid: e["claims"] for pid, e in measured.items() if e["claims"] > 1} == {
         patient: 2,
-        cohort.role("showcase_S2").patient_id: 2,  # the stay and the control visit S32
+        cohort.role("showcase_S2").patient_id: 4,  # the stay, the control S32, the readmission S33 and its control S34
         cohort.role("showcase_S7").patient_id: 3,  # the ER visit, the observation S47 and the follow-up S48
         cohort.role("showcase_S4").patient_id: 3,
         cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
@@ -1011,7 +1027,7 @@ def test_the_chronic_report_on_s2s_profile_is_what_turns_the_partial_match_into_
     assert copay["rate_correction_codes"] == ["copay_exemption_ek1a"]  # the waiver row of the control's examination
     assert "action:copay:exemption_review" in flagged[patient]["finding_kinds"]
     assert [line for line in lines if line.startswith("SENTETIK-HASTA-")] == [
-        f"{patient}: finding kinds: 4 -> 5 (+action:copay:exemption_review); copay partial_exempt -> exempt; "
+        f"{patient}: finding kinds: 5 -> 6 (+action:copay:exemption_review); copay partial_exempt -> exempt; "
         "chronic report None -> True; rate corrections: 2 -> 1 "
         "(+copay_exemption_ek1a, -ek1a_report_unknown, -sut:1.8.2.(1))"
     ]
