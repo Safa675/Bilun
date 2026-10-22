@@ -1311,7 +1311,7 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_and_s1
     )
     assert only_faulty_drugs.height == 3
     assert set(only_faulty_drugs["patient_id"]) == {PATIENT[1]}
-    assert twins[TABLE_DRUGS].height == 20 and built.tables[TABLE_DRUGS].height == 23
+    assert twins[TABLE_DRUGS].height == 21 and built.tables[TABLE_DRUGS].height == 24
     # S33: the same line, another count
     counts = built.tables[TABLE_DRUGS].join(
         twins[TABLE_DRUGS].select("drug_claim_line_id", pl.col("quantity").alias("twin_quantity")),
@@ -1532,12 +1532,12 @@ def test_every_committed_lab_row_is_looked_at_by_the_row_checks(
 
 
 RECETE_ROW_BREAKS = {
-    # a row without a line and a line without a row, for each of the 23 rows
-    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 23 * 2),
-    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 23),
-    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 22),  # all but the nebule
-    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 22),  # all but the tablet
-    **{f"null_{column}": (REQUIRED, {column: None}, 23) for column in REQUIRED_RECETE_COLUMNS},
+    # a row without a line and a line without a row, for each of the 24 rows
+    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 24 * 2),
+    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 24),
+    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 23),  # all but the nebule
+    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 23),  # all but the tablet
+    **{f"null_{column}": (REQUIRED, {column: None}, 24) for column in REQUIRED_RECETE_COLUMNS},
 }
 
 
@@ -2209,6 +2209,7 @@ _REVIEW_SINGLE = {
     ("L106150", "Potasyum"): (1.5, 9.0),
     ("L100300", "ALT"): (1, 20000),
     ("L101280", "AST"): (1, 20000),
+    ("L100320", "Albümin"): (0.5, 7),  # not in the review: this module's decision (WP13, serum albumin in g/dL)
 }
 REVIEW_BOUNDS = {("L107020", name): bounds for name, bounds in _REVIEW_HEMOGRAM.items()}
 REVIEW_BOUNDS |= {("L103900", name): bounds for name, bounds in _REVIEW_GAS.items()}
@@ -3405,7 +3406,7 @@ def test_without_any_episode_id_in_anadata_the_egfr_relation_is_no_no_op(
     )
     found = data.problems(context, only=EGFR_RELATION)
     assert len(found) == BILLED_LAB_LINES and len({p.where for p in found}) == BILLED_LAB_LINES
-    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7, 9, 10, 12)}
+    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7, 9, 10, 12, 15)}
 
 
 # --- the reference read from a file: the variant of a tie goes to the first row of the file ---------------
@@ -3604,7 +3605,7 @@ def test_the_committed_units_fit_their_products_by_the_classes_of_the_review(cle
         ("injected", "flakon", 11),
         ("injected", "kutu", 1),
         ("injected", "torba", 1),
-        ("injected", "şişe", 2),
+        ("injected", "şişe", 3),  # S18's albumin is the third bottle
         ("swallowed", "tablet", 1),
     ]
     for cls, unit, _ in pairs:
@@ -4370,7 +4371,7 @@ def test_the_hard_bounds_are_the_table_of_the_clinical_review() -> None:
     REVIEW_BOUNDS, written once above the boundary tests that use it.)
     """
     assert LAB_HARD_BOUNDS == REVIEW_BOUNDS
-    assert len(REVIEW_BOUNDS) == 15 + 11 + 4 + 14
+    assert len(REVIEW_BOUNDS) == 15 + 11 + 4 + 15
 
 
 def test_the_tolerances_and_constants_are_the_ones_of_the_brief() -> None:
@@ -4467,16 +4468,16 @@ def test_the_lab_schema_of_the_tests_is_the_committed_one(clean) -> None:
 
 
 def test_the_hard_bounds_cover_every_parameter_of_the_billed_codes(reference, clean) -> None:
-    """Every parameter of the 16 billed codes, not only those that occur, has an entry."""
+    """Every parameter of the 17 billed codes, not only those that occur, has an entry."""
     codes = set(clean[TABLE_LAB]["SUB_CODE"])
-    assert len(codes) == 16
+    assert len(codes) == 17
     listed = reference.filter(pl.col("ek2b_code").is_in(sorted(codes)))
     wanted = set(zip(listed["ek2b_code"], listed["result_parameter"], strict=True))
     assert wanted == set(LAB_HARD_BOUNDS) | set(LAB_STRIP_PARAMETERS)
-    assert len(wanted) == 50 and len(LAB_HARD_BOUNDS) == 44 and len(LAB_STRIP_PARAMETERS) == 6
+    assert len(wanted) == 51 and len(LAB_HARD_BOUNDS) == 45 and len(LAB_STRIP_PARAMETERS) == 6
     assert not set(LAB_HARD_BOUNDS) & set(LAB_STRIP_PARAMETERS)
     occurring = set(zip(clean[TABLE_LAB]["SUB_CODE"], clean[TABLE_LAB]["parametre"], strict=True))
-    assert len(occurring) == 49 and occurring <= wanted
+    assert len(occurring) == 50 and occurring <= wanted
     assert wanted - occurring == {(BLOOD_GAS_CODE, "sO2 (venöz)")}
 
 

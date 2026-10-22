@@ -1,0 +1,509 @@
+{
+ "story": "S18",
+ "clean": {
+  "total_billed": "1434.50",
+  "rows": [
+   {
+    "date": "2026-06-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-18",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-19",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-15",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-16",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-18",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-15",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-15",
+    "code": "L100320",
+    "name": "Albümin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-16",
+    "code": "8699686690029",
+    "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "qty": 3,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A03665 from 2025-04-26",
+    "ingredient": "albumin",
+    "qty_unit": "bottle"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K74.6",
+    true
+   ],
+   [
+    "K92.2",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "evaluate_drug_indication_line_detailed",
+    "applicability_status": "eligible",
+    "selected_rule_id": "4.2.27.C.albumin_inpatient_3day_report",
+    "eligible_icd10": [
+     "E86",
+     "E87.0",
+     "K70",
+     "K74",
+     "N04",
+     "R63",
+     "R77"
+    ],
+    "observed_icd10": [
+     "K74.6",
+     "K92.2"
+    ],
+    "violation_kind": null,
+    "severity": null,
+    "message_tr": null
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "faulty": {
+  "total_billed": "1434.50",
+  "rows": [
+   {
+    "date": "2026-06-15",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-16",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-18",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-19",
+    "code": "510010",
+    "name": "Standart yatak tarifesi",
+    "qty": 1,
+    "unit": "222.36",
+    "billed": "222.36",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-15",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-16",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-18",
+    "code": "510121",
+    "name": "Refakat",
+    "qty": 1,
+    "unit": "74.10",
+    "billed": "74.10",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-15",
+    "code": "L107020",
+    "name": "Tam Kan Sayımı (Hemogram)",
+    "qty": 1,
+    "unit": "19.73",
+    "billed": "19.73",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-15",
+    "code": "L100320",
+    "name": "Albümin (Serum/Plazma)",
+    "qty": 1,
+    "unit": "6.57",
+    "billed": "6.57",
+    "source": "EK-2B valid_from 2026-01-31"
+   },
+   {
+    "date": "2026-06-16",
+    "code": "8699686690029",
+    "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "qty": 3,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A03665 from 2025-04-26",
+    "ingredient": "albumin",
+    "qty_unit": "bottle"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K74.6",
+    true
+   ],
+   [
+    "K92.2",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "fn": "evaluate_drug_indication_line_detailed",
+    "applicability_status": "eligible",
+    "selected_rule_id": "4.2.27.C.albumin_inpatient_3day_report",
+    "eligible_icd10": [
+     "E86",
+     "E87.0",
+     "K70",
+     "K74",
+     "N04",
+     "R63",
+     "R77"
+    ],
+    "observed_icd10": [
+     "K74.6",
+     "K92.2"
+    ],
+    "violation_kind": "missing_board_report",
+    "severity": "error",
+    "message_tr": "Uzmanlık sağlık kurulu raporu eksik (§4.2)."
+   },
+   {
+    "fn": "evaluate_drug_indication_findings",
+    "drug": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "finding_kind": "missing_board_report",
+    "severity": "error",
+    "applicability_status": "eligible"
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 4
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "claim_checklist",
+   "submission_check",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "drug_indication",
+   "missing_board_report",
+   "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+   0.0
+  ],
+  [
+   "validate",
+   "drug_indication",
+   "4.2.27.C.albumin_inpatient_3day_report",
+   "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+   0.0
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-25.yatis_oncesi_hazirlik_paket",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(1).itemized_basis",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.A(2).itemized_materials_drugs",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

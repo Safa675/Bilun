@@ -34,6 +34,7 @@ CLAIM_SALT_STEP = 1000
 BILLED_LAB_CODES: frozenset[str] = frozenset(
     {
         "L100300",
+        "L100320",
         "L101280",
         "L101850",
         "L102090",

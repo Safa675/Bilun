@@ -315,6 +315,30 @@ PINNED_FINDINGS: dict[
         [],
         ["prescriber_specialty_mismatch", "4.2.9.esa_ckd_iron_hb_nephrology_report"],
     ),
+    "S18": (
+        "drug_indication",
+        "ilac",
+        "albumin",
+        "kismi_red",
+        "compliance_error",
+        ["C006389", "C006390"],
+        "4.2.27.Ç",
+        ["src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"],
+        [],
+        ["missing_board_report", "4.2.27.C.albumin_inpatient_3day_report"],
+    ),
+    "S24": (
+        "blood_component_isbt128_barcode",
+        "islem",
+        "red_cells_unit_1",
+        "kismi_red",
+        "compliance_error",
+        ["C007926"],
+        "4.6",
+        ["src/bilun/domain/prose_rules/blood_component_isbt128.py:detect_blood_component_isbt128_violations"],
+        [],
+        ["blood_component_isbt128_barcode"],
+    ),
     "S33": (
         "tablo15_11_drug_quantity_error",
         "ilac",
@@ -393,7 +417,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S22", "S33", "S34", "S40"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S40"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:

@@ -18,6 +18,7 @@ from src.bilun.domain.billing.claim_lab import _optimize_lab_billing_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indication_findings
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
+from src.bilun.domain.prose_rules.blood_component_isbt128 import detect_blood_component_isbt128_violations
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_drug_quantity_error,
     detect_duplicate_exam_10day,
@@ -89,9 +90,9 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(v, ("rule_id", "severity", "material_code", "risk_amount", "material_outcome",
                           "sut_section", "message"))
                 for v in check_material_bundling_for_context(ctx) if v.get("rule_id") == "3.1.1.(2).titubb_uts_incomplete"]
-    if story in ("S6", "S17"):
+    if story in ("S6", "S17", "S18"):
         rows = []
-        drug = {"S6": "PK-MERZ", "S17": "ARANESP"}[story]  # the drug line of the fault
+        drug = {"S6": "PK-MERZ", "S17": "ARANESP", "S18": "HUMAN ALBUMIN"}[story]  # the drug line of the fault
         for dl in ctx.drug_lines:
             if not dl.drug_name.startswith(drug):
                 continue
@@ -175,6 +176,10 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(o, ("rule_id", "procedure_code", "procedure_category", "is_package_included", "severity",
                           "sut_section_id", "detail"))
                 for o in detect_vakabasi_wrong_method(claims, procs)]
+    if story == "S24":
+        return [_keep(o, ("rule_id", "procedure_code", "barcode_status", "isbt128_barcode", "sut_section_id",
+                          "savings_category", "severity", "detail"))
+                for o in detect_blood_component_isbt128_violations(claims, procs)]
     raise KeyError(story)
 
 
@@ -246,12 +251,13 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         return total("savings_try")
     if story == "S5":
         return total("risk_amount")
-    if story in ("S6", "S17"):  # a drug-indication violation without money
-        kind = {"S6": "indication_mismatch", "S17": "prescriber_specialty_mismatch"}[story]
+    if story in ("S6", "S17", "S18"):  # a drug-indication violation without money
+        kind = {"S6": "indication_mismatch", "S17": "prescriber_specialty_mismatch",
+                "S18": "missing_board_report"}[story]
         return 0.0 if any(r.get("violation_kind") == kind for r in rows) else None
-    if story in ("S33", "S34", "S40"):  # a row without money: the finding is the row
-        rule = {"S33": "tablo15_11_drug_quantity_error", "S34": "tablo15_3_vakabasi_wrong_method",
-                "S40": "tablo15_2_duplicate_exam_10day"}[story]
+    if story in ("S24", "S33", "S34", "S40"):  # a row without money: the finding is the row
+        rule = {"S24": "blood_component_isbt128_barcode", "S33": "tablo15_11_drug_quantity_error",
+                "S34": "tablo15_3_vakabasi_wrong_method", "S40": "tablo15_2_duplicate_exam_10day"}[story]
         return 0.0 if any(r.get("rule_id") == rule for r in rows) else None
     return total("recoverable_gap_try" if story == "S7" else "risk_amount_try")
 

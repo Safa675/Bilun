@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2, 15 is S18 with its second bill S24 as encounter_no 2) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -384,3 +384,41 @@ patients:
       weight_kg: 72.5
     basis: judgment
     source: "Story S23 emergency haemodialysis (a raised potassium with a slow pulse, 2.5 kg above dry weight); clinician confirms in issue #309."
+
+  - patient_no: 15
+    vitals:
+      sbp: 104
+      dbp: 62
+      pulse: 98
+      spo2: 96
+      height_cm: 174
+      weight_kg: 79.0
+    labs:
+      states:
+        "L107020|HGB (Hemoglobin)": acute_gi_bleed
+        "L107020|MCV": iron_deficiency
+        "L107020|MCH": iron_deficiency
+        "L100320|Albümin": cirrhosis_at_infusion_threshold
+      basis: judgment
+      source: "Story S18: a low haemoglobin of a slow bleed and an albumin at or under 2.5 g/dl, the threshold of SUT 4.2.27.Ç (C006389); clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S18 decompensated cirrhosis with a melena (soft blood pressure, mild tachycardia; the weight carries ascites); clinician confirms in issue #309."
+
+  - patient_no: 15
+    encounter_no: 2
+    vitals:
+      sbp: 86
+      dbp: 52
+      pulse: 124
+      spo2: 95
+      height_cm: 174
+      weight_kg: 77.5
+    labs:
+      states:
+        "L107020|HGB (Hemoglobin)": acute_gi_bleed
+        "L107020|MCV": iron_deficiency
+        "L107020|MCH": iron_deficiency
+      basis: judgment
+      source: "Story S24 variceal rebleed: a low haemoglobin on arrival and after the two units (the same state on both counts); clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S24 active variceal bleed on arrival: hypotension and tachycardia, the reason for two units at once; clinician confirms in issue #309."

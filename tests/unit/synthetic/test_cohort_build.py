@@ -85,8 +85,10 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S12": "1322.94",
     "S14": "222.36",
     "S17": "0.00",  # the ESA prescribed by the wrong branch: a drug line, and drugs enter at 0 TL
+    "S18": "0.00",  # the albumin without the specialist report: a drug line, and drugs enter at 0 TL
     "S20": "4724.84",
     "S22": "439.86",
+    "S24": "0.00",  # the red-cell units without their ISBT 128 numbers: a flag of the lines, no amount (a compliance error)
     "S33": "0.00",  # the enoxaparin count: a drug line, and drugs enter at 0 TL
     "S34": "0.00",  # the examination flagged as a package component: a flag without money
     "S40": "0.00",
@@ -108,6 +110,8 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S20": {"patient_id": "SENTETIK-HASTA-0013", "claim_ids": ["F-SENTETIK-HASTA-0013-001"]},
     "S17": {"patient_id": "SENTETIK-HASTA-0014", "claim_ids": ["F-SENTETIK-HASTA-0014-001"]},
     "S23": {"patient_id": "SENTETIK-HASTA-0014", "claim_ids": ["F-SENTETIK-HASTA-0014-002"]},
+    "S18": {"patient_id": "SENTETIK-HASTA-0015", "claim_ids": ["F-SENTETIK-HASTA-0015-001"]},
+    "S24": {"patient_id": "SENTETIK-HASTA-0015", "claim_ids": ["F-SENTETIK-HASTA-0015-002"]},
     "S47": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
     "S48": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-003"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
@@ -711,8 +715,8 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     assert anadata["EPISODE_TARIH"].dt.date().to_list() == [date(2026, 6, 2), date(2026, 6, 7)]
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
-    assert profiles.height == cohort.patient_count() == 14
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 24
+    assert profiles.height == cohort.patient_count() == 15
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 26
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1055,6 +1059,8 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0013-001",  # the day case of patient 13 (S20)
         "F-SENTETIK-HASTA-0014-001",  # the month of haemodialysis of patient 14 (S17) and its emergency session (S23)
         "F-SENTETIK-HASTA-0014-002",
+        "F-SENTETIK-HASTA-0015-001",  # the cirrhosis stay of patient 15 (S18) and its variceal rebleed (S24)
+        "F-SENTETIK-HASTA-0015-002",
     ]
     assert headers["episode_id"].to_list() == [
         claim.replace("F-", "B-", 1) for claim in headers["claim_id"].to_list()

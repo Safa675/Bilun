@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 24,
-    "lab_clean.parquet": 300,
-    "recete_clean.parquet": 23
+    "anadata_clean.parquet": 26,
+    "lab_clean.parquet": 346,
+    "recete_clean.parquet": 24
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "9f1573951979b5df213af5668b197a5f8a958ff76db8a3a65f8d3f82c4873def",
-    "lab_clean.parquet": "f9aa94dbe23329c7222ecc2986fc2ac0ae4fdf79acf32f068675ae2ae4021d7c",
-    "recete_clean.parquet": "1e07e69aeb29a4d582425893c9b18fce8ecad2484e2749ae0931dbd212c180c3"
+    "anadata_clean.parquet": "af57856b2a519b3b680a8fa7f8493573cb73dcda0a5bd325669a7768586da6fb",
+    "lab_clean.parquet": "833c99b988d2f2ae35182a51dd67bc1ec0472e797a5d045458f4ce1e01707c84",
+    "recete_clean.parquet": "aea25a3658bc4280e0dc3fc5d56720861ed417e15b8920bdcaf28de306209e9d"
   },
   "counts": {
-    "claim_diagnoses.parquet": 61,
-    "claim_headers.parquet": 24,
-    "drug_claim_lines.parquet": 23,
-    "expected_rule_outputs.parquet": 20,
+    "claim_diagnoses.parquet": 65,
+    "claim_headers.parquet": 26,
+    "drug_claim_lines.parquet": 24,
+    "expected_rule_outputs.parquet": 22,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 1,
-    "patient_copay_profiles.parquet": 14,
+    "patient_copay_profiles.parquet": 15,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 203
+    "procedure_claim_lines.parquet": 225
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -236,6 +236,24 @@
       "pathway_id": "end_stage_kidney_disease_emergency_haemodialysis",
       "patient_id": "SENTETIK-HASTA-0014",
       "story": "S23",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0015-001",
+      "fault_id": "F_S18_ALBUMIN_WITHOUT_SPECIALIST_REPORT",
+      "is_clean": false,
+      "pathway_id": "decompensated_cirrhosis_gi_bleed_albumin",
+      "patient_id": "SENTETIK-HASTA-0015",
+      "story": "S18",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0015-002",
+      "fault_id": "F_S24_RED_CELLS_WITHOUT_ISBT128_NUMBERS",
+      "is_clean": false,
+      "pathway_id": "decompensated_cirrhosis_variceal_rebleed_transfusion",
+      "patient_id": "SENTETIK-HASTA-0015",
+      "story": "S24",
       "tier": "showcase"
     }
   ],
@@ -601,6 +619,42 @@
       "patient_id": "SENTETIK-HASTA-0014",
       "story": "S17",
       "sut_section": "4.2.9.A-1"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "1434.50",
+      "billed_faulty_try": "1434.50",
+      "claim_id": "F-SENTETIK-HASTA-0015-001",
+      "effect_kind": "compliance_error",
+      "engine_rule": "drug_indication",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S18_ALBUMIN_WITHOUT_SPECIALIST_REPORT",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0015-001-F_S18_ALBUMIN_WITHOUT_SPECIALIST_REPORT",
+      "line_id": "ILC-F-SENTETIK-HASTA-0015-001-001",
+      "line_ids": [],
+      "line_type": "ilac",
+      "pathway_id": "decompensated_cirrhosis_gi_bleed_albumin",
+      "patient_id": "SENTETIK-HASTA-0015",
+      "story": "S18",
+      "sut_section": "4.2.27.Ç"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "10076.50",
+      "billed_faulty_try": "10076.50",
+      "claim_id": "F-SENTETIK-HASTA-0015-002",
+      "effect_kind": "compliance_error",
+      "engine_rule": "blood_component_isbt128_barcode",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S24_RED_CELLS_WITHOUT_ISBT128_NUMBERS",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0015-002-F_S24_RED_CELLS_WITHOUT_ISBT128_NUMBERS",
+      "line_id": "ISL-F-SENTETIK-HASTA-0015-002-003",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "decompensated_cirrhosis_variceal_rebleed_transfusion",
+      "patient_id": "SENTETIK-HASTA-0015",
+      "story": "S24",
+      "sut_section": "4.6"
     }
   ],
   "roles": {
@@ -672,6 +726,12 @@
       ],
       "patient_id": "SENTETIK-HASTA-0014"
     },
+    "S18": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0015-001"
+      ],
+      "patient_id": "SENTETIK-HASTA-0015"
+    },
     "S20": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0013-001"
@@ -689,6 +749,12 @@
         "F-SENTETIK-HASTA-0014-002"
       ],
       "patient_id": "SENTETIK-HASTA-0014"
+    },
+    "S24": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0015-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0015"
     },
     "S32": {
       "claim_ids": [
@@ -742,14 +808,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "1b48a013a2b9213fe255b1d545f06d175c75e899e09d7f84f5129cf04940f826",
-    "claim_headers.parquet": "593f8a525ba2dd2e2fe5c7131b0a56b1c32b0a870f06ec9b7269e519709ae050",
-    "drug_claim_lines.parquet": "48a6af24272df3569158d73f8c9f0ab7648a6c2f2111f71f2b1c0ebd083d7390",
-    "expected_rule_outputs.parquet": "8234d7bc27fbf53ca909297f2b379260fb85128d4714293f2bc66826c55a67e3",
+    "claim_diagnoses.parquet": "0872ef909e13c7447faa7b97054bbfe1a8a494d84d02263ed2bbf4df7d19a36c",
+    "claim_headers.parquet": "b522142fbcc4fe5ea0bbab5a092462245a11e54e02f4b97d2fe683f091f58b54",
+    "drug_claim_lines.parquet": "34e9e7944580a6e8b90ab9284bdc1047bb8f6c93f21d0da30f9075faf924bdce",
+    "expected_rule_outputs.parquet": "6af3fe722819d8fa04914079af15d16d27b97ad3ce24b9e993d7cf09343220ec",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
-    "patient_copay_profiles.parquet": "0afb0271a0aea3b43dc653d6cdd21d729f23558b89da39f6c93644a251e56d2a",
+    "patient_copay_profiles.parquet": "1f4c2502821cebcdaf310bba2eb951da90dca2418236e5ff9bbeb1f35eb9f55f",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "e685a60f31acb107b4d0822ef18561378fb612fa2b350a70b967e41a7ebc113d"
+    "procedure_claim_lines.parquet": "02776bceb1d9dc6fe117e965212f446fb0e33dc74f106ff0b11fa5befc8fef9b"
   }
 }

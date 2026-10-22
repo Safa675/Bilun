@@ -27,7 +27,7 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S17", "S20", "S22", "S23", "S32", "S33", "S34", "S39", "S40", "S47", "S48")  # the stories after the eighth, named by scenarios
+_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S17", "S18", "S20", "S22", "S23", "S24", "S32", "S33", "S34", "S39", "S40", "S47", "S48")  # the stories after the eighth, named by scenarios
 _CLEAN_STORIES = ("S23", "S32", "S39", "S48")  # the bills without a fault: a story and a claim, no fault record
 _FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
@@ -278,6 +278,13 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     )
     assert known["S23"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0014", claim_ids=("F-SENTETIK-HASTA-0014-002",)
+    )
+    # patient 15: the cirrhosis stay with albumin (S18) and the variceal rebleed with two red-cell units (S24)
+    assert known["S18"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0015", claim_ids=("F-SENTETIK-HASTA-0015-001",)
+    )
+    assert known["S24"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0015", claim_ids=("F-SENTETIK-HASTA-0015-002",)
     )
     assert known["S47"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0007", claim_ids=("F-SENTETIK-HASTA-0007-002",)

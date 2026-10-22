@@ -105,7 +105,7 @@ def test_s2_bed_day_indices_and_lab_panel_day_indices() -> None:
     ]
 
 
-def test_drug_rows_carry_indication_s6_pk_merz_is_g20_s17_darbepoetin_is_n18_others_null() -> None:
+def test_drug_rows_carry_indication_s6_pk_merz_is_g20_s17_darbepoetin_is_n18_s18_albumin_is_k74_others_null() -> None:
     indications: list[tuple[str, str, str | None]] = []
     for path in _FILES:
         pathway = load_pathway(path)
@@ -116,5 +116,5 @@ def test_drug_rows_carry_indication_s6_pk_merz_is_g20_s17_darbepoetin_is_n18_oth
 
     named = [item for item in indications if item[2] is not None]
     others = [item for item in indications if item[2] is None]
-    assert sorted(named) == [("S17", "darbepoetin", "N18.0"), ("S6", "pk_merz", "G20")]
+    assert sorted(named) == [("S17", "darbepoetin", "N18.0"), ("S18", "albumin", "K74.6"), ("S6", "pk_merz", "G20")]
     assert others and all(ind is None for _, _, ind in others)

@@ -314,6 +314,30 @@ faults:
     basis: sut
     source: "C004193 (SUT 4.2.9.A-1.(2)): an ESA of a haemodialysis patient is prescribed by nephrology, internal medicine, paediatrics or dialysis."
 
+  - fault_id: F_S18_ALBUMIN_WITHOUT_SPECIALIST_REPORT
+    story: S18
+    title: "Human albumin of a cirrhotic inpatient billed without the specialist report (decompensated cirrhosis, patient 15)"
+    target_pathway: decompensated_cirrhosis_gi_bleed_albumin
+    mutations:
+      - op: set_flag
+        section: drugs
+        entry_id: albumin
+        flag: drug_specialty_board_report_present
+        value: false
+    expected_finding:
+      engine_rule: drug_indication
+      detectors:
+        - "src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"
+      sut_section: "4.2.27.Ç"
+      sut_clauses: ["C006389", "C006390"]
+      effect_kind: compliance_error
+      line_type: ilac
+      target_entry_id: albumin
+      expected_status: kismi_red
+      finding_ids: ["missing_board_report", "4.2.27.C.albumin_inpatient_3day_report"]
+    basis: sut
+    source: "C006389, C006390 (SUT 4.2.27.Ç): albumin of an inpatient at 2.5 g/dl or less, on a specialist report with the dose for at most 3 days."
+
   - fault_id: F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED
     story: S20
     title: "Day-case package billed as itemized (umbilical hernia repair)"
@@ -356,6 +380,35 @@ faults:
       finding_ids: ["pairing.701450_701460"]
     basis: sut
     source: "C000659, C000661 (SUT 2.2.2.A(5)): the later procedure of a session is paid at 30 % or 50 % of its puan; this colonoscopy bill has no polypectomy (story S22)."
+
+  - fault_id: F_S24_RED_CELLS_WITHOUT_ISBT128_NUMBERS
+    story: S24
+    title: "Two red-cell units billed without their ISBT 128 numbers (the variceal rebleed of patient 15)"
+    target_pathway: decompensated_cirrhosis_variceal_rebleed_transfusion
+    mutations:
+      - op: set_flag
+        section: procedures
+        entry_id: red_cells_unit_1
+        flag: isbt128_barcode
+        value: ""
+      - op: set_flag
+        section: procedures
+        entry_id: red_cells_unit_2
+        flag: isbt128_barcode
+        value: ""
+    expected_finding:
+      engine_rule: blood_component_isbt128_barcode
+      detectors:
+        - "src/bilun/domain/prose_rules/blood_component_isbt128.py:detect_blood_component_isbt128_violations"
+      sut_section: "4.6"
+      sut_clauses: ["C007926"]
+      effect_kind: compliance_error
+      line_type: islem
+      target_entry_id: red_cells_unit_1
+      expected_status: kismi_red
+      finding_ids: ["blood_component_isbt128_barcode"]
+    basis: sut
+    source: "C007926 (SUT 4.6.(3)): an EK-2B blood component is paid when the epicrisis names it, its count and its ISBT 128 blood-barcode numbers."
 
   - fault_id: F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY
     story: S33

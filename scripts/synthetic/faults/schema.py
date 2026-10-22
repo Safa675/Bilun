@@ -142,7 +142,7 @@ class DropEntry(_Model):
 
 
 class SetFlag(_Model):
-    """Set `flags[flag] = value` on every expanded row of `entry_id` in `section`."""
+    """Set `flags[flag] = value` on every expanded row of `entry_id` in `section`; an empty text clears the flag."""
 
     op: Literal["set_flag"]
     section: Literal["procedures", "materials", "drugs"]

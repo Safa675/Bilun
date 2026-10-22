@@ -41,6 +41,9 @@ from src.bilun.domain.claims.schema import (
     REQUIRED_CLAIM_TABLES,
 )
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
+from src.bilun.domain.prose_rules.blood_component_isbt128 import (
+    detect_blood_component_isbt128_violations,
+)
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_drug_quantity_error,
     detect_duplicate_exam_10day,
@@ -546,6 +549,10 @@ def _direct_rows_s17(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     return _drug_indication_rows(ctx, "ARANESP")  # darbepoetin prescribed by the wrong branch
 
 
+def _direct_rows_s18(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return _drug_indication_rows(ctx, "HUMAN ALBUMIN")  # albumin billed without the specialist report
+
+
 def _drug_indication_rows(ctx: PatientClaimContext, drug: str) -> list[dict[str, Any]]:
     """The drug-indication rows of the drug lines whose name starts with `drug`, then the bill's findings."""
     claim = ctx.claims[0]
@@ -845,6 +852,27 @@ def _direct_rows_s34(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s24(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "barcode_status",
+                "isbt128_barcode",
+                "sut_section_id",
+                "savings_category",
+                "severity",
+                "detail",
+            ),
+        )
+        for o in detect_blood_component_isbt128_violations(
+            list(ctx.claims), list(ctx.procedure_lines)
+        )
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -860,8 +888,10 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S12": _direct_rows_s12,
     "S14": _direct_rows_s14,
     "S17": _direct_rows_s17,
+    "S18": _direct_rows_s18,
     "S20": _direct_rows_s20,
     "S22": _direct_rows_s22,
+    "S24": _direct_rows_s24,
     "S33": _direct_rows_s33,
     "S34": _direct_rows_s34,
     "S40": _direct_rows_s40,
