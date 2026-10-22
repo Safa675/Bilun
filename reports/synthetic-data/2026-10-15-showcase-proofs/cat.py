@@ -7,6 +7,7 @@ EK2B = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek2b_catalog_history.parque
 EK2C = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek2c_catalog_history.parquet")
 EK4A = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek4a_history.parquet")
 EK3F1 = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek3f1_arthroplasty_materials.parquet")
+EK3C2 = pl.read_parquet(f"{ROOT}/data/gazette/curated/ek3c2_materials.parquet")
 XWALK = pl.read_parquet(f"{ROOT}/data/synthetic/reference/drug_crosswalk.parquet")
 
 def _inforce(df: pl.DataFrame, d: str, until_col: str = "valid_to", exclusive: bool = False) -> pl.DataFrame:

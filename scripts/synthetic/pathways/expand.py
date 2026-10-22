@@ -127,6 +127,8 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
                 "date": day(m.day),
                 "qty": m.qty,
                 "material_type": m.material_type,
+                # the annex of an EK-3/C-2 device (slice G7b); an EK-3/F-1 line, the default, carries none
+                **({"annex": m.annex} if m.annex != "EK-3F-1" else {}),
                 "linked_procedure": {"code": target.code, "date": day(target.days[0])},
                 "billed_ratio": "1.0000",
                 "flags": m.flags.model_dump(exclude_none=True),

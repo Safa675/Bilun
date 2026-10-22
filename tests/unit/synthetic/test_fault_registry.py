@@ -303,6 +303,21 @@ PINNED_FINDINGS: dict[
         [],
         ["tablo15_2_duplicate_exam_10day"],
     ),
+    "S46": (
+        "material_miat_interval",
+        "malzeme",
+        "walker",
+        "kismi_red",
+        "deduction_risk",
+        ["C002781"],
+        "3.1.2",
+        [
+            "src/bilun/domain/billing/claim_materials.py:precheck_materials_from_claims",
+            "src/bilun/domain/prose_rules/material_miat_ek3c2.py:check_material_miat_for_context",
+        ],
+        [],
+        ["material_miat_ek3c2"],
+    ),
     "S17": (
         "drug_indication",
         "ilac",
@@ -417,7 +432,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S40"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S40", "S46"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:

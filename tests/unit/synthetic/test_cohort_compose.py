@@ -387,6 +387,28 @@ def test_the_blood_barcode_of_a_line_reaches_the_claim_and_an_unknown_procedure_
         compose_claim(bill, ctx, catalogs)
 
 
+def test_an_ek3c2_device_is_priced_on_its_list_and_hangs_on_the_examination(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    """Slice G7b: S45's walker is priced on EK-3/C-2 (252.00), names its annex and hangs on the visit's examination."""
+    pathway = pathways["parkinson_neurology_control_first_walker"]
+    pid = patient_id(6)
+    ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 2), episode_id=episode_id(pid, 2), scenario_tag=pathway.id)
+    claim = compose_claim(expand(pathway, annotate=True), ctx, catalogs)
+    (exam,) = claim.procedures
+    (walker,) = claim.materials
+    assert (walker.material_code, walker.material_name) == ("OP1106", "WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)")
+    assert (walker.specialty_category, walker.material_type) == ("EK-3C-2", "ortez")
+    assert (walker.unit_price_try, walker.billed_amount_try, walker.expected_payable_try) == (Decimal("252.00"),) * 3
+    assert (walker.procedure_line_id, exam.procedure_code) == (exam.procedure_line_id, "520030")
+    assert claim.header.expected_total_billed_try == exam.billed_amount_try + Decimal("252.00")
+    # without its annex the same code is read on EK-3/F-1, where it is not listed
+    bill = expand(pathway, annotate=True)
+    del bill["materials"][0]["annex"]
+    with pytest.raises(CatalogError, match="EK-3F-1 'OP1106'"):
+        compose_claim(bill, ctx, catalogs)
+
+
 def test_a_material_flagged_as_waiting_for_an_approval_reaches_the_claim(
     catalogs: CohortCatalogs, pathways: dict[str, Pathway]
 ) -> None:
@@ -598,6 +620,22 @@ def test_catalogs_lazy_loading_and_in_memory_mutations() -> None:
         cats.material_row("AP2000", "2025-12-12")
     mat_on_start = cats.material_row("AP2000", "2025-12-13")
     assert mat_on_start.name == "KALÇA | PRİMER | FEMORAL STEM | ÇİMENTOLU | ÇELİK | PARLATILMIŞ"
+
+    # (e) EK-3/C-2 (slice G7b): in force from 2026-01-24, the device's own name, a list of its own
+    with pytest.raises(
+        CatalogError,
+        match="EK-3C-2 'OP1106' on 2026-01-23: curated list is in force from 2026-01-24",
+    ):
+        cats.material_row("OP1106", "2026-01-23", "EK-3C-2")
+    walker = cats.material_row("OP1106", "2026-01-24", "EK-3C-2")
+    assert (walker.name, walker.price_try) == ("WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)", Decimal("252.0"))
+    assert walker.source == "EK-3C-2 from 2026-01-24 (curated ek3c2_materials)"
+    with pytest.raises(CatalogError, match="EK-3C-2 'AP2000' on 2026-06-29: expected 1 row, found 0"):
+        cats.material_row("AP2000", "2026-06-29", "EK-3C-2")
+    with pytest.raises(CatalogError, match="EK-3F-1 'OP1106' on 2026-06-29: expected 1 row, found 0"):
+        cats.material_row("OP1106", "2026-06-29")
+    with pytest.raises(CatalogError, match="EK-3C-3 'OP1106': not an EK-3 annex the cohort prices"):
+        cats.material_row("OP1106", "2026-06-29", "EK-3C-3")
 
 
 # --- 4. AST import hygiene check on compose.py and catalogs.py ---------------------------------

@@ -53,7 +53,7 @@ if TYPE_CHECKING:
         check_clean_plausibility,
     )
 
-from .catalogs import EK3F1_FROM, CatalogError, CatalogRow, CohortCatalogs
+from .catalogs import EK3C2_FROM, EK3F1_FROM, CatalogError, CatalogRow, CohortCatalogs
 from .clean import (
     ANADATA_CLEAN_SCHEMA,
     CLEAN_TABLE_FILES,
@@ -281,6 +281,7 @@ __all__ = [
     "DerivedLabParameterError",
     "DrugRoute",
     "DrugRoutes",
+    "EK3C2_FROM",
     "EK3F1_FROM",
     "EPISODE_ID_RE",
     "EncounterContext",

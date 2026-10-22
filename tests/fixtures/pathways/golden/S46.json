@@ -1,0 +1,33 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-08-10",
+      "icd10": "G20",
+      "role": "primary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-08-10",
+    "claim_start_date": "2026-08-10",
+    "claim_type": "poliklinik",
+    "department": "Fiziksel Tıp ve Rehabilitasyon",
+    "discharge_date": null,
+    "primary_icd10": "G20"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-08-10",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1800"
+    }
+  ],
+  "story": "S46"
+}

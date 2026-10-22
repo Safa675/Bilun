@@ -17,7 +17,7 @@ Faults, prices, amounts and totals are **not** part of a pathway. A pathway is t
 | `scripts/synthetic/pathways/loader.py` | `load_pathway(path)`, `load_all(directory)`; an error names the file, the field and a check id |
 | `scripts/synthetic/pathways/expand.py` | `expand(pathway, pins=None, *, annotate=False)`: pins in, clean bill out (golden format, or with pathway line references when `annotate=True`); pure, no catalog, no price, no randomness |
 | `scripts/synthetic/pathways/checks.py` | `Catalogs` and `run_all(pathway, catalogs)`: the pathway against the catalogs and its own logic |
-| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S10.json`, `S11.json`, `S12.json`, `S14.json`, `S17.json`, `S18.json`, `S20.json`, `S22.json`, `S23.json`, `S24.json`, `S32.json`, `S33.json`, `S34.json`, `S39.json`, `S40.json`, `S47.json`, `S48.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills, all but S23, S32, S39 and S48, clean bills without a fault: `CLEAN_ONLY` in `stories.py`). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
+| `tests/fixtures/pathways/golden/S1.json` … `S9.json`, `S10.json`, `S11.json`, `S12.json`, `S14.json`, `S17.json`, `S18.json`, `S20.json`, `S22.json`, `S23.json`, `S24.json`, `S32.json`, `S33.json`, `S34.json`, `S39.json`, `S40.json`, `S45.json`, `S46.json`, `S47.json`, `S48.json` | the clean bills of the showcase stories that `stories.py` builds, exported from it by another script (`golden_faulty/` holds the faulty bills, all but S23, S32, S39, S45 and S48, clean bills without a fault: `CLEAN_ONLY` in `stories.py`). A story has goldens exactly when `stories.py` builds it (`tests/fixtures/pathway_goldens.py`); a pathway of a later story has none and is not compared with one |
 
 ## Read a pathway top to bottom
 
@@ -107,7 +107,7 @@ One line per session, `kind: anaesthesia`, with `operations: [<operation line id
 
 ### Materials
 
-`id`, EK-3/F-1 `code` and `name` (site and description joined by ` | `, as the catalog lists them), `material_type` (`implant` or `consumable`), `qty`, `day`, `linked_to` (the package or operation line that used it) and `flags` (`titubb_registered`, `uts_registered`, and since slice G5a `requires_pre_auth`: the material waits for an approval, which a clean bill never bills; the cohort check reads it as a stray flag). Only EK-3/F-1 is checked so far.
+`id`, `code`, `name`, `annex` (slice G7b: `EK-3F-1`, the default, or `EK-3C-2`), `material_type`, `qty`, `day`, `linked_to` and `flags` (`titubb_registered`, `uts_registered`, and since slice G5a `requires_pre_auth`: the material waits for an approval, which a clean bill never bills; the cohort check reads it as a stray flag). An **EK-3/F-1** material (the arthroplasty list, in force from 2025-12-13) is an `implant` or a `consumable`, its name is the site and the description joined by ` | ` as the catalog lists them, and it hangs on the package or operation line that used it. An **EK-3/C-2** device (the external orthoses and prostheses, in force from 2026-01-24; S45's walker OP1106) is an `ortez` or a `protez`, its name is the catalog's `material_name` alone (the description is the report it needs), and it hangs on the examination (`kind: exam`) of the visit that prescribed it: the claim loader wants every material line linked to a procedure line. A type or a link that does not fit the annex is `schema.line_shape` or `schema.unknown_reference`. The expansion writes `annex` on an EK-3/C-2 row only (an optional golden key).
 
 ### Session roles
 
@@ -154,7 +154,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | `yaml.invalid`, `hygiene.forbidden_key`, `hygiene.anon_text`, `hygiene.price_text`, `hygiene.id_like_number`, `schema.id_mismatch` | bad YAML or a repeated key; a key containing price, amount, total or package_candidate (any case); in any key, string or comment, text that looks like an ANON identifier (`ANON_7`, `anon-7`, `ANON 7`, any case), a non-zero currency amount (`12 TL`, `12 TRY`, `12 ₺`, `₺12`; "0 TL" passes) or an isolated 11-digit number (barcodes have 13); a file name that is not `<id>.yaml` |
 | `schema.*` | an unknown or missing field (including `basis`, `source`, and the `source` of a window), a bad enum or value, a bad day expression, min above max, a probability outside [0, 1], a duplicate id, a dangling reference, an undefined anchor, a malformed line, a wrong drug quantity form, not exactly one primary diagnosis, a stay without nights, nights on a visit, a visit that arrives from an ICU, `discharge` on a visit |
 | `procedure.in_force`, `procedure.name`, `procedure.kind` | an EK-2B/EK-2C code missing on some day of the window; a name that is not the catalog's (whitespace-normalized); a kind that does not fit the code's chapter (an ICU kind on a code that is not an ICU day or package, a `newborn_bed` on a code that is not the incubator or the cot) |
-| `material.*`, `drug.in_force`, `drug.name`, `drug.inn` | the same for EK-3/F-1 and EK-4A; `inn` must be the crosswalk's `active_ingredient` |
+| `material.*`, `drug.in_force`, `drug.name`, `drug.inn` | the same for the EK-3 list of each material's annex (EK-3/F-1, EK-3/C-2) and EK-4A; `inn` must be the crosswalk's `active_ingredient` |
 | `drug.indication`, `drug.course` | an indication that is not a diagnosis of the pathway or is optional; a `per_night` drug that does not start on admit; a course that outlasts the stay (the shortest course at the shortest stay, and a pinned course at the pinned stay) |
 | `icd.exists`, `icd.active`, `icd.leaf`, `icd.name`, `icd.sex_gate` | the SKRS table; a sex-gated code with a sex list that allows the other sex |
 | `lab.in_table`, `lab.name`, `specialty.exists` | an `L` code absent from `lab_reference.csv` or named differently; an unknown EK-2A branch |
@@ -193,7 +193,7 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 
 - One pathway has one billing mode: an EK-2C package and itemized EK-2B lines in one bill are not expressible (SUT 2.2.2.B(3) c, ç).
 - Itemized lines after the package window (long package stays) are not expressible; `package.window` refuses such a stay.
-- Materials are checked against EK-3/F-1 only.
+- Materials are checked against EK-3/F-1 and EK-3/C-2 only (the other 24 priced EK-3 lists are not read).
 - Procedure lines carry the two flags of slice G5a only (`is_package_included`, `isbt128_barcode`), without money; S24's red-cell units set `isbt128_barcode` (the faults of S24 and S34 set flags too).
 - `showcase` is required, so a pathway without a showcase story (the rest of the first 20) needs the schema relaxed. `Pins.story` is `S` and a number from 1 up (it was limited to `S1`..`S8` until the ninth story).
 - Newborn intensive-care tiers (P552006-8) are modelled as ICU packages (`icu_package`), not as a newborn stay; rooming-in (a baby beside the mother, for whom 510081 is not billed) cannot be shown, because the engine's `rooming_in_claim_ids` has no caller (issue EI-14 of the coverage plan).
@@ -233,3 +233,5 @@ Run them on one file or all: `.venv/bin/python -m scripts.synthetic.pathways.che
 | S23 | `end_stage_kidney_disease_emergency_haemodialysis` | done (2026-10-22; an emergency session P704210, a package stay of one date, a clean bill) |
 | S18 | `decompensated_cirrhosis_gi_bleed_albumin` | done (2026-10-22; decompensated cirrhosis, the serum albumin L100320 and three days of human albumin with its report) |
 | S24 | `decompensated_cirrhosis_variceal_rebleed_transfusion` | done (2026-10-22; the variceal rebleed of the patient of S18, two red-cell units 705371 with their ISBT 128 numbers) |
+| S45 | `parkinson_neurology_control_first_walker` | done (2026-10-22; the neurology control of the patient of S6 with his first walker, EK-3/C-2 OP1106, a clean bill) |
+| S46 | `parkinson_physiatry_visit` | done (2026-10-22; the physiatry visit of the patient of S6; sibling `parkinson_physiatry_visit_second_walker_billed` bills a second walker inside the MIAT) |

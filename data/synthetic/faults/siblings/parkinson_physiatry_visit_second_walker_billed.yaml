@@ -1,0 +1,66 @@
+# Physiatry visit six weeks after the neurology control, a second walker billed inside the MIAT of the first: faulty sibling of S46.
+# Showcase story S46 faulty bill (reports/synthetic-data/2026-10-15-showcase-proofs/stories.py, s46("faulty")).
+# The walker of story S45 (2026-06-29) is 42 days old and EK-3/C-2 OP1106 has a MIAT of 1 year, so a new one is not paid (C002781,
+# SUT 3.1.2.(9)). The bill carries the examination of the clean bill and also a second walker.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: parkinson_physiatry_visit_second_walker_billed
+title: "Physiatry visit for Parkinson's disease with gait instability, a second walker billed inside the MIAT of the first"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Fiziksel Tıp ve Rehabilitasyon"
+  specialty: "1800"                  # EK-2A: Fiziksel Tıp ve Rehabilitasyon
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S46 is the man of story S6 (the same patient, the third bill); G20 has no sex gate. Clinician to confirm."
+  age:
+    min: 60
+    max: 90
+    basis: judgment
+    source: "Story S46 patient is 79, like story S6; the bounds are those of story S6 (the author's judgment)."
+
+diagnoses:
+  - icd10: G20
+    name: "PARKİNSON HASTALIĞI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the physiatrist sees the gait of the Parkinson's disease of story S6, so G20 is the principal code. Physiatrist to confirm."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+materials:
+  - id: walker
+    code: "OP1106"
+    name: "WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)"
+    annex: EK-3C-2
+    material_type: ortez               # EK-3/C-2 category ALT EKSTREMİTE ORTEZLERİ
+    qty: 1
+    day: admit
+    linked_to: exam
+    flags: {titubb_registered: true, uts_registered: true}
+    basis: sut
+    source: "The faulty line: EK-3/C-2 OP1106 again, 42 days after the walker of story S45; its MIAT is 1 year (C002781, SUT 3.1.2.(9))."
+
+notes:
+  - "The visit is on Monday 2026-08-10, 42 days after the neurology control of story S45 (2026-06-29), a branch other than neurology: no 10-day rule (C000573) applies."
+  - "The patient already has the walker of story S45. EK-3/C-2 devices are not renewed before their MIAT (C002781, SUT 3.1.2.(9)); this bill renews it after 42 days."
+  - "No test is billed and no physiotherapy session: the visit assesses the gait. G20 is a diagnosis of the patient, so his list of diagnoses does not grow."
+
+showcase:
+  story: S46
+  sex: M
+  age: 79
+  admit: "2026-08-10"

@@ -12,6 +12,9 @@ import polars as pl
 
 REPO = Path(__file__).resolve().parents[3]
 EK3F1_FROM = "2025-12-13"
+# The curated EK-3/C-2 list (external orthoses and prostheses) is the raw partition annex=EK-3C-2/effective_date=
+# 2026-01-24 (the list "Yür. 24.01.2026" of the 2026-10-02 SUT; scripts/sut/catalogs/hierarchical_materials.py).
+EK3C2_FROM = "2026-01-24"
 _ZERO = Decimal("0.00")
 
 
@@ -45,7 +48,7 @@ def _iso_date(on: date | str, *, catalog: str, code: str) -> str:
 
 
 class CohortCatalogs:
-    """Lazily loads EK-2B, EK-2C, EK-3/F-1 and EK-4A curated Parquet tables once with Polars."""
+    """Lazily loads EK-2B, EK-2C, EK-3/F-1, EK-3/C-2 and EK-4A curated Parquet tables once with Polars."""
 
     def __init__(self, root: Path = REPO) -> None:
         self.root = Path(root)
@@ -72,6 +75,13 @@ class CohortCatalogs:
         return self._read_parquet(
             "data/gazette/curated/ek3f1_arthroplasty_materials.parquet",
             ["sut_code", "material_name", "description", "price_try"],
+        )
+
+    @cached_property
+    def ek3c2(self) -> pl.DataFrame:
+        return self._read_parquet(
+            "data/gazette/curated/ek3c2_materials.parquet",
+            ["sut_code", "material_name", "price_try"],
         )
 
     @cached_property
@@ -131,23 +141,31 @@ class CohortCatalogs:
             source=f"{catalog} valid_from {r['valid_from']}",
         )
 
-    def material_row(self, code: str, on: date | str) -> CatalogRow:
-        """Return the EK-3/F-1 row for ``code`` on ``on`` (in force from 2025-12-13)."""
-        d = _iso_date(on, catalog="EK-3F-1", code=code)
-        if d < EK3F1_FROM:
-            raise CatalogError(
-                f"EK-3F-1 {code!r} on {d}: curated list is in force from {EK3F1_FROM}"
-            )
-        rows = self.ek3f1.filter(pl.col("sut_code") == code)
+    def material_row(self, code: str, on: date | str, annex: str = "EK-3F-1") -> CatalogRow:
+        """Return the row for ``code`` on ``on`` of its EK-3 ``annex``: EK-3/F-1 (in force from 2025-12-13; the name is
+        the site and the description joined) or EK-3/C-2 (in force from 2026-01-24; the name is the device's, the
+        description being the report it needs)."""
+        if annex not in ("EK-3F-1", "EK-3C-2"):
+            raise CatalogError(f"{annex} {code!r}: not an EK-3 annex the cohort prices (EK-3F-1, EK-3C-2)")
+        d = _iso_date(on, catalog=annex, code=code)
+        start = EK3F1_FROM if annex == "EK-3F-1" else EK3C2_FROM
+        if d < start:
+            raise CatalogError(f"{annex} {code!r} on {d}: curated list is in force from {start}")
+        frame = self.ek3f1 if annex == "EK-3F-1" else self.ek3c2
+        rows = frame.filter(pl.col("sut_code") == code)
         if rows.height != 1:
-            raise CatalogError(f"EK-3F-1 {code!r} on {d}: expected 1 row, found {rows.height}")
+            raise CatalogError(f"{annex} {code!r} on {d}: expected 1 row, found {rows.height}")
         r = rows.row(0, named=True)
-        name = " | ".join(part for part in (r["material_name"], r["description"]) if part)
+        if annex == "EK-3F-1":
+            name = " | ".join(part for part in (r["material_name"], r["description"]) if part)
+            curated = "ek3f1_arthroplasty_materials"
+        else:
+            name, curated = r["material_name"], "ek3c2_materials"
         return CatalogRow(
             code=code,
             name=name,
             price=Decimal(str(r["price_try"])),
-            source=f"EK-3F-1 from {EK3F1_FROM} (curated ek3f1_arthroplasty_materials)",
+            source=f"{annex} from {start} (curated {curated})",
         )
 
     def drug_row(self, barcode: str, on: date | str) -> CatalogRow:

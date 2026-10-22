@@ -60,7 +60,7 @@ CHECKS: dict[str, str] = {
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
     "procedure.kind": "a line kind that does not fit the code's EK-2B chapter, an ICU kind on a code that is not an ICU day or package, or a newborn_bed on a code that is not the incubator or the cot",
-    "material.in_force": "an EK-3/F-1 code missing on some day of the window",
+    "material.in_force": "an EK-3 code missing from its annex's list (EK-3/F-1 or EK-3/C-2) on some day of the window",
     "material.name": "a material name that is not the catalog name",
     "drug.in_force": "an EK-4A barcode missing on some day of the window",
     "drug.name": "a drug name that is not the EK-4A name",
@@ -217,6 +217,14 @@ Pending = Annotated[str, StringConstraints(pattern=r"^#[0-9]+( Q[0-9]+)?$")]
 ProcCode = Annotated[str, StringConstraints(pattern=r"^[A-Z]?[0-9]{6}$")]
 MaterialCode = Annotated[str, StringConstraints(pattern=r"^[A-Z]{2}[0-9]{4}$")]
 Barcode = Annotated[str, StringConstraints(pattern=r"^[0-9]{13}$")]
+# The EK-3 annex a material line is priced on (slice G7b): EK-3/F-1, the arthroplasty materials an operation uses,
+# or EK-3/C-2, the external orthoses and prostheses given on a specialist report (a walker, OP1106).
+Ek3Annex = Literal["EK-3F-1", "EK-3C-2"]
+# What a material line of each annex is (`material_type`) and the kind of line it hangs on (`linked_to`): an
+# EK-3/F-1 material is used in a package or an operation; an EK-3/C-2 device is prescribed at a visit, so it hangs
+# on the examination of its bill (the claim loader wants every material line linked to a procedure line).
+MATERIAL_TYPES: dict[str, tuple[str, ...]] = {"EK-3F-1": ("implant", "consumable"), "EK-3C-2": ("ortez", "protez")}
+MATERIAL_LINK_KINDS: dict[str, tuple[str, ...]] = {"EK-3F-1": ("package", "operation"), "EK-3C-2": ("exam",)}
 IcdCode = Annotated[str, StringConstraints(pattern=r"^[A-Z][0-9]{2}(\.[0-9A-Z]{1,4})?$")]
 Specialty = Annotated[str, StringConstraints(pattern=r"^[0-9]{4}$")]
 IsoDate = Annotated[str, AfterValidator(_iso_date)]
@@ -441,18 +449,28 @@ class DrugFlags(_Model):
 
 
 class Material(Sourced):
-    """An EK-3/F-1 line, billed next to a package or an operation it is linked to."""
+    """An EK-3 line: an EK-3/F-1 material billed next to the package or operation that used it, or an EK-3/C-2
+    device billed with the examination of the visit that prescribed it (`annex`, slice G7b)."""
 
     id: Slug
     code: MaterialCode
     name: Name
-    material_type: Literal["implant", "consumable"]
+    annex: Ek3Annex = "EK-3F-1"
+    material_type: Literal["implant", "consumable", "ortez", "protez"]
     qty: int = Field(default=1, ge=1, le=99)
     day: DayPoint
-    linked_to: Slug  # id of the package or operation line that used it
+    linked_to: Slug  # id of the line it hangs on: the package or operation (EK-3/F-1), the examination (EK-3/C-2)
     flags: MaterialFlags = Field(default_factory=MaterialFlags)
     optional: Chance | None = None
     pending: Pending | None = None
+
+    @model_validator(mode="after")
+    def _shape(self) -> Self:
+        if self.material_type not in MATERIAL_TYPES[self.annex]:
+            allowed = " or ".join(MATERIAL_TYPES[self.annex])
+            problem = f"an {self.annex} material is {allowed}, not {self.material_type}"
+            raise PydanticCustomError("line_shape", "{problem}", {"problem": problem})
+        return self
 
 
 class Drug(Sourced):
@@ -587,8 +605,9 @@ class Pathway(_Model):
         lines = {p.id: p for p in self.procedures}
         for m in self.materials:
             target = lines.get(m.linked_to)
-            if target is None or target.kind not in ("package", "operation"):
-                return f"material {m.id} is linked to {m.linked_to!r}, not a package or operation"
+            kinds = MATERIAL_LINK_KINDS[m.annex]
+            if target is None or target.kind not in kinds:
+                return f"material {m.id} is linked to {m.linked_to!r}, not a {' or '.join(kinds)} line"
             if target.code is None or len(target.days) != 1 or ".." in target.days[0]:
                 return f"material {m.id}: line {target.id} must be one code on one day"
             if target.optional and not m.optional:

@@ -3,7 +3,7 @@
 Nothing here writes to the repo. Claims are built from the dataclasses in
 src/bilun/domain/claims/models.py the way the unit tests do, priced from the
 curated catalogs in force on each line date (EK-2B/EK-2C history, the EK-3/F-1
-list; drug names from the EK-4A history row in force, which must have an active
+and EK-3/C-2 lists; drug names from the EK-4A history row in force, which must have an active
 ingredient in the drug crosswalk), then run through:
   * the specific detector(s) for the injected fault (direct call), and
   * the full single-patient report (compute_patient_billing_report) plus the
@@ -26,7 +26,7 @@ os.chdir(ROOT)
 
 import polars as pl  # noqa: E402
 
-from cat import EK2B, EK2C, EK3F1, EK4A, XWALK  # noqa: E402
+from cat import EK2B, EK2C, EK3C2, EK3F1, EK4A, XWALK  # noqa: E402
 from src.bilun.domain.billing.engine import analyze_claim  # noqa: E402
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report  # noqa: E402
 from src.bilun.domain.claims.dataset_builder import _enrich_material_regulatory_flags  # noqa: E402
@@ -81,17 +81,28 @@ def catalog_row(code: str, on: date) -> dict[str, Any]:
 EK3F1_FROM = date(2025, 12, 13)
 
 
-def material_row(code: str, on: date) -> dict[str, Any]:
-    """Return the EK-3/F-1 row of ``code`` (name = site | description); fail loudly."""
-    if on < EK3F1_FROM:
-        raise ValueError(f"EK-3F-1 {code} on {on}: the curated list starts {EK3F1_FROM}")
-    rows = EK3F1.filter(pl.col("sut_code") == code)
+# The curated EK-3/C-2 file (external orthoses and prostheses) is the list in force from 24.01.2026 (raw partition
+# annex=EK-3C-2/effective_date=2026-01-24, as consolidated in the 2026-10-02 SUT).
+EK3C2_FROM = date(2026, 1, 24)
+
+
+def material_row(code: str, on: date, annex: str = "EK-3F-1") -> dict[str, Any]:
+    """Return the row of ``code`` in its EK-3 ``annex``; fail loudly. An EK-3/F-1 name is site | description; an
+    EK-3/C-2 name is the device's own (its description is the report it needs)."""
+    start, frame, curated = {
+        "EK-3F-1": (EK3F1_FROM, EK3F1, "ek3f1_arthroplasty_materials"),
+        "EK-3C-2": (EK3C2_FROM, EK3C2, "ek3c2_materials"),
+    }[annex]
+    if on < start:
+        raise ValueError(f"{annex} {code} on {on}: the curated list starts {start}")
+    rows = frame.filter(pl.col("sut_code") == code)
     if rows.height != 1:
-        raise ValueError(f"EK-3F-1 {code}: {rows.height} rows")
+        raise ValueError(f"{annex} {code}: {rows.height} rows")
     r = rows.row(0, named=True)
-    name = " | ".join(part for part in (r["material_name"], r["description"]) if part)
+    parts = (r["material_name"], r["description"]) if annex == "EK-3F-1" else (r["material_name"],)
+    name = " | ".join(part for part in parts if part)
     return {"code": code, "name": name, "price_try": r["price_try"],
-            "source": f"EK-3F-1 from {EK3F1_FROM} (curated ek3f1_arthroplasty_materials)"}
+            "source": f"{annex} from {start} (curated {curated})"}
 
 
 def drug_row(barcode: str, on: date) -> dict[str, Any]:
@@ -184,8 +195,9 @@ class Bill:
     def mat(self, code: str, on: date, *, qty: int = 1, proc_line_id: str = "",
             material_type: str = "implant", specialty_category: str = "EK-3F-1",
             line_id: str | None = None, **flags: Any) -> str:
-        """An EK-3/F-1 line at its list price (KDV hariç; the claim model has no KDV field)."""
-        row = material_row(code, on)
+        """An EK-3 line at its list price (KDV hariç; the claim model has no KDV field); ``specialty_category`` names
+        its annex (EK-3F-1, or EK-3C-2 for an orthosis such as a walker)."""
+        row = material_row(code, on, specialty_category)
         lid = line_id or f"{self.cid}-M{len(self.mats) + 1:02d}"
         unit = money(row["price_try"])
         billed = money(unit * qty)

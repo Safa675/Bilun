@@ -1,0 +1,227 @@
+{
+ "story": "S46",
+ "clean": {
+  "total_billed": "85.73",
+  "rows": [
+   {
+    "date": "2026-08-10",
+    "code": "520030",
+    "name": "Normal poliklinik muayenesi",
+    "qty": 1,
+    "unit": "85.73",
+    "billed": "85.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "G20",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 1
+  }
+ },
+ "faulty": {
+  "total_billed": "337.73",
+  "rows": [
+   {
+    "date": "2026-08-10",
+    "code": "520030",
+    "name": "Normal poliklinik muayenesi",
+    "qty": 1,
+    "unit": "85.73",
+    "billed": "85.73",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-10",
+    "code": "OP1106",
+    "name": "WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)",
+    "qty": 1,
+    "unit": "252.00",
+    "billed": "252.00",
+    "source": "EK-3C-2 from 2026-01-24 (curated ek3c2_materials)"
+   }
+  ],
+  "diagnoses": [
+   [
+    "G20",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule": "material_miat_ek3c2",
+    "material_code": "OP1106",
+    "risk_amount": 252.0,
+    "material_outcome": "review",
+    "sut_section": "3.1.4",
+    "message": "Prior use on 2026-06-29 — MIAT 1 yıl (365 days) may block renewal (§3.1.2).",
+    "last_use_date": "2026-06-29",
+    "days_since_last_use": 42,
+    "minimum_interval_days": 365
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 2
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "materials",
+   "material_miat_interval",
+   "OP1106",
+   252.0
+  ],
+  [
+   "validate",
+   "material_miat_ek3c2",
+   "",
+   "OP1106",
+   252.0
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

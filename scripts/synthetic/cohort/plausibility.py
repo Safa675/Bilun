@@ -4,8 +4,8 @@ The checks read the nine claims tables and the clean `anadata_clean` table of on
 what an auditor would call implausible: a diagnosis that cannot exist on its day or for this patient,
 codes that do not belong to the claim's care pathway, a stay without a bed for every day, a
 performed procedure that was never billed, a package claim that carries a bed, an operation without
-its anaesthesia (slice E1); a material that hangs on no operation or carries a stray compliance
-flag, a unit price that is not the price in force on the day, a bill that does not add up, answer
+its anaesthesia (slice E1); a material that hangs on no operation (an EK-3/C-2 device: no examination)
+or carries a stray compliance flag, a unit price that is not the price in force on the day, a bill that does not add up, answer
 rows and fault records that contradict the bill (slice E2).
 
 `check_plausibility(tables, clean_tables)` is a pure function of the tables it is given: it knows no
@@ -26,12 +26,12 @@ registry as a whole and the columns of the answer table: they start with `(regis
 `(expected_rule_outputs)`. The findings of one check come sorted by `where`, then `message`.
 
 The reference data (EK-2B/EK-2C history, chapters, ICD-10, code sets, the care pathways and their
-fault siblings, the EK-3/F-1 and EK-4A lists) are read once, lazily, by a `PlausibilityContext`.
+fault siblings, the EK-3/F-1, EK-3/C-2 and EK-4A lists) are read once, lazily, by a `PlausibilityContext`.
 
 INDEPENDENCE: the price checks know nothing of the generator. They never use `CohortCatalogs` or a
 helper the generator uses: EK-2B and EK-2C prices come from the engine's as-of lookups
-(`src/bilun/domain/pricing/temporal.py`), EK-3/F-1 and EK-4A from direct Polars reads of the curated
-files.
+(`src/bilun/domain/pricing/temporal.py`), EK-3/F-1, EK-3/C-2 and EK-4A from direct Polars reads of the
+curated files.
 
 Everything is vectorised Polars. A `Problem` is built only from the finished findings. Python
 loops walk small lists, never the rows of a table: the distinct (code, day) pairs of the procedure
@@ -103,11 +103,11 @@ CHECKS: dict[str, str] = {
     "anaesthesia.operation_pairing": "an operation date without exactly one anaesthesia line, or an anaesthesia line without an operation",
     "anaesthesia.group": "an anaesthesia code that is not the code of the puan band of the day's operations",
     # material: the material lines against their operation and the compliance flags
-    "material.operation_link": "a material line not linked to an operation of its own claim, or not dated on that operation's day",
+    "material.operation_link": "a material not linked to an operation (EK-3/C-2: the examination) of its own claim, or not dated on that line's day",
     "material.stray_flag": "a material compliance flag off its healthy value (registration flags true, every other flag false)",
     # price: unit prices against the lists in force on the day of the line
     "price.procedure_in_force": "a procedure line whose unit price is not the engine's EK-2B or EK-2C price in force on its day",
-    "price.material_in_force": "a material line that is not in the EK-3/F-1 list, is dated before the list, or is not at its price",
+    "price.material_in_force": "a material not in the EK-3 list of its annex (EK-3/F-1, EK-3/C-2), dated before the list, or not at its price",
     "price.drug_in_force": "a drug line whose barcode has no EK-4A row in force on its day (drug prices are not checked)",
     # money: the arithmetic of the bill
     "money.line_arithmetic": "a line whose billed amount is not unit price x quantity x 1, 0.5 or 0.25, to the cent",
@@ -276,8 +276,11 @@ VISIT_KEYS: dict[str, str] = {"acil": "acil", "poliklinik": "poliklinik", "yatis
 OPERATION_GROUP_ID = "6"
 
 # material.operation_link: the categories a procedure line that carries materials may have (an
-# operation is billed as an `islem`, or as a `paket` when it is an EK-2C package).
+# operation is billed as an `islem`, or as a `paket` when it is an EK-2C package). An EK-3/C-2 device
+# (slice G7b; `specialty_category` names the annex) is prescribed at a visit and hangs on its examination.
 OPERATION_CATEGORIES: tuple[str, ...] = ("islem", "paket")
+DEVICE_ANNEX = "EK-3C-2"
+EXAM_CATEGORY = "muayene"
 
 # material.stray_flag: the flags are the Boolean columns of material_claim_lines except the
 # structural one (what the line is). A flag is healthy when it is false (or missing), except the
@@ -288,8 +291,14 @@ STRUCTURAL_FLAGS: tuple[str, ...] = ("is_bundled",)
 REGISTRATION_FLAGS: tuple[str, ...] = ("titubb_registered", "uts_registered")
 
 # price.material_in_force: the curated EK-3/F-1 list is one list, in force from its Yürürlük date
-# 13.12.2025 (raw folder annex=EK-3F-1/effective_date=2025-12-13). It carries no end date.
+# 13.12.2025 (raw folder annex=EK-3F-1/effective_date=2025-12-13). It carries no end date. The curated
+# EK-3/C-2 list (slice G7b) is the raw folder annex=EK-3C-2/effective_date=2026-01-24, also without an end date.
 EK3F1_FROM = date(2025, 12, 13)
+EK3C2_FROM = date(2026, 1, 24)
+EK3_LISTS: dict[str, tuple[str, date]] = {
+    "EK-3F-1": ("ek3f1_arthroplasty_materials.parquet", EK3F1_FROM),
+    "EK-3C-2": ("ek3c2_materials.parquet", EK3C2_FROM),
+}
 
 # money.line_arithmetic: the multiple-surgery ladder bills the full price, half of it or a quarter of
 # it; a ratio is written as quarters of the full price so that the test stays in whole numbers.
@@ -566,10 +575,14 @@ class PlausibilityContext:
         return frame.unique()
 
     @cached_property
-    def ek3f1(self) -> pl.DataFrame:
-        """sut_code, price_try: the EK-3/F-1 arthroplasty materials list (read directly)."""
-        path = self.root / "data/gazette/curated/ek3f1_arthroplasty_materials.parquet"
-        return pl.read_parquet(path, columns=["sut_code", "price_try"])
+    def ek3(self) -> pl.DataFrame:
+        """annex, sut_code, price_try, list_from (Date): the EK-3 lists of `EK3_LISTS` (read directly)."""
+        frames = [
+            pl.read_parquet(self.root / "data/gazette/curated" / name, columns=["sut_code", "price_try"])
+            .with_columns(pl.lit(annex).alias("annex"), pl.lit(start).alias("list_from"))
+            for annex, (name, start) in EK3_LISTS.items()
+        ]
+        return pl.concat(frames).select("annex", "sut_code", "price_try", "list_from")
 
     @cached_property
     def ek4a(self) -> pl.DataFrame:
@@ -1720,7 +1733,8 @@ def check_anaesthesia_group(bill: _Bill) -> list[Problem]:
 
 
 def check_operation_link(bill: _Bill) -> list[Problem]:
-    """material.operation_link: a material hangs on an operation of its own claim, on its day."""
+    """material.operation_link: a material hangs on an operation of its own claim, on its day; an EK-3/C-2
+    device hangs on the examination of its own claim, on its day."""
     operations = bill.lines.select(
         "claim_id",
         "procedure_line_id",
@@ -1731,15 +1745,21 @@ def check_operation_link(bill: _Bill) -> list[Problem]:
         (pl.col("is_operation") & pl.col("procedure_category").is_in(OPERATION_CATEGORIES))
         .fill_null(False)
         .alias("link_is_operation"),
+        (pl.col("procedure_category") == EXAM_CATEGORY).fill_null(False).alias("link_is_exam"),
         pl.lit(True).alias("link_found"),
     ).unique(subset=["claim_id", "procedure_line_id"], keep="first", maintain_order=True)
     joined = (
         bill.table(TABLE_MATERIALS)
         .select(
-            "claim_id", "material_line_id", "procedure_line_id", "material_code", "material_date"
+            "claim_id",
+            "material_line_id",
+            "procedure_line_id",
+            "material_code",
+            "material_date",
+            (pl.col("specialty_category") == DEVICE_ANNEX).fill_null(False).alias("is_device"),
         )
         .join(operations, on=["claim_id", "procedure_line_id"], how="left")
-        .with_columns(pl.col("link_found", "link_is_operation").fill_null(False))
+        .with_columns(pl.col("link_found", "link_is_operation", "link_is_exam").fill_null(False))
     )
     other_day = (_date("material_date") != _date("link_date")).fill_null(False)
     reasons = pl.concat_str(
@@ -1750,7 +1770,7 @@ def check_operation_link(bill: _Bill) -> list[Problem]:
                 pl.col("procedure_line_id"),
             )
         ),
-        pl.when(pl.col("link_found") & ~pl.col("link_is_operation")).then(
+        pl.when(pl.col("link_found") & ~pl.col("is_device") & ~pl.col("link_is_operation")).then(
             _format(
                 "the line {} ({}, category {}) it hangs on is not an operation",
                 pl.col("link_code"),
@@ -1758,9 +1778,17 @@ def check_operation_link(bill: _Bill) -> list[Problem]:
                 pl.col("link_category"),
             )
         ),
+        pl.when(pl.col("link_found") & pl.col("is_device") & ~pl.col("link_is_exam")).then(
+            _format(
+                "the line {} ({}, category {}) the EK-3/C-2 device hangs on is not an examination",
+                pl.col("link_code"),
+                pl.col("link_name"),
+                pl.col("link_category"),
+            )
+        ),
         pl.when(pl.col("link_found") & other_day).then(
             _format(
-                "it is dated {} but the operation {} it hangs on is dated {}",
+                "it is dated {} but the line {} it hangs on is dated {}",
                 pl.col("material_date"),
                 pl.col("link_code"),
                 pl.col("link_date"),
@@ -1865,17 +1893,30 @@ def check_procedure_price(bill: _Bill) -> list[Problem]:
 
 
 def check_material_price(bill: _Bill) -> list[Problem]:
-    """price.material_in_force: a material is in the EK-3/F-1 list, dated from its start, at its price."""
+    """price.material_in_force: a material is in the EK-3 list of its annex (`specialty_category`: EK-3/F-1 or
+    EK-3/C-2, slice G7b), dated from the list's start, at its price."""
     priced = (
         bill.table(TABLE_MATERIALS)
-        .select("claim_id", "material_line_id", "material_code", "material_date", "unit_price_try")
-        .join(bill.ctx.ek3f1, left_on="material_code", right_on="sut_code", how="left")
+        .select(
+            "claim_id",
+            "material_line_id",
+            "material_code",
+            "material_date",
+            "unit_price_try",
+            pl.col("specialty_category").alias("annex"),
+        )
+        .join(
+            bill.ctx.ek3,
+            left_on=["annex", "material_code"],
+            right_on=["annex", "sut_code"],
+            how="left",
+        )
     )
     listed = pl.col("price_try").is_not_null()
     reasons = pl.concat_str(
-        pl.when(~listed).then(pl.lit("is not in the EK-3/F-1 list")),
-        pl.when(_date("material_date") < EK3F1_FROM).then(
-            _format("is before the list is in force (from {})", pl.lit(EK3F1_FROM.isoformat()))
+        pl.when(~listed).then(_format("is not in the {} list", pl.col("annex").str.replace(r"^EK-3", "EK-3/"))),
+        pl.when(listed & (_date("material_date") < pl.col("list_from"))).then(
+            _format("is before the list is in force (from {})", pl.col("list_from").cast(pl.String))
         ),
         pl.when(
             listed

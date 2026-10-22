@@ -43,6 +43,9 @@ REPO = Path(__file__).resolve().parents[3]
 # The curated EK-3/F-1 list is one snapshot in force from 13.12.2025
 # (reports/synthetic-data/2026-10-15-showcase-proofs/harness.py, EK3F1_FROM).
 EK3F1_FROM = "2025-12-13"
+# The curated EK-3/C-2 list is the latest raw partition (scripts/sut/catalogs/hierarchical_materials.py, raw_latest):
+# annex=EK-3C-2/effective_date=2026-01-24, the list "Yür. 24.01.2026" of the 2026-10-02 SUT. It carries no end date.
+EK3C2_FROM = "2026-01-24"
 
 # Package window in days, counted from the day of the package (SUT 2.2.2.B-1(3): C000702-C000706).
 PACKAGE_WINDOW_DAYS = {"A": 15, "B": 10, "C": 8, "D": 5, "E": 3}
@@ -119,6 +122,22 @@ class Catalogs:
             pl.lit(EK3F1_FROM).alias("valid_from"),
             pl.lit(None, dtype=pl.String).alias("valid_to"),
         )
+
+    @cached_property
+    def ek3c2(self) -> pl.DataFrame:  # code, name (the device's name), valid_from, valid_to
+        # The description of an EK-3/C-2 row is the report it needs, not part of the name.
+        columns = ["sut_code", "material_name"]
+        frame = self._parquet("data/gazette/curated/ek3c2_materials.parquet", columns)
+        return frame.select(
+            pl.col("sut_code").alias("code"),
+            _norm(pl.col("material_name")).alias("name"),
+            pl.lit(EK3C2_FROM).alias("valid_from"),
+            pl.lit(None, dtype=pl.String).alias("valid_to"),
+        )
+
+    def ek3(self, annex: str) -> pl.DataFrame:
+        """The catalog frame of an EK-3 annex a material line names (`Material.annex`)."""
+        return {"EK-3F-1": self.ek3f1, "EK-3C-2": self.ek3c2}[annex]
 
     @cached_property
     def ek4a(self) -> pl.DataFrame:  # code (the barcode), name, valid_from, valid_to (last day)
@@ -333,9 +352,13 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
 
 def check_materials(pathway: Pathway, cat: Catalogs) -> list[Problem]:
-    """material.in_force, material.name: EK-3/F-1 codes (one list, in force from 2025-12-13)."""
-    occ = _named([(m.code, m.name, f"materials[{m.id}]") for m in pathway.materials])
-    return identity_problems(occ, cat.ek3f1, effective_window(pathway, cat), "material")
+    """material.in_force, material.name: each code in its annex's list (EK-3/F-1 from 2025-12-13, EK-3/C-2 from
+    2026-01-24; each one list without an end date)."""
+    out: list[Problem] = []
+    for annex in sorted({m.annex for m in pathway.materials}):
+        rows = [(m.code, m.name, f"materials[{m.id}]") for m in pathway.materials if m.annex == annex]
+        out += identity_problems(_named(rows), cat.ek3(annex), effective_window(pathway, cat), "material")
+    return out
 
 
 def check_drugs(pathway: Pathway, cat: Catalogs) -> list[Problem]:

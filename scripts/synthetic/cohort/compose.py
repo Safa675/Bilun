@@ -225,7 +225,8 @@ def compose_claim(
         entry_id = _require_entry_id(mat_row, section="materials", index=idx - 1)
         code = mat_row["code"]
         mat_date = date.fromisoformat(mat_row["date"])
-        cat = catalogs.material_row(code, mat_date)
+        annex = mat_row.get("annex", "EK-3F-1")  # slice G7b: an EK-3/C-2 device names its annex
+        cat = catalogs.material_row(code, mat_date, annex)
         proc_line_id = _resolve_linked_procedure_id(mat_row, procedures)
         qty = int(mat_row["qty"])
         unit = money(cat.price)
@@ -248,7 +249,7 @@ def compose_claim(
                 material_code=code,
                 material_name=cat.name,
                 material_type=mat_row["material_type"],
-                specialty_category="EK-3F-1",
+                specialty_category=annex,
                 quantity=qty,
                 unit_price_try=unit,
                 billed_amount_try=billed,

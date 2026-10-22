@@ -1,0 +1,73 @@
+# Neurology control three weeks after the discharge of story S6 (aspiration pneumonia in advanced Parkinson's disease), outpatient, billed itemized; a clean bill.
+# Showcase story S45 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F6 b2): bill 2 of the patient of S6. The neurologist gives the
+# patient his first walker (EK-3/C-2 OP1106) on a specialist report; the walker is an EK-3/C-2 device (slice G7b) billed with the examination.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: parkinson_neurology_control_first_walker
+title: "Neurology control after aspiration pneumonia in Parkinson's disease with a first walker, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Nöroloji"
+  specialty: "1300"                  # EK-2A: Nöroloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies; the EK-3/C-2 list is in force from 2026-01-24.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S45 is the man of story S6 (the same patient, the next bill); G20 and R13 have no sex gate. Clinician to confirm."
+  age:
+    min: 60
+    max: 90
+    basis: judgment
+    source: "Story S45 patient is 79, like story S6; the bounds are those of story S6 (the author's judgment)."
+
+diagnoses:
+  - icd10: G20
+    name: "PARKİNSON HASTALIĞI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the neurology control is for the Parkinson's disease of story S6, so G20 is the principal code. Neurologist to confirm."
+  - icd10: R13
+    name: "DİSFAJİ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the dysphagia of story S6 (nil by mouth, NG levodopa) is followed at the control. Neurologist to confirm."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+materials:
+  - id: walker
+    code: "OP1106"
+    name: "WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)"
+    annex: EK-3C-2
+    material_type: ortez               # EK-3/C-2 category ALT EKSTREMİTE ORTEZLERİ
+    qty: 1
+    day: admit
+    linked_to: exam
+    flags: {titubb_registered: true, uts_registered: true}
+    basis: sut
+    source: "EK-3/C-2 OP1106 (Yür. 24.01.2026): an aluminium walker on a specialist report of FTR, orthopaedics, geriatrics, neurology or neurosurgery; MIAT 1 year."
+
+notes:
+  - "The visit is 15 days after the discharge of story S6 (2026-06-14), on Monday 2026-06-29. Story S6 is billed itemized, so no package period (C000714) applies."
+  - "The walker is the patient's first: no EK-3/C-2 device was billed before, so its MIAT of 1 year (C002781, SUT 3.1.2.(9)) starts on this day."
+  - "The specialist report the walker needs (report type H: uzman hekim raporu) is the neurologist's, written at this visit; the claim model has no report field for a material."
+  - "Open for the billing officer: whether a hospital bills an EK-3/C-2 device on its own outpatient bill, or a medical supplier bills it on the report (the demo bills it with the visit)."
+  - "No test is billed. G20 and R13 are diagnoses of story S6's patient, so G20 joins the patient's list of diagnoses (story S6's own bill misses it: its fault)."
+
+showcase:
+  story: S45
+  sex: M
+  age: 79
+  admit: "2026-06-29"

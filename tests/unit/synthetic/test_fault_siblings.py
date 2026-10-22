@@ -34,6 +34,7 @@ S10_SIBLING = "gi_bleed_melena_er_visit_manual_hct_billed"
 S14_SIBLING = "urosepsis_ward_stay_transfer_day_billed"
 S40_SIBLING = "pyelonephritis_dementia_second_visit_exam_billed"
 S20_SIBLING = "umbilical_hernia_day_case_itemized"
+S46_SIBLING = "parkinson_physiatry_visit_second_walker_billed"
 
 
 @pytest.fixture(scope="module")
@@ -93,12 +94,36 @@ def test_deleting_a_bed_day_in_memory_makes_faulty_golden_equality_fail() -> Non
 def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_would_not_be(
     tmp_path: Path,
 ) -> None:
-    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S10_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING]
+    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S10_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING]
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
     later = tmp_path / "later.yaml"
     later.write_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), encoding="utf-8")
     assert _has_faulty_golden(later) is False
+
+
+# --- S46: the physiatry visit. The sibling is the target pathway with a second walker inside the MIAT of the first ---
+
+
+def test_the_s46_sibling_bills_a_second_walker_and_nothing_else_differs() -> None:
+    """The twin differs by a line, not by a date (a sibling is expanded with the same pins): the walker of slice G7b."""
+    target = load_pathway(_PATHWAYS_DIR / "parkinson_physiatry_visit.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S46_SIBLING}.yaml")
+    first = load_pathway(_PATHWAYS_DIR / "parkinson_neurology_control_first_walker.yaml")
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "procedures", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    assert clean["materials"] == []
+    (walker,) = faulty["materials"]
+    (first_walker,) = expand(first)["materials"]
+    # the same EK-3/C-2 device as the control of S45, on the examination of this visit, 42 days later
+    assert {k: v for k, v in walker.items() if k not in ("date", "linked_procedure")} == {
+        k: v for k, v in first_walker.items() if k not in ("date", "linked_procedure")
+    }
+    assert (walker["code"], walker["annex"], walker["date"], first_walker["date"]) == ("OP1106", "EK-3C-2", "2026-08-10", "2026-06-29")
+    assert walker["linked_procedure"] == {"code": "520030", "date": "2026-08-10"}
+    assert (date(2026, 8, 10) - date(2026, 6, 29)).days == 42
+    assert target.showcase == sibling.showcase and (target.showcase.sex, target.showcase.age) == (first.showcase.sex, first.showcase.age)
 
 
 # --- S14: the ward bill after the ICU bill. The sibling is the target pathway with the transfer day billed ---
