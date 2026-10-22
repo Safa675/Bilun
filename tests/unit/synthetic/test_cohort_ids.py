@@ -14,6 +14,7 @@ from scripts.synthetic.cohort.ids import (
     DRUG_CLAIM_LINE_ID_RE,
     EPISODE_ID_RE,
     MATERIAL_LINE_ID_RE,
+    MEDULA_EVENT_ID_RE,
     PATIENT_ID_RE,
     PERFORMED_LINE_ID_RE,
     PRESCRIPTION_ID_RE,
@@ -25,6 +26,7 @@ from scripts.synthetic.cohort.ids import (
     drug_line_id,
     episode_id,
     material_line_id,
+    medula_event_id,
     patient_id,
     performed_line_id,
     prescription_id,
@@ -180,3 +182,27 @@ def test_claim_sequence_is_the_sequence_claim_id_was_built_with() -> None:
 def test_claim_sequence_refuses_what_is_no_claim_id(bad: object) -> None:
     with pytest.raises(ValueError, match="invalid claim_id"):
         claim_sequence(bad)  # type: ignore[arg-type]
+
+
+def test_a_medula_event_id_is_red_and_its_claim_and_two_digits() -> None:
+    cid = claim_id(patient_id(12), 1)
+    assert medula_event_id(cid, 1) == "RED-F-SENTETIK-HASTA-0012-001-01"
+    assert medula_event_id(cid, 99) == "RED-F-SENTETIK-HASTA-0012-001-99"
+    assert MEDULA_EVENT_ID_RE.fullmatch(medula_event_id(cid, 7))
+    assert not MEDULA_EVENT_ID_RE.fullmatch("RED-F-SENTETIK-HASTA-0012-001-1")
+    for bad_seq in (0, 100, True, "1"):
+        with pytest.raises(ValueError):
+            medula_event_id(cid, bad_seq)  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        medula_event_id("F-SENTETIK-HASTA-12-001", 1)
+
+
+def test_the_committed_rejection_events_carry_the_ids_the_builder_gives_them() -> None:
+    events = pl.read_parquet(_CLAIMS_DIR / "medula_rejection_events.parquet")
+    assert events.height == 1
+    for row in events.iter_rows(named=True):
+        assert MEDULA_EVENT_ID_RE.fullmatch(row["rejection_event_id"])
+        assert row["rejection_event_id"] == medula_event_id(row["claim_id"], 1)
+        assert PROCEDURE_LINE_ID_RE.fullmatch(row["related_line_id"])
+        assert row["related_line_id"].startswith(f"ISL-{row['claim_id']}-")
+

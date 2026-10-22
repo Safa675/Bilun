@@ -1,4 +1,4 @@
-"""Fourteen showcase stories: clean bill + one injected fault each, except S39 (S1-S8 a scratch draft, S9, S11, S12, S14, S39 and S40 added 2026-10-21; S10 is a later bill).
+"""Sixteen showcase stories: clean bill + one injected fault each, except S39 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -18,6 +18,8 @@ from datetime import timedelta
 from decimal import Decimal
 
 from harness import Bill, D, money
+
+from src.bilun.domain.claims.models import MedulaRejectionEvent
 
 # EK-2A branch codes (data/gazette/curated/ek2a_outpatient_visits.parquet)
 ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI = (
@@ -345,6 +347,64 @@ def s14(variant: str) -> Bill:
     return b
 
 
+# ── S10 ─ the manual haematocrit billed beside the hemogram; MEDULA rejects it as a duplicate ──
+def s10(variant: str) -> Bill:
+    """58 M, melena; ER visit on 2026-05-09 (acil, Acil Tıp): the examination and a blood count.
+
+    The first bill of the patient of S22. The hemogram L107020 is the whole blood count (its result set carries
+    the haematocrit); the faulty bill also bills the manual haematocrit L103120, a CBC component billed twice
+    (claim_lab.py, #270), and MEDULA has rejected that line with 0901, a duplicate procedure on one day
+    (data/medula/rejection_playbook.json). The clean bill has neither the line nor the rejection. The ER bill
+    bills no other test, so that the admission two days later (S22) repeats only the blood count.
+    """
+    day = D("2026-05-09")
+    b = Bill("SH-12", "C-SH10", "acil", "Acil Tıp", None, None, "K92.1", start=day, end=day)
+    b.diag("K92.1", primary=True, on=day)
+    b.proc("520020", day, specialty=ACIL)
+    b.proc("L107020", day, specialty=ACIL)
+    if variant != "clean":                                # the fault, and the rejection it drew
+        lid = b.proc("L103120", day, specialty=ACIL)
+        b.medula.append(MedulaRejectionEvent(
+            rejection_event_id="C-SH10-RED1", claim_id=b.cid, patient_id=b.pid, episode_id=b.episode,
+            medula_stage="fatura_kayit", sonuc_kodu="0901", hata_kodu="",
+            hata_mesaji="Mükerrer işlem: aynı gün tekrar faturalandırma", rejection_timestamp=day,
+            related_procedure_code="L103120", related_procedure_line_id=lid,
+            related_line_type="procedure", related_line_id=lid))
+    return b
+
+
+# ── S22 ─ the polypectomy of a colonoscopy session not billed ──────────────────
+def s22(variant: str) -> Bill:
+    """58 M, the patient of S10: admitted to general surgery on 2026-05-11 for a second melena, 2 nights.
+
+    A colonoscopy on day 2 (701450) with the polypectomy through it (701460): the later procedure of a session
+    is paid at 30 % (the same incision) or 50 % (another) of its list amount (SUT 2.2.2.A(5), C000659 to C000661),
+    and the engine expects the add-on beside every colonoscopy (procedure_addon_uplift.py, which cannot know
+    whether a polyp existed). The clean bill bills the polypectomy at 50 % (at 100 % the engine shows an audit
+    exposure; at 30 % a session review), the faulty bill leaves it out. The ER bill of S10 is the history of this
+    bill: the blood count of the admission day repeats one of it within seven days (Tablo 15 #12), a row the
+    clean bill shows too. Companion on both nights; no drug line (drug prices stay 0 in the demo).
+    """
+    a, d = D("2026-05-11"), D("2026-05-13")
+    b = Bill("SH-12", "C-SH22", "yatis", "Genel Cerrahi", a, d, "K92.2")
+    b.history = (s10("faulty"),)
+    b.diag("K92.2", primary=True)
+    b.diag("D50.0")
+    b.diag("D12.6", on=a + timedelta(days=1))             # found by the colonoscopy
+    _beds(b, a, d, GENCER)
+    _companion(b, a, d, GENCER)                           # 2 nights
+    b.proc("L107020", a, specialty=GENCER)                # the blood count of the admission day
+    day = a + timedelta(days=1)
+    b.proc("701450", day, specialty=GENCER)               # colonoscopy, total
+    if variant == "clean":                                # the polypectomy through the scope, 50 % of its list amount
+        lid = b.proc("701460", day, specialty=GENCER)
+        i = [p.procedure_line_id for p in b.procs].index(lid)
+        p = b.procs[i]
+        billed = money(p.unit_price_try * p.quantity * Decimal("0.5"))
+        b.procs[i] = replace(p, billed_amount_try=billed, expected_payable_try=billed)
+    return b
+
+
 # ── S39 ─ the control visit nine days after the discharge of S4 (a clean bill) ──
 def s39(variant: str) -> Bill:
     """86 F, the patient of S4: control visit after the pyelonephritis, 2026-05-25, internal medicine, outpatient.
@@ -391,4 +451,4 @@ def s40(variant: str) -> Bill:
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
 CLEAN_ONLY: tuple[str, ...] = ("S39",)
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S11": s11, "S12": s12, "S14": s14, "S39": s39, "S40": s40}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S22": s22, "S39": s39, "S40": s40}

@@ -59,6 +59,7 @@ S11 = "urosepsis_septic_shock_icu_stay"
 S12 = "late_preterm_newborn_incubator_stay"
 S14 = "urosepsis_ward_stay_after_icu_transfer"  # a ward stay that arrives from an ICU bill: its bed starts the day after admission
 S39 = "pyelonephritis_dementia_post_discharge_control"  # a control visit (poliklinik): one date, no stay
+S22 = "gi_bleed_admission_colonoscopy"  # a colonoscopy session: the colonoscopy leads, the polypectomy is a chapter-7 add-on at 50 %
 
 
 @pytest.fixture(scope="module")
@@ -618,6 +619,7 @@ CASES = [
     Case("schema.anchor_undefined", S39, lambda r, c: (r.update(claim_type="gunubirlik"), line(r, "exam").update(days="discharge-1")), label="discharge on a gunubirlik pathway"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "chest_xray").update(session_role="primary"), label="role on imaging"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "bed").update(group="B"), label="group on a bed"),
+    Case("schema.line_shape", S22, lambda r, c: line(r, "admission_hemogram").update(session_role="primary"), label="a role on a lab line"),
     Case("schema.line_shape", S1, lambda r, c: line(r, "appendectomy_package").update(session_role="primary", days=["op", "op+1"]), label="a role on a two-day line"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "cbc_crp")["items"].append(dict(line(r, "cbc_crp")["items"][0])), label="a panel with a code twice"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "blood_gas").update(items=[{"code": "L106150", "name": "Potasyum (Serum/Plazma)"}, {"code": "L106910", "name": "Sodyum (Serum/Plazma)"}]), label="code and items"),
@@ -641,6 +643,8 @@ CASES = [
     Case("procedure.in_force", S2, lambda r, c: r["performed"][0].update(code="801729"), prepare=with_performed, label="performed line"),
     Case("procedure.name", S1, lambda r, c: line(r, "appendectomy_package").update(name="Appendektomi"), label="package"),
     Case("procedure.kind", S2, lambda r, c: line(r, "nebulizer").update(kind="lab")),
+    Case("procedure.kind", S22, lambda r, c: line(r, "polypectomy").update(code="530080", name="Damar yolu açılması"), label="a role on a procedure outside chapter 7"),
+    Case("procedure.kind", S22, lambda r, c: line(r, "colonoscopy").update(code="530080", name="Damar yolu açılması"), also=("session.order",), label="the primary of a session outside chapter 7"),
     Case("procedure.kind", S11, lambda r, c: line(r, "icu_end_days").update(code="510010", name="Standart yatak tarifesi"), label="an icu_day on the ward bed"),
     Case("procedure.kind", S11, lambda r, c: line(r, "icu_package").update(code="P610131", name=c.ek2c.filter(pl.col("code") == "P610131")["name"].unique().item()), label="an icu_package on a surgical package"),
     Case("procedure.kind", S11, lambda r, c: line(r, "icu_package").update(code="510090", name="Yoğun bakım"), label="an icu_package on the day rate"),
@@ -689,6 +693,7 @@ CASES = [
     Case("anaesthesia.group", S3, lambda r, c: set_anaesthesia(r, c, "multiple_operations", "B"), prepare=with_two_operations, label="two operations, the group of the larger one"),
     Case("procedure.in_force", S3, lambda r, c: swap_in(r, "laminectomy", "609231", c), prepare=with_two_operations, label="a second operation listed from 2026-07-07"),
     Case("session.primary", S1, lambda r, c: line(r, "hernia_package").update(session_role="primary"), prepare=with_second_package, label="two primaries"),
+    Case("session.primary", S22, lambda r, c: line(r, "polypectomy").update(session_role="primary"), label="two primary procedures of one colonoscopy"),
     Case("session.primary", S1, lambda r, c: line(r, "appendectomy_package").update(session_role="same_incision"), prepare=with_second_package, label="none"),
     Case("session.primary", S1, lambda r, c: set_pins(r, include=["hernia_package"]), prepare=with_optional_second_primary, label="an optional second primary that is in the bill"),
     Case("session.order", S1, lambda r, c: (line(r, "appendectomy_package").update(session_role="same_incision"), line(r, "hernia_package").update(session_role="primary")), prepare=with_second_package),

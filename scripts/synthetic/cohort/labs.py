@@ -38,6 +38,7 @@ BILLED_LAB_CODES: frozenset[str] = frozenset(
         "L101850",
         "L102090",
         "L102890",
+        "L103120",
         "L103900",
         "L104780",
         "L104890",
@@ -56,6 +57,7 @@ SINGLE_STRIP_GRADES: frozenset[str] = frozenset((*STRIP_GRADES[1:], "Pozitif"))
 
 ORGAN_SISTEMI_BY_TEST_KEY: dict[str, str] = {
     "hemogram": "Hematoloji",
+    "hematocrit_manual": "Hematoloji",
     "d_dimer": "Hematoloji",
     "alt": "Biyokimya",
     "ast": "Biyokimya",

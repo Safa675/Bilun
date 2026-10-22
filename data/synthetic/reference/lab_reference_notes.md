@@ -55,10 +55,10 @@ Status: **reviewed 2026-10-16, corrections applied** (review: [`reports/syntheti
 ## Catalog facts (verified)
 
 - **Codes:**
-  - All 49 codes are in force on each of the 242 days from 2026-02-01 to 2026-09-30, with one row per day.
+  - All 50 codes (49, and L103120 since WP7) are in force on each of the 242 days from 2026-02-01 to 2026-09-30, with one row per day.
   - Names do not change across the window. No price changes in it (I1).
   - Added on 2026-10-16: L101560 "Beta hidroksibütirat (Serum/Plazma)" (28.30 TL), L102480 "Folat (Serum/Plazma)" (42.80 TL), L106530 "Retikülosit sayımı (Otomatik sistem)" (55.96 TL) and L105960 "Parathormon (PTH) (Serum/Plazma)" (46.06 TL).
-- **Hemogram** is one line, L107020 "Tam Kan Sayımı (Hemogram)" (19.73 TL). EK-2B has no per-parameter codes. L103120 "Hematokrit (Manuel)" exists; never bill it next to a hemogram.
+- **Hemogram** is one line, L107020 "Tam Kan Sayımı (Hemogram)" (19.73 TL). EK-2B has no per-parameter codes. L103120 "Hematokrit (Manuel)" exists; never bill it next to a hemogram. Since WP7 (2026-10-21) it is a row of the CSV (`hematocrit_manual`, one parameter, the hemogram HCT's limits and states, plus `acute_gi_bleed: 20–33`), because story S10 bills it beside the hemogram on purpose, as its planted fault. Its value is an independent draw: it is not reconciled with the HCT the hemogram of the same sample derives from MCV and RBC.
 - **eGFR, INR and BUN have no lab code** (I2).
   - The only GFR codes are nuclear-medicine measurements (801120–801122).
   - INR comes from the PT line L106430.

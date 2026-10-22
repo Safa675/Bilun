@@ -16,22 +16,28 @@ the others; the tables are laid out by date (`build.py`). All the encounters of 
 patient's sex and birth year (`recipe.patient_identity`). A story is the story of one bill
 (`recipe.story`): the second bill of a pathway that is already in use names a story of its own in its
 pins.
+
+A recipe may list the MEDULA rejections of its bill (`medula_events`): each names one billed line of the bill
+the recipe commits by its pathway entry id (`recipe.medula_event`), and the builder writes it as a row of
+`medula_rejection_events.parquet`, dated with the line.
 """
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
 import yaml
-from pydantic import Field, ValidationError
+from pydantic import Field, StringConstraints, ValidationError
 
 from scripts.synthetic.faults.loader import REGISTRY_PATH, load_registry, load_siblings
 from scripts.synthetic.faults.mutate import FaultApplyError, apply_fault
 from scripts.synthetic.faults.schema import FaultId, FaultRegistry, FaultSpec
 from scripts.synthetic.pathways.checks import Catalogs, pins_problems
+from scripts.synthetic.pathways.expand import ExpandError, expand
 from scripts.synthetic.pathways.loader import (
     PATHWAYS_DIR,
     PathwayLoadError,
@@ -46,6 +52,7 @@ from scripts.synthetic.pathways.schema import (
     Pins,
     Problem as _PathwayProblem,
     Slug,
+    Sourced,
     Story,
     _Model,
 )
@@ -78,6 +85,7 @@ CHECKS: tuple[str, ...] = (
     "recipe.pins",
     "recipe.patient_identity",
     "recipe.story",
+    "recipe.medula_event",
 )
 
 _PYDANTIC_IDS = {
@@ -122,6 +130,29 @@ class EncounterPins(_Model):
     course_days: dict[Slug, int] | None = None
 
 
+# The MEDULA stages of data/medula/workflow_stages.json, as the table and the rejection playbook spell them.
+MedulaStage = Literal["provizyon", "hizmet_kayit", "fatura_kayit"]
+SonucKodu = Annotated[str, StringConstraints(pattern=r"^[0-9]{4}$")]  # the result code of the reply, four digits
+HataKodu = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9._-]{0,20}$")]
+HataMesaji = Annotated[str, StringConstraints(strip_whitespace=True, min_length=5, max_length=200)]
+
+
+class MedulaEvent(Sourced):
+    """A MEDULA rejection of one bill: one row of `medula_rejection_events.parquet`.
+
+    The rejection is about one line of the bill the recipe commits (`entry_id`, an id of the pathway, or of
+    the fault's sibling pathway, whose expansion is that bill): the builder resolves it to the line id, and
+    dates it with the date of the line (the loader wants the date inside the claim's range). A clean twin
+    carries no event: a rejection is what happened to the bill as it was submitted.
+    """
+
+    entry_id: Slug
+    medula_stage: MedulaStage
+    sonuc_kodu: SonucKodu
+    hata_kodu: HataKodu = ""  # "": the reply gave none
+    hata_mesaji: HataMesaji
+
+
 class ShowcaseRecipe(_Model):
     """One showcase encounter recipe mapping a patient number to its pathway and, if any, its fault."""
 
@@ -130,6 +161,7 @@ class ShowcaseRecipe(_Model):
     pathway: PathwayId
     fault: FaultId | None = None  # None: a clean bill
     pins: EncounterPins | None = None  # None: the pathway's own showcase pins
+    medula_events: list[MedulaEvent] = Field(default_factory=list)  # the rejections of this bill
 
 
 Recipe = ShowcaseRecipe
@@ -301,6 +333,52 @@ def _pin_problems(
     return out
 
 
+def _event_problems(
+    recipe: ShowcaseRecipe,
+    pathway: Pathway,
+    pins: Pins,
+    fault_spec: FaultSpec | None,
+    where: str,
+) -> list[Problem]:
+    """`recipe.medula_event`: each rejection is about exactly one billed line of the committed bill, once."""
+    try:
+        siblings = load_siblings()
+        bill = (
+            apply_fault(fault_spec, pathway, pins, siblings=siblings, annotate=True)
+            if fault_spec is not None
+            else expand(pathway, pins, annotate=True)
+        )
+    except (FaultApplyError, ExpandError):
+        return []  # `recipe.pins` and `fault.applies` say what is wrong with the bill itself
+    lines = Counter(
+        row["entry_id"] for section in ("procedures", "materials", "drugs") for row in bill[section]
+    )
+    out: list[Problem] = []
+    seen: set[tuple[str, str, str]] = set()
+    for index, event in enumerate(recipe.medula_events):
+        label = f"{where}.medula_events[{index}]"
+        if lines[event.entry_id] != 1:
+            out.append(
+                Problem(
+                    "recipe.medula_event",
+                    f"{label}.entry_id",
+                    f"{event.entry_id!r} is {lines[event.entry_id]} billed line(s) of the committed bill "
+                    "of this recipe; a rejection is about exactly one",
+                )
+            )
+        key = (event.entry_id, event.medula_stage, event.sonuc_kodu)
+        if key in seen:
+            out.append(
+                Problem(
+                    "recipe.medula_event",
+                    label,
+                    f"{event.sonuc_kodu} at {event.medula_stage} is given twice for {event.entry_id!r}",
+                )
+            )
+        seen.add(key)
+    return out
+
+
 def check_recipes(
     recipes: ShowcaseRecipes,
     *,
@@ -382,6 +460,8 @@ def check_recipes(
         applicable = fault_spec if targets_it else None  # a mismatch is `recipe.fault_pathway`'s business
         if pin_overrides(recipe.pins):
             out.extend(_pin_problems(pathway, pins, applicable, where))
+        if recipe.medula_events:
+            out.extend(_event_problems(recipe, pathway, pins, applicable, where))
         story = pins.story
         if applicable is not None and applicable.story is not None and applicable.story != story:
             out.append(

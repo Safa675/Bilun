@@ -406,3 +406,23 @@ def test_the_expander_has_no_pricing_or_randomness() -> None:
     assert not {
         n for n in names if any(w in n.lower() for w in ("price", "amount", "random", "open"))
     }
+
+
+def test_a_chapter_7_procedure_of_a_session_takes_the_ratio_of_its_role() -> None:
+    """S22: the colonoscopy leads its session, the polypectomy through it is billed at its role's share (SUT 2.2.2.A(5))."""
+
+    def session(pathway: Pathway) -> dict[str, str]:
+        return {p["code"]: p["billed_ratio"] for p in expand(pathway)["procedures"] if p["code"] in ("701450", "701460")}
+
+    s22 = load_pathway(_DIR / "gi_bleed_admission_colonoscopy.yaml")
+    assert {line.id: (line.kind, line.session_role) for line in s22.procedures if line.session_role} == {
+        "colonoscopy": ("procedure", "primary"),
+        "polypectomy": ("procedure", "separate_incision"),
+    }
+    assert session(s22) == {"701450": "1.0000", "701460": "0.5000"}
+
+    def same_incision(raw: dict) -> None:
+        _line(raw, "polypectomy")["session_role"] = "same_incision"
+
+    assert session(_variant("gi_bleed_admission_colonoscopy", same_incision)) == {"701450": "1.0000", "701460": "0.3000"}
+

@@ -1,0 +1,61 @@
+# Melena in the ER, a blood count AND the manual haematocrit billed beside it — faulty sibling of S10.
+# Showcase story S10 faulty bill (reports/synthetic-data/2026-10-15-showcase-proofs/stories.py, s10("faulty")).
+# The hemogram L107020 is the whole blood count and its result set carries the haematocrit; the manual haematocrit L103120 is the only
+# separately coded CBC test, so billing it beside the hemogram is a CBC component billed twice (the engine's hemogram unbundling, #270).
+schema_version: 1
+id: gi_bleed_melena_er_visit_manual_hct_billed
+title: "Melena in the ER, blood count and manual haematocrit billed together, billed itemized"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Melena occurs in both sexes; K92.1 has no sex gate. Story S10 is a man. Clinician to confirm."
+  age:
+    min: 40
+    max: 85
+    basis: judgment
+    source: "Story S10 patient is 58 (born 1968). Adults with melena; the bounds are the author's judgment. Clinician to confirm."
+
+diagnoses:
+  - icd10: K92.1
+    name: "MELANA"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: melaena. The ER visit is for black stools; no cause is known yet (the admission of story S22 finds one)."
+
+procedures:
+  - id: er_exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
+  - id: hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: admit
+    basis: judgment
+    source: "Story S10: a complete blood count at presentation with melena (the haemoglobin decides what follows); no guideline named. Clinician to confirm."
+  # --- the fault: the manual haematocrit beside the hemogram
+  - id: manual_hematocrit
+    kind: lab
+    code: "L103120"
+    name: "Hematokrit (Manuel)"
+    days: admit
+    basis: judgment
+    source: "The fault: L103120 beside L107020, whose result set already has the HCT; the engine reads a second CBC line on one date as unbundling. Clinician to confirm."
+
+showcase:
+  story: S10
+  sex: M
+  age: 58
+  admit: "2026-05-09"

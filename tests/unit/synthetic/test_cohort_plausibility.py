@@ -152,9 +152,11 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S7": {"bill.performed_billed"},
     "S8": set(),
     "S9": set(),  # 25 % of the second operation is on the ladder: only the engine sees it
+    "S10": set(),  # the manual haematocrit beside the hemogram: a lab line of the sibling pathway, only the engine (claim_lab) sees it
     "S11": set(),  # half the price of the ICU package days: only the engine (icu_puani) sees it
     "S12": {"stay.bed_coverage"},  # the first three incubator days are not billed: a bed day is missing (as S2)
     "S14": {"stay.bed_coverage"},  # the ward bed on the day the ICU bill ends: the ICU bill's 510090 already pays it
+    "S22": set(),  # the polypectomy beside the colonoscopy is not billed: a line is missing, only the engine (procedure_addon_uplift) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
 }
 
@@ -4139,6 +4141,7 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
         "appendicitis_lap_appendectomy_package": ["appendicitis_lap_appendectomy_itemized"],
         "pyelonephritis_dementia_second_visit_ultrasound": ["pyelonephritis_dementia_second_visit_exam_billed"],
         "urosepsis_ward_stay_after_icu_transfer": ["urosepsis_ward_stay_transfer_day_billed"],
+        "gi_bleed_melena_er_visit": ["gi_bleed_melena_er_visit_manual_hct_billed"],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []

@@ -1,0 +1,62 @@
+# Melena in the ER, a blood count, sent home for follow-up; ER only, billed itemized (hizmet başı); a clean bill (one hemogram).
+# Showcase story S10 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S10): bill 1 of patient 12, the ER visit two days before the admission of story S22.
+# Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
+# Every line below is a clean-bill line (faults are not part of a pathway): the fault bill is the sibling in data/synthetic/faults/siblings/, which also bills the manual haematocrit.
+schema_version: 1
+id: gi_bleed_melena_er_visit
+title: "Melena in the ER, blood count, sent home for follow-up, billed itemized"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Melena occurs in both sexes; K92.1 has no sex gate. Story S10 is a man. Clinician to confirm."
+  age:
+    min: 40
+    max: 85
+    basis: judgment
+    source: "Story S10 patient is 58 (born 1968). Adults with melena; the bounds are the author's judgment. Clinician to confirm."
+
+diagnoses:
+  - icd10: K92.1
+    name: "MELANA"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: melaena. The ER visit is for black stools; no cause is known yet (the admission of story S22 finds one)."
+
+procedures:
+  # --- the ER visit
+  - id: er_exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
+
+  # --- laboratory: the one test of the visit
+  - id: hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: admit
+    basis: judgment
+    source: "Story S10: a complete blood count at presentation with melena (the haemoglobin decides what follows); no guideline named. Clinician to confirm."
+
+notes:
+  - "Story S10: black stools for two days, no haematemesis; the ER doctor takes a blood count and sends the patient home for a surgical outpatient review. He is admitted to general surgery two days later (story S22)."
+  - "One hemogram is the correct bill. The faulty sibling also bills the manual haematocrit L103120, whose result the hemogram already carries (the planted fault, with the MEDULA rejection 0901 of the recipe)."
+  - "The ER bill is deliberately small (examination and blood count). The tests a bleeding patient may also get (urea, creatinine, INR, ECG) are not billed, so that no test of this bill repeats on the admission within the seven days of the duplicate-test rule (Tablo 15 #12) beyond the one the story declares."
+
+showcase:
+  story: S10
+  sex: M
+  age: 58
+  admit: "2026-05-09"

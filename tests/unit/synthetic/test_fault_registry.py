@@ -194,6 +194,21 @@ PINNED_FINDINGS: dict[
         [],
         ["2.2.2.A.(5)"],
     ),
+    "S10": (
+        "hemogram_unbundling",
+        "islem",
+        "manual_hematocrit",
+        "kismi_red",
+        "deduction_risk",
+        ["C000652"],
+        "2.2.2.A(1)",
+        [
+            "src/bilun/domain/billing/claim_lab.py:_optimize_lab_billing_from_claims",
+            "src/bilun/domain/prose_rules/medula_rejection.py:detect_medula_rejection_playbook_entries",
+        ],
+        [],
+        ["hemogram_unbundling", "0901_duplicate_procedure"],
+    ),
     "S11": (
         "icu_puani",
         "fatura",
@@ -232,6 +247,20 @@ PINNED_FINDINGS: dict[
         ["src/bilun/domain/prose_rules/yatak_icu_overlap.py:detect_yatak_icu_overlap"],
         [],
         ["yatak_icu_overlap_510010"],
+    ),
+    "S22": (
+        "procedure_addon_uplift",
+        "fatura",
+        None,
+        "eksik_faturalama",
+        "revenue_uplift",
+        ["C000659", "C000660", "C000661", "C000662"],
+        "2.2.2.A(5)",
+        [
+            "src/bilun/domain/prose_rules/procedure_addon_uplift.py:detect_missing_procedure_addon_opportunities"
+        ],
+        [],
+        ["pairing.701450_701460"],
     ),
     "S40": (
         "tablo15_2_duplicate_exam_10day",
@@ -299,7 +328,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S11", "S12", "S14", "S40"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S22", "S40"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:
@@ -324,7 +353,7 @@ def test_the_required_stories_are_the_first_eight() -> None:
 def test_a_registry_may_carry_stories_beyond_the_ninth(catalogs: Catalogs) -> None:
     base = _raw_registry()
     clone = copy.deepcopy(_fault(base, "F_S2_BED_DAYS_UNDERBILLED"))
-    clone.update(fault_id="F_S10_BED_DAYS_AGAIN", story="S10")
+    clone.update(fault_id="F_S90_BED_DAYS_AGAIN", story="S90")
     base["faults"].append(clone)
     assert _problems(base, catalogs) == []
 

@@ -30,6 +30,7 @@ def _has_faulty_golden(path: Path) -> bool:
 
 _GOLDEN_SIBLINGS = [p for p in _FILES if _has_faulty_golden(p)]
 S1_SIBLING = "appendicitis_lap_appendectomy_itemized"
+S10_SIBLING = "gi_bleed_melena_er_visit_manual_hct_billed"
 S14_SIBLING = "urosepsis_ward_stay_transfer_day_billed"
 S40_SIBLING = "pyelonephritis_dementia_second_visit_exam_billed"
 
@@ -91,7 +92,7 @@ def test_deleting_a_bed_day_in_memory_makes_faulty_golden_equality_fail() -> Non
 def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_would_not_be(
     tmp_path: Path,
 ) -> None:
-    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S40_SIBLING, S14_SIBLING]
+    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S10_SIBLING, S40_SIBLING, S14_SIBLING]
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
     later = tmp_path / "later.yaml"
@@ -141,3 +142,38 @@ def test_the_s14_target_has_no_lab_line_because_the_cross_bill_rules_read_the_wh
     for pathway in (target, sibling):
         assert {line.kind for line in pathway.procedures} == {"bed", "companion"}
         assert not (pathway.materials or pathway.drugs or pathway.performed)
+
+
+# --- S10: the ER visit of patient 12. The sibling is the target pathway with the manual haematocrit billed ---
+
+
+def _s10_pair():
+    target = load_pathway(_PATHWAYS_DIR / "gi_bleed_melena_er_visit.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S10_SIBLING}.yaml")
+    return target, sibling
+
+
+def test_the_s10_sibling_bills_the_manual_haematocrit_beside_the_hemogram_and_nothing_else_differs() -> None:
+    target, sibling = _s10_pair()
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "materials", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    assert [p for p in clean["procedures"] if p not in faulty["procedures"]] == []
+    extra = [p for p in faulty["procedures"] if p not in clean["procedures"]]
+    assert [(p["code"], p["date"], p["qty"], p["billed_ratio"]) for p in extra] == [
+        ("L103120", "2026-05-09", 1, "1.0000")
+    ]  # the one line the fault adds, on the day of the visit
+    assert {p["code"] for p in clean["procedures"]} == {"520020", "L107020"}  # one hemogram is the correct bill
+    assert len(clean["procedures"]) == 2 and len(faulty["procedures"]) == 3
+
+
+def test_the_s10_pathways_are_one_acil_visit_and_pin_the_same_man_as_the_admission_after_it() -> None:
+    target, sibling = _s10_pair()
+    admission = load_pathway(_PATHWAYS_DIR / "gi_bleed_admission_colonoscopy.yaml")
+    for visit in (target, sibling):
+        assert visit.claim_type == "acil" and visit.nights is None  # a visit: one date, no stay
+        assert visit.showcase.story == "S10" and visit.showcase.admit == "2026-05-09"
+        assert (visit.showcase.sex, visit.showcase.age) == (admission.showcase.sex, admission.showcase.age) == ("M", 58)
+        assert visit.patient.sex.values == admission.patient.sex.values
+        assert (visit.patient.age.min, visit.patient.age.max) == (admission.patient.age.min, admission.patient.age.max)
+    assert admission.showcase.story == "S22" and admission.showcase.admit == "2026-05-11"  # two days later

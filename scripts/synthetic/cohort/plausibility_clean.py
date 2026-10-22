@@ -184,6 +184,7 @@ LAB_HARD_BOUNDS: dict[tuple[str, str], tuple[float, float]] = {
     (HEMOGRAM_CODE, "PLT (Trombosit)"): (2.0, 1500.0),
     (HEMOGRAM_CODE, "MPV"): (4.0, 16.0),
     # single-parameter tests
+    ("L103120", "Hematokrit (manuel)"): (10.0, 70.0),
     ("L101850", "CRP (kantitatif)"): (0.0, 500.0),
     ("L106240", "Prokalsitonin"): (0.0, 500.0),
     ("L104890", "Laktat"): (0.2, 30.0),

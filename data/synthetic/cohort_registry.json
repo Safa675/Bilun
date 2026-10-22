@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 14,
-    "lab_clean.parquet": 267,
+    "anadata_clean.parquet": 16,
+    "lab_clean.parquet": 298,
     "recete_clean.parquet": 21
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "a8081b54c5b5bca2d0dc70e8260af0018ea47b20b4ea63571ca3b4ed7b36c95a",
-    "lab_clean.parquet": "d54d6810841729072f49893fe9160e6d5fc5966247731979326552fbc704fd88",
+    "anadata_clean.parquet": "264095683c5db96c5cda81de741e9ebb6ce2486d3c1248205e824861913ab626",
+    "lab_clean.parquet": "8597b3fc0d2633ef510ba127d6d4fe0dfacb7996bcba4d8c0d82e00c5482148b",
     "recete_clean.parquet": "17e62c994a68677aedbc96d85597e8b3de7a43fc49574f1016a740a35e6b72c0"
   },
   "counts": {
-    "claim_diagnoses.parquet": 37,
-    "claim_headers.parquet": 14,
+    "claim_diagnoses.parquet": 41,
+    "claim_headers.parquet": 16,
     "drug_claim_lines.parquet": 21,
-    "expected_rule_outputs.parquet": 13,
+    "expected_rule_outputs.parquet": 15,
     "material_claim_lines.parquet": 3,
-    "medula_rejection_events.parquet": 0,
-    "patient_copay_profiles.parquet": 11,
+    "medula_rejection_events.parquet": 1,
+    "patient_copay_profiles.parquet": 12,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 161
+    "procedure_claim_lines.parquet": 171
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -146,6 +146,24 @@
       "pathway_id": "late_preterm_newborn_incubator_stay",
       "patient_id": "SENTETIK-HASTA-0011",
       "story": "S12",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0012-001",
+      "fault_id": "F_S10_HEMOGRAM_UNBUNDLED_MANUAL_HCT",
+      "is_clean": false,
+      "pathway_id": "gi_bleed_melena_er_visit",
+      "patient_id": "SENTETIK-HASTA-0012",
+      "story": "S10",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0012-002",
+      "fault_id": "F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED",
+      "is_clean": false,
+      "pathway_id": "gi_bleed_admission_colonoscopy",
+      "patient_id": "SENTETIK-HASTA-0012",
+      "story": "S22",
       "tier": "showcase"
     }
   ],
@@ -385,6 +403,42 @@
       "patient_id": "SENTETIK-HASTA-0011",
       "story": "S12",
       "sut_section": "2.2.2.A(1)"
+    },
+    {
+      "amount_try": "5.88",
+      "billed_clean_try": "105.46",
+      "billed_faulty_try": "111.34",
+      "claim_id": "F-SENTETIK-HASTA-0012-001",
+      "effect_kind": "deduction_risk",
+      "engine_rule": "hemogram_unbundling",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S10_HEMOGRAM_UNBUNDLED_MANUAL_HCT",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0012-001-F_S10_HEMOGRAM_UNBUNDLED_MANUAL_HCT",
+      "line_id": "ISL-F-SENTETIK-HASTA-0012-001-002",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "gi_bleed_melena_er_visit",
+      "patient_id": "SENTETIK-HASTA-0012",
+      "story": "S10",
+      "sut_section": "2.2.2.A(1)"
+    },
+    {
+      "amount_try": "439.86",
+      "billed_clean_try": "2154.59",
+      "billed_faulty_try": "1714.73",
+      "claim_id": "F-SENTETIK-HASTA-0012-002",
+      "effect_kind": "revenue_uplift",
+      "engine_rule": "procedure_addon_uplift",
+      "expected_status": "eksik_faturalama",
+      "fault_id": "F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0012-002-F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED",
+      "line_id": "",
+      "line_ids": [],
+      "line_type": "fatura",
+      "pathway_id": "gi_bleed_admission_colonoscopy",
+      "patient_id": "SENTETIK-HASTA-0012",
+      "story": "S22",
+      "sut_section": "2.2.2.A(5)"
     }
   ],
   "roles": {
@@ -426,6 +480,12 @@
     }
   },
   "scenarios": {
+    "S10": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0012-001"
+      ],
+      "patient_id": "SENTETIK-HASTA-0012"
+    },
     "S11": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0010-001"
@@ -443,6 +503,12 @@
         "F-SENTETIK-HASTA-0010-002"
       ],
       "patient_id": "SENTETIK-HASTA-0010"
+    },
+    "S22": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0012-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0012"
     },
     "S39": {
       "claim_ids": [
@@ -466,14 +532,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "83bd6a2eb19a5d748a20d8700206c476a4b20829779dc4e414a967977e7bea76",
-    "claim_headers.parquet": "836b1166c3ac8189d5714532c210fbb1db591b61a896b53f5f43657a394eefae",
+    "claim_diagnoses.parquet": "550144d65d5aca2ffe377ad96ed9117a57214228a6f497b22093a28a3a661dfd",
+    "claim_headers.parquet": "844eff18f178cd25150c15add1edf0747c8acd7be7f6571d235226d19cccc237",
     "drug_claim_lines.parquet": "a99c6ad4801110956506f2759747c8afd0f210bf15fa29101b15984edf45f4fb",
-    "expected_rule_outputs.parquet": "30ac436575a601569d828bf9cdbce6d647bef2979a4e0647eb56d97017b9eeb8",
+    "expected_rule_outputs.parquet": "07ccec137046a2caa464c6abbb6e9d4b8eb57363c9265e3226ecfc75d3688086",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
-    "medula_rejection_events.parquet": "58ff0947311e1f13e09a205e328244b3db87480e67bff2117522fd1dc819c444",
-    "patient_copay_profiles.parquet": "4aa3a7208a59794e1b95547cbf46b882e9a73e0eecd8bf47e4c7faeff04d3de6",
+    "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
+    "patient_copay_profiles.parquet": "82afc3c898039f3e47818cadc94cb11288680014daa60bdc5da098c191c29314",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "281faad9c1728b4da63b08c1bd0883e0962b584eaf0f145318d553e05f58f8f9"
+    "procedure_claim_lines.parquet": "f26ba1ae51f8806146193321172b2d2b910a87b039fe48a82807401f360f44fe"
   }
 }

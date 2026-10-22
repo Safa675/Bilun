@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -248,3 +248,40 @@ patients:
       weight_kg: 2.4
     basis: judgment
     source: "Story S12 late-preterm newborn on the day of birth (about 35 weeks, 46 cm, 2.4 kg, infant ranges); clinician confirms in issue #309 and the S12 judgment list."
+
+  - patient_no: 12
+    vitals:
+      sbp: 122
+      dbp: 74
+      pulse: 98
+      spo2: 97
+      height_cm: 176
+      weight_kg: 84.0
+    labs:
+      states:
+        "L107020|HGB (Hemoglobin)": acute_gi_bleed
+        "L103120|Hematokrit (manuel)": acute_gi_bleed
+      basis: judgment
+      source: "Story S10 melena in the ER: a low haemoglobin and haematocrit of a bleed (the manual haematocrit is an independent draw); clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S10 melena presentation (mild tachycardia, normotensive, normal oxygen saturation); clinician confirms in issue #309."
+
+  - patient_no: 12
+    encounter_no: 2
+    vitals:
+      sbp: 118
+      dbp: 70
+      pulse: 92
+      spo2: 98
+      height_cm: 176
+      weight_kg: 83.5
+    labs:
+      states:
+        "L107020|HGB (Hemoglobin)": acute_gi_bleed
+        "L107020|MCV": iron_deficiency
+        "L107020|MCH": iron_deficiency
+      basis: judgment
+      source: "Story S22 admission blood count after a second melena: a low haemoglobin with the small red cells of a slow loss (D50.0); clinician confirms in issue #309."
+    basis: judgment
+    source: "Story S22 admission (pulse 92, normotensive, half a kilo lighter than at the ER visit); clinician confirms in issue #309."
+

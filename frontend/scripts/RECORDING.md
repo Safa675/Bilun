@@ -33,17 +33,20 @@ API patient, action, claim, clause, rejection and corrective-step identities are
 checked against rendered content. The playbook table is also scrolled horizontally to
 expose its corrective steps.
 
-**Known limit on the showcase cohort** (8 patients when this was checked, 11 patients with 14 bills now, patient 4 having three and patient 10 two; engine billing reports and the
+**Known limit on the showcase cohort** (8 patients when this was checked, 12 patients with 16 bills now, patient 4 having three and patients 10 and 12 two; engine billing reports and the
 registry, checked 2026-10-18): none of the three paths can complete there, because the
 workflows were written for the retired 50-patient cohort. (1) The landing patient's top
 ranked action has no `clause_ref` (only the S7 copay-exemption row has one, and it is not
 its patient's top action), so there is no Source drawer to record. (2) No patient has a
 `material_pre_auth` action: `materials.pre_auth_required` is empty for all 8, and S5's
-materials findings are prose-bundling ones. (3) The cohort has no MEDULA rejection event
-(`medula_rejection_events` holds 0 rows), so the rejection queue is empty and the
-preflight refuses ("Authored rejection queue unavailable"). The command therefore stops
-before it records anything. Making the workflows follow the showcase data (or adding a
-pre-authorised material and a rejection event to a story) is a separate decision.
+materials findings are prose-bundling ones. (3) Until WP7 (2026-10-21) the cohort had no
+MEDULA rejection event and the preflight refused ("Authored rejection queue unavailable").
+Since WP7 `medula_rejection_events` holds one row: the rejection 0901 of S10, on the manual
+haematocrit line of patient 12's ER bill, matched to the playbook entry
+`0901_duplicate_procedure` (corrective steps in Turkish), so `selectRejection` finds a row
+(not run with Playwright: paths (1) and (2) still stop the command before it records
+anything). Making the first two workflows follow the showcase data (or adding a
+pre-authorised material to a story) is a separate decision.
 
 On the reviewed legacy UI6/UI7 input, the second patient had a real NF1040 pre-check but
 its action's `clause_ref` was null and Source was disabled. That video ended at the

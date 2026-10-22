@@ -54,13 +54,16 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     9: (134, 78, 72, 97, 161, 69.0),
     10: (84, 46, 124, 91, 158, 66.0),
     11: (62, 36, 148, 96, 46, 2.4),  # S12, a late-preterm newborn: the infant ranges
+    12: (122, 74, 98, 97, 176, 84.0),  # S10, melena in the ER
 }
 # the later bills of the committed cohort, by (patient, encounter): the vitals of S39 (the control of patient 4) and
-# S40 (her second visit a week later, a little feverish), and of S14, on the ward after the ICU
+# S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
+# of patient 12 two days after his ER visit
 _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
     (4, 2): (126, 72, 76, 96, 155, 57.5),
     (4, 3): (122, 70, 88, 95, 155, 57.0),
     (10, 2): (118, 66, 92, 95, 158, 64.0),
+    (12, 2): (118, 70, 92, 98, 176, 83.5),
 }
 
 
@@ -149,6 +152,12 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
         assert entry.basis == "judgment"
         if key == (4, 2):  # the control bills a creatinine: baseline CKD G3a, as at the admission
             assert entry.labs is not None and entry.labs.states == {"L104780|Kreatinin": "ckd_g3a"}
+        elif key == (12, 2):  # the admission bills a blood count: the haemoglobin of a bleed and the small red cells of a slow loss
+            assert entry.labs is not None and entry.labs.states == {
+                "L107020|HGB (Hemoglobin)": "acute_gi_bleed",
+                "L107020|MCV": "iron_deficiency",
+                "L107020|MCH": "iron_deficiency",
+            }
         else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode)
             assert entry.labs is None
 
@@ -252,12 +261,12 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
     # the committed encounters are numbered 1..n by patient; patient 4 has three (S4, its control S39 and its second
-    # visit S40) and patient 10 two (S11 and its ward bill S14)
+    # visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two (S10, the ER visit, and S22, the admission)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {4: [1, 2, 3], 10: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {4: [1, 2, 3], 10: [1, 2], 12: [1, 2]}
 
 
 @pytest.mark.parametrize(
@@ -299,10 +308,12 @@ def test_the_vitals_band_is_the_patients_not_the_encounters() -> None:
     recipes, clinical = with_encounters(
         Extra(11, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-07-15"}, pulse_shift=-8)
     )
-    assert load_all()[recipes.recipes[-1].pathway].showcase.age > 60  # the second bill alone would be an adult's
+    extra = next(r for r in recipes.recipes if (r.patient_no, r.encounter_no) == (11, 2))  # after patient 11's first bill
+    assert load_all()[extra.pathway].showcase.age > 60  # the second bill alone would be an adult's
     assert check_clinical(clinical, recipes=recipes) == []  # the baby's vitals (62/36, 140, 46 cm, 2.4 kg) fit
     adult = list(clinical.patients)
-    adult[-1] = adult[-1].model_copy(update={"vitals": load_clinical().patients[0].vitals})
+    index = next(i for i, entry in enumerate(adult) if (entry.patient_no, entry.encounter_no) == (11, 2))
+    adult[index] = adult[index].model_copy(update={"vitals": load_clinical().patients[0].vitals})
     found = check_clinical(clinical.model_copy(update={"patients": adult}), recipes=recipes)
     assert {p.check for p in found} == {"vitals.height_range", "vitals.weight_range"}
     assert all(p.where.startswith("patients[11.2].vitals.") for p in found)

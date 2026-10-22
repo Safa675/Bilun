@@ -109,13 +109,14 @@ _CURRENCY_RE = re.compile(
     re.IGNORECASE,
 )
 
-# The 15 lab codes billed in the cohort and the number of result parameters of each.
+# The 16 lab codes billed in the cohort and the number of result parameters of each.
 _PARAMETER_COUNTS: dict[str, int] = {
     "L100300": 1,  # ALT
     "L101280": 1,  # AST
     "L101850": 1,  # CRP
     "L102090": 1,  # D-dimer
     "L102890": 1,  # glucose
+    "L103120": 1,  # manual haematocrit (S10, beside a hemogram, as the planted fault)
     "L103900": 10,  # arterial blood gas
     "L104780": 2,  # creatinine and the derived eGFR
     "L104890": 1,  # lactate
@@ -129,7 +130,8 @@ _PARAMETER_COUNTS: dict[str, int] = {
 }
 LAB_ROWS = cohort.counts()["lab_clean.parquet"]  # the size of the table, from the registry
 # patient 4: the stay's 52 rows and the control's (S39) 27: blood count 15, creatinine 2, urinalysis 10
-_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 6: 40, 7: 23, 9: 15, 10: 18}
+# patient 12: the ER bill (S10) 16, a blood count 15 and the manual haematocrit 1, and the admission (S22) 15
+_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 6: 40, 7: 23, 9: 15, 10: 18, 12: 31}
 _PATIENTS: dict[int, tuple[str, int]] = {
     1: ("M", 34),
     2: ("M", 81),
@@ -141,9 +143,10 @@ _PATIENTS: dict[int, tuple[str, int]] = {
     8: ("F", 47),
     9: ("F", 77),
     10: ("F", 76),
+    12: ("M", 58),
 }
 
-# Decimals of every parameter of the 15 codes: the most decimals among the limits and the state
+# Decimals of every parameter of the 16 codes: the most decimals among the limits and the state
 # numbers of the CSV rows, at most 3 (eGFR bands do not count).
 _DECIMALS: dict[str, int] = {
     "L100300|ALT": 0,
@@ -151,6 +154,7 @@ _DECIMALS: dict[str, int] = {
     "L101850|CRP (kantitatif)": 0,
     "L102090|D-dimer": 0,
     "L102890|Glukoz": 0,
+    "L103120|Hematokrit (manuel)": 0,
     "L103900|pH": 2,
     "L103900|pCO2": 0,
     "L103900|pO2": 0,
@@ -336,13 +340,13 @@ def _swap_rows(df: pl.DataFrame, i: int, j: int) -> pl.DataFrame:
 # --- 3.1 Reference reader ------------------------------------------------------------------------
 
 
-def test_reference_has_the_14_billed_codes_with_their_parameter_counts(procs: pl.DataFrame) -> None:
+def test_reference_has_the_billed_codes_with_their_parameter_counts(procs: pl.DataFrame) -> None:
     ref = load_lab_reference()
     billed = set(procs.filter(pl.col("procedure_category") == "laboratuvar")["procedure_code"])
     assert billed == set(_PARAMETER_COUNTS) == set(BILLED_LAB_CODES)
     assert {code: len(ref.by_code[code]) for code in billed} == _PARAMETER_COUNTS
-    assert len(ref.by_code) == 49  # every code of the CSV, not only the billed ones
-    assert sum(_PARAMETER_COUNTS.values()) == 48
+    assert len(ref.by_code) == 50  # every code of the CSV, not only the billed ones
+    assert sum(_PARAMETER_COUNTS.values()) == 49
     # The venous variant shares the code L103900 and is not read as a second set of parameters.
     assert len(ref.billed_code_parameters) == sum(_PARAMETER_COUNTS.values()) + 10  # + the venous gas
     assert {s.test_key for s in ref.by_code["L103900"]} == {"blood_gas_arterial"}
@@ -418,7 +422,7 @@ def test_every_abnormal_state_item_parses_or_is_listed_as_unsupported() -> None:
         ]
         assert sorted(accounted) == sorted(items), spec.key
         total_items += len(items)
-    assert total_items == 178
+    assert total_items == 182
 
 
 def test_unsupported_prose_states_of_the_billed_codes_are_these_four() -> None:
@@ -828,10 +832,10 @@ def test_mutation_removing_one_billed_lab_line_gives_exactly_one_gap_with_its_co
             assert gaps[0]["type"] == "lab_performed_not_submitted"
             assert gaps[0]["source"] == "lab"
             checked += 1
-    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 pairs (patient 4:
-    # 7 on the stay and 3 on the control).
+    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 pairs (patient 4:
+    # 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission).
     once = _billed_lab_lines(procs).group_by("episode_id", "procedure_code").len()
-    assert checked == once.filter(pl.col("len") == 1).height == 38
+    assert checked == once.filter(pl.col("len") == 1).height == 41
 
 
 # --- 3.3 Values ----------------------------------------------------------------------------------
@@ -1011,7 +1015,7 @@ def test_the_requested_states_are_the_ones_of_the_yaml(annotated: pl.DataFrame) 
     )
     assert (_pid(2), "L103900|pH", 2) not in got  # the second entry is `normal`
     assert got[(_pid(2), "L103900|pO2", 2)] == "chronic_copd_room_air"
-    assert {h for h, _, _ in got} == {_pid(n) for n in (1, 2, 3, 4, 6, 7, 9, 10)}
+    assert {h for h, _, _ in got} == {_pid(n) for n in (1, 2, 3, 4, 6, 7, 9, 10, 12)}
 
 
 def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
@@ -1026,8 +1030,8 @@ def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
         (pl.col("sonuc_sayisal") < pl.col("lo")) | (pl.col("sonuc_sayisal") > pl.col("hi"))
     )
     assert outside.is_empty(), outside.select("HASTA_ID", "key", "sonuc_sayisal", "lo", "hi")
-    # 255 numeric rows = 112 derived + 27 drawn from a state + 116 drawn without one.
-    assert rows.height == 116
+    # 286 numeric rows = 128 derived + 32 drawn from a state + 126 drawn without one.
+    assert rows.height == 126
 
 
 def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.DataFrame) -> None:
@@ -1057,7 +1061,7 @@ def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.Data
     assert outside.is_empty(), outside.select(
         "HASTA_ID", "key", "state", "sonuc_sayisal", "band_lo", "band_hi"
     )
-    assert rows.height == 27  # numeric rows drawn from a state band
+    assert rows.height == 32  # numeric rows drawn from a state band
     # The bands are the ones the brief names for the two stories with a list of states.
     assert bands.filter(
         (pl.col("key") == "L107020|WBC (Lökosit)") & (pl.col("state") == "bacterial_infection")
@@ -1131,16 +1135,21 @@ def test_derived_red_cell_values_lie_inside_the_limits_or_the_own_state_ranges(
         pl.col("parametre").is_in(["RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"])
     ).join(drivers, on=["HASTA_ID", "k"], how="left")
     inside = (pl.col("sonuc_sayisal") >= pl.col("lo")) & (pl.col("sonuc_sayisal") <= pl.col("hi"))
-    assert derived.height == 36
+    assert derived.height == 42
     # Without a state on HGB, MCV or MCH, the derived values are normal values.
     assert derived.filter(~pl.col("driver_state") & ~inside).is_empty()
-    # With one (patients 3 and 9, postoperative HGB) a derived value may sit in one of its own state ranges.
+    # With one (patients 3 and 9, postoperative HGB; patient 12, the HGB of a bleed and the small red cells of a
+    # slow loss) a derived value may sit in one of its own state ranges.
     with_state = derived.filter(pl.col("driver_state") & ~inside)
-    assert with_state["HASTA_ID"].unique(maintain_order=True).to_list() == [_pid(3), _pid(9)]
+    assert with_state["HASTA_ID"].unique(maintain_order=True).to_list() == [_pid(3), _pid(9), _pid(12)]
     for row in with_state.select("sonuc_sayisal", "abnormal_states", "sex").to_dicts():
         ranges = _state_ranges(row["abnormal_states"], row["sex"])
         assert any(lo <= row["sonuc_sayisal"] <= hi for lo, hi in ranges), row
-    assert with_state["parametre"].to_list() == ["RBC (Eritrosit)", "HCT (Hematokrit)"] * 2
+    assert with_state["parametre"].to_list() == (
+        ["RBC (Eritrosit)", "HCT (Hematokrit)"] * 2  # patients 3 and 9
+        + ["RBC (Eritrosit)", "HCT (Hematokrit)"]  # patient 12, the ER bill: the anaemia ranges of the red cells
+        + ["RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"]  # patient 12, the admission: and the iron-deficiency MCHC
+    )
 
 
 _PROFILES: dict[str, dict[str, tuple[float, float]]] = {
@@ -1195,9 +1204,9 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
         )
     )
     sets = wide.join(wbc_state, on=["HASTA_ID", "k"], how="inner")
-    assert sets.height == 12
+    assert sets.height == 14
     assert sorted(sets["profile"].to_list()) == (
-        ["bacterial_infection"] * 5 + ["normal"] * 6 + ["steroid_use"]  # the control's blood count has no WBC state
+        ["bacterial_infection"] * 5 + ["normal"] * 8 + ["steroid_use"]  # the blood counts of the control and of patient 12 have no WBC state
     )
     for profile in _PROFILES:
         group = sets.filter(pl.col("profile") == profile)
@@ -1209,7 +1218,7 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
     normal = hemogram.filter(pl.col("parametre").is_in(list(_DIFFERENTIAL))).join(
         wbc_state.filter(pl.col("profile") == "normal"), on=["HASTA_ID", "k"], how="inner"
     )
-    assert normal.height == 30
+    assert normal.height == 40
     assert normal.filter(
         (pl.col("sonuc_sayisal") < pl.col("lo")) | (pl.col("sonuc_sayisal") > pl.col("hi"))
     ).is_empty()
@@ -1381,7 +1390,7 @@ def test_r1_the_five_differential_counts_sum_to_the_wbc(
     lab: pl.DataFrame, csv_rows: pl.DataFrame
 ) -> None:
     hemograms = _wide(lab, csv_rows, "L107020")
-    assert hemograms.height == 12
+    assert hemograms.height == 14
     gap = (pl.sum_horizontal(*_DIFFERENTIAL) - pl.col("WBC (Lökosit)")).abs()
     assert hemograms.select(gap.max().alias("gap"))["gap"][0] <= 0.05
 
@@ -1542,7 +1551,7 @@ _DRIFT_CASES = [
     pytest.param("L103900", "pO2", 5.0, "R4", "SaO2", id="driver_po2_names_sao2"),
     pytest.param("L104780", "Kreatinin", 0.2, "R3", _EGFR, id="driver_creatinine_names_egfr"),
 ]
-_SETS_PER_CODE = {"L107020": 12, "L104780": 7, "L103900": 2}  # the control of patient 4 adds a set of two of them
+_SETS_PER_CODE = {"L107020": 14, "L104780": 7, "L103900": 2}  # the control of patient 4 and the two bills of patient 12 add one blood count each
 
 
 @pytest.mark.parametrize(("code", "changed", "change", "rule", "reported"), _DRIFT_CASES)
@@ -1583,11 +1592,11 @@ def test_r5_anormal_mi_is_below_ref_alt_or_above_ref_ust_or_a_strip_other_than_n
     strips = lab.filter(pl.col("sonuc_nitel").is_not_null())
     not_negative = pl.col("sonuc_nitel") != "Negatif"
     assert strips.filter(pl.col("anormal_mi").ne_missing(not_negative)).is_empty()
-    # Both outcomes occur, so the test is not vacuous: 51 numeric rows and 3 strips are abnormal.
+    # Both outcomes occur, so the test is not vacuous: 61 numeric rows and 3 strips are abnormal.
     abnormal_numeric = numeric.select(expected.sum()).item()
     abnormal_strips = strips.filter(not_negative).height
-    assert (abnormal_numeric, abnormal_strips) == (51, 3)  # the control's creatinine and eGFR (CKD G3a) add two
-    assert lab["anormal_mi"].sum() == 54
+    assert (abnormal_numeric, abnormal_strips) == (61, 3)  # the control's creatinine and eGFR (CKD G3a) add two; patient 12's bleed adds ten
+    assert lab["anormal_mi"].sum() == 64
     assert 0 < lab["anormal_mi"].sum() < lab.height == LAB_ROWS
 
 
@@ -1822,9 +1831,9 @@ def test_row_attributes_follow_the_claim_and_the_csv(
         pl.col("patient_id").alias("HASTA_ID"), pl.col("episode_id").alias("basvuru_id")
     )
     assert annotated.join(headers, on=["HASTA_ID", "basvuru_id"], how="anti").is_empty()
-    # The body system: hemogram and D-dimer are haematology, everything else biochemistry.
+    # The body system: hemogram, manual haematocrit and D-dimer are haematology, everything else biochemistry.
     expected_system = (
-        pl.when(pl.col("SUB_CODE").is_in(["L107020", "L102090"]))
+        pl.when(pl.col("SUB_CODE").is_in(["L107020", "L103120", "L102090"]))
         .then(pl.lit("Hematoloji"))
         .otherwise(pl.lit("Biyokimya"))
     )
@@ -2601,13 +2610,14 @@ def test_the_parameter_table_is_the_reference_as_a_frame() -> None:
         "position",
         "n_params",
     ]
-    assert table.height == 86  # 96 CSV rows minus the 10 of the venous blood gas
-    # The organ system of the generator: haematology for the hemogram and the D-dimer, biochemistry for
+    assert table.height == 87  # 97 CSV rows minus the 10 of the venous blood gas
+    # The organ system of the generator: haematology for the hemogram, the manual haematocrit and the D-dimer, biochemistry for
     # every other test of the reference, the 35 codes that are not billed here included.
     organs = table.group_by("organ").agg(pl.col("SUB_CODE").unique().sort()).sort("organ")
     assert organs["organ"].to_list() == ["Biyokimya", "Hematoloji"]
     assert organs.filter(pl.col("organ") == "Hematoloji")["SUB_CODE"][0].to_list() == [
         "L102090",
+        "L103120",
         "L107020",
     ]
     assert organs.filter(pl.col("organ") == "Biyokimya")["SUB_CODE"][0].len() == 47
@@ -4268,7 +4278,7 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
                     assert got == expected, (spec.key, state.name, sex, k)
                     assert band[0] - 1e-9 <= got <= band[1] + 1e-9, (spec.key, state.name, sex, k)
                     checked += 1
-    assert (checked, refused) == (1014, 12)
+    assert (checked, refused) == (1038, 18)
 
 
 # --- 3.20 Several bills of one patient: the draws, the pins and the order of the rows -----------------
