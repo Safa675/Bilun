@@ -767,16 +767,19 @@ def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
     return (len(entry["blocks_with_output"]), wavea["evaluated"], wavea["matched"], wavea["review"], wavea["advisory"])
 
 
-def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patient_4(
+def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patients_2_and_4(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
     rows = [_row(entry) for _, entry in sorted(showcase_eight.items())]
-    fourth = cohort.role("showcase_S4").patient_id
-    assert showcase_eight[fourth]["claims"] == 3
-    # the plan's table is the first bill of each patient: the seven patients with one bill still give it
-    assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid != fourth] == [
-        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i != 3
+    second, fourth = cohort.role("showcase_S2").patient_id, cohort.role("showcase_S4").patient_id
+    assert (showcase_eight[second]["claims"], showcase_eight[fourth]["claims"]) == (2, 3)
+    # the plan's table is the first bill of each patient: the six patients with one bill still give it
+    assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid not in (second, fourth)] == [
+        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i not in (1, 3)
     ]
+    # patient 2 is read over its stay and its control (S32, its first outpatient bill): 86 more rules evaluated (the
+    # outpatient rules, already evaluated on patient 4), 2 more matched with a row (ORTAK-13 and ORTAK-20, reviews)
+    assert _row(showcase_eight[second]) == (6, 191 + 86, 9 + 2, 6 + 2, 3)
     # patient 4 is read over its stay, its control and its second visit: 14 more rules evaluated, 3 more matched
     assert _row(showcase_eight[fourth]) == (6, 191 + 14, 9 + 3, 6 + 2, 3)
 
@@ -803,9 +806,12 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
     After S10 and S22 (WP7, patient 12): blocks 12 -> 15 (lab, procedure_addon_uplift, medula_rejection_playbook),
     matched 17 -> 19 and with a row 16 -> 18 (GENEL CERRAHİ-2 and the duplicate test, two reviews), evaluated 287 -> 288
     (the duplicate test), finding kinds 21 -> 24 (the three actions of the three blocks).
+
+    After F2 b2 (WP9, S32, patient 2's control): bills 16 -> 17 and nothing else of the cohort (its rules are the outpatient
+    rules patient 4 already has; the copay waiver shows on the app path only).
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (12, 16)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (12, 17)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
     assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (288, 19, 18)
@@ -828,16 +834,18 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
     assert entry["claims"] == 2
     assert entry["wavea"]["financial_ids"] == ["yatak_icu_overlap_510010"]
     assert {pid for pid, e in measured.items() if e["wavea"]["financial"]} == {patient}
-    # the other patients with several bills: patient 4 (the stay, the control, the second visit)
+    # the other patients with several bills: patient 4 (the stay, the control, the second visit), patient 2 (the stay
+    # and its control) and patient 12 (the ER visit and the admission)
     assert {pid: e["claims"] for pid, e in measured.items() if e["claims"] > 1} == {
         patient: 2,
+        cohort.role("showcase_S2").patient_id: 2,  # the stay and the control visit S32
         cohort.role("showcase_S4").patient_id: 3,
         cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
     }
     assert "icu_puani" in entry["blocks_with_output"]  # the ICU bill's block is still there beside the ward bill
 
 
-def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_outpatient_findings(
+def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicate_exam(
     measured: dict[str, dict[str, Any]],
 ) -> None:
     """G12 is patient-level: the stay, the control (S39) and the second visit (S40) of patient 4 are read together."""
@@ -851,10 +859,14 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_outpatie
         "ORTAK-13.gecmis_muayene_sorgu",
     )
     assert {duplicate, ortak20, ortak13} <= set(entry["wavea"]["matched_ids"])
-    # no other patient bills an outpatient visit, so the cohort's two new matched ids are this patient's alone
+    # the duplicate exam is this patient's alone; ORTAK-20 matches every outpatient bill that bills an EK-2B line, so
+    # patient 2's control visit (S32) has it too
     assert {pid for pid, e in measured.items() if duplicate in e["wavea"]["matched_ids"]} == {patient}
-    assert {pid for pid, e in measured.items() if ortak20 in e["wavea"]["matched_ids"]} == {patient}
-    assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # patients 6, 7, 11
+    assert {pid for pid, e in measured.items() if ortak20 in e["wavea"]["matched_ids"]} == {
+        patient,
+        cohort.scenario("S32").patient_id,
+    }
+    assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # 2, 6, 7, 11, 12
     assert ortak20 in entry["wavea"]["review_ids"] and duplicate not in entry["wavea"]["review_ids"]  # no row for the duplicate
     assert "compliance:tablo15_2_duplicate_exam_10day" in entry["finding_kinds"]
     assert not {pid for pid, e in measured.items() if "compliance:tablo15_2_duplicate_exam_10day" in e["finding_kinds"]} - {patient}
@@ -898,29 +910,37 @@ def measured_app_path() -> dict[str, dict[str, Any]]:
 
 
 def _partial_patients() -> set[str]:
-    """S2-S6 (the plan's table, 7.4) and S9 (M48.06 with I10): an EK-1/A match and no report on file."""
-    stories = ("showcase_S2", "showcase_S3", "showcase_S4", "showcase_S5", "showcase_S6")
+    """S3-S6 (the plan's table, 7.4) and S9 (M48.06 with I10): an EK-1/A match and no report on file."""
+    stories = ("showcase_S3", "showcase_S4", "showcase_S5", "showcase_S6")
     return {cohort.role(story).patient_id for story in stories} | {cohort.scenario("S9").patient_id}
 
 
-def test_the_app_path_shows_the_partial_ek1a_state_of_the_plan_and_no_report(
+def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state_of_the_others(
     measured_app_path: dict[str, dict[str, Any]],
 ) -> None:
     copay = {pid: entry["copay"] for pid, entry in measured_app_path.items()}
-    assert all(item["has_chronic_health_report"] is None for item in copay.values())  # no patient carries the flag yet
+    second = cohort.role("showcase_S2").patient_id
+    # S2's chronic health report is on file (WP9); every other patient's is unknown
+    assert {pid: item["has_chronic_health_report"] for pid, item in copay.items() if item["has_chronic_health_report"] is not None} == {
+        second: True
+    }
     assert {pid for pid, item in copay.items() if item["outcome"] == "partial_exempt"} == _partial_patients()
-    # the two emergency visits (S7, and S10 of patient 12) are exempt on the visit type, not on EK-1/A
-    exempt = {cohort.role("showcase_S7").patient_id, cohort.scenario("S10").patient_id}
+    # S2 is exempt on EK-1/A; the two emergency visits (S7, and S10 of patient 12) on the visit type
+    exempt = {second, cohort.role("showcase_S7").patient_id, cohort.scenario("S10").patient_id}
     assert {pid for pid, item in copay.items() if item["outcome"] == "exempt"} == exempt
     for pid in _partial_patients():
         assert "ek1a_report_unknown" in copay[pid]["rate_correction_codes"]
-    # the plan's 11 rate corrections of the app path on the eight showcase patients (P1 1, P2-P6 2 each), and 13 with S9
+    # S2's copay block holds the money waiver of its control's examination and nothing else: the partial row is gone and
+    # so is the generic 1.8.2 drug-copay row (EI-25: it leaves for any exempt patient)
+    assert copay[second]["rate_correction_codes"] == ["copay_exemption_ek1a"]
+    # the plan's 11 rate corrections on the eight showcase patients (P1 1, P2-P6 2 each) less S2's two plus its waiver,
+    # and 12 with S9
     eight = cohort.patient_ids()[:8]
-    assert [copay[pid]["rate_corrections"] for pid in eight] == [1, 2, 2, 2, 2, 2, 0, 0]
-    assert sum(item["rate_corrections"] for item in copay.values()) == 13
+    assert [copay[pid]["rate_corrections"] for pid in eight] == [1, 1, 2, 2, 2, 2, 0, 0]
+    assert sum(item["rate_corrections"] for item in copay.values()) == 12
     assert cm.summarize(measured_app_path)["copay"] == {
-        "rate_corrections": 13,
-        "outcomes": {"exempt": 2, "none": 4, "partial_exempt": 6},
+        "rate_corrections": 12,
+        "outcomes": {"exempt": 3, "none": 4, "partial_exempt": 5},
     }
 
 
@@ -930,15 +950,16 @@ def test_the_app_path_moves_no_block_and_no_wave_a_rule_of_the_claims_only_measu
     plain, app = cm.summarize(measured), cm.summarize(measured_app_path)
     assert app["blocks"] == plain["blocks"]
     assert app["wavea"] == plain["wavea"]
-    # the copay exemption adds one kind: the exemption review of the two exempt emergency patients
+    # the copay exemption adds one kind: the exemption review of the exempt patients (S2 on EK-1/A, the two emergency visits)
     assert set(app["finding_kinds"]["kinds"]) - set(plain["finding_kinds"]["kinds"]) == {"action:copay:exemption_review"}
     assert set(plain["finding_kinds"]["kinds"]) <= set(app["finding_kinds"]["kinds"])
 
 
-def test_a_chronic_report_on_a_profile_turns_the_partial_match_into_an_exemption(tmp_path: Path) -> None:
-    """What WP9 will show for S2, measured on a copy of the claims with S2's profile flag set (EI-25 included):
-    the patient is exempt, the partial row and the generic drug-copay row leave its copay block, the exemption
-    review appears, and no other patient moves."""
+def test_the_chronic_report_on_s2s_profile_is_what_turns_the_partial_match_into_the_waiver(tmp_path: Path) -> None:
+    """S2's report is on file (WP9). Measured against a copy of the claims with S2's profile flag unknown, the report
+    is the whole difference: with it the patient is exempt, the partial row and the generic drug-copay row leave its
+    copay block (EI-25), the money waiver of the control's examination and the exemption review appear, and no other
+    patient moves."""
     import polars as pl
 
     from src.bilun.domain.claims.schema import OPTIONAL_CLAIM_TABLES, REQUIRED_CLAIM_TABLES
@@ -951,28 +972,31 @@ def test_a_chronic_report_on_a_profile_turns_the_partial_match_into_an_exemption
             claims.joinpath(spec.filename).write_bytes(source.read_bytes())
     patient = cohort.role("showcase_S2").patient_id
     profiles = pl.read_parquet(claims / "patient_copay_profiles.parquet")
+    assert profiles.filter(pl.col("patient_id") == patient)["has_chronic_health_report"].to_list() == [True]
     profiles.with_columns(
         pl.when(pl.col("patient_id") == patient)
-        .then(True)
+        .then(None)
         .otherwise(pl.col("has_chronic_health_report"))
         .alias("has_chronic_health_report")
     ).write_parquet(claims / "patient_copay_profiles.parquet")
     clean = cm.DEFAULT_CLAIMS_DIR.parent / "clean"
 
-    flagged = cm.measure_patients(claims, app_path=True, clean_dir=clean)
-    unflagged = cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
+    unflagged = cm.measure_patients(claims, app_path=True, clean_dir=clean)
+    flagged = cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
     lines = cm.diff(
         {"cohort": cm.summarize(unflagged), "patients": unflagged},
         {"cohort": cm.summarize(flagged), "patients": flagged},
     )
     copay = flagged[patient]["copay"]
     assert (copay["outcome"], copay["has_chronic_health_report"]) == ("exempt", True)
+    assert unflagged[patient]["copay"]["outcome"] == "partial_exempt"
     assert unflagged[patient]["copay"]["rate_correction_codes"] == ["ek1a_report_unknown", "sut:1.8.2.(1)"]
-    assert copay["rate_correction_codes"] == []
+    assert copay["rate_correction_codes"] == ["copay_exemption_ek1a"]  # the waiver row of the control's examination
     assert "action:copay:exemption_review" in flagged[patient]["finding_kinds"]
     assert [line for line in lines if line.startswith("SENTETIK-HASTA-")] == [
         f"{patient}: finding kinds: 4 -> 5 (+action:copay:exemption_review); copay partial_exempt -> exempt; "
-        "chronic report None -> True; rate corrections: 2 -> 0 (-ek1a_report_unknown, -sut:1.8.2.(1))"
+        "chronic report None -> True; rate corrections: 2 -> 1 "
+        "(+copay_exemption_ek1a, -ek1a_report_unknown, -sut:1.8.2.(1))"
     ]
 
 
@@ -995,6 +1019,7 @@ def test_the_app_path_hands_the_report_the_clean_lab_table_and_the_patients_copa
     lab = seen[patient]["lab_df_pl"]
     assert lab.height == cohort.load_registry()["clean_counts"]["lab_clean.parquet"]
     assert {"patient_id", "visit_id", "test_name", "value"} <= set(lab.columns)
-    assert seen[patient]["copay_exemption"]["partial_exempt"] is True
+    assert seen[patient]["copay_exemption"]["exempt"] is True  # S2's report is on file
+    assert seen[patient]["copay_exemption"]["has_chronic_health_report"] is True
     cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, [patient])
     assert "lab_df_pl" not in seen[patient] and "copay_exemption" not in seen[patient]  # the claims-only path

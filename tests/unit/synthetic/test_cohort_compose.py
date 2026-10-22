@@ -175,7 +175,11 @@ def _assert_claim_invariants(composed: ComposedClaim, bill: dict) -> None:
     assert PATIENT_ID_RE.fullmatch(hdr.patient_id)
     assert CLAIM_ID_RE.fullmatch(hdr.claim_id)
     assert EPISODE_ID_RE.fullmatch(hdr.episode_id)
-    assert hdr.expected_total_payable_try == hdr.expected_total_billed_try
+    # the payable total is the sum of the lines' payables; it equals the billed total unless a line has a patient share
+    lines = (*composed.procedures, *composed.materials, *composed.drugs)
+    assert hdr.expected_total_payable_try == sum((x.expected_payable_try for x in lines), Decimal("0.00"))
+    if not any(p.copay_rate_applicable for p in composed.procedures):
+        assert hdr.expected_total_payable_try == hdr.expected_total_billed_try
 
     all_ids: list[str] = [hdr.claim_id, hdr.episode_id]
 
@@ -189,7 +193,10 @@ def _assert_claim_invariants(composed: ComposedClaim, bill: dict) -> None:
     proc_by_id = {}
     for p in composed.procedures:
         assert PROCEDURE_LINE_ID_RE.fullmatch(p.procedure_line_id)
-        assert p.expected_payable_try == p.billed_amount_try
+        # a line pays what it bills, or (slice G5b) billed x (1 - its copay rate), half up to the cent
+        assert p.copay_rate_applicable is (p.copay_rate is not None)
+        share = Decimal(1) - (p.copay_rate or Decimal(0))
+        assert p.expected_payable_try == money(p.billed_amount_try * share)
         assert p.claim_id == hdr.claim_id
         assert p.patient_id == hdr.patient_id
         assert p.episode_id == hdr.episode_id
@@ -303,6 +310,49 @@ def test_compose_claim_invariants_and_determinism(
     second = compose_claim(bill, ctx, catalogs)
     assert first == second
     _assert_claim_invariants(first, bill)
+
+
+def _s32_bill(pathways: dict[str, Pathway]) -> tuple[dict, EncounterContext]:
+    pathway = pathways["copd_exacerbation_post_discharge_control"]
+    pid = patient_id(2)
+    ctx = EncounterContext(
+        patient_id=pid, claim_id=claim_id(pid, 2), episode_id=episode_id(pid, 2), scenario_tag=pathway.id
+    )
+    return expand(pathway, annotate=True), ctx
+
+
+def test_a_line_with_a_patient_share_is_billed_in_full_and_pays_the_rest(
+    catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    """S32's examination (slice G5b): the expansion's `copay_rate` sets the flag, the rate and the payable of that line
+    only; the header's billed total is unchanged and its payable total follows the line."""
+    bill, ctx = _s32_bill(pathways)
+    assert [row.get("copay_rate") for row in bill["procedures"]] == ["0.20"]
+    composed = compose_claim(bill, ctx, catalogs)
+    (exam,) = composed.procedures
+    assert (exam.procedure_code, exam.procedure_category) == ("520030", "muayene")
+    assert (exam.copay_rate_applicable, exam.copay_rate) == (True, Decimal("0.20"))
+    assert (exam.billed_amount_try, exam.expected_payable_try) == (Decimal("85.73"), Decimal("68.58"))  # 68.584
+    assert (composed.header.expected_total_billed_try, composed.header.expected_total_payable_try) == (
+        Decimal("85.73"),
+        Decimal("68.58"),
+    )
+    _assert_claim_invariants(composed, bill)
+    # without the key the same line pays what it bills
+    plain = copy.deepcopy(bill)
+    del plain["procedures"][0]["copay_rate"]
+    (line,) = compose_claim(plain, ctx, catalogs).procedures
+    assert (line.copay_rate_applicable, line.copay_rate, line.expected_payable_try) == (False, None, Decimal("85.73"))
+
+
+@pytest.mark.parametrize("rate", ["0", "1", "1.5", "-0.2", "0.125"])
+def test_a_copay_rate_that_is_no_share_with_two_decimals_is_refused(
+    rate: str, catalogs: CohortCatalogs, pathways: dict[str, Pathway]
+) -> None:
+    bill, ctx = _s32_bill(pathways)
+    bill["procedures"][0]["copay_rate"] = rate
+    with pytest.raises(ComposeError, match="copay_rate"):
+        compose_claim(bill, ctx, catalogs)
 
 
 _BED_LINE_CODES = {"510010", "510070", "510081", "510120", "510121", "510090", "530000"}

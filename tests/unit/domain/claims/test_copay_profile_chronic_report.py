@@ -131,9 +131,10 @@ def test_the_flag_round_trips_through_the_parquet_loader_and_an_export_without_i
     tmp_path: Path,
 ) -> None:
     committed = pl.read_parquet(DEFAULT_SYNTHETIC_CLAIMS_DIR / "patient_copay_profiles.parquet")
-    # The committed cohort carries the column, typed and all unknown.
+    # The committed cohort carries the column, typed: S2's patient has the report on file (WP9), every other is unknown.
     assert committed.schema["has_chronic_health_report"] == pl.Boolean
-    assert committed["has_chronic_health_report"].null_count() == committed.height
+    known = committed.filter(pl.col("has_chronic_health_report").is_not_null())
+    assert known.select("patient_id", "has_chronic_health_report").rows() == [("SENTETIK-HASTA-0002", True)]
     assert committed.height >= len(_STATES)
 
     states = [_STATES[row % len(_STATES)] for row in range(committed.height)]

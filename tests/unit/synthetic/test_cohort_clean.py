@@ -1531,11 +1531,14 @@ def test_a_claim_id_that_is_no_claim_id_is_a_clean_table_error() -> None:
 
 
 def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
-    """Patient 2's second stay is 8 nights (the first, 6) with a 6-day ceftriaxone course (the first, 7)."""
+    """Patient 2's second stay is 8 nights (the first, 6) with a 6-day ceftriaxone course (the first, 7).
+
+    It is a test-only third bill: the committed second bill of patient 2 is its control visit (S32), which has no drug.
+    """
     recipes, clinical = with_encounters(
         Extra(
             2,
-            2,
+            3,
             "copd_exacerbation_pneumonia_ward",
             {
                 "admit": "2026-04-20",
@@ -1548,7 +1551,7 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
     )
     built = build_showcase(recipes=recipes, clinical=clinical)
     headers = built.tables["claim_headers.parquet"].filter(pl.col("patient_id") == "SENTETIK-HASTA-0002")
-    assert headers["discharge_date"].to_list() == ["2026-03-15", "2026-04-28"]  # 6 nights, then 8
+    assert headers["discharge_date"].to_list() == ["2026-03-15", None, "2026-04-28"]  # 6 nights, the visit, then 8
     rec = built.clean_tables["recete_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0002")
 
     def days(episode: str) -> dict[str, int | None]:
@@ -1556,7 +1559,8 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
         return {name.split()[0]: gun for name, gun in zip(rows["ilac_adi"], rows["gun"], strict=True)}
 
     assert days(_episode_of(2, 1)) == {"IPRAVENT": None, "IESEF": 7, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 6}
-    assert days(_episode_of(2, 2)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
+    assert days(_episode_of(2, 2)) == {}  # the control visit bills no drug
+    assert days(_episode_of(2, 3)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
 
 
 def test_a_later_bill_of_another_pathway_has_the_age_and_sex_of_its_pins() -> None:

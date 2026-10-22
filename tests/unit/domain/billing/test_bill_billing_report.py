@@ -4,9 +4,9 @@ Verifies that ``build_bill_claim_context`` partitions a patient's claim bundle
 by ``claim_id`` and that ``compute_all_bill_billing_reports`` produces per-bill
 reports whose recoverable totals sum to the patient-level aggregate.
 
-The showcase cohort holds one claim per patient, so there is no multi-bill patient in it. The
-tests run on the cohort with the bills of two more patients filed under the first one (see
-``multi_bill``); the claim tables are rewritten with polars into a temporary copy.
+The tests run on the cohort with the bills of two more patients filed under the first one (see
+``multi_bill``), so the host has bills of three kinds; the claim tables are rewritten with polars into
+a temporary copy. A guest patient's later bills come along with it (S2's control visit, S32).
 """
 
 from __future__ import annotations
@@ -61,10 +61,14 @@ def multi_bill(tmp_path_factory: pytest.TempPathFactory) -> _MultiBill:
                 .alias("patient_id")
             )
         frame.write_parquet(path)
+    # every bill of the host and of its guests (a guest's later bills, such as S2's control visit, come along)
+    headers = pl.read_parquet(DEFAULT_SYNTHETIC_CLAIMS_DIR / "claim_headers.parquet", columns=["patient_id", "claim_id"])
+    claim_ids = headers.filter(pl.col("patient_id").is_in([host.patient_id, *guest_patients]))["claim_id"]
+    assert {host.claim_id, *(guest.claim_id for guest in guests)} <= set(claim_ids)
     return _MultiBill(
         dataset=load_sut_claim_dataset(claims_dir, mode="real_claims"),
         patient_id=host.patient_id,
-        claim_ids=(host.claim_id, *(guest.claim_id for guest in guests)),
+        claim_ids=tuple(sorted(claim_ids)),
     )
 
 

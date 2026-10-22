@@ -112,7 +112,7 @@ Pins outside the pathway's declared ranges (age, sex, nights, optional ids or dr
 - `expected_rule_trace`: `f"{sut_section}|{engine_rule}"`
 - `assertion_notes`: `f"clean={billed_clean_try} faulty={billed_faulty_try}"`
 
-A clean claim has no `FaultInjectionRecord` and therefore zero rows in `expected_rule_outputs.parquet`. That `expected_payable_try` equals `billed_amount_try` on every submitted claim line (and `expected_total_payable_try` equals `expected_total_billed_try` on the claim header, so no runtime rule can read the answer from a pre-computed payable amount) is a rule for the cohort generator of phase P4; nothing in P3 constructs or checks submitted claim lines.
+A clean claim has no `FaultInjectionRecord` and therefore zero rows in `expected_rule_outputs.parquet`. That `expected_payable_try` equals `billed_amount_try` on every submitted claim line (and `expected_total_payable_try` equals `expected_total_billed_try` on the claim header, so no runtime rule can read the answer from a pre-computed payable amount) is a rule for the cohort generator of phase P4; nothing in P3 constructs or checks submitted claim lines. Its one exception is a line with a patient share (slice G5b, the examination of the clean bill S32): it pays billed x (1 - its copay rate), a fact of the bill, not an answer.
 
 ## What changed with the v3 cohort
 

@@ -181,6 +181,9 @@ CATALOGS = CohortCatalogs()
 WARD = claim_id(PATIENT[10], 2)  # the ward bill of patient 10 (S14), after the ICU bill (S11): the committed second bill
 CONTROL_CLAIM = claim_id(PATIENT[4], 2)  # the control visit of patient 4 (S39, a clean bill), nine days after her stay (S4)
 SECOND_VISIT_CLAIM = claim_id(PATIENT[4], 3)  # her second visit (S40), a week after the control
+# the control visit of patient 2 (S32, a clean bill) three weeks after his stay (S2): its examination is the one line of the
+# cohort with a patient share (the copay flag, rate 0.20: billed 85.73, payable 68.58)
+S2_CONTROL = claim_id(PATIENT[2], 2)
 
 
 # --- fixtures -----------------------------------------------------------------------------------
@@ -592,6 +595,11 @@ class Case:
     @property
     def name(self) -> str:
         return f"{self.check}-{self.label}" if self.label else self.check
+
+
+def _s2_control_exam() -> pl.Expr:
+    """The examination of patient 2's control visit (S32): the one line with a patient share."""
+    return (pl.col("claim_id") == S2_CONTROL) & (pl.col("procedure_code") == "520030")
 
 
 def _ward(code: str, day: str | None = None) -> pl.Expr:
@@ -1781,6 +1789,50 @@ CASES: list[Case] = [
         label="drug_payable_missing",
         at=f"{CLAIM[6]} drug_claim_lines[{drug_claim_line_id(CLAIM[6], 1)}]",
         says="expected_payable_try is (none) but billed_amount_try is 0.00",
+    ),
+    # the line with a patient share (S32's examination): it pays billed x (1 - rate), and flag and rate go together
+    Case(
+        "money.payable_equals_billed",
+        lambda d: edit(d, TABLE_PROCEDURES, _s2_control_exam(), expected_payable_try=85.73),
+        label="copay_line_paid_in_full",
+        at=f"{S2_CONTROL} procedure_claim_lines[",
+        says="expected_payable_try is 85.73 but billed_amount_try 85.73 less the copay share 0.20 is 68.58",
+    ),
+    Case(
+        "money.payable_equals_billed",
+        lambda d: edit(d, TABLE_PROCEDURES, _s2_control_exam(), expected_payable_try=68.57),
+        label="copay_line_a_cent_short",
+        at=f"{S2_CONTROL} procedure_claim_lines[",
+        says="expected_payable_try is 68.57 but billed_amount_try 85.73 less the copay share 0.20 is 68.58",
+    ),
+    Case(
+        "money.payable_equals_billed",
+        lambda d: edit(d, TABLE_PROCEDURES, _s2_control_exam(), copay_rate=None),
+        label="copay_flag_without_a_rate",
+        at=f"{S2_CONTROL} procedure_claim_lines[",
+        says="copay_rate_applicable is true but copay_rate is (none)",
+    ),
+    Case(
+        "money.payable_equals_billed",
+        lambda d: edit(d, TABLE_PROCEDURES, _s2_control_exam(), copay_rate=1.0, expected_payable_try=0.0),
+        label="copay_rate_of_the_whole_line",
+        at=f"{S2_CONTROL} procedure_claim_lines[",
+        says="copay_rate_applicable is true but copay_rate is 1.00",
+    ),
+    Case(
+        "money.payable_equals_billed",
+        lambda d: edit(d, TABLE_PROCEDURES, line(4, "L101850", "2026-05-13"), copay_rate=0.2),
+        label="copay_rate_without_the_flag",
+        at=f"{CLAIM[4]} procedure_claim_lines[",
+        says="copay_rate is 0.20 but copay_rate_applicable is false",
+    ),
+    Case(
+        "money.payable_equals_billed",
+        lambda d: edit(d, TABLE_PROCEDURES, _s2_control_exam(), copay_rate_applicable=False),
+        label="copay_flag_dropped_from_a_shared_line",
+        at=f"{S2_CONTROL} procedure_claim_lines[",
+        says="expected_payable_try is 68.58 but billed_amount_try is 85.73; a line pays what it bills",
+        n=2,  # the payable of an unflagged line, and a rate without its flag
     ),
     # --- money.totals (S3's clean twin bills 5607.62)
     Case(
@@ -4423,6 +4475,48 @@ def test_a_line_bills_the_full_price_or_a_rung_of_the_ladder(
         expected_payable_try=billed,
     )
     assert (data.problems(context, only="money.line_arithmetic") == []) is fits
+
+
+def test_the_one_line_with_a_patient_share_pays_billed_less_it_and_the_header_follows(built, anadata, context) -> None:
+    """S32's examination (slice G5b) is the only line whose payable is not its billed amount, and the money checks
+    pass on it: 85.73 billed, 20 %, 68.58 payable; the header's payable total is the sum of the lines'."""
+    procedures = built.tables[TABLE_PROCEDURES]
+    shared = procedures.filter(pl.col("copay_rate_applicable"))
+    assert shared.select("claim_id", "procedure_code", "billed_amount_try", "expected_payable_try", "copay_rate").rows() == [
+        (S2_CONTROL, "520030", 85.73, 68.58, 0.2)
+    ]
+    assert procedures.filter(~pl.col("copay_rate_applicable"))["copay_rate"].null_count() == procedures.height - 1
+    priced = pl.concat(
+        [built.tables[t].select("billed_amount_try", "expected_payable_try") for t in (TABLE_PROCEDURES, TABLE_MATERIALS, TABLE_DRUGS)]
+    )
+    assert priced.filter(pl.col("billed_amount_try") != pl.col("expected_payable_try")).height == 1
+    header = built.tables[TABLE_CLAIM_HEADERS].filter(pl.col("claim_id") == S2_CONTROL)
+    assert header.select("expected_total_billed_try", "expected_total_payable_try").row(0) == (85.73, 68.58)
+    data = Data(dict(built.tables), anadata)
+    assert data.problems(context, only=["money.line_arithmetic", "money.payable_equals_billed", "money.totals"]) == []
+
+
+@pytest.mark.parametrize(
+    ("billed", "rate", "payable", "fits"),
+    [
+        (85.73, 0.20, 68.58, True),  # 68.584
+        (85.73, 0.20, 68.59, False),
+        (12.35, 0.10, 11.12, True),  # 11.115: half up, in whole cents (a float would give 11.114999...)
+        (12.35, 0.10, 11.11, False),
+        (0.05, 0.50, 0.03, True),  # 0.025: half up
+        (0.05, 0.50, 0.02, False),
+        (100.00, 0.99, 1.00, True),
+    ],
+)
+def test_a_line_with_a_patient_share_pays_billed_less_the_share_half_up_to_the_cent(
+    billed, rate, payable, fits, twins, anadata, context
+) -> None:
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_PROCEDURES, _s2_control_exam(), billed_amount_try=billed, copay_rate=rate, expected_payable_try=payable)
+    assert (data.problems(context, only="money.payable_equals_billed") == []) is fits
+    # the composer's arithmetic is the same: Decimal, half up
+    expected = (Decimal(str(billed)) * (1 - Decimal(str(rate)))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    assert (expected == Decimal(str(payable)).quantize(Decimal("0.01"))) is fits
 
 
 def test_money_agrees_to_the_cent_not_to_the_float(twins, anadata, context) -> None:

@@ -78,6 +78,9 @@ LINE_KEYS = {
     "drugs": {"barcode", "date", "qty", "unit", "per_box", "flags"},
     "performed": {"code", "date", "source"},
 }
+# The optional keys of a line: a procedure line with a patient share (slice G5b, S32's examination) carries its
+# `copay_rate`, a share above 0 and below 1 with two decimals ("0.20"); a line without one has no such key.
+OPTIONAL_LINE_KEYS = {"procedures": {"copay_rate"}}
 # The order the format fixes for each list.
 SORT_KEYS = {
     "diagnoses": lambda r: (r["role"] != "primary", r["icd10"]),
@@ -134,10 +137,10 @@ def test_every_story_has_its_golden_file_and_no_other_file_is_there(variant: str
 
 
 def test_a_story_has_a_faulty_golden_exactly_when_it_has_a_fault() -> None:
-    """A bill without a fault (S39) is a clean golden only; every other story's fault record has its faulty golden."""
+    """A bill without a fault (S32, S39) is a clean golden only; every other story's fault record has its faulty golden."""
     with_fault = {record["story"] for record in cohort.load_registry()["faults"]}
     assert set(FAULTY_STORIES) == with_fault
-    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S39"]
+    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S32", "S39"]
     assert FAULTY_STORIES == [s for s in STORIES if s not in clean_only_stories()]  # stories.py order
 
 
@@ -252,9 +255,18 @@ def test_layout_and_format_version(golden) -> None:
     assert type(doc["format_version"]) is int and doc["format_version"] == 1
     assert set(doc["header"]) == HEADER_KEYS
     for name, keys in LINE_KEYS.items():
-        assert [row for row in doc[name] if set(row) != keys] == [], name
+        optional = OPTIONAL_LINE_KEYS.get(name, set())
+        assert [row for row in doc[name] if not keys <= set(row) <= keys | optional] == [], name
     for name in ("procedures", "materials", "drugs"):
         assert all(isinstance(row["flags"], dict) for row in doc[name]), name
+    rates = [row["copay_rate"] for row in doc["procedures"] if "copay_rate" in row]
+    assert all(re.fullmatch(r"0\.[0-9]{2}", rate) and rate != "0.00" for rate in rates), rates
+
+
+def test_only_the_examination_of_s32_carries_a_copay_rate(golden) -> None:
+    story, _, doc = golden
+    rates = [(row["code"], row["copay_rate"]) for row in doc["procedures"] if "copay_rate" in row]
+    assert rates == ([("520030", "0.20")] if story == "S32" else [])
 
 
 def test_lists_are_sorted_as_the_format_says(golden) -> None:
@@ -404,9 +416,37 @@ def test_the_s39_story_bill_is_a_clean_bill_with_no_faulty_variant() -> None:
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
-    assert out["clean_only"] == ["S39"] and out["in_stories"] is True and out["refused"] is True
+    assert out["clean_only"] == ["S32", "S39"] and out["in_stories"] is True and out["refused"] is True
     assert out["history"] == ["C-SH04", "C-SH39"]  # the stay of the same patient is its history
     assert out["codes"] == ["520030", "905671", "L104780", "L107010", "L107020"]  # the visit, the culture, three tests
+
+
+def test_the_s32_story_bill_is_a_clean_bill_whose_examination_carries_the_patients_share() -> None:
+    """The hand-built control of S2 (the second, independent version of the pathway's bill): no faulty variant, the
+    stay of S2 as its history, one examination with the copay flag, rate 0.20, billed 85.73 and payable 68.58."""
+    code = (
+        "import json, sys\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "from stories import CLEAN_ONLY, STORIES, s32\n"
+        "try:\n"
+        "    s32('faulty')\n"
+        "    refused = False\n"
+        "except ValueError:\n"
+        "    refused = True\n"
+        "bill = s32('clean')\n"
+        "ctx, head = bill.ctx(), bill.header()\n"
+        "print(json.dumps({'in_stories': 'S32' in STORIES and 'S32' in CLEAN_ONLY, 'refused': refused,\n"
+        "                  'history': sorted(c.claim_id for c in ctx.history.claims),\n"
+        "                  'lines': [(p.procedure_code, p.copay_rate_applicable, str(p.copay_rate), str(p.billed_amount_try),\n"
+        "                             str(p.expected_payable_try)) for p in ctx.procedure_lines],\n"
+        "                  'totals': [str(head.expected_total_billed_try), str(head.expected_total_payable_try)]}))\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    assert out["in_stories"] is True and out["refused"] is True
+    assert out["history"] == ["C-SH02", "C-SH32"]  # the stay of the same patient is its history
+    assert out["lines"] == [["520030", True, "0.20", "85.73", "68.58"]]
+    assert out["totals"] == ["85.73", "68.58"]  # the payable total follows the line
 
 
 def test_the_proof_script_proves_every_story_with_a_fault_and_reads_the_row_of_s40_as_its_target() -> None:

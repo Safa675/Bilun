@@ -88,6 +88,23 @@ def _category_for(code: str) -> str:
     return "islem"
 
 
+def _copay_rate(proc_row: dict[str, Any]) -> Decimal | None:
+    """The patient's share of a procedure line (`copay_rate`, "0.20"), or None.
+
+    A share outside (0, 1) or with more than 2 decimals raises: the claim loader reads the rate to the cent.
+    """
+    raw = proc_row.get("copay_rate")
+    if raw is None:
+        return None
+    rate = Decimal(str(raw))
+    if not (Decimal(0) < rate < Decimal(1) and rate == rate.quantize(_CENT)):
+        raise ComposeError(
+            f"procedure {proc_row.get('code')!r} on {proc_row.get('date')}: copay_rate {raw!r} is not a share "
+            "in (0, 1) with at most 2 decimals"
+        )
+    return rate
+
+
 def _require_entry_id(row: dict[str, Any], *, section: str, index: int) -> str:
     entry_id = row.get("entry_id")
     if not isinstance(entry_id, str) or not entry_id:
@@ -155,6 +172,10 @@ def compose_claim(
         qty = int(proc_row["qty"])
         unit = money(cat.price)
         billed = money(unit * qty * Decimal(str(proc_row["billed_ratio"])))
+        # A line with a patient share (slice G5b, `copay_rate` of the expansion) is billed in full and SGK
+        # pays the rest; every other line pays what it bills.
+        copay_rate = _copay_rate(proc_row)
+        payable = billed if copay_rate is None else money(billed * (Decimal(1) - copay_rate))
         lid = procedure_line_id(ctx.claim_id, idx)
         procedures.append(
             ProcedureClaimLine(
@@ -169,13 +190,14 @@ def compose_claim(
                 quantity=qty,
                 unit_price_try=unit,
                 billed_amount_try=billed,
-                expected_payable_try=billed,
+                expected_payable_try=payable,
                 is_package_included=False,
                 package_code="",
                 surcharge_applicable=False,
-                copay_rate_applicable=False,
+                copay_rate_applicable=copay_rate is not None,
                 denial_reason_expected="",
                 rule_trace_expected="",
+                copay_rate=copay_rate,
                 procedure_specialty_code=proc_row.get("specialty", ""),
                 sag_sol="",
             )
@@ -284,6 +306,11 @@ def compose_claim(
         + sum((m.billed_amount_try for m in materials), _ZERO)
         + sum((d.billed_amount_try for d in drugs), _ZERO)
     )
+    total_payable = (
+        sum((p.expected_payable_try for p in procedures), _ZERO)
+        + sum((m.expected_payable_try for m in materials), _ZERO)
+        + sum((d.expected_payable_try for d in drugs), _ZERO)
+    )
     header = ClaimHeader(
         claim_id=ctx.claim_id,
         patient_id=ctx.patient_id,
@@ -303,7 +330,7 @@ def compose_claim(
         primary_icd10=hdr["primary_icd10"],
         package_candidate=ctx.package_candidate,
         expected_total_billed_try=total,
-        expected_total_payable_try=total,
+        expected_total_payable_try=total_payable,
         expected_denial_reason="",
         scenario_tag=ctx.scenario_tag,
         occupational_context=ctx.occupational_context,

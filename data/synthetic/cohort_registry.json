@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 16,
+    "anadata_clean.parquet": 17,
     "lab_clean.parquet": 298,
     "recete_clean.parquet": 21
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "264095683c5db96c5cda81de741e9ebb6ce2486d3c1248205e824861913ab626",
+    "anadata_clean.parquet": "9d2c35046b1f7ea8412da35361819aeba0e47e45ab7f815c27d5065ec2a9ccba",
     "lab_clean.parquet": "8597b3fc0d2633ef510ba127d6d4fe0dfacb7996bcba4d8c0d82e00c5482148b",
     "recete_clean.parquet": "17e62c994a68677aedbc96d85597e8b3de7a43fc49574f1016a740a35e6b72c0"
   },
   "counts": {
-    "claim_diagnoses.parquet": 41,
-    "claim_headers.parquet": 16,
+    "claim_diagnoses.parquet": 43,
+    "claim_headers.parquet": 17,
     "drug_claim_lines.parquet": 21,
     "expected_rule_outputs.parquet": 15,
     "material_claim_lines.parquet": 3,
     "medula_rejection_events.parquet": 1,
     "patient_copay_profiles.parquet": 12,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 171
+    "procedure_claim_lines.parquet": 172
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -38,6 +38,15 @@
       "pathway_id": "copd_exacerbation_pneumonia_ward",
       "patient_id": "SENTETIK-HASTA-0002",
       "story": "S2",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0002-002",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "copd_exacerbation_post_discharge_control",
+      "patient_id": "SENTETIK-HASTA-0002",
+      "story": "S32",
       "tier": "showcase"
     },
     {
@@ -510,6 +519,12 @@
       ],
       "patient_id": "SENTETIK-HASTA-0012"
     },
+    "S32": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0002-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0002"
+    },
     "S39": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0004-002"
@@ -532,14 +547,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "550144d65d5aca2ffe377ad96ed9117a57214228a6f497b22093a28a3a661dfd",
-    "claim_headers.parquet": "844eff18f178cd25150c15add1edf0747c8acd7be7f6571d235226d19cccc237",
+    "claim_diagnoses.parquet": "cfe27bd5541eaa8a4ba30a5468a2bc1749f12a6755ad6c2d563fb55ea2321796",
+    "claim_headers.parquet": "bd8f86e9edd8be625d5a80990ae48f52a35cf062266d1821f20ebdc9ae0010d7",
     "drug_claim_lines.parquet": "a99c6ad4801110956506f2759747c8afd0f210bf15fa29101b15984edf45f4fb",
     "expected_rule_outputs.parquet": "07ccec137046a2caa464c6abbb6e9d4b8eb57363c9265e3226ecfc75d3688086",
     "material_claim_lines.parquet": "9a776de3fef1b9d5e11a565788b52c51c90522cdbc07cf7f34db2aebb203f101",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
-    "patient_copay_profiles.parquet": "ce7770766121e41a84f01681a2cf30816d44906127354335eba6182830aa851c",
+    "patient_copay_profiles.parquet": "9ec1fdacb55f2565b42f1697c3fd4d818b6ad19fa58669420925944bd4184582",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "f26ba1ae51f8806146193321172b2d2b910a87b039fe48a82807401f360f44fe"
+    "procedure_claim_lines.parquet": "b671fb072dacfdb9a44ab27362059714948402d0aa7e1e3dea87596ff9446783"
   }
 }

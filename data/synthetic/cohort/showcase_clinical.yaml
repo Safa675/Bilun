@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32 as encounter_no 2, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -58,6 +58,18 @@ patients:
       source: "Story S2 COPD exacerbation with pneumonia admission and day-4 follow-up labs (methylprednisolone course from admission); clinician confirms in issue #309."
     basis: judgment
     source: "Story S2 COPD exacerbation with pneumonia presentation (hypoxaemia SpO2 88%, tachycardia, elevated SBP); clinician confirms in issue #309."
+
+  - patient_no: 2
+    encounter_no: 2
+    vitals:
+      sbp: 136
+      dbp: 80
+      pulse: 86
+      spo2: 93
+      height_cm: 170
+      weight_kg: 67.0
+    basis: judgment
+    source: "Story S32 control three weeks after discharge (stable COPD on room air, SpO2 93 %, afebrile, a kilo lighter); clinician confirms in issue #309."
 
   - patient_no: 3
     vitals:

@@ -224,3 +224,4 @@ showcase:
   nights: 6
   include: [I10]
   course_days: {ceftriaxone: 7, clarithromycin: 5, methylprednisolone: 5}
+  chronic_health_report: true        # the patient's report is on file (EK-1/A); every bill of his carries it
