@@ -224,3 +224,30 @@ def test_violations_have_correct_structure() -> None:
         assert "material_outcome" in v
         assert "details" in v
         assert v["details"]["prose_rule_set"] == "fatura_inceleme_prose"
+
+
+def test_rules_naming_no_billed_evidence_do_not_fire_on_every_bill_of_their_branch() -> None:
+    """EI-24: four rules have no condition and GÖĞÜS-6 only the inpatient setting; the department alone is no evidence."""
+    no_evidence = {
+        "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon",
+        "KARDİYOLOJİ-4.ayni_seans_periferik_anjiografi",
+        "KARDİYOLOJİ-9.kalp_kat_sirasi_cerrahi_sadece_cerrahi",
+        "KALP_VE_DAMAR_CERRAHİSİ-1.kag_sonrasi_cabg_islem_yok_kesinti",
+        "KALP_VE_DAMAR_CERRAHİSİ-4.ek2b_lazer_tedavi_kdc_odenmez",
+    }
+    for department, care_setting in (
+        ("Kardiyoloji", "outpatient"),
+        ("Kardiyoloji", "inpatient"),
+        ("Göğüs Hastalıkları", "inpatient"),
+        ("KVC", "inpatient"),
+    ):
+        flat = {"department": department, "care_setting": care_setting, "procedure_code_any": ["520030"]}
+        assert not {v["rule_id"] for v in check_fatura_inceleme(flat)} & no_evidence, (department, care_setting)
+    # a rule of the same branch keyed on a billed code still fires
+    flat = {"department": "Kardiyoloji", "care_setting": "outpatient"}
+    keyed = next(
+        r for r in load_fatura_inceleme_rules()["rules"]
+        if r["rule_id"] == "KARDİYOLOJİ-2.spect_gated_ayri_ayri_odeme"
+    )
+    fired = check_fatura_inceleme({**flat, **{k: v for k, v in keyed["condition"].items()}})
+    assert "KARDİYOLOJİ-2.spect_gated_ayri_ayri_odeme" in {v["rule_id"] for v in fired}

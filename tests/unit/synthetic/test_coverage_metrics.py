@@ -760,12 +760,13 @@ def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_their_l
     # +13 evaluated (the first outpatient claims), +2 matched (the duplicate exam, ORTAK-20), +1 with a row (ORTAK-20);
     # patient 7's observation (S47) adds the duplicate test: +1 evaluated, +1 matched, +1 with a row (a review);
     # patient 2's readmission (S33) and its control (S34) add the drug count and the vakabaşı examination: +2 evaluated,
-    # +3 matched (the two and GÖĞÜS-6, which matches any inpatient chest-disease bill: EI-24), +2 with a row (reviews);
+    # +2 matched (the two), +1 with a row (the drug count, a review; GÖĞÜS-6 names no billed evidence and is no match
+    # since WP21, EI-24);
     # patient 3's instrumentation (S38) adds BEYİN-2 (+1 matched, +1 with a row) and the neuromonitoring review (+1 with a row);
     # patient 8's ER visit (S49) adds the green-area rule `tablo15_7` (+1 evaluated, +1 matched, +1 with a row: a review)
     # and its ERCP admission (S50) GENEL CERRAHİ-1 (+1 matched, +1 with a row: a review keyed on the codes alone, EI-24)
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 17, 14 + 9, 14 + 8)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (16, 6, 0)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 17, 14 + 8, 14 + 7)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (15, 6, 0)
 
 
 def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
@@ -815,8 +816,9 @@ def test_the_eight_showcase_patients_are_the_plans_per_patient_table_and_what_th
     # patient 2 is read over its stay, its control (S32, its first outpatient bill), its readmission (S33) and the control
     # after it (S34): 86 more rules evaluated with S32 (the outpatient rules, already evaluated on patient 4), 2 more
     # matched with a row (ORTAK-13 and ORTAK-20, reviews); 2 more evaluated with S33 and S34 (the drug count, the vakabaşı
-    # examination), 3 more matched (the two and GÖĞÜS-6, EI-24), 2 of them with a row (the drug count, GÖĞÜS-6: reviews)
-    assert _row(showcase_eight[second]) == (6, 191 + 86 + 2, 9 + 2 + 3, 6 + 2 + 2, 3)
+    # examination), 2 more matched (the two), 1 of them with a row (the drug count, a review); GÖĞÜS-6 names no billed
+    # evidence and is unavailable on S33 since WP21 (EI-24)
+    assert _row(showcase_eight[second]) == (6, 191 + 86 + 2, 9 + 2 + 2, 6 + 2 + 1, 3)
     # patient 4 is read over its stay, its control and its second visit: 14 more rules evaluated, 3 more matched
     assert _row(showcase_eight[fourth]) == (6, 191 + 14, 9 + 3, 6 + 2, 3)
 
@@ -896,13 +898,18 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
     41 -> 42, blocks, evaluated, matched and finding kinds unchanged, with a row 24 -> 29 (financial 1 -> 6): five
     radiotherapy rules, reviews of the course and day limits without an amount, never evaluated (unavailable by their
     spec: the model has no treatment course and no session identity, EI-19 of the coverage plan).
+
+    After WP21 (EI-24: a Fatura İnceleme rule whose condition names no billed evidence, only its branch and care
+    setting, is unavailable instead of matched): matched 26 -> 25 and with a row 29 -> 28 (reviews 17 -> 16), the one
+    id GÖĞÜS HASTALIKLARI-6 of S33 (patient 2), evaluated unchanged (it stays a clean negative on the other bills);
+    the four cardiology and cardiac-surgery rules of the kind matched no demo bill.
     """
     summary = cm.summarize(measured)
     assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (16, 42)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (292, 26, 29)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (17, 6, 6)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (292, 25, 28)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (16, 6, 6)
     assert summary["finding_kinds"]["count"] == 44
     sixteenth = cohort.scenario("S21").patient_id
     radiotherapy = {
@@ -973,9 +980,11 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
     assert "compliance:tablo15_3_vakabasi_wrong_method" in summary["finding_kinds"]["kinds"]
     assert {"tablo15_11_drug_quantity_error", "tablo15_3_vakabasi_wrong_method"} <= set(wavea["matched_ids"])
     second = measured[cohort.role("showcase_S2").patient_id]["wavea"]
-    assert {"tablo15_11_drug_quantity_error", "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon"} <= set(
-        second["review_ids"]
-    )  # two rows of patient 2; the vakabaşı examination has none (a compliance finding)
+    assert "tablo15_11_drug_quantity_error" in second["review_ids"]  # the vakabaşı examination has none (compliance)
+    # GÖĞÜS-6 names no billed evidence (EI-24): S33 bills no deep tracheal aspiration, so no match and no row anywhere
+    aspiration = "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon"
+    assert aspiration in wavea["evaluated_ids"]  # a clean negative on the bills outside its branch or setting
+    assert aspiration not in wavea["matched_ids"] and aspiration not in wavea["row_ids"]
     assert "tablo15_3_vakabasi_wrong_method" not in wavea["row_ids"]
     assert "yatak_icu_overlap_510010" in wavea["row_ids"]
     # the eight of the plan's baseline plus S9, S11 and S12 had 273 / 14: the one new id is the financial one
