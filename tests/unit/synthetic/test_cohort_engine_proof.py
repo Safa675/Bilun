@@ -48,6 +48,7 @@ from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import (
     PatientClaimContext,
+    PatientClaimHistory,
     build_bill_claim_context,
     build_patient_claim_context,
 )
@@ -401,6 +402,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             "S24": "blood_component_isbt128_barcode",
             "S33": "tablo15_11_drug_quantity_error",
             "S34": "tablo15_3_vakabasi_wrong_method",
+            "S38": "conditional_addon_ek2d_neuromonitoring",
             "S40": "tablo15_2_duplicate_exam_10day",
             "S44": "report_duration_mismatch",
         }[story]
@@ -875,6 +877,46 @@ def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_shows_the_kn
     # the patient's history holds all five bills: the stay, the ER visit, this one, the walker visit, the geriatrics visit
     assert {c.claim_id for c in b.faulty_ctx.history.claims} == {f"F-SENTETIK-HASTA-0005-00{n}" for n in range(1, 6)}
     assert [c.claim_id for c in b.faulty_ctx.claims] == ["F-SENTETIK-HASTA-0005-003"]
+
+
+def test_s38_finds_the_neuromonitoring_beside_an_instrumentation_that_is_not_on_the_ek2d4_list(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    """The faulty bill bills the neuromonitoring P703365 beside P614040, which is not on EK-2/D-4 (C001389, SUT
+    2.4.4.M.(1)): the add-on rule finds it, a review without money (unavailable by spec), so the record carries 0.00.
+    The clean bill is the package alone and is silent. BEYİN VE SİNİR CERRAHİSİ-2 is keyed on P614040 and is on both."""
+    b = story_bundles["S38"]
+    assert b.record.amount_try == "0.00" and b.record.engine_rule == "conditional_addon_ek2d_neuromonitoring"
+    assert [(r["rule_id"], r["procedure_code"], r["required_list"]) for r in b.direct_faulty] == [
+        ("conditional_addon_ek2d_neuromonitoring", "703365", "EK-2/D-4")
+    ]
+    assert b.direct_clean == []
+    assert (b.faulty_report.audit_exposure_try, b.clean_report.audit_exposure_try) == (0.0, 0.0)
+    beyin2 = ("wavea", "claim_reviews", "BEYİN-2.posterior_segmental_enstruman_artrodez", "", 0.0)
+    assert b.f_counter[beyin2] == b.c_counter[beyin2] == 1  # a review of the code on the clean bill too, not the fault
+    # the patient's history holds all four bills: the stay S3, the pre-operative visit S36, the control S37 and this one
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {f"F-SENTETIK-HASTA-0003-00{n}" for n in range(1, 5)}
+    assert [c.claim_id for c in b.faulty_ctx.claims] == ["F-SENTETIK-HASTA-0003-004"]
+
+
+def test_s38_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bundles: dict[str, _StoryBundle]) -> None:
+    """The add-on rule is about one claim and its own lines: a lone neuromonitoring on another bill of the patient (in the
+    history) is that bill's finding, not this bill's, so the clean bill's rows stay empty beside it."""
+    b = story_bundles["S38"]
+    addon = next(line for line in b.faulty_ctx.procedure_lines if line.procedure_code.endswith("703365"))
+    elsewhere = replace(b.clean_ctx.claims[0], claim_id="F-SENTETIK-HASTA-0003-090")
+    lone = replace(addon, claim_id=elsewhere.claim_id, procedure_line_id="ISL-F-SENTETIK-HASTA-0003-090-001")
+    kept = b.clean_ctx.patient_history
+    assert kept is not None
+    history = PatientClaimHistory(
+        claims=(*kept.claims, elsewhere),
+        procedure_lines=(*kept.procedure_lines, lone),
+        material_lines=kept.material_lines,
+    )
+    with_other = replace(b.clean_ctx, patient_history=history)
+    assert elsewhere.claim_id in {c.claim_id for c in with_other.history.claims}
+    assert direct_rows("S38", with_other) == []
+    assert [r["procedure_code"] for r in direct_rows("S38", replace(b.faulty_ctx, patient_history=history))] == ["703365"]
 
 
 def test_s44_finds_the_romosozumab_report_of_twelve_months(story_bundles: dict[str, _StoryBundle]) -> None:

@@ -163,6 +163,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S22": set(),  # the polypectomy beside the colonoscopy is not billed: a line is missing, only the engine (procedure_addon_uplift) sees it
     "S33": set(),  # the enoxaparin strength keyed as the count (4000 syringes): no check bounds a drug count, only the engine (tablo15_11) sees it
     "S34": set(),  # the control examination flagged as a package component: no check reads a procedure flag, only the engine (tablo15_3) sees it
+    "S38": set(),  # the neuromonitoring beside an instrumentation that is not on EK-2/D-4: a listed package at its price, only the engine (conditional_addon_ek2d) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
     "S46": set(),  # a second walker inside the MIAT of the first: a listed device at its price on the examination, only the engine (MIAT) sees it
     "S42": set(),  # the red cells billed in full inside the package: the full price is on the ladder, only the engine (blood_component_partial_bill) sees it
@@ -1047,9 +1048,10 @@ CASES: list[Case] = [
     ),
     Case(
         ARITH,
-        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[3], birth_year=1950),
+        # patient 9: one bill (patient 3 has four since WP16: the profile is the patient's, so every bill would say it)
+        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[9], birth_year=1950),
         label="birth_year_one_year_off",
-        at=CLAIM[3],
+        at=CLAIM[9],
         says="TANI_YASI is 77; the claim year is 2026 and the birth year 1950, which makes the age 76",
     ),
     Case(
@@ -2640,15 +2642,16 @@ PAIRS: list[Pair] = [
         (SEX,),
         1,
     ),
+    # patient 9, a woman with one bill: without her anadata row every bill of hers has no age (patient 3 has four since WP16)
     Pair(
         "sex: a patient missing from anadata with a male-gated C61",
-        lambda d: (_drop_anadata_row(d, 3), add_diagnosis(d, 3, "C61")),
+        lambda d: (_drop_anadata_row(d, 9), add_diagnosis(d, 9, "C61")),
         (SEX, ARITH, PATHWAY),
         3,
     ),
     Pair(
         "sex: a patient missing from anadata with a male-only name",
-        lambda d: (_drop_anadata_row(d, 3), rename(d, 3, "L104780", "Prostat iğne biyopsisi")),
+        lambda d: (_drop_anadata_row(d, 9), rename(d, 9, "L107020", "Prostat iğne biyopsisi")),
         (SEX, ARITH),
         2,
     ),
@@ -4280,6 +4283,9 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
         "urosepsis_ward_stay_after_icu_transfer": ["urosepsis_ward_stay_transfer_day_billed"],
         "gi_bleed_melena_er_visit": ["gi_bleed_melena_er_visit_manual_hct_billed"],
         "umbilical_hernia_day_case_package": ["umbilical_hernia_day_case_itemized"],
+        "lumbar_instability_posterior_instrumentation_package": [
+            "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
+        ],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []

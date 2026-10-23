@@ -1,6 +1,6 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 2 has three more bills, a control visit S32 (encounter_no 2, a clean bill), a readmission through the ER S33 and the control after it S34 (encounter_no 3 and 4), patient 5 has four more bills, the ER visit before her stay S41 (encounter_no 2, a clean bill dated on the day of the admission), a readmission for an infection of her prosthesis with two red-cell units S42 (encounter_no 3), a physiatry visit with a first walker S43 (encounter_no 4, a clean bill) and a geriatrics visit starting romosozumab S44 (encounter_no 5), patient 6 has a neurology control with a first walker S45 and a physiatry visit with a second walker S46 (encounter_no 2 and 3; S45 is a clean bill), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case; patient 14 is S17 (a month of haemodialysis) and, as its second bill (encounter_no 2), S23 (an emergency session); patient 15 is S18 (decompensated cirrhosis with albumin) and, as its second bill (encounter_no 2), S24 (a variceal rebleed with two red-cell units) (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 2 has three more bills, a control visit S32 (encounter_no 2, a clean bill), a readmission through the ER S33 and the control after it S34 (encounter_no 3 and 4), patient 3 has three more bills, the pre-operative visit S36 (encounter_no 2, a clean bill dated two weeks before her stay), the control S37 (encounter_no 3, a clean bill) and the instrumentation S38 (encounter_no 4), patient 5 has four more bills, the ER visit before her stay S41 (encounter_no 2, a clean bill dated on the day of the admission), a readmission for an infection of her prosthesis with two red-cell units S42 (encounter_no 3), a physiatry visit with a first walker S43 (encounter_no 4, a clean bill) and a geriatrics visit starting romosozumab S44 (encounter_no 5), patient 6 has a neurology control with a first walker S45 and a physiatry visit with a second walker S46 (encounter_no 2 and 3; S45 is a clean bill), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case; patient 14 is S17 (a month of haemodialysis) and, as its second bill (encounter_no 2), S23 (an emergency session); patient 15 is S18 (decompensated cirrhosis with albumin) and, as its second bill (encounter_no 2), S24 (a variceal rebleed with two red-cell units) (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
@@ -29,6 +29,19 @@ recipes:
   - patient_no: 3
     pathway: lumbar_stenosis_decompression_itemized
     fault: F_S3_ANAESTHESIA_LINE_MISSING
+
+  - patient_no: 3
+    encounter_no: 2
+    pathway: lumbar_stenosis_preoperative_outpatient_visit
+
+  - patient_no: 3
+    encounter_no: 3
+    pathway: lumbar_stenosis_post_decompression_control
+
+  - patient_no: 3
+    encounter_no: 4
+    pathway: lumbar_instability_posterior_instrumentation_package
+    fault: F_S38_NEUROMONITORING_WITHOUT_EK2D4_PRIMARY
 
   - patient_no: 4
     pathway: pyelonephritis_dementia_delirium_ward

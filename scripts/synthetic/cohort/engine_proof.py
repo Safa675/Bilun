@@ -50,6 +50,9 @@ from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_vakabasi_wrong_method,
 )
 from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
+from src.bilun.domain.prose_rules.conditional_addon_ek2d import (
+    detect_conditional_addon_ek2d_opportunities,
+)
 from src.bilun.domain.prose_rules.drg_unbundling import (
     analyze_claim_unbundling,
     detect_blood_component_violations,
@@ -812,6 +815,27 @@ def _direct_rows_s14(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s38(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # neuromonitoring billed beside its operation: payable only when an EK-2/D-4 procedure is on the same bill
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "addon_code",
+                "required_list",
+                "savings_category",
+                "sut_section_id",
+                "detail",
+            ),
+        )
+        for o in detect_conditional_addon_ek2d_opportunities(
+            list(ctx.claims), list(ctx.procedure_lines)
+        )
+    ]
+
+
 def _direct_rows_s40(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     history = ctx.history  # a cross-bill rule: the control of the same branch a week earlier is history
     return [
@@ -936,6 +960,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S24": _direct_rows_s24,
     "S33": _direct_rows_s33,
     "S34": _direct_rows_s34,
+    "S38": _direct_rows_s38,
     "S40": _direct_rows_s40,
     "S42": _direct_rows_s42,
     "S44": _direct_rows_s44,

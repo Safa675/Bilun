@@ -417,7 +417,8 @@ def _package_claim_with_labs(d: Data) -> None:
 
 
 def _wrong_episode_on_a_set(d: Data) -> None:
-    edit(d, TABLE_LAB, lab(3, "2026-08-19", HEMOGRAM_CODE), basvuru_id="B-SENTETIK-HASTA-0003-002")
+    # an episode no bill of patient 3 has (her committed bills are 001 to 004 since WP16)
+    edit(d, TABLE_LAB, lab(3, "2026-08-19", HEMOGRAM_CODE), basvuru_id="B-SENTETIK-HASTA-0003-009")
 
 
 CASES: list[Case] = [
@@ -713,11 +714,11 @@ CASES: list[Case] = [
         SETS,
         _wrong_episode_on_a_set,
         where=PATIENT[3],
-        says=("has no result set in lab_clean", "B-SENTETIK-HASTA-0003-002"),
+        says=("has no result set in lab_clean", "B-SENTETIK-HASTA-0003-009"),
         n=2,
         also=(
             EGFR_RELATION,
-        ),  # no anadata row for S3's episode 002: the set cannot be read at an age
+        ),  # no anadata row for S3's episode 009: the set cannot be read at an age
         label="wrong_episode_id",
     ),
     Case(
@@ -864,9 +865,12 @@ CASES: list[Case] = [
     ),
     Case(
         EGFR_RELATION,
-        _vital(3, CINSIYET="E"),
-        where=lab_where(3, "2026-08-19", CREATININE_CODE),
+        # the sex is the patient's, so it changes on every bill of hers: the creatinine sets of S3 (08-19) and of her
+        # pre-operative visit S36 (08-04) were drawn for a woman
+        lambda d: edit(d, TABLE_ANADATA, of_patient(3, TABLE_ANADATA), CINSIYET="E"),
+        where=f"{PATIENT[3]} lab_clean[",
         says="sex E",
+        n=2,
         also=(FLAG_AND_LIMITS,),  # S3's limits are the female ones, her sex is now male
         label="sex_changed",
     ),
@@ -1183,18 +1187,19 @@ CASES: list[Case] = [
     ),
     Case(
         VITALS,
-        _vital(3, CINSIYET="?"),
-        where=f"{PATIENT[3]} anadata_clean[{EPISODE[3]}]",
+        # patient 9 (S9), one bill: with several bills one row of "?" would also contradict the others
+        _vital(9, CINSIYET="?"),
+        where=f"{PATIENT[9]} anadata_clean[{EPISODE[9]}]",
         says="CINSIYET ? is neither E nor K",
         label="sex_neither_e_nor_k",
     ),
     Case(
         VITALS,
-        # a second episode of S3 that says she is a man: both rows name the contradiction
+        # a second episode of S9 that says she is a man: both rows name the contradiction (patient 9 has one bill)
         lambda d: add_row(
-            d, TABLE_ANADATA, bill_row(3, TABLE_ANADATA), SQ_EPISODE="B-SENTETIK-HASTA-0003-002", CINSIYET="E"
+            d, TABLE_ANADATA, bill_row(9, TABLE_ANADATA), SQ_EPISODE="B-SENTETIK-HASTA-0009-002", CINSIYET="E"
         ),
-        where=f"{PATIENT[3]} anadata_clean[",
+        where=f"{PATIENT[9]} anadata_clean[",
         says="CINSIYET differs between the episodes of the patient",
         n=2,
         label="sex_differs_between_episodes",

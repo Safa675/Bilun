@@ -1,0 +1,269 @@
+{
+ "story": "S38",
+ "clean": {
+  "total_billed": "16765.09",
+  "rows": [
+   {
+    "date": "2026-09-15",
+    "code": "P614040",
+    "name": "Posteriyor segmental enstrümantasyon; 6 veya daha az vertebra segmenti",
+    "qty": 1,
+    "unit": "16765.09",
+    "billed": "16765.09",
+    "source": "EK-2C valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "M53.26",
+    true
+   ],
+   [
+    "M48.06",
+    false
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "faulty": {
+  "total_billed": "28426.92",
+  "rows": [
+   {
+    "date": "2026-09-15",
+    "code": "P614040",
+    "name": "Posteriyor segmental enstrümantasyon; 6 veya daha az vertebra segmenti",
+    "qty": 1,
+    "unit": "16765.09",
+    "billed": "16765.09",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-15",
+    "code": "P703365",
+    "name": "Intraoperatif nöromonitörizasyon",
+    "qty": 1,
+    "unit": "11661.83",
+    "billed": "11661.83",
+    "source": "EK-2C valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "M53.26",
+    true
+   ],
+   [
+    "M48.06",
+    false
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "conditional_addon_ek2d_neuromonitoring",
+    "procedure_code": "703365",
+    "addon_code": "703365",
+    "required_list": "EK-2/D-4",
+    "savings_category": "audit_exposure",
+    "sut_section_id": "EK-2/D",
+    "detail": "703365 (İntraoperatif nöromonitorizasyon) ayrıca faturalanmıştır, ancak aynı talepte EK-2/D-4 listesindeki hiçbir esas işlem bulunmamaktadır. Bu ek işlem yalnızca EK-2/D-4 listesindeki bir işlemle birlikte yapıldığında ayrıca faturalanabilir (EK-2/D)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 3
+  }
+ },
+ "only_in_faulty": [
+  [
+   "wavea",
+   "claim_reviews",
+   "conditional_addon_ek2d_neuromonitoring",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "conditional_addon_ek2d_neuromonitoring",
+   "703365",
+   0.0
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "BEYİN-2.posterior_segmental_enstruman_artrodez",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "BEYİN-2.posterior_segmental_enstruman_artrodez",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

@@ -19,6 +19,7 @@ from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_f
 from src.bilun.domain.billing.drug_indication_findings import evaluate_drug_indication_findings
 from src.bilun.domain.prose_rules.anestezi_puani import detect_anestezi_puani_opportunities
 from src.bilun.domain.prose_rules.blood_component_isbt128 import detect_blood_component_isbt128_violations
+from src.bilun.domain.prose_rules.conditional_addon_ek2d import detect_conditional_addon_ek2d_opportunities
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_drug_quantity_error,
     detect_duplicate_exam_10day,
@@ -186,6 +187,11 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(o, ("rule_id", "procedure_code", "allowed_fraction", "max_billable_try", "actual_billed_try",
                           "risk_amount_try", "sut_section", "detail"))
                 for o in detect_blood_component_violations(procs)]
+    if story == "S38":
+        # neuromonitoring billed beside its operation: payable only when an EK-2/D-4 procedure is on the same bill
+        return [_keep(o, ("rule_id", "procedure_code", "addon_code", "required_list", "savings_category",
+                          "sut_section_id", "detail"))
+                for o in detect_conditional_addon_ek2d_opportunities(claims, procs)]
     if story == "S46":
         # a cross-bill rule: the walker of the control S45 is history, read through ctx.history
         return [{**_keep(v, ("rule", "material_code", "risk_amount", "material_outcome", "sut_section", "message")),
@@ -266,9 +272,10 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         kind = {"S6": "indication_mismatch", "S17": "prescriber_specialty_mismatch",
                 "S18": "missing_board_report", "S44": "report_duration_mismatch"}[story]
         return 0.0 if any(r.get("violation_kind") == kind for r in rows) else None
-    if story in ("S24", "S33", "S34", "S40"):  # a row without money: the finding is the row
+    if story in ("S24", "S33", "S34", "S38", "S40"):  # a row without money: the finding is the row
         rule = {"S24": "blood_component_isbt128_barcode", "S33": "tablo15_11_drug_quantity_error",
-                "S34": "tablo15_3_vakabasi_wrong_method", "S40": "tablo15_2_duplicate_exam_10day"}[story]
+                "S34": "tablo15_3_vakabasi_wrong_method", "S38": "conditional_addon_ek2d_neuromonitoring",
+                "S40": "tablo15_2_duplicate_exam_10day"}[story]
         return 0.0 if any(r.get("rule_id") == rule for r in rows) else None
     return total("recoverable_gap_try" if story == "S7" else "risk_amount_try")
 

@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 32,
-    "lab_clean.parquet": 363,
+    "anadata_clean.parquet": 35,
+    "lab_clean.parquet": 380,
     "recete_clean.parquet": 25
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "7ee1ec037425017098672ca7b815270c6df4e5094aee83b93bc043c256aed046",
-    "lab_clean.parquet": "c6bc2391c50f9d2c51f436d7bd47db7a11fffe0eb235c898b8cf48a131a8a29c",
+    "anadata_clean.parquet": "ea961d78f6c6aa740b0acaaa5e12d747a5e73ab3df957c28e75fc6405daeca4d",
+    "lab_clean.parquet": "57216d24445656721909eba901190a6deb646060108b99747f4033b5af1ad72b",
     "recete_clean.parquet": "c73f82b66a8e6de6b9bb9e71edd34ad64feaf3846217d37ab8f02b7480fc3131"
   },
   "counts": {
-    "claim_diagnoses.parquet": 76,
-    "claim_headers.parquet": 32,
+    "claim_diagnoses.parquet": 84,
+    "claim_headers.parquet": 35,
     "drug_claim_lines.parquet": 25,
-    "expected_rule_outputs.parquet": 25,
+    "expected_rule_outputs.parquet": 26,
     "material_claim_lines.parquet": 6,
     "medula_rejection_events.parquet": 1,
     "patient_copay_profiles.parquet": 15,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 237
+    "procedure_claim_lines.parquet": 245
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -74,6 +74,33 @@
       "pathway_id": "lumbar_stenosis_decompression_itemized",
       "patient_id": "SENTETIK-HASTA-0003",
       "story": "S3",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0003-002",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "lumbar_stenosis_preoperative_outpatient_visit",
+      "patient_id": "SENTETIK-HASTA-0003",
+      "story": "S36",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0003-003",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "lumbar_stenosis_post_decompression_control",
+      "patient_id": "SENTETIK-HASTA-0003",
+      "story": "S37",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0003-004",
+      "fault_id": "F_S38_NEUROMONITORING_WITHOUT_EK2D4_PRIMARY",
+      "is_clean": false,
+      "pathway_id": "lumbar_instability_posterior_instrumentation_package",
+      "patient_id": "SENTETIK-HASTA-0003",
+      "story": "S38",
       "tier": "showcase"
     },
     {
@@ -401,6 +428,24 @@
       "patient_id": "SENTETIK-HASTA-0003",
       "story": "S3",
       "sut_section": "2.2.2.A(1)"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "16765.09",
+      "billed_faulty_try": "28426.92",
+      "claim_id": "F-SENTETIK-HASTA-0003-004",
+      "effect_kind": "compliance_error",
+      "engine_rule": "conditional_addon_ek2d_neuromonitoring",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S38_NEUROMONITORING_WITHOUT_EK2D4_PRIMARY",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0003-004-F_S38_NEUROMONITORING_WITHOUT_EK2D4_PRIMARY",
+      "line_id": "ISL-F-SENTETIK-HASTA-0003-004-002",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "lumbar_instability_posterior_instrumentation_package",
+      "patient_id": "SENTETIK-HASTA-0003",
+      "story": "S38",
+      "sut_section": "2.4.4.M"
     },
     {
       "amount_try": "370.50",
@@ -882,6 +927,24 @@
       ],
       "patient_id": "SENTETIK-HASTA-0002"
     },
+    "S36": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0003-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0003"
+    },
+    "S37": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0003-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0003"
+    },
+    "S38": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0003-004"
+      ],
+      "patient_id": "SENTETIK-HASTA-0003"
+    },
     "S39": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0004-002"
@@ -952,14 +1015,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "15f411adfe8f0575f75a6950cc09a58415b4dbcb0ebd83d1d6c72465c5b62840",
-    "claim_headers.parquet": "7ea8f11058171322a7aeac1c7f81207cd19391e4b409c31c95afdad51c4d0c0d",
+    "claim_diagnoses.parquet": "31d4df85420b206611a031630b510aa83a46900a7dcdc07568de560a55b3dd17",
+    "claim_headers.parquet": "3b01dd9bdd9d271f7bb803b59cba2bec3f3a1e8e64b2dcdd218d81c84ba29cf4",
     "drug_claim_lines.parquet": "5fde8f4bc6d100e1119ec2c290130a8da3e51e3ce28e887d8acfea3a6aa78329",
-    "expected_rule_outputs.parquet": "38689329a326c43a22448713f218523b573f72ef2df2574b2793c9a1ee181b7d",
+    "expected_rule_outputs.parquet": "db902a5544990cc225ecfd9de6d8ec30bab3c7b4b9b8966facbb1cd3eba9123b",
     "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "1f4c2502821cebcdaf310bba2eb951da90dca2418236e5ff9bbeb1f35eb9f55f",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "a9af42cb0cec80e1de6689385b52e6891504f98c7ad1b7cd6c6f83a4e189088c"
+    "procedure_claim_lines.parquet": "696bdb84609a0a4fe37475509dc3098b12da46c8485c4ccdda14de63837e4981"
   }
 }

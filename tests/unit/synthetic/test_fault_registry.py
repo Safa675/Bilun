@@ -291,6 +291,18 @@ PINNED_FINDINGS: dict[
         [],
         ["pairing.701450_701460"],
     ),
+    "S38": (
+        "conditional_addon_ek2d_neuromonitoring",
+        "islem",
+        "neuromonitoring",
+        "kismi_red",
+        "compliance_error",
+        ["C001389"],
+        "2.4.4.M",
+        ["src/bilun/domain/prose_rules/conditional_addon_ek2d.py:detect_conditional_addon_ek2d_opportunities"],
+        [],
+        ["conditional_addon_ek2d_neuromonitoring"],
+    ),
     "S40": (
         "tablo15_2_duplicate_exam_10day",
         "islem",
@@ -459,7 +471,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S40", "S42", "S44", "S46"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:

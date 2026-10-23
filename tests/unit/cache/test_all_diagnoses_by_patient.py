@@ -163,6 +163,9 @@ def test_the_demo_patients_list_all_their_diagnoses() -> None:
     # the principal codes of the four bills first (the stay and its control J44.0, the readmission S33 and its control
     # J44.1), then the others: the readmission adds the acute respiratory failure J96.0
     assert got["SENTETIK-HASTA-0002"] == ["J44.0", "J44.1", "I10", "J18.9", "J96.0"]
+    # the principal codes of the four bills first (the stay, its pre-operative visit S36 and its control S37, M48.06; the
+    # instrumentation S38, M53.26), then the others: the control's film and the instrumentation bring M53.26
+    assert got["SENTETIK-HASTA-0003"] == ["M48.06", "M53.26", "I10"]
     assert got["SENTETIK-HASTA-0004"] == ["N10", "F05.1", "G30.1", "I10"]
     # the principal codes of the five bills first (the stay, its ER visit S41 and the walker visit S43, S72.00; the
     # readmission S42, T84.5; the geriatrics visit S44, M81.09), then the others: the readmission brings D62

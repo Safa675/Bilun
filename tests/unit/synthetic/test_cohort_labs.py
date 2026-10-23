@@ -134,7 +134,7 @@ LAB_ROWS = cohort.counts()["lab_clean.parquet"]  # the size of the table, from t
 # patient 12: the ER bill (S10) 16, a blood count 15 and the manual haematocrit 1, and the admission (S22) 15
 # patient 15: the cirrhosis stay (S18) 16, a blood count 15 and the albumin 1, and the rebleed (S24) 30, two blood counts
 # patient 5: the ER visit before her stay (S41) 17, a blood count 15 and the creatinine 2 (her two stays are packages)
-_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 5: 17, 6: 40, 7: 25, 9: 15, 10: 18, 12: 31, 15: 46}
+_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 34, 4: 79, 5: 17, 6: 40, 7: 25, 9: 15, 10: 18, 12: 31, 15: 46}
 _PATIENTS: dict[int, tuple[str, int]] = {
     1: ("M", 34),
     2: ("M", 81),
@@ -840,12 +840,13 @@ def test_mutation_removing_one_billed_lab_line_gives_exactly_one_gap_with_its_co
             assert gaps[0]["type"] == "lab_performed_not_submitted"
             assert gaps[0]["source"] == "lab"
             checked += 1
-    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 + 2 + 2 pairs (patient 4:
-    # 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission; patient 7: the troponin and the
-    # D-dimer of the observation S47; patient 15: the blood count and the albumin of S18, the rebleed bills two counts;
-    # patient 5: the blood count and the creatinine of its ER visit S41).
+    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 + 2 + 2 + 2 pairs
+    # (patient 4: 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission; patient 7: the
+    # troponin and the D-dimer of the observation S47; patient 15: the blood count and the albumin of S18, the rebleed bills
+    # two counts; patient 5: the blood count and the creatinine of its ER visit S41; patient 3: the blood count and the
+    # creatinine of its pre-operative visit S36).
     once = _billed_lab_lines(procs).group_by("episode_id", "procedure_code").len()
-    assert checked == once.filter(pl.col("len") == 1).height == 47
+    assert checked == once.filter(pl.col("len") == 1).height == 49
 
 
 # --- 3.3 Values ----------------------------------------------------------------------------------
@@ -1042,8 +1043,9 @@ def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
     assert outside.is_empty(), outside.select("HASTA_ID", "key", "sonuc_sayisal", "lo", "hi")
     # 288 numeric rows = 128 derived + 33 drawn from a state + 127 drawn without one (S47 adds a troponin without a
     # state and a D-dimer with one); patient 15's three blood counts add 12 without a state (WBC, RDW-CV, PLT, MPV),
-    # patient 5's ER visit (S41) 8: its blood count's 7 (WBC, HGB, MCV, MCH, RDW-CV, PLT, MPV) and its creatinine.
-    assert rows.height == 147
+    # patient 5's ER visit (S41) 8: its blood count's 7 (WBC, HGB, MCV, MCH, RDW-CV, PLT, MPV) and its creatinine, and
+    # patient 3's pre-operative visit (S36) 8 more the same way.
+    assert rows.height == 155
 
 
 def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.DataFrame) -> None:
@@ -1105,7 +1107,7 @@ def test_creatinine_and_egfr_follow_the_age_band_or_the_state_band(
         "HASTA_ID", "k", pl.col("sonuc_sayisal").alias("egfr")
     )
     sets = scr.join(egfr, on=["HASTA_ID", "k"], how="inner")
-    assert sets.height == scr.height == egfr.height == 8  # 2 + 1 + 1 + 1 + 1 + 1 + 1 days of creatinine (+1: S41)
+    assert sets.height == scr.height == egfr.height == 9  # 2 + 1 + 1 + 1 + 1 + 1 + 1 days of creatinine (+1: S41, +1: S36)
     band_lo = pl.lit(None, dtype=pl.Float64)
     band_hi = pl.lit(None, dtype=pl.Float64)
     for age_lo, age_hi, e_lo, e_hi in reversed(_egfr_age_bands(csv_rows)):
@@ -1115,7 +1117,7 @@ def test_creatinine_and_egfr_follow_the_age_band_or_the_state_band(
     sets = sets.with_columns(band_lo.alias("band_lo"), band_hi.alias("band_hi"))
 
     normal = sets.filter(pl.col("state") == "normal")
-    assert normal.height == 5  # S41's creatinine has no state
+    assert normal.height == 6  # the creatinines of S41 and S36 have no state
     # A normal creatinine stays inside its sex-specific limits and its eGFR inside the age band.
     assert normal.filter((pl.col("scr") < pl.col("lo")) | (pl.col("scr") > pl.col("hi"))).is_empty()
     assert normal.filter(
@@ -1147,7 +1149,7 @@ def test_derived_red_cell_values_lie_inside_the_limits_or_the_own_state_ranges(
         pl.col("parametre").is_in(["RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"])
     ).join(drivers, on=["HASTA_ID", "k"], how="left")
     inside = (pl.col("sonuc_sayisal") >= pl.col("lo")) & (pl.col("sonuc_sayisal") <= pl.col("hi"))
-    assert derived.height == 54  # patient 15's three blood counts add nine, patient 5's ER blood count (S41) three
+    assert derived.height == 57  # patient 15's three blood counts add nine, the blood counts of S41 and S36 three each
     # Without a state on HGB, MCV or MCH, the derived values are normal values.
     assert derived.filter(~pl.col("driver_state") & ~inside).is_empty()
     # With one (patients 3 and 9, postoperative HGB; patients 12 and 15, the HGB of a bleed and the small red cells of
@@ -1218,9 +1220,9 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
         )
     )
     sets = wide.join(wbc_state, on=["HASTA_ID", "k"], how="inner")
-    assert sets.height == 18
+    assert sets.height == 19
     assert sorted(sets["profile"].to_list()) == (
-        ["bacterial_infection"] * 5 + ["normal"] * 12 + ["steroid_use"]  # the blood counts of the control and of patients 5, 12 and 15 have no WBC state
+        ["bacterial_infection"] * 5 + ["normal"] * 13 + ["steroid_use"]  # the blood counts of the control and of patients 3 (S36), 5, 12 and 15 have no WBC state
     )
     for profile in _PROFILES:
         group = sets.filter(pl.col("profile") == profile)
@@ -1232,7 +1234,7 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
     normal = hemogram.filter(pl.col("parametre").is_in(list(_DIFFERENTIAL))).join(
         wbc_state.filter(pl.col("profile") == "normal"), on=["HASTA_ID", "k"], how="inner"
     )
-    assert normal.height == 60  # patient 15's three counts add fifteen, patient 5's ER count (S41) five
+    assert normal.height == 65  # patient 15's three counts add fifteen, the ER count of S41 and the pre-operative count of S36 five each
     assert normal.filter(
         (pl.col("sonuc_sayisal") < pl.col("lo")) | (pl.col("sonuc_sayisal") > pl.col("hi"))
     ).is_empty()
@@ -1404,7 +1406,7 @@ def test_r1_the_five_differential_counts_sum_to_the_wbc(
     lab: pl.DataFrame, csv_rows: pl.DataFrame
 ) -> None:
     hemograms = _wide(lab, csv_rows, "L107020")
-    assert hemograms.height == 18
+    assert hemograms.height == 19
     gap = (pl.sum_horizontal(*_DIFFERENTIAL) - pl.col("WBC (Lökosit)")).abs()
     assert hemograms.select(gap.max().alias("gap"))["gap"][0] <= 0.05
 
@@ -1442,7 +1444,7 @@ def test_r3_egfr_is_ckd_epi_2021_of_the_creatinine_age_and_sex(
         (pl.col("CINSIYET") == "K").alias("female"),
     )
     sets = _wide(lab, csv_rows, "L104780").join(people, on="basvuru_id", how="left")
-    assert sets.height == 8
+    assert sets.height == 9
     expected = _ckd_epi_2021(pl.col("Kreatinin"), pl.col("age"), pl.col("female"))
     residual = sets.select((pl.col(_EGFR) - expected).abs().max().alias("r"))["r"][0]
     assert residual <= 0.5 + 1e-9  # the eGFR is printed as an integer
@@ -1565,7 +1567,7 @@ _DRIFT_CASES = [
     pytest.param("L103900", "pO2", 5.0, "R4", "SaO2", id="driver_po2_names_sao2"),
     pytest.param("L104780", "Kreatinin", 0.2, "R3", _EGFR, id="driver_creatinine_names_egfr"),
 ]
-_SETS_PER_CODE = {"L107020": 18, "L104780": 8, "L103900": 2}  # the control of patient 4 and the two bills of patient 12 add one blood count each, patient 15 three, patient 5's ER visit a blood count and a creatinine
+_SETS_PER_CODE = {"L107020": 19, "L104780": 9, "L103900": 2}  # the control of patient 4 and the two bills of patient 12 add one blood count each, patient 15 three, the ER visit of patient 5 (S41) and the pre-operative visit of patient 3 (S36) a blood count and a creatinine each
 
 
 @pytest.mark.parametrize(("code", "changed", "change", "rule", "reported"), _DRIFT_CASES)
@@ -4303,13 +4305,13 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
 # Patient 2 gets a second COPD stay as its fifth bill (a blood gas, its own lab states: none, so every value is normal;
 # its committed bills 2 to 4, the control S32, the readmission S33 and the control S34, bill no test),
 # patient 3 a pyelonephritis stay of the same age and sex as the patient (the pathway's own showcase age is 86,
-# the patient's 77) dated BEFORE its first bill, patient 4 a stay one day after its first (the lab days
-# interleave). Nothing here is committed.
+# the patient's 77) as its fifth bill (its committed second to fourth bills are S36 to S38), dated BEFORE every
+# committed bill of hers, patient 4 a stay one day after its first (the lab days interleave). Nothing here is committed.
 
 _COPD = "copd_exacerbation_pneumonia_ward"
 _PYELO = "pyelonephritis_dementia_delirium_ward"
 _ALL_NORMAL = {"blood_gas": "arterial", "states": {}, "basis": "judgment", "source": "Test fixture only."}
-_CLAIM_2_5, _CLAIM_3_2 = "F-SENTETIK-HASTA-0002-005", "F-SENTETIK-HASTA-0003-002"
+_CLAIM_2_5, _CLAIM_3_5 = "F-SENTETIK-HASTA-0002-005", "F-SENTETIK-HASTA-0003-005"
 # patient 4 has three committed bills (the stay, the control S39, the second visit S40): the extra stay is its fourth
 _CLAIM_4_2, _CLAIM_4_4 = "F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0004-004"
 
@@ -4318,7 +4320,7 @@ _CLAIM_4_2, _CLAIM_4_4 = "F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0004-004
 def extra_bills() -> BuildResult:
     recipes, clinical = with_encounters(
         Extra(2, 5, _COPD, {"admit": "2026-05-11", "story": "S92"}, labs=_ALL_NORMAL),
-        Extra(3, 2, _PYELO, {"story": "S93", "age": 77, "sex": "F"}),
+        Extra(3, 5, _PYELO, {"story": "S93", "age": 77, "sex": "F"}),
         Extra(4, 4, _PYELO, {"admit": "2026-05-12", "story": "S90"}),
     )
     return build_showcase(recipes=recipes, clinical=clinical)
@@ -4343,7 +4345,7 @@ def _record_salts(monkeypatch: pytest.MonkeyPatch) -> list[int]:
         pytest.param("F-SENTETIK-HASTA-0002-001", 0, id="2.1_blood_gas_first_bill"),
         pytest.param(_CLAIM_2_5, 4000, id="2.5_blood_gas"),
         pytest.param("F-SENTETIK-HASTA-0003-001", 0, id="3.1"),
-        pytest.param(_CLAIM_3_2, 1000, id="3.2_creatinine"),
+        pytest.param(_CLAIM_3_5, 4000, id="3.5_creatinine"),
         pytest.param("F-SENTETIK-HASTA-0004-001", 0, id="4.1"),
         pytest.param(_CLAIM_4_2, 1000, id="4.2_the_committed_control"),
         pytest.param(_CLAIM_4_4, 3000, id="4.4"),
@@ -4415,20 +4417,20 @@ def test_the_lab_rows_of_two_bills_come_out_in_the_order_the_feed_check_states(
     assert build_lab_clean(claims[::-1], clinical=extra_bills.clinical, schema=LAB_CLEAN_SCHEMA).equals(forward)
     # patient 4's two stays (the first and the extra fourth bill) overlap by days, so its rows alternate between the
     # bills: by patient and date
-    # (the claim cannot be the order), and a precursor (patient 3's second bill) comes first
+    # (the claim cannot be the order), and a precursor (patient 3's fifth bill, dated before all of hers) comes first
     p4 = lab_table.filter(pl.col("HASTA_ID") == _pid(4))
     assert p4["tarih"].is_sorted()
     episodes = p4["basvuru_id"].to_list()
     assert sum(a != b for a, b in zip(episodes, episodes[1:], strict=False)) > 1
     p3 = lab_table.filter(pl.col("HASTA_ID") == _pid(3))
-    assert p3["basvuru_id"][0] == "B-SENTETIK-HASTA-0003-002" and p3["basvuru_id"][-1] == "B-SENTETIK-HASTA-0003-001"
+    assert p3["basvuru_id"][0] == "B-SENTETIK-HASTA-0003-005" and p3["basvuru_id"][-1] == "B-SENTETIK-HASTA-0003-001"
 
 
 def test_the_lab_values_of_a_second_bill_differ_from_the_first_and_the_first_stays_as_it_was(
     extra_bills: BuildResult, lab: pl.DataFrame
 ) -> None:
     lab_table = extra_bills.clean_tables["lab_clean.parquet"]
-    for patient_no, second in ((3, "B-SENTETIK-HASTA-0003-002"), (4, "B-SENTETIK-HASTA-0004-004")):
+    for patient_no, second in ((3, "B-SENTETIK-HASTA-0003-005"), (4, "B-SENTETIK-HASTA-0004-004")):
         mine = lab_table.filter(pl.col("HASTA_ID") == _pid(patient_no))
         first = mine.filter(pl.col("basvuru_id") != second)
         committed = lab.filter(pl.col("HASTA_ID") == _pid(patient_no))
@@ -4458,9 +4460,9 @@ def test_a_bill_has_the_lab_states_of_its_own_entry(extra_bills: BuildResult, la
 
 
 def test_a_later_bill_of_another_pathway_is_judged_at_the_age_of_its_pins(extra_bills: BuildResult) -> None:
-    """Patient 3 is 77; the pathway of its second bill has an 86-year-old showcase patient, the pins say 77."""
+    """Patient 3 is 77; the pathway of its extra fifth bill has an 86-year-old showcase patient, the pins say 77."""
     lab_table = extra_bills.clean_tables["lab_clean.parquet"]
-    rows = lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0003-002")
+    rows = lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0003-005")
     creatinine = rows.filter(pl.col("parametre") == "Kreatinin")["sonuc_sayisal"].to_list()
     egfr = rows.filter(pl.col("parametre") == _EGFR)["sonuc_sayisal"].to_list()
     assert creatinine and len(creatinine) == len(egfr)
@@ -4469,9 +4471,12 @@ def test_a_later_bill_of_another_pathway_is_judged_at_the_age_of_its_pins(extra_
     ana = extra_bills.clean_tables["anadata_clean.parquet"].filter(pl.col("HASTA_ID") == _pid(3))
     assert dict(zip(ana["SQ_EPISODE"], ana["TANI_YASI"], strict=True)) == {
         "B-SENTETIK-HASTA-0003-001": 77,
-        "B-SENTETIK-HASTA-0003-002": 77,
+        "B-SENTETIK-HASTA-0003-002": 77,  # the committed S36, S37 and S38
+        "B-SENTETIK-HASTA-0003-003": 77,
+        "B-SENTETIK-HASTA-0003-004": 77,
+        "B-SENTETIK-HASTA-0003-005": 77,  # the extra
     }
-    claim = next(c for c in extra_bills.claims if c.header.claim_id == _CLAIM_3_2)
+    claim = next(c for c in extra_bills.claims if c.header.claim_id == _CLAIM_3_5)
     assert claim.pins is not None and (claim.pins.age, claim.pins.sex) == (77, "F")
 
 
@@ -4485,8 +4490,8 @@ def test_a_mapping_keyed_by_patient_number_names_the_first_encounter_only(extra_
     # patient 2's extra stay (its third bill) has no entry in this form, and a billed blood gas without one is refused
     with pytest.raises(LabCoherenceError, match="blood_gas"):
         build_lab_clean(claims, clinical=by_number, schema=LAB_CLEAN_SCHEMA)
-    # for a patient with one bill the two forms are the same thing
-    one_bill = [c for c in claims if c.header.patient_id in {_pid(1), _pid(3)} and not c.header.claim_id.endswith("002")]
+    # for a patient with one bill the two forms are the same thing (patients 1 and 9 bill tests on their one bill)
+    one_bill = [c for c in claims if c.header.patient_id in {_pid(1), _pid(9)}]
     assert build_lab_clean(one_bill, clinical=by_number, schema=LAB_CLEAN_SCHEMA).equals(
         build_lab_clean(one_bill, clinical=by_pair, schema=LAB_CLEAN_SCHEMA)
     )
