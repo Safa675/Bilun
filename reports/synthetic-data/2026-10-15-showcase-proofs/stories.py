@@ -1,4 +1,4 @@
-"""Forty-one showcase stories: clean bill + one injected fault each, except S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 and S51 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37, S38, S49, S50, S51, S15, S30 and S31 on 2026-10-23).
+"""Forty-two showcase stories: clean bill + one injected fault each, except S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 and S51 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37, S38, S49, S50, S51, S15, S30, S31 and S21 on 2026-10-23).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -25,6 +25,7 @@ from src.bilun.domain.claims.models import MedulaRejectionEvent
 ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI, FTR, GERIATRI = (
     "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062", "1800", "1073")
 GASTRO = "1076"
+RADONK = "3200"  # Radyasyon Onkolojisi
 
 # EK-4A barcodes (data/gazette/curated/ek4a_history.parquet; ingredient from the drug crosswalk)
 IESEF = "8699508270224"       # IESEF 1 G IV (seftriakson), 1 vial
@@ -1094,7 +1095,56 @@ def s31(variant: str) -> Bill:
     return b
 
 
+# ── S21 ─ a course of radiotherapy keyed as totals, without the course and day limits of EK-2/B 8.1 ──
+_EBRT_DAYS = tuple(7 + 7 * week + day for week in range(5) for day in range(5))  # 25 sessions, Monday to Friday
+_HDR_DAYS = (42, 45, 49, 52)  # four HDR fractions, two a week after the external course
+
+
+def s21(variant: str) -> Bill:
+    """57 F (born 1969), cervical cancer: definitive radiotherapy billed as one day-case claim over the course (SUT
+    2.1.2.B(1)(b), C000494), 2026-07-20 to 09-10, radiation oncology.
+
+    The CT simulation, a fixation mask, the IMRT design and its dose calculation, 25 IMRT sessions (Monday to Friday,
+    days 7-39), then four image-guided HDR fractions (days 42-52) with one conformal brachytherapy design and one complex
+    dose calculation; 800030 pays the evaluation, the controls and the tests of the course (EK-2/B 8.1.1). The clean bill
+    keeps the limits of EK-2/B 8.1: design, simulation and dose once over the course (8.1.2-8.1.4), one application a
+    day or a session (8.1.5), each on its day. The faulty bill keys the course as totals from the treatment record: the
+    sessions as one count on the first day of each phase, and the design, simulation (800140, beside the IMRT
+    simulation) and dose of every HDR fraction. The engine's rows are reviews without an amount (EI-19), so the fault
+    carries none.
+    """
+    a = D("2026-07-20")
+    b = Bill("SH-16", "C-SH21", "gunubirlik", "Radyasyon Onkolojisi", None, None, "C53.9",
+             start=a, end=a + timedelta(days=_HDR_DAYS[-1]))
+    for i, icd in enumerate(("C53.9", "Z51.0")):
+        b.diag(icd, primary=(i == 0), on=a)
+    day = lambda n: a + timedelta(days=n)  # noqa: E731
+    b.proc("800030", day(0), specialty=RADONK)            # clinical evaluation of a course of 21-30 treatment days
+    b.proc("800160", day(0), specialty=RADONK)            # the IMRT simulation
+    b.proc("800280", day(0), specialty=RADONK)            # a thermoplastic fixation mask
+    b.proc("800110", day(2), specialty=RADONK)            # the IMRT design
+    b.proc("800220", day(4), specialty=RADONK)            # the IMRT dose calculation: one plan
+    totals = variant != "clean"                           # the fault: the course keyed as totals
+    if totals:
+        b.proc("800440", day(_EBRT_DAYS[0]), qty=len(_EBRT_DAYS), specialty=RADONK)
+    else:
+        for n in _EBRT_DAYS:
+            b.proc("800440", day(n), specialty=RADONK)
+    first = day(_HDR_DAYS[0])
+    fractions = len(_HDR_DAYS) if totals else 1           # the HDR plan items of every fraction, or once a course
+    b.proc("800114", first, qty=fractions, specialty=RADONK)
+    if totals:
+        b.proc("800140", first, qty=fractions, specialty=RADONK)
+    b.proc("800260", first, qty=fractions, specialty=RADONK)
+    if totals:
+        b.proc("800590", first, qty=len(_HDR_DAYS), specialty=RADONK)
+    else:
+        for n in _HDR_DAYS:
+            b.proc("800590", day(n), specialty=RADONK)
+    return b
+
+
 # Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
 CLEAN_ONLY: tuple[str, ...] = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S15": s15, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S30": s30, "S31": s31, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51}
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S15": s15, "S17": s17, "S18": s18, "S20": s20, "S21": s21, "S22": s22, "S23": s23, "S24": s24, "S30": s30, "S31": s31, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51}

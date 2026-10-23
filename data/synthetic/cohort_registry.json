@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 41,
+    "anadata_clean.parquet": 42,
     "lab_clean.parquet": 381,
     "recete_clean.parquet": 25
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "706800877e5917fae5efd9079c71eb5f106eef306f124d072ba17b2947d3780a",
+    "anadata_clean.parquet": "fae27148a2d6ff01ed3b8e672a8e523ad9f5af8b7ae84073eddb575e13127bdd",
     "lab_clean.parquet": "f70f048fdd3861a85ca840df2753b14888b3898650bee989be2886f4fd3f0a44",
     "recete_clean.parquet": "c73f82b66a8e6de6b9bb9e71edd34ad64feaf3846217d37ab8f02b7480fc3131"
   },
   "counts": {
-    "claim_diagnoses.parquet": 93,
-    "claim_headers.parquet": 41,
+    "claim_diagnoses.parquet": 95,
+    "claim_headers.parquet": 42,
     "drug_claim_lines.parquet": 25,
-    "expected_rule_outputs.parquet": 29,
+    "expected_rule_outputs.parquet": 30,
     "material_claim_lines.parquet": 6,
     "medula_rejection_events.parquet": 1,
-    "patient_copay_profiles.parquet": 15,
+    "patient_copay_profiles.parquet": 16,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 263
+    "procedure_claim_lines.parquet": 273
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -389,6 +389,15 @@
       "pathway_id": "decompensated_cirrhosis_variceal_rebleed_transfusion",
       "patient_id": "SENTETIK-HASTA-0015",
       "story": "S24",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0016-001",
+      "fault_id": "F_S21_RADIOTHERAPY_COURSE_KEYED_AS_TOTALS",
+      "is_clean": false,
+      "pathway_id": "cervical_cancer_radiotherapy_course",
+      "patient_id": "SENTETIK-HASTA-0016",
+      "story": "S21",
       "tier": "showcase"
     }
   ],
@@ -916,6 +925,24 @@
       "patient_id": "SENTETIK-HASTA-0015",
       "story": "S24",
       "sut_section": "4.6"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "83786.23",
+      "billed_faulty_try": "103497.28",
+      "claim_id": "F-SENTETIK-HASTA-0016-001",
+      "effect_kind": "compliance_error",
+      "engine_rule": "radiation_oncology",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S21_RADIOTHERAPY_COURSE_KEYED_AS_TOTALS",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0016-001-F_S21_RADIOTHERAPY_COURSE_KEYED_AS_TOTALS",
+      "line_id": "ISL-F-SENTETIK-HASTA-0016-001-008",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "cervical_cancer_radiotherapy_course",
+      "patient_id": "SENTETIK-HASTA-0016",
+      "story": "S21",
+      "sut_section": "2.2.2.A(1)"
     }
   ],
   "roles": {
@@ -1004,6 +1031,12 @@
         "F-SENTETIK-HASTA-0013-001"
       ],
       "patient_id": "SENTETIK-HASTA-0013"
+    },
+    "S21": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0016-001"
+      ],
+      "patient_id": "SENTETIK-HASTA-0016"
     },
     "S22": {
       "claim_ids": [
@@ -1159,14 +1192,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "f411785873775e71c0f4f8c94d85c913e955d1f948a3b8480f70bd1ed5e6308c",
-    "claim_headers.parquet": "bc4d17798ce399e58d63a29e51ec80eec33a36d598b7bc746f46ad4bc417f456",
+    "claim_diagnoses.parquet": "c9f6546a5e0a2cba456641f0043163db18e8727f7aeecd0cc60e839d6ccd9b0f",
+    "claim_headers.parquet": "7bf660ef35d6380455dac712b77cc3aaf034ab561c71978595272a806b41a22d",
     "drug_claim_lines.parquet": "5fde8f4bc6d100e1119ec2c290130a8da3e51e3ce28e887d8acfea3a6aa78329",
-    "expected_rule_outputs.parquet": "f7e59ddc827496769b15e1c495dc6233909994e4cc50dd5a9dc2943b05daa8a8",
+    "expected_rule_outputs.parquet": "94922e4ef9c2e4368483e2ca2c295f9c7796460666af4ba875b67783ff6df79a",
     "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
-    "patient_copay_profiles.parquet": "1f4c2502821cebcdaf310bba2eb951da90dca2418236e5ff9bbeb1f35eb9f55f",
+    "patient_copay_profiles.parquet": "b30ce0fa844fbabeab9e1a1541b1c0859f1aed6278bcc86a296741b31749c5e4",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "1eea0bbf9cb28ff4528c8094fafb1ca2bf0adf7235dd20cad553335963eb586f"
+    "procedure_claim_lines.parquet": "86969b0b7a327f410df9a49ac743395f7d3cef82e5cefd712cd2abe34acaacbf"
   }
 }

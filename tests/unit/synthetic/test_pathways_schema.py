@@ -78,6 +78,7 @@ S34 = "copd_exacerbation_post_readmission_control"  # the control after it: its 
 S17 = "end_stage_kidney_disease_haemodialysis_month"  # a month of P704230 sessions as one gunubirlik claim with a span, and an ESA
 S23 = "end_stage_kidney_disease_emergency_haemodialysis"  # one emergency session P704210, a package stay of one date
 S22 = "gi_bleed_admission_colonoscopy"  # a colonoscopy session: the colonoscopy leads, the polypectomy is a chapter-7 add-on at 50 %
+S21 = "cervical_cancer_radiotherapy_course"  # a radiotherapy course as one gunubirlik claim with a span: EK-2B chapter 8.1 lines
 
 
 @pytest.fixture(scope="module")
@@ -864,6 +865,8 @@ CASES = [
     Case("procedure.kind", S12, lambda r, c: line(r, "incubator").update(code="510121", name="Refakat"), label="a newborn_bed on the companion code"),
     Case("procedure.kind", S12, lambda r, c: line(r, "incubator").update(kind="bed"), label="the incubator declared as a ward bed"),
     Case("procedure.kind", S12, lambda r, c: line(r, "pediatric_consult").update(code="510070", name="Kuvöz"), label="an exam on the incubator code"),
+    Case("procedure.kind", S21, lambda r, c: line(r, "imrt_sessions").update(kind="imaging"), label="a radiotherapy session declared as imaging"),
+    Case("procedure.kind", S2, lambda r, c: line(r, "chest_xray").update(kind="radiotherapy"), label="a chest film declared as radiotherapy"),
     Case("material.in_force", S1, lambda r, c: r["materials"][0].update(code="AP9999"), prepare=with_material),
     Case("material.name", S1, lambda r, c: r["materials"][0].update(name="KALÇA | FEMORAL STEM"), prepare=with_material),
     # --- G7b: an EK-3/C-2 device is read on its own list

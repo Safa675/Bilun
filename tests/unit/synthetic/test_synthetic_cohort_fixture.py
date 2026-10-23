@@ -27,7 +27,7 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S20", "S22", "S23", "S24", "S30", "S31", "S32", "S33", "S34", "S36", "S37", "S38", "S39", "S40", "S41", "S42", "S43", "S44", "S45", "S46", "S47", "S48", "S49", "S50", "S51")  # the stories after the eighth, named by scenarios
+_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S20", "S21", "S22", "S23", "S24", "S30", "S31", "S32", "S33", "S34", "S36", "S37", "S38", "S39", "S40", "S41", "S42", "S43", "S44", "S45", "S46", "S47", "S48", "S49", "S50", "S51")  # the stories after the eighth, named by scenarios
 _CLEAN_STORIES = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")  # the bills without a fault: a story and a claim, no fault record
 _FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
@@ -285,6 +285,10 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     )
     assert known["S24"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0015", claim_ids=("F-SENTETIK-HASTA-0015-002",)
+    )
+    # patient 16: the radiotherapy course (S21), one day-case claim over the course
+    assert known["S21"] == cohort.Scenario(
+        patient_id="SENTETIK-HASTA-0016", claim_ids=("F-SENTETIK-HASTA-0016-001",)
     )
     assert known["S47"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0007", claim_ids=("F-SENTETIK-HASTA-0007-002",)

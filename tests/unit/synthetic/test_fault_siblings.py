@@ -38,6 +38,7 @@ S46_SIBLING = "parkinson_physiatry_visit_second_walker_billed"
 S38_SIBLING = "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
 S49_SIBLING = "cholelithiasis_biliary_colic_er_green_area_tests_billed"
 S15_SIBLING = "late_preterm_newborn_cot_ward_stay_standard_bed_billed"
+S21_SIBLING = "cervical_cancer_radiotherapy_course_keyed_as_totals"
 # A sibling whose fault is a defect the grammar itself refuses: its checks find exactly that defect and nothing else.
 # S15's ward bed beside the cot is a second bed line on the admission day (stay.coverage).
 _SIBLING_FAULTS_THE_GRAMMAR_NAMES = {S15_SIBLING: ("stay.coverage", "two bed lines on days [0]")}
@@ -108,7 +109,7 @@ def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_wo
     tmp_path: Path,
 ) -> None:
     assert [p.stem for p in _GOLDEN_SIBLINGS] == [
-        S1_SIBLING, S49_SIBLING, S10_SIBLING, S15_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
+        S1_SIBLING, S21_SIBLING, S49_SIBLING, S10_SIBLING, S15_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
     ]  # fmt: skip  # by file name
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
@@ -250,6 +251,63 @@ def test_the_s15_ward_stay_starts_the_day_after_the_billed_discharge_day_of_the_
         assert not ward.arrives_from_icu
     # the ward stay's diagnoses are coded on the incubator stay too, so the patient's list does not grow
     assert {d.icd10 for d in target.diagnoses} <= {d.icd10 for d in incubator.diagnoses}
+
+
+# --- S21: the radiotherapy course. The sibling keys the same course as totals, without the limits of EK-2/B 8.1 ---
+
+
+def _s21_pair():
+    target = load_pathway(_PATHWAYS_DIR / "cervical_cancer_radiotherapy_course.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S21_SIBLING}.yaml")
+    return target, sibling
+
+
+def _lines_and_counts(bill: dict) -> dict[str, tuple[int, int]]:
+    """code -> (bill lines, units billed)"""
+    out: dict[str, tuple[int, int]] = {}
+    for p in bill["procedures"]:
+        lines, units = out.get(p["code"], (0, 0))
+        out[p["code"]] = (lines + 1, units + p["qty"])
+    return out
+
+
+def test_the_s21_course_keeps_the_course_and_day_limits_of_ek2b_8_1() -> None:
+    """One IMRT session a weekday and one HDR fraction a day without an IMRT session (8.1.5: one application a day, one a
+    brachytherapy session), each on its own line; the evaluation, the simulation, the designs and the dose calculations
+    once over the course (8.1.1 to 8.1.4); no second simulation and no intracavitary application beside the afterloading."""
+    target, _ = _s21_pair()
+    bill = expand(target)
+    assert (bill["header"]["claim_start_date"], bill["header"]["claim_end_date"]) == ("2026-07-20", "2026-09-10")
+    assert all(p["qty"] == 1 and p["billed_ratio"] == "1.0000" for p in bill["procedures"])
+    imrt = [date.fromisoformat(p["date"]) for p in bill["procedures"] if p["code"] == "800440"]
+    hdr = [date.fromisoformat(p["date"]) for p in bill["procedures"] if p["code"] == "800590"]
+    assert len(set(imrt)) == len(imrt) == 25 and all(day.weekday() < 5 for day in imrt)
+    assert len(set(hdr)) == len(hdr) == 4 and min(hdr) > max(imrt)  # the brachytherapy after the external course
+    once = ("800030", "800110", "800114", "800160", "800220", "800260", "800280")
+    assert _lines_and_counts(bill) == {**dict.fromkeys(once, (1, 1)), "800440": (25, 25), "800590": (4, 4)}
+
+
+def test_the_s21_sibling_keys_the_sessions_as_counts_and_the_hdr_plan_items_per_fraction() -> None:
+    """The twin differs by lines, not by a date: the sessions of each phase as one count on its first day, the design,
+    the dose calculation and a CT simulation (800140) of each of the four HDR fractions; the rest is the clean course."""
+    target, sibling = _s21_pair()
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "materials", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    was, now = _lines_and_counts(clean), _lines_and_counts(faulty)
+    assert {code: now[code] for code in now if now[code] != was.get(code)} == {
+        "800440": (1, 25),
+        "800590": (1, 4),
+        "800114": (1, 4),
+        "800260": (1, 4),
+        "800140": (1, 4),
+    }
+    first_session = min(p["date"] for p in clean["procedures"] if p["code"] == "800440")
+    first_fraction = min(p["date"] for p in clean["procedures"] if p["code"] == "800590")
+    assert {(p["code"], p["date"]) for p in faulty["procedures"] if p["qty"] > 1} == {
+        ("800440", first_session),
+        *((code, first_fraction) for code in ("800590", "800114", "800260", "800140")),
+    }
 
 
 # --- S14: the ward bill after the ICU bill. The sibling is the target pathway with the transfer day billed ---

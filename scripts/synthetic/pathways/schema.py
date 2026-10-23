@@ -59,7 +59,7 @@ CHECKS: dict[str, str] = {
     # checks.py: against the catalogs
     "procedure.in_force": "an EK-2B/EK-2C code missing on some day of the window",
     "procedure.name": "a procedure name that is not the catalog name",
-    "procedure.kind": "a line kind that does not fit the code's EK-2B chapter, an ICU kind on a code that is not an ICU day or package, or a newborn_bed on a code that is not the incubator or the cot",
+    "procedure.kind": "a line kind that does not fit the code's EK-2B chapter (radiotherapy is chapter 8.1, imaging the rest of group 8), an ICU kind on a code that is not an ICU day or package, or a newborn_bed on a code that is not the incubator or the cot",
     "material.in_force": "an EK-3 code missing from its annex's list (EK-3/F-1 or EK-3/C-2) on some day of the window",
     "material.name": "a material name that is not the catalog name",
     "drug.in_force": "an EK-4A barcode missing on some day of the window",
@@ -176,6 +176,9 @@ def _iso_date(value: str) -> str:
 # --- field types -------------------------------------------------------------------------------
 
 Basis = Literal["sut", "ek2b_aciklama", "medula_kilavuz", "guideline", "judgment"]
+# `imaging` and `radiotherapy` share EK-2B chapter group 8 (radyolojik görüntüleme ve tedavi): a radiotherapy line is a
+# code of its chapter 8.1 (radyasyon onkolojisi: the clinical evaluation, design, planning, dose calculation, devices and
+# the applications of a course, EK-2/B 8.1.1 to 8.1.6), an imaging line any other code of the group (slice of WP19).
 Kind = Literal[
     "package",
     "operation",
@@ -188,6 +191,7 @@ Kind = Literal[
     "exam",
     "lab",
     "imaging",
+    "radiotherapy",
     "procedure",
 ]
 # The two kinds of an intensive-care stay: the EK-2B day rate 510090 and an EK-2C ICU package

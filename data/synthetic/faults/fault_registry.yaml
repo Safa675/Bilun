@@ -380,6 +380,32 @@ faults:
     basis: sut
     source: "C000646 (SUT 2.2.2(1)) with C003484: a day case is inpatient care, so P603840 goes by package; the coder keyed EK-2B 603840 itemized (S20)."
 
+  - fault_id: F_S21_RADIOTHERAPY_COURSE_KEYED_AS_TOTALS
+    story: S21
+    title: "Radiotherapy course keyed as totals: the sessions as one count each, the HDR plan items once per fraction (cervical cancer)"
+    target_pathway: cervical_cancer_radiotherapy_course
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: cervical_cancer_radiotherapy_course_keyed_as_totals
+    expected_finding:
+      engine_rule: radiation_oncology
+      detectors:
+        - "src/bilun/domain/prose_rules/radiation_oncology.py:detect_radiation_oncology_violations"
+      sut_section: "2.2.2.A(1)"
+      sut_clauses: ["C000652"]
+      effect_kind: compliance_error
+      line_type: islem
+      target_entry_id: brachytherapy_simulation
+      expected_status: kismi_red
+      finding_ids:
+        - "radiation_oncology.course_cap.brachytherapy_design"
+        - "radiation_oncology.course_cap.brachytherapy_dose"
+        - "radiation_oncology.course_cap.rt_planning"
+        - "radiation_oncology.same_day_collapse.afterloading"
+        - "radiation_oncology.same_day_collapse.linac_application"
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.2.B, 8.1.3, 8.1.4.B: design, simulation and dose once a course; 8.1.5: one application a day or session (C000652; S21)."
+
   - fault_id: F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED
     story: S22
     title: "Polypectomy add-on not billed with the colonoscopy of the same session (the admission after the ER visit of patient 12)"

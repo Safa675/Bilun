@@ -463,7 +463,10 @@ def test_the_proof_script_proves_every_story_with_a_fault_and_reads_the_row_of_s
         "                  'other_rule': prove.target_amount('S40', [{'rule_id': 'x'}]),\n"
         "                  'addon': prove.target_amount('S38', [{'rule_id': 'conditional_addon_ek2d_neuromonitoring'}]),\n"
         "                  'addon_silent': prove.target_amount('S38', []),\n"
-        "                  'addon_other': prove.target_amount('S38', [{'rule_id': 'conditional_addon_ek2d_neuronavigation'}])}))\n"
+        "                  'addon_other': prove.target_amount('S38', [{'rule_id': 'conditional_addon_ek2d_neuronavigation'}]),\n"
+        "                  'course': prove.target_amount('S21', [{'rule_id': 'radiation_oncology.course_cap.rt_planning', 'risk_amount_try': None}]),\n"
+        "                  'course_silent': prove.target_amount('S21', []),\n"
+        "                  'course_other': prove.target_amount('S21', [{'rule_id': 'tablo15_12_duplicate_test'}])}))\n"
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
@@ -471,21 +474,24 @@ def test_the_proof_script_proves_every_story_with_a_fault_and_reads_the_row_of_s
     assert out["fires"] == 0.0 and out["silent"] is None and out["other_rule"] is None  # a row without money is the finding
     # S38's neuromonitoring review has no money either: its row is the finding, and the neuronavigation one is not it
     assert out["addon"] == 0.0 and out["addon_silent"] is None and out["addon_other"] is None
+    # S21's radiotherapy reviews have no amount either: any radiotherapy row is the finding, another rule's row is not
+    assert out["course"] == 0.0 and out["course_silent"] is None and out["course_other"] is None
 
 
-def test_the_proof_script_reads_the_rows_of_s49_s50_and_s15_that_their_results_hold() -> None:
+def test_the_proof_script_reads_the_rows_of_s49_s50_s15_and_s21_that_their_results_hold() -> None:
     """`prove.direct` on the story bills of S49 (the green-area extras), S50 (the S8 branch: the EK-2B procedures beside
-    the ERCP package) and S15 (the ward bed beside the cot) gives the rows of their `results/*.json`, clean and faulty."""
+    the ERCP package), S15 (the ward bed beside the cot) and S21 (the radiotherapy course keyed as totals) gives the rows
+    of their `results/*.json`, clean and faulty."""
     code = (
         "import json, sys\n"
         "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
         "import prove, stories\n"
-        "out = {s: {v: prove.direct(s, stories.STORIES[s](v).ctx()) for v in ('clean', 'faulty')} for s in ('S49', 'S50', 'S15')}\n"
+        "out = {s: {v: prove.direct(s, stories.STORIES[s](v).ctx()) for v in ('clean', 'faulty')} for s in ('S49', 'S50', 'S15', 'S21')}\n"
         "print(json.dumps(out, default=str))\n"
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
-    for story in ("S49", "S50", "S15"):
+    for story in ("S49", "S50", "S15", "S21"):
         committed = json.loads((REPO / f"reports/synthetic-data/2026-10-15-showcase-proofs/results/{story}.json").read_text(encoding="utf-8"))
         for variant in ("clean", "faulty"):
             assert out[story][variant] == committed[variant]["direct"], (story, variant)
@@ -493,3 +499,7 @@ def test_the_proof_script_reads_the_rows_of_s49_s50_and_s15_that_their_results_h
     assert [r["procedure_code"] for r in out["S49"]["faulty"]] == ["803602", "L101850"] and out["S49"]["clean"] == []
     assert [(r["rule_id"], r["risk_amount_try"]) for r in out["S15"]["faulty"]] == [("yatak_newborn_overlap_510010", 222.36)]
     assert out["S15"]["clean"] == []
+    assert sorted({r["rule_id"].rsplit(".", 1)[-1] for r in out["S21"]["faulty"]}) == [
+        "afterloading", "brachytherapy_design", "brachytherapy_dose", "linac_application", "rt_planning"
+    ]  # fmt: skip
+    assert [r["risk_amount_try"] for r in out["S21"]["faulty"]] == [None] * 6 and out["S21"]["clean"] == []

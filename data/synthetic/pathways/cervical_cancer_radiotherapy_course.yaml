@@ -1,0 +1,122 @@
+# A course of radiotherapy for cervical cancer, billed as one day-case (gunubirlik) claim over the course: the
+# simulation and the plan of an IMRT course, 25 external sessions, then four image-guided HDR brachytherapy fractions.
+# Showcase story S21 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S21): bill 1 of patient 16.
+# Grammar: README.md next to this file. A session claim over several dates (`span`): no admission, no discharge.
+schema_version: 1
+id: cervical_cancer_radiotherapy_course
+title: "Cervical cancer, a course of IMRT and HDR brachytherapy billed as one day-case claim"
+claim_type: gunubirlik
+billing_mode: itemized
+department:
+  name: "Radyasyon Onkolojisi"
+  specialty: "3200"                  # EK-2A: Radyasyon Onkolojisi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "C53 is a female-only code (the sex column of the SKRS ICD-10 table); story S21 is a woman born 1969."
+  age:
+    min: 30
+    max: 85
+    basis: judgment
+    source: "Story S21 patient is 57. The bounds are the author's judgment of who gets a curative pelvic course; clinician to confirm."
+
+span:
+  min: 52
+  max: 52
+  basis: judgment
+  source: "Simulation on day 0, 25 sessions Monday to Friday on days 7-39, four HDR fractions on days 42-52: the course ends on admit+52."
+
+diagnoses:
+  - icd10: C53.9
+    name: "SERVİKS UTERİ MALİGN NEOPLAZMI, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "Locally advanced cervical cancer treated by definitive radiotherapy (card S21). SKRS leaf code; a radiation oncologist to confirm the subsite."
+  - icd10: Z51.0
+    name: "RADYOTERAPİ DÖNEMİ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "The encounter for a course of radiotherapy, as Z49.1 marks the dialysis claim of S17. SKRS leaf code."
+
+procedures:
+  - id: clinical_evaluation
+    kind: radiotherapy
+    code: "800030"
+    name: "21-30 tedavi günü süreli tedaviler"
+    days: admit
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.1: the first consultation, the controls and the tests to the end of the course, billed once; 29 treatment days."
+  - id: imrt_simulation
+    kind: radiotherapy
+    code: "800160"
+    name: "e) IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamalarında radyoterapi planlama"
+    days: admit
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.3: the CT simulation of the IMRT course; (a) to (e) are not billed together over the course, so the HDR simulations are not."
+  - id: fixation_mask
+    kind: radiotherapy
+    code: "800280"
+    name: "Basit tedavi aletleri tasarım ve yapımı"
+    days: admit
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.4.C: a thermoplastic fixation mask, at most one over the course; made at the simulation."
+  - id: imrt_design
+    kind: radiotherapy
+    code: "800110"
+    name: "e) IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamalarında eksternal radyoterapi tasarımı"
+    days: admit+2
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.2.A: the IMRT design (inverse planning), one over the course; (a) to (e) are not billed together."
+  - id: imrt_dose_calculation
+    kind: radiotherapy
+    code: "800220"
+    name: "f) IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamalarında eksternal radyoterapi doz hesapları"
+    days: admit+4
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.4.A: (e) and (f) are billed as many times as there are plans; the course has one plan."
+  - id: imrt_sessions
+    kind: radiotherapy
+    code: "800440"
+    name: "e) Lineer akseleratör radyoterapi ile IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamaları, her bir seans"
+    days: [admit+7..admit+11, admit+14..admit+18, admit+21..admit+25, admit+28..admit+32, admit+35..admit+39]
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.5: one application a day, each session on its day; 25 fractions of the pelvis, Monday to Friday, over five weeks."
+  - id: brachytherapy_design
+    kind: radiotherapy
+    code: "800114"
+    name: "d) Konformal brakiterapi tasarımı"
+    days: admit+42
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.2.B: a CT-guided three-dimensional brachytherapy design with a DVH, one over the course."
+  - id: brachytherapy_dose_calculation
+    kind: radiotherapy
+    code: "800260"
+    name: "d) Kompleks brakiterapi doz hesapları"
+    days: admit+42
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.4.B: an afterloading plan with more than 12 sources; each of (a) to (d) once over the course."
+  - id: hdr_sessions
+    kind: radiotherapy
+    code: "800590"
+    name: "After-loading brakiterapi uygulaması:12’den fazla kaynak pozisyonlu uygulamaların seansı"
+    days: [admit+42, admit+45, admit+49, admit+52]
+    basis: ek2b_aciklama
+    source: "EK-2B 8.1.5.D.2: one afterloading application a session; four intracavitary HDR fractions, two a week after the external course."
+
+notes:
+  - "8.1.1 covers the tests of the course (Fatura İnceleme, radiation oncology 4): no laboratory line is billed. The weekly cisplatin given with the course is a medical-oncology treatment on its own bill."
+  - "Each HDR fraction is planned on its own CT with the applicator in place; EK-2/B pays the brachytherapy design, simulation and dose once over the course, so only the first is billed."
+  - "The HDR session is billed with the afterloading code (8.1.5.D.2) alone, not with an intracavitary application (8.1.5.D.1) beside it: 8.1.5 pays one application a day. A radiation oncologist to confirm."
+  - "Whether SGK takes a course as one takip (one claim) or a takip per session is not verified (card S21): a billing officer to confirm."
+
+showcase:
+  story: S21
+  sex: F
+  age: 57
+  admit: "2026-07-20"
+  span: 52

@@ -61,8 +61,12 @@ SESSION_PROCEDURE_GROUP = "7"
 KIND_GROUPS = [
     ("1", "bed"), ("1", "newborn_bed"), ("1", "icu_day"), ("1", "companion"), ("2", "exam"), ("3", "procedure"), ("4", "procedure"),
     ("5", "anaesthesia"), ("5", "procedure"), ("6", "operation"), ("7", "procedure"),
-    ("8", "imaging"), ("9", "lab"), ("10", "lab"),
+    ("8", "imaging"), ("8", "radiotherapy"), ("9", "lab"), ("10", "lab"),
 ]  # fmt: skip
+
+# The EK-2B chapter (ek2b_code_chapter.parquet chapter_id) of a `radiotherapy` line, radyasyon onkolojisi; an `imaging`
+# line is any other chapter of group 8 (nuclear medicine 8.2, radiological imaging 8.3).
+RADIOTHERAPY_CHAPTER = "8.1"
 
 
 def norm(text: str) -> str:
@@ -180,9 +184,9 @@ class Catalogs:
         return set(self._parquet(path, ["specialty_code"])["specialty_code"])
 
     @cached_property
-    def chapters(self) -> pl.DataFrame:  # code, group_id
+    def chapters(self) -> pl.DataFrame:  # code, group_id, chapter_id
         path = "data/synthetic/reference/ek2b_code_chapter.parquet"
-        return self._parquet(path, ["code", "group_id"])
+        return self._parquet(path, ["code", "group_id", "chapter_id"])
 
     @cached_property
     def clause_ids(self) -> set[str]:
@@ -295,7 +299,8 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
 
     The two ICU kinds are bed-day lines of their own: `icu_day` is the day rate 510090 (EK-2B chapter 1)
     and `icu_package` an EK-2C ICU package (P552001-3, P552006-8; a package has no EK-2B chapter). The
-    newborn bed (`newborn_bed`) is the incubator 510070 or the cot 510081, never the ward bed.
+    newborn bed (`newborn_bed`) is the incubator 510070 or the cot 510081, never the ward bed. In group 8 a
+    `radiotherapy` line is a code of chapter 8.1 (radiation oncology) and an `imaging` line a code of any other chapter.
     """
     beds, anaesthesia = cat.code_sets["beds"], cat.code_sets["anaesthesia"]
     ward_beds = [beds["ward_day"]["code"], beds["day_bed"]["code"]]
@@ -316,6 +321,8 @@ def check_procedure_kinds(pathway: Pathway, cat: Catalogs) -> list[Problem]:
         .when(kind == "companion").then(code == beds["companion"]["code"])
         .when(kind == "anaesthesia").then(code.is_in(anaesthesia_codes))
         .when(kind == "package").then(code.str.starts_with("P"))
+        .when(kind == "radiotherapy").then(pl.col("chapter_id") == RADIOTHERAPY_CHAPTER)
+        .when(kind == "imaging").then(pl.col("chapter_id") != RADIOTHERAPY_CHAPTER)
         .otherwise(~code.str.starts_with("P"))
     )  # fmt: skip
     allowed = _frame(KIND_GROUPS, "group_id", "kind").with_columns(pl.lit(True).alias("paired"))

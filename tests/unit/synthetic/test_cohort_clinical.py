@@ -58,6 +58,7 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
     13: (126, 78, 72, 98, 176, 84.0),  # S20, a day-case hernia repair
     14: (148, 82, 76, 96, 172, 70.0),  # S17, a haemodialysis patient before a session
     15: (104, 62, 98, 96, 174, 79.0),  # S18, decompensated cirrhosis with a melena (the weight carries ascites)
+    16: (128, 78, 80, 98, 160, 63.0),  # S21, cervical cancer at the radiotherapy simulation
 }
 # the later bills of the committed cohort, by (patient, encounter): the vitals of S39 (the control of patient 4) and
 # S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
@@ -161,7 +162,9 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
-        if pno in {5, 8, 11, 13, 14}:  # first bills: packages (S5, S8, S20, S17's dialysis sessions) and S12 (adult ranges only) bill no lab line
+        # first bills without a lab line: packages (S5, S8, S20, S17's dialysis sessions), S12 (adult ranges only) and the
+        # radiotherapy course S21 (its clinical evaluation 800030 covers the tests of the course, EK-2/B 8.1.1)
+        if pno in {5, 8, 11, 13, 14, 16}:
             assert pat.labs is None
         else:
             assert pat.labs is not None

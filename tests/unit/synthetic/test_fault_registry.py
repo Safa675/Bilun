@@ -123,6 +123,26 @@ PINNED_FINDINGS: dict[
         [],
         [],
     ),
+    # the radiotherapy course keyed as totals: five reviews of the course and day limits of EK-2/B 8.1 without an amount
+    # (the model has no course and no session identity, EI-19); the target is the HDR simulation beside the IMRT one
+    "S21": (
+        "radiation_oncology",
+        "islem",
+        "brachytherapy_simulation",
+        "kismi_red",
+        "compliance_error",
+        ["C000652"],
+        "2.2.2.A(1)",
+        ["src/bilun/domain/prose_rules/radiation_oncology.py:detect_radiation_oncology_violations"],
+        [],
+        [
+            "radiation_oncology.course_cap.brachytherapy_design",
+            "radiation_oncology.course_cap.brachytherapy_dose",
+            "radiation_oncology.course_cap.rt_planning",
+            "radiation_oncology.same_day_collapse.afterloading",
+            "radiation_oncology.same_day_collapse.linac_application",
+        ],
+    ),
     # the day bed of a stay of one date not billed (C000648): the bed-day motor of S2
     "S47": (
         "yatak_puani",
@@ -511,7 +531,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46", "S49", "S50"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S21", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46", "S49", "S50"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:
