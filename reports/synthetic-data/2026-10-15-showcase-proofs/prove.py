@@ -23,6 +23,7 @@ from src.bilun.domain.prose_rules.conditional_addon_ek2d import detect_condition
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_drug_quantity_error,
     detect_duplicate_exam_10day,
+    detect_green_area_bundled_extras,
     detect_vakabasi_wrong_method,
 )
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling, detect_blood_component_violations
@@ -116,7 +117,7 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(o, ("rule_id", "procedure_code", "procedure_name", "service_date", "source",
                           "list_price_try", "recoverable_gap_try", "price_methodology", "detail"))
                 for o in detect_procedure_capture_gaps(claim, list(ctx.performed_procedure_lines), procs)]
-    if story == "S8":
+    if story in ("S8", "S50"):  # S50: EK-2B procedures of the session beside an EK-2C package (C000672)
         f = analyze_claim_unbundling(claim, procs, same_incision=True)
         return [_keep(v, ("rule_id", "procedure_code", "primary_procedure_code", "expected_point_factor",
                           "expected_billed_try", "actual_billed_try", "risk_amount_try", "sut_section", "detail"))
@@ -192,6 +193,10 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(o, ("rule_id", "procedure_code", "addon_code", "required_list", "savings_category",
                           "sut_section_id", "detail"))
                 for o in detect_conditional_addon_ek2d_opportunities(claims, procs)]
+    if story == "S49":
+        # the extras billed beside the flat-fee green-area examination: one review per extra line (El Kitabı Tablo 15 #7)
+        return [_keep(o, ("rule_id", "procedure_code", "green_area_exam_code", "severity", "sut_section_id", "detail"))
+                for o in detect_green_area_bundled_extras(claims, procs)]
     if story == "S46":
         # a cross-bill rule: the walker of the control S45 is history, read through ctx.history
         return [{**_keep(v, ("rule", "material_code", "risk_amount", "material_outcome", "sut_section", "message")),
@@ -272,10 +277,10 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         kind = {"S6": "indication_mismatch", "S17": "prescriber_specialty_mismatch",
                 "S18": "missing_board_report", "S44": "report_duration_mismatch"}[story]
         return 0.0 if any(r.get("violation_kind") == kind for r in rows) else None
-    if story in ("S24", "S33", "S34", "S38", "S40"):  # a row without money: the finding is the row
+    if story in ("S24", "S33", "S34", "S38", "S40", "S49"):  # a row without money: the finding is the row
         rule = {"S24": "blood_component_isbt128_barcode", "S33": "tablo15_11_drug_quantity_error",
                 "S34": "tablo15_3_vakabasi_wrong_method", "S38": "conditional_addon_ek2d_neuromonitoring",
-                "S40": "tablo15_2_duplicate_exam_10day"}[story]
+                "S40": "tablo15_2_duplicate_exam_10day", "S49": "tablo15_7_green_area_bundled_extra"}[story]
         return 0.0 if any(r.get("rule_id") == rule for r in rows) else None
     return total("recoverable_gap_try" if story == "S7" else "risk_amount_try")
 

@@ -27,8 +27,8 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S17", "S18", "S20", "S22", "S23", "S24", "S32", "S33", "S34", "S36", "S37", "S38", "S39", "S40", "S41", "S42", "S43", "S44", "S45", "S46", "S47", "S48")  # the stories after the eighth, named by scenarios
-_CLEAN_STORIES = ("S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48")  # the bills without a fault: a story and a claim, no fault record
+_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S17", "S18", "S20", "S22", "S23", "S24", "S32", "S33", "S34", "S36", "S37", "S38", "S39", "S40", "S41", "S42", "S43", "S44", "S45", "S46", "S47", "S48", "S49", "S50", "S51")  # the stories after the eighth, named by scenarios
+_CLEAN_STORIES = ("S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")  # the bills without a fault: a story and a claim, no fault record
 _FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 
@@ -292,6 +292,11 @@ def test_the_scenarios_are_the_stories_after_the_eighth_and_none_of_them_is_a_ro
     assert known["S48"] == cohort.Scenario(
         patient_id="SENTETIK-HASTA-0007", claim_ids=("F-SENTETIK-HASTA-0007-003",)
     )
+    # patient 8 (the role S8) with three later bills: the green-area ER visit three weeks before her stay (S49), the
+    # ERCP admission (S50) and the clean control after it (S51)
+    assert [known[story] for story in ("S49", "S50", "S51")] == [
+        cohort.Scenario(patient_id="SENTETIK-HASTA-0008", claim_ids=(f"F-SENTETIK-HASTA-0008-00{n}",)) for n in (2, 3, 4)
+    ]
     # a showcase patient with three later bills: the stay (role S2), then its control S32 (a clean bill, the copay
     # waiver), its readmission through the ER S33 and the control after it S34 (two faulty bills)
     assert known["S32"] == cohort.Scenario(

@@ -1,0 +1,66 @@
+# Biliary colic seen in the ER green area, with a CRP and an abdominal ultrasound billed beside the flat-fee visit: faulty sibling of S49.
+# Showcase story S49 faulty bill (reports/synthetic-data/2026-10-15-showcase-proofs/stories.py, s49("faulty")).
+# The green-area examination 520021 is a flat-fee visit (El Kitabı Tablo 15 #7); the bill carries the examination of the clean
+# bill and also the test and the imaging done on the visit.
+# Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
+schema_version: 1
+id: cholelithiasis_biliary_colic_er_green_area_tests_billed
+title: "Biliary colic seen in the ER green area, a CRP and an abdominal ultrasound billed beside the green-area examination"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S49 is the woman of story S8 (the same patient, the ER visit before her stay); K80.2 has no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 75
+    basis: judgment
+    source: "Story S49 patient is 47, like story S8; the bounds are those of story S8 (the author's judgment)."
+
+diagnoses:
+  - icd10: K80.2
+    name: "SAFRA KESESİ TAŞI, KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the colic of the gallstones S8 operates three weeks later: a known cause, so not R10.1, which the engine refuses as principal (#304)."
+
+procedures:
+  - id: green_area_exam
+    kind: exam
+    code: "520021"
+    name: "Yeşil alan muayenesi"
+    days: admit
+    basis: sut
+    source: "C000370, C000438 (SUT 1.8.5.(5), 1.9.3.(a)): the ER services of a green-area visit are billed to the Kurum under the name of 520021."
+  - id: crp
+    kind: lab
+    code: "L101850"
+    name: "C reaktif protein (CRP)"
+    days: admit
+    basis: judgment
+    source: "The faulty line: a CRP of the colic billed beside the flat-fee green-area visit (El Kitabı Tablo 15 #7). Emergency physician to confirm."
+  - id: abdominal_ultrasound
+    kind: imaging
+    code: "803602"
+    name: "Ultrason, genel"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: judgment
+    source: "The faulty line: the ultrasound that shows the gallstones, billed beside the flat-fee green-area visit (El Kitabı Tablo 15 #7)."
+
+notes:
+  - "The same visit as the clean bill of story S49, on Tuesday 2026-08-25, with the CRP and the abdominal ultrasound billed beside the green-area examination."
+
+showcase:
+  story: S49
+  sex: F
+  age: 47
+  admit: "2026-08-25"

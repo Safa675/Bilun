@@ -110,7 +110,7 @@ CHECKS: dict[str, str] = {
     "price.material_in_force": "a material not in the EK-3 list of its annex (EK-3/F-1, EK-3/C-2), dated before the list, or not at its price",
     "price.drug_in_force": "a drug line whose barcode has no EK-4A row in force on its day (drug prices are not checked)",
     # money: the arithmetic of the bill
-    "money.line_arithmetic": "a line whose billed amount is not unit price x quantity x 1, 0.5, 0.25 or a package's blood share, to the cent",
+    "money.line_arithmetic": "a line not billed at unit price x quantity x 1, 0.5, 0.25, a package's blood share or 0.3 beside a package, to the cent",
     "money.payable_equals_billed": "a line whose expected payable is not its billed amount, or on a copay-flagged line not billed x (1 - copay_rate)",
     "money.totals": "a claim header whose billed or payable total is not the sum of its procedure, material and drug lines",
     # labels: the answer key and the fault records against the bill (they need the registry)
@@ -269,8 +269,14 @@ SURGICAL_SPECIALTY_CODES: frozenset[str] = frozenset(
 # fit.operation_setting: the surgical groups of an operation that needs a ward, not an ER or clinic.
 MAJOR_GROUPS: tuple[str, ...] = ("A1", "A2", "A3", "B")
 
-# fit.visit_code: the code_sets.yaml `visits` entry each claim type may bill.
-VISIT_KEYS: dict[str, str] = {"acil": "acil", "poliklinik": "poliklinik", "yatis": "consultation"}
+# fit.visit_code: the code_sets.yaml `visits` entries each claim type may bill. An ER claim bills the ER examination or,
+# for a patient triaged to the green area, the green-area examination 520021 (SUT 1.8.5.(5), 1.9.3.(a): C000370, C000438;
+# story S49).
+VISIT_KEYS: dict[str, tuple[str, ...]] = {
+    "acil": ("acil", "acil_green_area"),
+    "poliklinik": ("poliklinik",),
+    "yatis": ("consultation",),
+}
 
 # Chapter 6 of EK-2B holds the operations.
 OPERATION_GROUP_ID = "6"
@@ -306,6 +312,9 @@ LADDER_QUARTERS: tuple[int, ...] = (4, 2, 1)
 # A blood component of C000694 on the claim of an EK-2C package is billed apart at a share of its list amount (slice
 # G14, `BLOOD_PACKAGE_SHARES` of the pathway grammar), written in whole percent for the same reason.
 BLOOD_SHARE_PERCENT: dict[str, int] = {code: int(share * 100) for code, share in BLOOD_PACKAGE_SHARES.items()}
+# An EK-2B procedure (category `islem`) done in the session of an EK-2C package through the same incision is billed beside
+# the package at 30 % of its puan (SUT 2.2.2.B(3)(c), C000672; slice G15); the separate incision's 50 % is on the ladder.
+BESIDE_PACKAGE_PERCENT = 30
 
 # labels.*: the text columns the fault entries of the registry are read into, and the table of each
 # line type of a fault record.
@@ -484,12 +493,10 @@ class PlausibilityContext:
 
     @cached_property
     def visit_codes(self) -> pl.DataFrame:
-        """claim_type, visit_code: the one examination code each claim type may bill."""
+        """claim_type, visit_code: the examination codes each claim type may bill, one row each."""
         visits = self.code_sets["visits"]
-        types = list(VISIT_KEYS)
-        return pl.DataFrame(
-            {"claim_type": types, "visit_code": [visits[VISIT_KEYS[t]]["code"] for t in types]}
-        )
+        pairs = [(t, visits[key]["code"]) for t, keys in VISIT_KEYS.items() for key in keys]
+        return pl.DataFrame(pairs, schema=["claim_type", "visit_code"], orient="row")
 
     @cached_property
     def bands(self) -> list[dict]:
@@ -1282,14 +1289,19 @@ def check_operation_setting(bill: _Bill) -> list[Problem]:
 
 
 def check_visit_code(bill: _Bill) -> list[Problem]:
-    """fit.visit_code: an examination line bills the visit code of its claim type."""
+    """fit.visit_code: an examination line bills a visit code of its claim type."""
+    allowed = bill.ctx.visit_codes
+    either = allowed.group_by("claim_type").agg(pl.col("visit_code").sort().str.join(" or "))
     found = (
         bill.lines.filter(pl.col("procedure_category") == "muayene")
         .join(bill.headers.select("claim_id", "claim_type"), on="claim_id", how="left")
-        .join(bill.ctx.visit_codes, on="claim_type", how="left")
-        .filter(
-            pl.col("visit_code").is_not_null() & (pl.col("procedure_code") != pl.col("visit_code"))
+        .join(
+            allowed,
+            left_on=["claim_type", "procedure_code"],
+            right_on=["claim_type", "visit_code"],
+            how="anti",
         )
+        .join(either, on="claim_type", how="inner")
         .select(
             _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
             _format(
@@ -2014,7 +2026,9 @@ def check_line_arithmetic(bill: _Bill) -> list[Problem]:
     A blood component of C000694 on a package claim may also be billed at its share (`BLOOD_SHARE_PERCENT`, slice
     G14): the package includes the blood, and the provider bills these components apart at that share of their puan.
     The full price stays on the ladder, so a component billed in full inside a package (S42's fault) is the engine's
-    to find (`blood_component_partial_bill`), not this check's.
+    to find (`blood_component_partial_bill`), not this check's. An EK-2B procedure line (category `islem`, no package
+    code, no blood component) on a package claim may be billed at 30 % (`BESIDE_PACKAGE_PERCENT`, C000672; slice G15):
+    the session line of an EK-2B procedure beside the package; in full it stays on the ladder (S50's fault).
     """
     unit, billed = _cents(pl.col("unit_price_try")), _cents(pl.col("billed_amount_try"))
     full = unit * pl.col("quantity")
@@ -2022,17 +2036,17 @@ def check_line_arithmetic(bill: _Bill) -> list[Problem]:
     # claim, as the composer files an EK-2C package
     procedures = bill.table(TABLE_PROCEDURES)
     package_claims = procedures.filter(pl.col("procedure_category") == "paket").select("claim_id").unique()
-    shares = (
-        procedures.join(package_claims, on="claim_id", how="semi")
-        .filter(pl.col("procedure_code").is_in(list(BLOOD_SHARE_PERCENT)))
-        .select(
-            "claim_id",
-            pl.lit("procedure_claim_lines").alias("table"),
-            pl.col("procedure_line_id").alias("line_id"),
-            pl.col("procedure_code")
-            .replace_strict(BLOOD_SHARE_PERCENT, return_dtype=pl.Int64)
-            .alias("share_percent"),
-        )
+    on_package = procedures.join(package_claims, on="claim_id", how="semi")
+    blood = pl.col("procedure_code").is_in(list(BLOOD_SHARE_PERCENT))
+    beside = (pl.col("procedure_category") == "islem") & ~pl.col("procedure_code").str.starts_with("P") & ~blood
+    shares = on_package.filter(blood | beside).select(
+        "claim_id",
+        pl.lit("procedure_claim_lines").alias("table"),
+        pl.col("procedure_line_id").alias("line_id"),
+        pl.when(blood)
+        .then(pl.col("procedure_code").replace_strict(BLOOD_SHARE_PERCENT, default=0, return_dtype=pl.Int64))
+        .otherwise(pl.lit(BESIDE_PACKAGE_PERCENT, dtype=pl.Int64))
+        .alias("share_percent"),
     )
     priced = bill.priced.join(shares, on=["claim_id", "table", "line_id"], how="left")
     # in quarter-cents: the billed amount is within half a cent of one rung (a tie fits either way); a share in

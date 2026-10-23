@@ -1,0 +1,87 @@
+# A common-bile-duct stone after the cholecystectomy of story S8: ERCP with sphincterotomy and stone extraction, ward stay
+# billed as the EK-2C package of the ERCP with the two EK-2B procedures of its session beside it at 30 %.
+# Showcase story S50 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F8 b3): bill 3 of the patient of S8. Every line below is
+# a clean-bill line: the sphincterotomy and the stone extraction are billed at 30 % of their puan (C000672; slice G15). The fault bills them in full.
+# Grammar: README.md next to this file. A package bill carries the package line; bed, companion, sedation, labs and drugs are inside it.
+schema_version: 1
+id: retained_common_bile_duct_stone_ercp_package
+title: "Common-bile-duct stone after a cholecystectomy: ERCP billed as the EK-2C package, sphincterotomy and stone extraction beside it"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi (the surgeons of story S8 do the ERCP)
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S50 is the woman of story S8 (the same patient, readmitted); K80.5 and K91.5 have no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 75
+    basis: judgment
+    source: "Story S50 patient is 47, like story S8; the bounds are those of story S8 (the author's judgment)."
+
+nights:
+  min: 1
+  max: 5
+  basis: judgment
+  source: "Story S50 has 2 nights: admitted, ERCP the next day, home the day after. Max 5 is the author's judgment; the group C window is 8 days (C000704)."
+
+op_day: admit+1                      # admitted with the pain and the jaundice on day 0, the ERCP on the day after
+
+diagnoses:
+  - icd10: K80.5
+    name: "SAFRA YOLU TAŞI, KOLANJİT VEYA KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; a stone left in the common bile duct after the cholecystectomy of story S8, without cholangitis. Surgeon to confirm."
+  - icd10: K91.5
+    name: "POSTKOLESİSTEKTEMİ SENDROMU"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the pain after the cholecystectomy of story S8 that the retained stone causes. Surgeon to confirm the code."
+
+procedures:
+  - id: ercp_package
+    kind: package
+    code: "P701360"
+    name: "Endoskopik retrograd kolanjiyopankreotografi"
+    days: op
+    qty: 1
+    session_role: primary              # the package leads the session: its puan is above the EK-2B lines'
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package; C000685, C000699 list what is inside."
+  - id: sphincterotomy
+    kind: procedure
+    code: "701370"
+    name: "Endoskopik sifinkterotomi"
+    days: op
+    session_role: same_incision        # through the same endoscope: 30 % of its own EK-2B puan
+    basis: sut
+    source: "C000672 (SUT 2.2.2.B(3)(c)): an EK-2B procedure of the session of an EK-2C package, same incision, at 30 % of its puan."
+  - id: stone_extraction
+    kind: procedure
+    code: "701440"
+    name: "Koledokdan balon veya basketle taş çıkarılması"
+    days: op
+    session_role: same_incision        # through the same endoscope: 30 % of its own EK-2B puan
+    basis: sut
+    source: "C000672 (SUT 2.2.2.B(3)(c)); GENEL CERRAHİ-1 of the Fatura İnceleme guide: the highest in full, the others at 30 %."
+
+notes:
+  - "The patient of story S8 (cholecystectomy on 2026-09-15, discharged on 09-16) comes back on Sunday 2026-09-27 with colic and jaundice: a stone left in the common bile duct. The group B window of S8's package ended on 09-24 (C000703), so this is a stay of its own."
+  - "ERCP on Monday 09-28: sphincterotomy and stone extraction through the same endoscope; home on Tuesday 09-29. The ERCP has an EK-2C package (P701360, group C), so the inpatient bill is the package (C000646)."
+  - "The sphincterotomy and the stone extraction have no EK-2C code: each is billed beside the package at 30 % of its EK-2B puan, the package's puan being the higher (SUT 2.2.2.B(3)(c), C000672). The Fatura İnceleme rule GENEL CERRAHİ-1 says the same for these codes billed together."
+  - "Bed, companion, sedation, labs and drugs are inside the package (C000685 to C000699), so none is listed."
+
+showcase:
+  story: S50
+  sex: F
+  age: 47
+  admit: "2026-09-27"
+  nights: 2

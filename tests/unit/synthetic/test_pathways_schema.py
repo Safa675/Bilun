@@ -31,6 +31,7 @@ from scripts.synthetic.pathways.checks import (
     check_package_mode,
     check_package_window,
     check_pins,
+    check_sessions,
     identity_problems,
     in_force,
     norm,
@@ -45,6 +46,7 @@ from scripts.synthetic.pathways.schema import (
     CHECKS,
     DrugFlags,
     MaterialFlags,
+    Pathway,
     ProcedureFlags,
     pin_problems,
 )
@@ -1720,3 +1722,51 @@ def test_the_walker_visit_of_patient_5_is_another_branch_than_its_orthopaedic_pa
     visits = [load_pathway(_DIR / f"{pid}.yaml") for pid in ("femoral_neck_fracture_physiatry_first_walker", S44)]
     assert {p.department.specialty for p in stays} == {"2600"} and all(p.billing_mode == "package" for p in stays)
     assert [(p.claim_type, p.department.specialty) for p in visits] == [("poliklinik", "1800"), ("poliklinik", "1073")]
+
+
+# --- S49 to S51 (WP17): the EK-2B lines of an EK-2C package's session (slice G15) ---------------------------------
+
+S50 = "retained_common_bile_duct_stone_ercp_package"  # the ERCP package P701360, sphincterotomy and stone extraction beside it
+
+
+def _s50(edit) -> Pathway:
+    raw = _raw(S50)
+    edit(raw)
+    return load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S50}.yaml")
+
+
+def test_a_package_bill_holds_the_ek2b_lines_of_its_package_session_and_no_other(catalogs: Catalogs) -> None:
+    """`package.mode` lets an EK-2B procedure or operation with the role same_incision or separate_incision stand on a
+    package bill when a package line leads the session (SUT 2.2.2.B(3)(c), (ç): C000672, C000673; slice G15); without
+    that role, or with no package leading the session, the line stays refused."""
+    pathway = load_pathway(_DIR / f"{S50}.yaml")
+    assert check_package_mode(pathway, catalogs) == [] and run_all(pathway, catalogs) == []
+    for edit in (
+        lambda r: line(r, "sphincterotomy").update(session_role="separate_incision"),  # C000673: 50 %
+        lambda r: line(r, "sphincterotomy").update(kind="operation"),  # an EK-2B operation of the session
+    ):
+        assert check_package_mode(_s50(edit), catalogs) == []
+    refused = {
+        "no role": lambda r: line(r, "sphincterotomy").pop("session_role"),
+        "a second primary": lambda r: line(r, "sphincterotomy").update(session_role="primary"),
+    }
+    for label, edit in refused.items():
+        assert {p.where for p in check_package_mode(_s50(edit), catalogs)} == {"procedures[sphincterotomy]"}, label
+    no_lead = _s50(lambda r: line(r, "ercp_package").pop("session_role"))
+    assert {p.where for p in check_package_mode(no_lead, catalogs)} == {
+        "procedures[sphincterotomy]",
+        "procedures[stone_extraction]",
+    }
+
+
+def test_the_session_order_reads_the_puan_of_each_code_from_its_own_list(catalogs: Catalogs) -> None:
+    """A session of a package bill may hold EK-2B lines beside the package: the package's puan comes from EK-2C, the
+    other lines' from EK-2B (slice G15). An EK-2B line above the package puts the package below another operation, and
+    the whole session goes itemized (C000672)."""
+    pathway = load_pathway(_DIR / f"{S50}.yaml")
+    assert check_sessions(pathway, catalogs) == []  # P701360 16491.75 leads 701370 and 701440
+    name = catalogs.ek2b.filter(pl.col("code") == "701017")["name"].unique().item()  # puan 17535.52 since 2026-01-01
+    (problem,) = check_sessions(_s50(lambda r: line(r, "stone_extraction").update(code="701017", name=name)), catalogs)
+    assert problem.check == "session.order" and problem.where == "procedures[ercp_package, sphincterotomy, stone_extraction]"
+    assert "the primary P701360 (puan 16491.75) is below another operation (17535.52)" in problem.message
+

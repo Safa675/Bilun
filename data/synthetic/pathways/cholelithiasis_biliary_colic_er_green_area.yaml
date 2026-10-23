@@ -1,0 +1,52 @@
+# The ER visit three weeks before the cholecystectomy of story S8: a biliary colic seen in the green area, billed as the
+# green-area examination alone; a clean bill.
+# Showcase story S49 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F8 b2): bill 2 of the patient of S8, a precursor.
+# Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
+schema_version: 1
+id: cholelithiasis_biliary_colic_er_green_area
+title: "Biliary colic seen in the ER green area, billed as the green-area examination"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S49 is the woman of story S8 (the same patient, the ER visit before her stay); K80.2 has no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 75
+    basis: judgment
+    source: "Story S49 patient is 47, like story S8; the bounds are those of story S8 (the author's judgment)."
+
+diagnoses:
+  - icd10: K80.2
+    name: "SAFRA KESESİ TAŞI, KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the colic of the gallstones S8 operates three weeks later: a known cause, so not R10.1, which the engine refuses as principal (#304)."
+
+procedures:
+  - id: green_area_exam
+    kind: exam
+    code: "520021"
+    name: "Yeşil alan muayenesi"
+    days: admit
+    basis: sut
+    source: "C000370, C000438 (SUT 1.8.5.(5), 1.9.3.(a)): the ER services of a green-area visit are billed to the Kurum under the name of 520021."
+
+notes:
+  - "The visit is on Tuesday 2026-08-25, three weeks before the admission of story S8 (2026-09-15): the earlier ER takip of the patient. It has the later claim id and, on its earlier date, the earlier row."
+  - "Triage put the colic in the green area (not urgent): the pain has settled, the vitals are normal. The green-area examination 520021 is a flat-fee visit; El Kitabı Tablo 15 #7 bills no test or imaging beside it, so the clean bill bills the examination alone."
+  - "The diagnosis is the one of story S8 (K80.2), so the patient's list of diagnoses does not grow with this bill."
+
+showcase:
+  story: S49
+  sex: F
+  age: 47
+  admit: "2026-08-25"

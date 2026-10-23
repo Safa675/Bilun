@@ -138,10 +138,10 @@ def test_every_story_has_its_golden_file_and_no_other_file_is_there(variant: str
 
 
 def test_a_story_has_a_faulty_golden_exactly_when_it_has_a_fault() -> None:
-    """A bill without a fault (S23, S32, S36, S37, S39, S41, S43, S45, S48) is a clean golden only; every other story's fault record has its faulty golden."""
+    """A bill without a fault (S23, S32, S36, S37, S39, S41, S43, S45, S48, S51) is a clean golden only; every other story's fault record has its faulty golden."""
     with_fault = {record["story"] for record in cohort.load_registry()["faults"]}
     assert set(FAULTY_STORIES) == with_fault
-    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48"]
+    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51"]
     assert FAULTY_STORIES == [s for s in STORIES if s not in clean_only_stories()]  # stories.py order
 
 
@@ -418,7 +418,7 @@ def test_the_s39_story_bill_is_a_clean_bill_with_no_faulty_variant() -> None:
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
-    assert out["clean_only"] == ["S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48"] and out["in_stories"] is True and out["refused"] is True
+    assert out["clean_only"] == ["S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51"] and out["in_stories"] is True and out["refused"] is True
     assert out["history"] == ["C-SH04", "C-SH39"]  # the stay of the same patient is its history
     assert out["codes"] == ["520030", "905671", "L104780", "L107010", "L107020"]  # the visit, the culture, three tests
 
@@ -471,3 +471,23 @@ def test_the_proof_script_proves_every_story_with_a_fault_and_reads_the_row_of_s
     assert out["fires"] == 0.0 and out["silent"] is None and out["other_rule"] is None  # a row without money is the finding
     # S38's neuromonitoring review has no money either: its row is the finding, and the neuronavigation one is not it
     assert out["addon"] == 0.0 and out["addon_silent"] is None and out["addon_other"] is None
+
+
+def test_the_proof_script_reads_the_rows_of_s49_and_s50_that_their_results_hold() -> None:
+    """`prove.direct` on the story bills of S49 (the green-area extras) and S50 (the S8 branch: the EK-2B procedures beside
+    the ERCP package) gives the rows of `results/S49.json` and `results/S50.json`, clean and faulty."""
+    code = (
+        "import json, sys\n"
+        "sys.path.insert(0, 'reports/synthetic-data/2026-10-15-showcase-proofs')\n"
+        "import prove, stories\n"
+        "out = {s: {v: prove.direct(s, stories.STORIES[s](v).ctx()) for v in ('clean', 'faulty')} for s in ('S49', 'S50')}\n"
+        "print(json.dumps(out, default=str))\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
+    out = json.loads(done.stdout.strip().splitlines()[-1])
+    for story in ("S49", "S50"):
+        committed = json.loads((REPO / f"reports/synthetic-data/2026-10-15-showcase-proofs/results/{story}.json").read_text(encoding="utf-8"))
+        for variant in ("clean", "faulty"):
+            assert out[story][variant] == committed[variant]["direct"], (story, variant)
+    assert [r["rule_id"] for r in out["S50"]["faulty"]] == ["2.2.2.B.c", "2.2.2.B.c"] and out["S50"]["clean"] == []
+    assert [r["procedure_code"] for r in out["S49"]["faulty"]] == ["803602", "L101850"] and out["S49"]["clean"] == []

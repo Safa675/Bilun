@@ -83,6 +83,9 @@ _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, in
     (3, 2): (142, 82, 74, 97, 158, 74.5),  # S36, the pre-operative visit two weeks before the decompression of S3
     (3, 3): (136, 78, 78, 97, 158, 73.0),  # S37, the control twelve days after the discharge
     (3, 4): (140, 80, 76, 96, 158, 73.0),  # S38, the admission for the instrumentation
+    (8, 2): (132, 82, 88, 98, 163, 80.0),  # S49, the green-area ER visit three weeks before the cholecystectomy of S8
+    (8, 3): (128, 78, 96, 97, 163, 77.5),  # S50, readmitted with colic and jaundice from a common-bile-duct stone
+    (8, 4): (122, 76, 76, 98, 163, 77.5),  # S51, the gastroenterology control the day after the discharge
 }
 
 
@@ -155,7 +158,7 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
         v = pat.vitals
         assert (v.sbp, v.dbp, v.pulse, v.spo2, v.height_cm, v.weight_kg) == expected_tuple
         assert isinstance(v, Vitals)
-        if pno in {5, 8, 11, 13, 14}:  # packages (S5, S8, S20, S17's dialysis sessions) and S12 (adult ranges only) bill no lab line
+        if pno in {5, 8, 11, 13, 14}:  # first bills: packages (S5, S8, S20, S17's dialysis sessions) and S12 (adult ranges only) bill no lab line
             assert pat.labs is None
         else:
             assert pat.labs is not None
@@ -196,7 +199,8 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
                 "L107020|MCH": "iron_deficiency",
             }
         else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode), S32-S34 none;
-            # S41 and S36 bill a blood count and a creatinine drawn in their normal ranges (no state), S42-S44, S37 and S38 none
+            # S41 and S36 bill a blood count and a creatinine drawn in their normal ranges (no state), S42-S44, S37 and S38 none;
+            # S49's faulty bill bills a CRP drawn in its normal range (no state), S50 and S51 none
             assert entry.labs is None
 
 
@@ -307,12 +311,13 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # (S4, its control S39 and its second visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two
     # (S10, the ER visit, and S22, the admission); patient 6 three (S6, its neurology control S45 and its physiatry
     # visit S46); patient 5 five (S5, its ER visit S41, its readmission S42, its physiatry visit S43 and its geriatrics
-    # visit S44); patient 3 four (S3, its pre-operative visit S36, its control S37 and its instrumentation S38)
+    # visit S44); patient 3 four (S3, its pre-operative visit S36, its control S37 and its instrumentation S38); patient 8
+    # four (S8, its ER visit S49, its ERCP admission S50 and its control S51)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 3: [1, 2, 3, 4], 4: [1, 2, 3], 5: [1, 2, 3, 4, 5], 6: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 3: [1, 2, 3, 4], 4: [1, 2, 3], 5: [1, 2, 3, 4, 5], 6: [1, 2, 3], 7: [1, 2, 3], 8: [1, 2, 3, 4], 10: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
 
 
 @pytest.mark.parametrize(

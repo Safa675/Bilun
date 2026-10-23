@@ -323,6 +323,20 @@ def test_session_roles_set_the_billed_ratio_from_the_sut_table(role, package_rat
     assert (ratios["615931"], ratios["603840"]) == ("1.0000", itemized_ratio)
 
 
+@pytest.mark.parametrize(("role", "ratio"), [("same_incision", "0.3000"), ("separate_incision", "0.5000")])
+def test_an_ek2b_line_beside_a_package_takes_the_share_of_an_ek2b_line(role: str, ratio: str) -> None:
+    """S50 (slice G15): the ERCP package leads its session in full; the sphincterotomy and the stone extraction through it
+    are billed beside the package at the share of an EK-2B line (SUT 2.2.2.B(3)(c), (ç): C000672 30 %, C000673 50 %),
+    not at the 25 % of a second package (C000670)."""
+
+    def edit(raw: dict) -> None:
+        for ident in ("sphincterotomy", "stone_extraction"):
+            _line(raw, ident)["session_role"] = role
+
+    ratios = {p["code"]: p["billed_ratio"] for p in expand(_variant("retained_common_bile_duct_stone_ercp_package", edit))["procedures"]}
+    assert ratios == {"P701360": "1.0000", "701370": ratio, "701440": ratio}
+
+
 def test_an_er_only_pathway_has_no_admission_or_discharge() -> None:
     def edit(raw: dict) -> None:
         raw.update(claim_type="acil", billing_mode="itemized")

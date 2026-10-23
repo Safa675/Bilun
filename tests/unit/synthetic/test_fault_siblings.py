@@ -36,6 +36,7 @@ S40_SIBLING = "pyelonephritis_dementia_second_visit_exam_billed"
 S20_SIBLING = "umbilical_hernia_day_case_itemized"
 S46_SIBLING = "parkinson_physiatry_visit_second_walker_billed"
 S38_SIBLING = "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
+S49_SIBLING = "cholelithiasis_biliary_colic_er_green_area_tests_billed"
 
 
 @pytest.fixture(scope="module")
@@ -96,7 +97,7 @@ def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_wo
     tmp_path: Path,
 ) -> None:
     assert [p.stem for p in _GOLDEN_SIBLINGS] == [
-        S1_SIBLING, S10_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
+        S1_SIBLING, S49_SIBLING, S10_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
     ]  # fmt: skip  # by file name
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
@@ -162,6 +163,43 @@ def test_the_s38_instrumentation_is_not_on_the_ek2d4_list_and_the_seven_segment_
     target, sibling = _s38_pair()
     assert {line.code for line in target.procedures} == {"P614040"}
     assert {line.code for line in sibling.procedures} == {"P614040", "P703365"}
+
+
+# --- S49: the ER visit of the patient of S8. The sibling is the target pathway with a CRP and an ultrasound billed ---
+
+
+def _s49_pair():
+    target = load_pathway(_PATHWAYS_DIR / "cholelithiasis_biliary_colic_er_green_area.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S49_SIBLING}.yaml")
+    return target, sibling
+
+
+def test_the_s49_sibling_bills_a_crp_and_an_ultrasound_beside_the_green_area_examination_and_nothing_else_differs() -> None:
+    """The twin differs by two lines, not by a date: the green-area examination 520021 is a flat-fee visit (El Kitabı
+    Tablo 15 #7), so the clean bill is the examination alone."""
+    target, sibling = _s49_pair()
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "materials", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    assert [p for p in clean["procedures"] if p not in faulty["procedures"]] == []
+    extra = [p for p in faulty["procedures"] if p not in clean["procedures"]]
+    assert [(p["code"], p["date"], p["qty"], p["billed_ratio"]) for p in extra] == [
+        ("803602", "2026-08-25", 1, "1.0000"),
+        ("L101850", "2026-08-25", 1, "1.0000"),
+    ]  # the ultrasound and the CRP of the visit, on its day
+    assert [p["code"] for p in clean["procedures"]] == ["520021"]
+
+
+def test_the_s49_pathways_are_one_er_visit_three_weeks_before_the_stay_of_s8() -> None:
+    target, sibling = _s49_pair()
+    stay = load_pathway(_PATHWAYS_DIR / "cholelithiasis_umbilical_hernia_two_packages.yaml")
+    for visit in (target, sibling):
+        assert visit.claim_type == "acil" and visit.nights is None  # a visit: one date, no stay
+        assert visit.showcase.story == "S49" and stay.showcase.story == "S8"
+        assert (visit.showcase.sex, visit.showcase.age) == (stay.showcase.sex, stay.showcase.age) == ("F", 47)
+        assert (date.fromisoformat(stay.showcase.admit) - date.fromisoformat(visit.showcase.admit)).days == 21
+    # the visit's diagnosis is coded on the stay too, so the patient's union list does not grow with this bill
+    assert {d.icd10 for d in target.diagnoses} <= {d.icd10 for d in stay.diagnoses}
 
 
 # --- S14: the ward bill after the ICU bill. The sibling is the target pathway with the transfer day billed ---

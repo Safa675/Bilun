@@ -1,0 +1,337 @@
+{
+ "story": "S50",
+ "clean": {
+  "total_billed": "10357.30",
+  "rows": [
+   {
+    "date": "2026-09-28",
+    "code": "P701360",
+    "name": "Endoskopik retrograd kolanjiyopankreotografi",
+    "qty": 1,
+    "unit": "9779.61",
+    "billed": "9779.61",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-28",
+    "code": "701370",
+    "name": "Endoskopik sifinkterotomi",
+    "qty": 1,
+    "unit": "1079.36",
+    "billed": "323.81",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-28",
+    "code": "701440",
+    "name": "Koledokdan balon veya basketle taş çıkarılması",
+    "qty": 1,
+    "unit": "846.28",
+    "billed": "253.88",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K80.5",
+    true
+   ],
+   [
+    "K91.5",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 5
+  }
+ },
+ "faulty": {
+  "total_billed": "11705.25",
+  "rows": [
+   {
+    "date": "2026-09-28",
+    "code": "P701360",
+    "name": "Endoskopik retrograd kolanjiyopankreotografi",
+    "qty": 1,
+    "unit": "9779.61",
+    "billed": "9779.61",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-28",
+    "code": "701370",
+    "name": "Endoskopik sifinkterotomi",
+    "qty": 1,
+    "unit": "1079.36",
+    "billed": "1079.36",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-28",
+    "code": "701440",
+    "name": "Koledokdan balon veya basketle taş çıkarılması",
+    "qty": 1,
+    "unit": "846.28",
+    "billed": "846.28",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K80.5",
+    true
+   ],
+   [
+    "K91.5",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "2.2.2.B.c",
+    "procedure_code": "701370",
+    "primary_procedure_code": "P701360",
+    "expected_point_factor": 0.3,
+    "expected_billed_try": 323.81,
+    "actual_billed_try": 1079.36,
+    "risk_amount_try": 755.55,
+    "sut_section": "2.2.2.B.c",
+    "detail": "Secondary procedure billed at full rate; SUT §2.2.2.B.c requires 30% point factor in same session."
+   },
+   {
+    "rule_id": "2.2.2.B.c",
+    "procedure_code": "701440",
+    "primary_procedure_code": "P701360",
+    "expected_point_factor": 0.3,
+    "expected_billed_try": 253.88,
+    "actual_billed_try": 846.28,
+    "risk_amount_try": 592.4,
+    "sut_section": "2.2.2.B.c",
+    "detail": "Secondary procedure billed at full rate; SUT §2.2.2.B.c requires 30% point factor in same session."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 962.82,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 5
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "audit_exposure",
+   "session_point_violation",
+   "701370",
+   539.68
+  ],
+  [
+   "action",
+   "audit_exposure",
+   "session_point_violation",
+   "701440",
+   423.14
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   962.82
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "action",
+   "session_uplift",
+   "session_underbilling",
+   "701370",
+   0.0
+  ],
+  [
+   "action",
+   "session_uplift",
+   "session_underbilling",
+   "701440",
+   0.0
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "action",
+   "session_uplift",
+   "session_underbilling",
+   "701370",
+   0.0
+  ],
+  [
+   "action",
+   "session_uplift",
+   "session_underbilling",
+   "701440",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "GENEL CERRAHİ-1.endoskopik_bilier_islemler_bundling",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "GENEL CERRAHİ-1.endoskopik_bilier_islemler_bundling",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

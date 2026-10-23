@@ -1092,7 +1092,7 @@ def _mismatch_at(ana: pl.DataFrame, patient_no: int) -> str:
     ("mutate", "message"),
     [
         pytest.param(
-            # patient 8 has no lab rows, so the missing row is the first thing the check meets
+            # patient 8's first bill (S8, a package) has no lab rows, so the missing row is the first thing the check meets
             lambda ana, claims: (ana.filter(pl.col("SQ_EPISODE") != _episode_of(8)), claims),
             lambda ana: rf"anadata_clean\.parquet row count \({cohort.claim_count() - 1}\) does not equal claim_headers\.parquet row count \({cohort.claim_count()}\)",
             id="a_row_is_missing",

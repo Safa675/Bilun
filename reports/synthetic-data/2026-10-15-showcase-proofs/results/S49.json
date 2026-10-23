@@ -1,0 +1,220 @@
+{
+ "story": "S49",
+ "clean": {
+  "total_billed": "108.26",
+  "rows": [
+   {
+    "date": "2026-08-25",
+    "code": "520021",
+    "name": "Yeşil alan muayenesi",
+    "qty": 1,
+    "unit": "108.26",
+    "billed": "108.26",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K80.2",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 0
+  }
+ },
+ "faulty": {
+  "total_billed": "180.68",
+  "rows": [
+   {
+    "date": "2026-08-25",
+    "code": "520021",
+    "name": "Yeşil alan muayenesi",
+    "qty": 1,
+    "unit": "108.26",
+    "billed": "108.26",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-25",
+    "code": "803602",
+    "name": "Ultrason, genel",
+    "qty": 1,
+    "unit": "55.96",
+    "billed": "55.96",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-08-25",
+    "code": "L101850",
+    "name": "C reaktif protein (CRP)",
+    "qty": 1,
+    "unit": "16.46",
+    "billed": "16.46",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "K80.2",
+    true
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "tablo15_7_green_area_bundled_extra",
+    "procedure_code": "803602",
+    "green_area_exam_code": "520021",
+    "severity": "warning",
+    "sut_section_id": "tablo_15",
+    "detail": "Yeşil alan muayenesi (520021) ile aynı takipte ek işlem faturalandırılmış: 803602 (Ultrason, genel) — yeşil alan vizitinde ayrı faturalama yapılamaz (Tablo 15 #7)."
+   },
+   {
+    "rule_id": "tablo15_7_green_area_bundled_extra",
+    "procedure_code": "L101850",
+    "green_area_exam_code": "520021",
+    "severity": "warning",
+    "sut_section_id": "tablo_15",
+    "detail": "Yeşil alan muayenesi (520021) ile aynı takipte ek işlem faturalandırılmış: L101850 (C reaktif protein (CRP)) — yeşil alan vizitinde ayrı faturalama yapılamaz (Tablo 15 #7)."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 0.0,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 0
+  }
+ },
+ "only_in_faulty": [
+  [
+   "wavea",
+   "claim_reviews",
+   "tablo15_7_green_area_bundled_extra",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "tablo15_7_green_area_bundled_extra",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_7_green_area_bundled_extra",
+   "803602",
+   0.0
+  ],
+  [
+   "validate",
+   null,
+   "tablo15_7_green_area_bundled_extra",
+   "L101850",
+   0.0
+  ]
+ ],
+ "only_in_clean": [],
+ "noise_in_clean": [
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-13.gecmis_muayene_sorgu",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

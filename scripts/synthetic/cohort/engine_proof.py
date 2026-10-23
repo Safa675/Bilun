@@ -47,6 +47,7 @@ from src.bilun.domain.prose_rules.blood_component_isbt128 import (
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_drug_quantity_error,
     detect_duplicate_exam_10day,
+    detect_green_area_bundled_extras,
     detect_vakabasi_wrong_method,
 )
 from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
@@ -127,6 +128,16 @@ KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
             "No claim line carries the incision, so the report prices the uplift at the strictest "
             "reading (same incision, 30%) and the record carries the whole gap to the clean bill, "
             "which bills the separate-incision rate (50%)."
+        ),
+        issue="Safa675/Bilun#311 item 6",
+    ),
+    "S50": ReportDivergence(
+        report_amount_try="962.82",
+        record_amount_try="1347.95",
+        reason=(
+            "No claim line carries the incision, so the report shows the lenient separate-incision reading "
+            "(50 %, C000673) of the two EK-2B procedures beside the ERCP package and the record carries the "
+            "same-incision 30 % reading (C000672), the gap to the clean bill."
         ),
         issue="Safa675/Bilun#311 item 6",
     ),
@@ -644,6 +655,29 @@ def _direct_rows_s8(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s50(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # the same detector as S8: here the EK-2B procedures of the session beside an EK-2C package (C000672)
+    return _direct_rows_s8(ctx)
+
+
+def _direct_rows_s49(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # the extras billed beside the flat-fee green-area examination: one review per extra line (El Kitabı Tablo 15 #7)
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "green_area_exam_code",
+                "severity",
+                "sut_section_id",
+                "detail",
+            ),
+        )
+        for o in detect_green_area_bundled_extras(list(ctx.claims), list(ctx.procedure_lines))
+    ]
+
+
 def _direct_rows_s9(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     claim = ctx.claims[0]
     # As recommend_session_uplift_from_claims calls it: no claim line carries the incision.
@@ -966,6 +1000,8 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S44": _direct_rows_s44,
     "S46": _direct_rows_s46,
     "S47": _direct_rows_s47,
+    "S49": _direct_rows_s49,
+    "S50": _direct_rows_s50,
 }
 
 
