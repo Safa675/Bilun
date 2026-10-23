@@ -397,3 +397,105 @@ def test_branch_and_predicate_observer_are_not_run_twice(monkeypatch) -> None:
     adapter.evaluate_fatura_inceleme("P1", ctx)
     assert branch_calls == 182
     assert condition_calls == expected
+
+
+# EI-24: five authored rules name no billed evidence. Four have no condition at all and GÖĞÜS-6 only the
+# inpatient setting, so their branch and setting matched every bill of the department.
+_ASPIRATION = "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon"
+_NO_EVIDENCE = (
+    _ASPIRATION,
+    "KARDİYOLOJİ-4.ayni_seans_periferik_anjiografi",
+    "KARDİYOLOJİ-9.kalp_kat_sirasi_cerrahi_sadece_cerrahi",
+    "KALP_VE_DAMAR_CERRAHİSİ-1.kag_sonrasi_cabg_islem_yok_kesinti",
+    "KALP_VE_DAMAR_CERRAHİSİ-4.ek2b_lazer_tedavi_kdc_odenmez",
+)
+_NO_EVIDENCE_REASON = "authored_condition_names_no_billed_evidence"
+
+
+def _bill(department: str, claim_type: str = "ayakta", code: str = "520030") -> PatientClaimContext:
+    ctx = _single()
+    return replace(
+        ctx,
+        claims=(replace(ctx.claims[0], department=department, claim_type=claim_type),),
+        procedure_lines=(_procedure("C1", "L1", code),),
+    )
+
+
+def test_exactly_five_authored_rules_name_no_billed_evidence() -> None:
+    rules = legacy.load_fatura_inceleme_rules()["rules"]
+    conditions = {r["rule_id"]: r["condition"] for r in rules}
+    assert {rule_id: conditions[rule_id] for rule_id in _NO_EVIDENCE} == {
+        _ASPIRATION: {"care_setting": "inpatient"},
+        **{rule_id: {} for rule_id in _NO_EVIDENCE[1:]},
+    }
+    assert sorted(r for r, c in conditions.items() if not legacy._names_billed_evidence(c)) == sorted(_NO_EVIDENCE)
+    # a setting beside a billed fact, or a fact of another kind, names evidence
+    assert legacy._names_billed_evidence({"care_setting": "inpatient", "procedure_code_any": ["608320"]})
+    assert legacy._names_billed_evidence({"payment_method_path": "itemized"})
+    assert not legacy._names_billed_evidence({})
+
+
+@pytest.mark.parametrize(
+    "department,claim_type,rule_ids",
+    [
+        ("Göğüs Hastalıkları", "yatis", (_ASPIRATION,)),
+        ("Kardiyoloji", "ayakta", _NO_EVIDENCE[1:3]),
+        ("Kardiyoloji", "yatis", _NO_EVIDENCE[1:3]),
+        ("KVC", "yatis", _NO_EVIDENCE[3:]),
+    ],
+)
+def test_a_rule_naming_no_billed_evidence_is_unavailable_on_every_bill_of_its_branch(
+    department, claim_type, rule_ids
+) -> None:
+    """The bill bills an examination and nothing the guideline's case is about: no match, no review, no raw row."""
+    ctx = _bill(department, claim_type)
+    batch = adapter.evaluate_fatura_inceleme("P1", ctx)
+    for rule_id in rule_ids:
+        row = _row(batch, rule_id)
+        assert row.evaluation_status == "unavailable"
+        assert row.decision is None
+        assert row.reason == _NO_EVIDENCE_REASON
+        assert row.missing_inputs == []
+        assert not any(r.rule_id == rule_id for r in batch.matches)
+        assert not any(r.rule_id == rule_id for r in batch.legacy_rows)
+    assert not {v["rule_id"] for v in legacy.check_fatura_inceleme_for_context(ctx)} & set(_NO_EVIDENCE)
+    _assert_raw_parity(batch, ctx)
+
+
+def test_a_rule_keyed_on_a_billed_code_still_matches_beside_one_that_names_none() -> None:
+    batch = adapter.evaluate_fatura_inceleme("P1", _single())  # Kardiyoloji, 800800 billed
+    assert _row(batch, _CARDIOLOGY).decision == "matched"
+    assert any(r.rule_id == _CARDIOLOGY for r in batch.matches)
+    assert _row(batch, _NO_EVIDENCE[1]).reason == _NO_EVIDENCE_REASON
+    assert {r.rule_id for r in batch.legacy_rows} & set(_NO_EVIDENCE) == set()
+    _assert_raw_parity(batch, _single())
+
+
+@pytest.mark.parametrize(
+    "department,claim_type,rule_id",
+    [
+        ("Göğüs Hastalıkları", "ayakta", _ASPIRATION),  # the setting excludes it: an outpatient bill
+        ("Dermatoloji", "yatis", _ASPIRATION),  # the branch excludes it
+        ("Dermatoloji", "ayakta", _NO_EVIDENCE[1]),
+        ("Göğüs Hastalıkları", "yatis", _NO_EVIDENCE[3]),
+    ],
+)
+def test_a_rule_naming_no_billed_evidence_stays_a_clean_negative_outside_its_branch_or_setting(
+    department, claim_type, rule_id
+) -> None:
+    ctx = _bill(department, claim_type)
+    batch = adapter.evaluate_fatura_inceleme("P1", ctx)
+    row = _row(batch, rule_id)
+    assert (row.evaluation_status, row.decision) == ("evaluated", "not_matched")
+    _assert_raw_parity(batch, ctx)
+
+
+def test_a_rule_naming_no_billed_evidence_gives_no_raw_row_behind_an_uncertain_branch_either() -> None:
+    """The first procedure's specialty matches the branch, the department does not: still no raw row."""
+    ctx = _bill("", "ayakta")
+    ctx = replace(ctx, procedure_lines=(replace(ctx.procedure_lines[0], procedure_specialty_code="Kardiyoloji"),))
+    batch = adapter.evaluate_fatura_inceleme("P1", ctx)
+    row = _row(batch, _NO_EVIDENCE[1])
+    assert (row.evaluation_status, row.reason) == ("unavailable", "first_procedure_specialty_proxy")
+    assert not {r.rule_id for r in batch.legacy_rows} & set(_NO_EVIDENCE)
+    _assert_raw_parity(batch, ctx)

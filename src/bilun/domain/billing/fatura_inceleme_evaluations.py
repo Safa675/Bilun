@@ -3,6 +3,10 @@
 The 91 authored rows are not SUT rules. Their raw matches retain legacy output;
 typed matches are review-only candidates, with SUT taking precedence and no
 confirmed violation, entitlement, or monetary amount inferred from a match.
+A rule whose condition names no billed evidence (only its branch and care
+setting, EI-24) is ``unavailable`` with the reason
+``authored_condition_names_no_billed_evidence`` wherever its branch and
+setting match, and has no raw row; outside them it stays ``not_matched``.
 """
 
 from __future__ import annotations
@@ -26,6 +30,7 @@ from src.bilun.domain.prose_rules.fatura_inceleme import (
     _BRANCH_KEYWORDS,
     _branch_matches,
     _build_fatura_inceleme_context,
+    _names_billed_evidence,
     _violation_from_rule,
     load_fatura_inceleme_rules,
 )
@@ -172,6 +177,10 @@ def _metadata_gate(
     if gate is not None:
         return gate
     if predicate_decision == "matched":
+        # The branch and the setting match every bill of the department; no
+        # billed line says the guideline's case happened (EI-24).
+        if not _names_billed_evidence(condition):
+            return "unavailable", [], "authored_condition_names_no_billed_evidence"
         # Official guideline ORTAK-10 requires the diagnosis condition;
         # ORTAK-16 requires evidence of actual IV-drug use. The authored
         # predicates omit those decisive facts. Keep their raw rows only.
@@ -282,7 +291,8 @@ def evaluate_fatura_inceleme(
                     reason=reason,
                 )
             )
-            if predicate_decision == "matched":
+            # The legacy matcher gives no row for a rule naming no billed evidence.
+            if predicate_decision == "matched" and _names_billed_evidence(rule["condition"]):
                 raw = _violation_from_rule(rule, _FAMILY)
                 legacy_rows.append(
                     LegacyFaturaIncelemeRow(patient_id, claim_id, rule_id, _FAMILY, raw)

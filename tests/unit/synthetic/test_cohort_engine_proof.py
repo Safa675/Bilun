@@ -900,6 +900,28 @@ def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_is_silent(
     assert [c.claim_id for c in b.faulty_ctx.claims] == ["F-SENTETIK-HASTA-0005-003"]
 
 
+def test_s33_has_no_deep_tracheal_aspiration_review_when_no_aspiration_is_billed(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    """GÖĞÜS HASTALIKLARI-6 (no deep tracheal aspiration for a ward patient) names no billed evidence: its only condition
+    is the inpatient setting, so it matched every inpatient bill of the branch (EI-24). S33 bills no aspiration: the
+    rule is not evaluable there, with its reason, and gives no review, no match and no raw validation row."""
+    b = story_bundles["S33"]
+    rule = "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon"
+    assert [(c.department, c.claim_type) for c in b.faulty_ctx.claims] == [("Göğüs Hastalıkları", "yatis")]
+    for report, violations in ((b.faulty_report, b.faulty_violations), (b.clean_report, b.clean_violations)):
+        (evaluation,) = [r for r in report.wavea_evidence_detail["evaluations"] if r["rule_id"] == rule]
+        assert (evaluation["claim_id"], evaluation["evaluation_status"], evaluation["decision"]) == (
+            b.record.claim_id, "unavailable", None
+        )
+        assert evaluation["reason"] == "authored_condition_names_no_billed_evidence"
+        assert rule not in {r.get("rule_id") for r in report.claim_reviews.rows}
+        assert rule not in {v.get("rule_id") for v in violations}
+    assert not any(rule in str(signal) for signal in (*b.f_counter, *b.c_counter))
+    # the drug count is still the bill's one review of its own fault
+    assert b.f_counter[("wavea", "claim_reviews", "tablo15_11_drug_quantity_error", "", 0.0)] == 1
+
+
 def test_s38_finds_the_neuromonitoring_beside_an_instrumentation_that_is_not_on_the_ek2d4_list(
     story_bundles: dict[str, _StoryBundle],
 ) -> None:

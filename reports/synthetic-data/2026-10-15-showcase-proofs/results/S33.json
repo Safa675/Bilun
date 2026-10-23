@@ -291,13 +291,6 @@
   [
    "wavea",
    "claim_reviews",
-   "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon",
-   "",
-   0.0
-  ],
-  [
-   "wavea",
-   "claim_reviews",
    "ORTAK-13.gecmis_muayene_sorgu",
    "",
    0.0
@@ -404,13 +397,6 @@
    "validate",
    "fatura_inceleme_prose",
    "ORTAK-28.ek2b_tetkik_gereksiz",
-   "",
-   0.0
-  ],
-  [
-   "validate",
-   "fatura_inceleme_prose",
-   "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon",
    "",
    0.0
   ],

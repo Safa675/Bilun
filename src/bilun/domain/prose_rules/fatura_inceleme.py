@@ -17,6 +17,13 @@ The motor follows the gap_closing.py 4-layer pattern:
 The ``branch`` field on each rule gates firing: ORTAK rules (branch=null)
 fire for all claims; branch-specific rules only fire when the claim's
 department/provider_specialty matches the rule's branch.
+
+A rule whose condition names no billed evidence (no procedure, drug or
+material code, no line attribute: nothing but the care setting) never fires.
+Its branch and setting would match every bill of the department, although no
+billed line says the guideline's case happened (EI-24: KARDİYOLOJİ-4/-9 and
+KALP VE DAMAR CERRAHİSİ-1/-4 have no condition, GÖĞÜS HASTALIKLARI-6 only the
+inpatient setting). The typed adapter reports them as unavailable.
 """
 
 from __future__ import annotations
@@ -65,6 +72,11 @@ _BRANCH_KEYWORDS: dict[str, list[str]] = {
 }
 
 
+# Condition keys that say in which setting a claim was billed, not what was
+# billed. A condition holding no other key names no billed evidence.
+_SETTING_KEYS = frozenset({"care_setting"})
+
+
 @lru_cache(maxsize=1)
 def load_fatura_inceleme_rules() -> dict[str, Any]:
     with _RULES_PATH.open(encoding="utf-8") as handle:
@@ -86,6 +98,11 @@ def _branch_matches(rule_branch: str | None, context: dict[str, Any]) -> bool:
     specialty = (context.get("provider_specialty") or "").lower()
     combined = f"{dept} {specialty}"
     return any(kw in combined for kw in keywords)
+
+
+def _names_billed_evidence(condition: dict[str, Any]) -> bool:
+    """True when the condition reads a billed fact beyond the care setting."""
+    return bool(set(condition) - _SETTING_KEYS)
 
 
 def _violation_from_rule(
@@ -133,6 +150,9 @@ def _evaluate(ruleset: dict[str, Any], context: dict[str, Any]) -> list[dict[str
         if not _branch_matches(rule.get("branch"), context):
             continue
         condition = rule.get("condition") or {}
+        # The branch and the setting alone are no evidence of the case (EI-24).
+        if not _names_billed_evidence(condition):
+            continue
         if not _condition_matches(condition, context):
             continue
         violations.append(_violation_from_rule(rule, ruleset_id))
