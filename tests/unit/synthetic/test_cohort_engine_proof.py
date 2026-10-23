@@ -417,6 +417,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             "S6": "drug_indication",
             "S17": "prescriber_specialty_mismatch",
             "S18": "missing_board_report",
+            "S21": "radiation_oncology.course_cap.rt_planning",
             "S24": "blood_component_isbt128_barcode",
             "S33": "tablo15_11_drug_quantity_error",
             "S34": "tablo15_3_vakabasi_wrong_method",
@@ -959,6 +960,30 @@ def test_s15_proof_rows_read_the_newborn_bed_of_the_patients_other_bills(story_b
     (row,) = direct_rows("S15", replace(b.faulty_ctx, procedure_lines=lines, patient_history=history))
     assert (row["overlap_date"], row["newborn_bed_codes"]) == ("2026-07-15", ["510070"])
     assert row["newborn_claim_id"] == "F-SENTETIK-HASTA-0011-001"  # the incubator bill of S12
+
+
+def test_s21_proof_rows_are_five_radiotherapy_reviews_without_an_amount(story_bundles: dict[str, _StoryBundle]) -> None:
+    """The radiotherapy rules read one claim as one course and a procedure date as one session: on the course keyed as
+    totals each participant line is a review row, `unavailable` and without an amount (no course or session identity in the
+    model, EI-19), so the report carries no money; the clean course gives no row."""
+    b = story_bundles["S21"]
+    rows = direct_rows("S21", b.faulty_ctx)
+    assert sorted((r["rule_id"], r["procedure_code"], r["billed_quantity"]) for r in rows) == [
+        ("radiation_oncology.course_cap.brachytherapy_design", "800114", 4),
+        ("radiation_oncology.course_cap.brachytherapy_dose", "800260", 4),
+        ("radiation_oncology.course_cap.rt_planning", "800140", 4),
+        ("radiation_oncology.course_cap.rt_planning", "800160", 1),  # the IMRT simulation is a participant of the pair
+        ("radiation_oncology.same_day_collapse.afterloading", "800590", 4),
+        ("radiation_oncology.same_day_collapse.linac_application", "800440", 25),
+    ]
+    assert {r["evaluation_status"] for r in rows} == {"unavailable"}
+    assert [r["risk_amount_try"] for r in rows] == [None] * len(rows)
+    assert direct_rows("S21", b.clean_ctx) == []
+    for report in (b.faulty_report, b.clean_report):
+        assert (report.sgk_uplift_try, report.audit_exposure_try, report.compliance_adjustment_try) == (0.0, 0.0, 0.0)
+    assert b.record.amount_try == "0.00" and b.record.effect_kind == "compliance_error"
+    target = next(line for line in b.faulty_ctx.procedure_lines if line.procedure_line_id == b.record.line_id)
+    assert (target.procedure_code, target.quantity) == ("800140", 4)
 
 
 def test_s49_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bundles: dict[str, _StoryBundle]) -> None:

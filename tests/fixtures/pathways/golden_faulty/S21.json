@@ -1,0 +1,110 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-07-20",
+      "icd10": "C53.9",
+      "role": "primary"
+    },
+    {
+      "date": "2026-07-20",
+      "icd10": "Z51.0",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-09-10",
+    "claim_start_date": "2026-07-20",
+    "claim_type": "gunubirlik",
+    "department": "Radyasyon Onkolojisi",
+    "discharge_date": null,
+    "primary_icd10": "C53.9"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "800030",
+      "date": "2026-07-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800160",
+      "date": "2026-07-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800280",
+      "date": "2026-07-20",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800110",
+      "date": "2026-07-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800220",
+      "date": "2026-07-24",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800440",
+      "date": "2026-07-27",
+      "flags": {},
+      "qty": 25,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800114",
+      "date": "2026-08-31",
+      "flags": {},
+      "qty": 4,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800140",
+      "date": "2026-08-31",
+      "flags": {},
+      "qty": 4,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800260",
+      "date": "2026-08-31",
+      "flags": {},
+      "qty": 4,
+      "specialty": "3200"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "800590",
+      "date": "2026-08-31",
+      "flags": {},
+      "qty": 4,
+      "specialty": "3200"
+    }
+  ],
+  "story": "S21"
+}

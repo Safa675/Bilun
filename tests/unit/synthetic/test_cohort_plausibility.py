@@ -170,6 +170,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S42": set(),  # the red cells billed in full inside the package: the full price is on the ladder, only the engine (blood_component_partial_bill) sees it
     "S44": set(),  # romosozumab on a report of 12 months: no check reads a drug's report, only the engine (drug_indication) sees it
     "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
+    "S21": set(),  # the radiotherapy course keyed as totals: listed codes at their price, no check reads a course or a session, only the engine (radiation_oncology) sees it
     "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
     "S49": set(),  # the CRP and the ultrasound beside the green-area examination: lines of the sibling pathway, only the engine (tablo15_7) sees it
     "S50": set(),  # the two EK-2B procedures beside the ERCP package in full: the full price is on the ladder, only the engine (drg_unbundling) sees it
@@ -4312,6 +4313,7 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
         ],
         "cholelithiasis_biliary_colic_er_green_area": ["cholelithiasis_biliary_colic_er_green_area_tests_billed"],
         "late_preterm_newborn_cot_ward_stay": ["late_preterm_newborn_cot_ward_stay_standard_bed_billed"],
+        "cervical_cancer_radiotherapy_course": ["cervical_cancer_radiotherapy_course_keyed_as_totals"],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []
@@ -4964,11 +4966,17 @@ def test_the_icd_sex_blocks_agree_with_the_sex_column_and_add_to_it(context) -> 
     assert icd.filter(pl.col("sex").is_not_null() & ~in_a_block).height > 0
 
 
-def test_no_diagnosis_of_the_bills_is_in_a_sex_block(built, twins) -> None:
+def test_the_one_diagnosis_of_the_bills_in_a_sex_block_is_the_cervical_cancer_of_a_woman(built, twins, anadata) -> None:
+    """S21's C53.9 (C51-C58, the female genital organs) is the cohort's one diagnosis in a sex block: on a woman."""
+    (s21,) = cohort.scenario("S21").claim_ids
     for tables in (twins, built.tables):
-        for blocks in ICD_SEX_GATES.values():
+        for sex, blocks in ICD_SEX_GATES.items():
             held = tables[TABLE_DIAGNOSES].filter(_in_blocks(pl.col("icd10_code"), blocks))
-            assert held.height == 0
+            assert list(zip(held["claim_id"], held["icd10_code"], strict=True)) == (
+                [(s21, "C53.9")] if sex == "F" else []
+            )
+    episode = anadata.filter(pl.col("SQ_EPISODE") == s21.replace("F-", "B-", 1))
+    assert episode["CINSIYET"].to_list() == ["K"]
 
 
 # The blocks of the brief written the other way: one prefix for each category (or subcategory), with

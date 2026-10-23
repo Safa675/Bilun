@@ -36,6 +36,7 @@ from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_ca
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
+from src.bilun.domain.prose_rules.radiation_oncology import detect_radiation_oncology_violations
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
@@ -200,6 +201,12 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(o, ("rule_id", "procedure_code", "addon_code", "required_list", "savings_category",
                           "sut_section_id", "detail"))
                 for o in detect_conditional_addon_ek2d_opportunities(claims, procs)]
+    if story == "S21":
+        # the course and day limits of EK-2/B 8.1: one review row per participant line, without an amount (EI-19)
+        return [_keep(o, ("rule_id", "procedure_code", "billed_quantity", "procedure_date", "service_date",
+                          "review_basis", "missing_inputs", "evaluation_status", "billed_amount_try",
+                          "risk_amount_try", "sut_section"))
+                for o in detect_radiation_oncology_violations(claims, procs)]
     if story == "S49":
         # the extras billed beside the flat-fee green-area examination: one review per extra line (El Kitabı Tablo 15 #7)
         return [_keep(o, ("rule_id", "procedure_code", "green_area_exam_code", "severity", "sut_section_id", "detail"))
@@ -289,6 +296,8 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
                 "S34": "tablo15_3_vakabasi_wrong_method", "S38": "conditional_addon_ek2d_neuromonitoring",
                 "S40": "tablo15_2_duplicate_exam_10day", "S49": "tablo15_7_green_area_bundled_extra"}[story]
         return 0.0 if any(r.get("rule_id") == rule for r in rows) else None
+    if story == "S21":  # reviews of the course and day limits without an amount (EI-19): the finding is the rows
+        return 0.0 if any(str(r.get("rule_id")).startswith("radiation_oncology.") for r in rows) else None
     return total("recoverable_gap_try" if story == "S7" else "risk_amount_try")
 
 

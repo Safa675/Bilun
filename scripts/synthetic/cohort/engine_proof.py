@@ -66,6 +66,7 @@ from src.bilun.domain.prose_rules.medula_rejection import detect_medula_rejectio
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
+from src.bilun.domain.prose_rules.radiation_oncology import detect_radiation_oncology_violations
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
@@ -877,6 +878,29 @@ def _direct_rows_s14(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s21(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # the course and day limits of EK-2/B 8.1: one review row per participant line, without an amount (EI-19)
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "billed_quantity",
+                "procedure_date",
+                "service_date",
+                "review_basis",
+                "missing_inputs",
+                "evaluation_status",
+                "billed_amount_try",
+                "risk_amount_try",
+                "sut_section",
+            ),
+        )
+        for o in detect_radiation_oncology_violations(list(ctx.claims), list(ctx.procedure_lines))
+    ]
+
+
 def _direct_rows_s38(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     # neuromonitoring billed beside its operation: payable only when an EK-2/D-4 procedure is on the same bill
     return [
@@ -1019,6 +1043,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S17": _direct_rows_s17,
     "S18": _direct_rows_s18,
     "S20": _direct_rows_s20,
+    "S21": _direct_rows_s21,
     "S22": _direct_rows_s22,
     "S24": _direct_rows_s24,
     "S33": _direct_rows_s33,

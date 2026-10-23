@@ -20,7 +20,7 @@ legacy shim modules.
 
 SUT billing surfaces must be driven by explicit claim lines, not diagnosis-only
 or midpoint estimates. `SUT_DATA_MODE=synthetic_demo` points the demo at
-`data/synthetic/sut/claims` and `data/synthetic/sut/clean` (the 15 patients, 41 bills, of the
+`data/synthetic/sut/claims` and `data/synthetic/sut/clean` (the 16 patients, 42 bills, of the
 v3 showcase cohort; see `data/synthetic/README.md`); calculations are rule-exact
 for those generated claim lines and must be labeled as synthetic demo data.
 
