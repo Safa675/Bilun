@@ -64,7 +64,7 @@ from scripts.synthetic.faults.schema import UseSiblingPathway
 from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.checks import Catalogs, _group_expr
 from scripts.synthetic.pathways.expand import expand
-from scripts.synthetic.pathways.schema import Pins, Problem as _PathwayProblem
+from scripts.synthetic.pathways.schema import BLOOD_PACKAGE_SHARES, Pins, Problem as _PathwayProblem
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -110,7 +110,7 @@ CHECKS: dict[str, str] = {
     "price.material_in_force": "a material not in the EK-3 list of its annex (EK-3/F-1, EK-3/C-2), dated before the list, or not at its price",
     "price.drug_in_force": "a drug line whose barcode has no EK-4A row in force on its day (drug prices are not checked)",
     # money: the arithmetic of the bill
-    "money.line_arithmetic": "a line whose billed amount is not unit price x quantity x 1, 0.5 or 0.25, to the cent",
+    "money.line_arithmetic": "a line whose billed amount is not unit price x quantity x 1, 0.5, 0.25 or a package's blood share, to the cent",
     "money.payable_equals_billed": "a line whose expected payable is not its billed amount, or on a copay-flagged line not billed x (1 - copay_rate)",
     "money.totals": "a claim header whose billed or payable total is not the sum of its procedure, material and drug lines",
     # labels: the answer key and the fault records against the bill (they need the registry)
@@ -303,6 +303,9 @@ EK3_LISTS: dict[str, tuple[str, date]] = {
 # money.line_arithmetic: the multiple-surgery ladder bills the full price, half of it or a quarter of
 # it; a ratio is written as quarters of the full price so that the test stays in whole numbers.
 LADDER_QUARTERS: tuple[int, ...] = (4, 2, 1)
+# A blood component of C000694 on the claim of an EK-2C package is billed apart at a share of its list amount (slice
+# G14, `BLOOD_PACKAGE_SHARES` of the pathway grammar), written in whole percent for the same reason.
+BLOOD_SHARE_PERCENT: dict[str, int] = {code: int(share * 100) for code, share in BLOOD_PACKAGE_SHARES.items()}
 
 # labels.*: the text columns the fault entries of the registry are read into, and the table of each
 # line type of a fault record.
@@ -2006,14 +2009,39 @@ def _priced_where() -> pl.Expr:
 
 
 def check_line_arithmetic(bill: _Bill) -> list[Problem]:
-    """money.line_arithmetic: billed = unit price x quantity x (1, 0.5 or 0.25), to the cent."""
+    """money.line_arithmetic: billed = unit price x quantity x (1, 0.5 or 0.25), to the cent.
+
+    A blood component of C000694 on a package claim may also be billed at its share (`BLOOD_SHARE_PERCENT`, slice
+    G14): the package includes the blood, and the provider bills these components apart at that share of their puan.
+    The full price stays on the ladder, so a component billed in full inside a package (S42's fault) is the engine's
+    to find (`blood_component_partial_bill`), not this check's.
+    """
     unit, billed = _cents(pl.col("unit_price_try")), _cents(pl.col("billed_amount_try"))
     full = unit * pl.col("quantity")
-    # in quarter-cents: the billed amount is within half a cent of one rung (a tie fits either way)
-    fits = pl.any_horizontal(
-        *[(billed * 4 - full * quarters).abs() <= 2 for quarters in LADDER_QUARTERS]
+    # read from the procedure table alone (the money checks open no catalog): a claim with a `paket` line is a package
+    # claim, as the composer files an EK-2C package
+    procedures = bill.table(TABLE_PROCEDURES)
+    package_claims = procedures.filter(pl.col("procedure_category") == "paket").select("claim_id").unique()
+    shares = (
+        procedures.join(package_claims, on="claim_id", how="semi")
+        .filter(pl.col("procedure_code").is_in(list(BLOOD_SHARE_PERCENT)))
+        .select(
+            "claim_id",
+            pl.lit("procedure_claim_lines").alias("table"),
+            pl.col("procedure_line_id").alias("line_id"),
+            pl.col("procedure_code")
+            .replace_strict(BLOOD_SHARE_PERCENT, return_dtype=pl.Int64)
+            .alias("share_percent"),
+        )
     )
-    found = bill.priced.filter(~fits.fill_null(False)).select(
+    priced = bill.priced.join(shares, on=["claim_id", "table", "line_id"], how="left")
+    # in quarter-cents: the billed amount is within half a cent of one rung (a tie fits either way); a share in
+    # hundredths of a cent, within half a cent of the share
+    fits = pl.any_horizontal(
+        *[(billed * 4 - full * quarters).abs() <= 2 for quarters in LADDER_QUARTERS],
+        (billed * 100 - full * pl.col("share_percent")).abs() <= 50,
+    )
+    found = priced.filter(~fits.fill_null(False)).select(
         _priced_where().alias("where"),
         _format(
             "billed {} is not the unit price {} x quantity {} x 1, 0.5 or 0.25 ({}, {} or {})",

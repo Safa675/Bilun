@@ -1,0 +1,77 @@
+# Geriatrics visit of the patient of story S5 for her severe osteoporosis: romosozumab on a health-board report; outpatient, billed itemized.
+# Showcase story S44 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F5 b5): bill 5 of the patient of S5. Every line below is a
+# clean-bill line: the report covers 6 months (SUT 4.2.17.D.(1): 24 weeks). The fault keys it as 12 months (set_flag, slice G9).
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: severe_osteoporosis_geriatrics_romosozumab
+title: "Severe osteoporosis after a hip fracture: geriatrics visit starting romosozumab on a health-board report, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Geriatri"
+  specialty: "1073"                  # EK-2A: Geriatri
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S44 is the woman of story S5 (the same patient); M81.09 is postmenopausal osteoporosis, which a man cannot carry."
+  age:
+    min: 70
+    max: 95
+    basis: sut
+    source: "C006166 (SUT 4.2.17.D.(1)): romosozumab is paid above the age of 65; story S44 patient is 84, like story S5."
+
+diagnoses:
+  - icd10: M81.09
+    name: "POSTMENAPOZAL OSTEOPOROZ, YER TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code of story S5's bill; the rule of SUT 4.2.17.D reads M80-M82. Whether a fragility fracture asks M80.0x instead: geriatrician to confirm."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S5 patient has hypertension (I10 on the bill of story S5); romosozumab is not given after a myocardial infarction or a stroke."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+drugs:
+  - id: romosozumab
+    barcode: "8699862950244"
+    name: "EVENITY 105MG-1,17ML ENJEKSIYONLUK COZELTI ICEREN KULLANIMA HAZIR ENJEKTOR (2 ADET ENJEKTOR)"
+    inn: "Romosozumab"
+    unit: syringe
+    per_box: 2
+    day: admit
+    qty: 2                             # 210 mg once a month as two 105 mg injections: one box, the first month
+    indication: M81.09
+    flags:
+      drug_specialty_board_report_present: true
+      drug_report_duration_months: 6   # the first report covers 24 weeks (SUT 4.2.17.D.(1)); the engine's rule reads 6 months
+      prescriber_specialty: "Geriatri"
+    basis: sut
+    source: "C006166 (SUT 4.2.17.D.(1)): over 65, T-score -3.5 or lower and two or more fractures, on a 24-week board report with a geriatrician."
+
+notes:
+  - "The visit is on Thursday 2026-09-24, five days after the discharge of story S42; geriatrics is another branch than orthopaedics, so no package period of stories S5 or S42 applies (C000714)."
+  - "The health-board report (endocrinology, physical medicine or geriatrics, C006166) states a T-score of -3.5 or lower and two fractures proven on X-ray: the hip fracture of story S5 and a vertebral compression fracture the films show. Neither number is a field of the claim model."
+  - "Continuation after 24 weeks needs a new report of 6 months (C006167) and the whole treatment is at most 12 months; the first report is never 12 months, which is the fault of this bill."
+  - "Open for a geriatrician: whether romosozumab is started three weeks after a hip fracture operation and during the treatment of a prosthesis infection, and its cardiovascular contraindications. Open for the billing officer: whether a romosozumab prescription appears on the hospital's outpatient bill or only on the pharmacy's."
+  - "M81.09 and I10 are diagnoses of story S5, so the patient's list of diagnoses does not grow with this bill. Drug prices enter at 0 TL (no public list price in the repo)."
+
+showcase:
+  story: S44
+  sex: F
+  age: 84
+  admit: "2026-09-24"

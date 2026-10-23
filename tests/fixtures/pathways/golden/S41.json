@@ -1,0 +1,70 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-03",
+      "icd10": "S72.00",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-03",
+      "icd10": "W19",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-09-03",
+    "claim_start_date": "2026-09-03",
+    "claim_type": "acil",
+    "department": "Acil Tıp",
+    "discharge_date": null,
+    "primary_icd10": "S72.00"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520020",
+      "date": "2026-09-03",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "530100",
+      "date": "2026-09-03",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "801880",
+      "date": "2026-09-03",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3300"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L104780",
+      "date": "2026-09-03",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-09-03",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    }
+  ],
+  "story": "S41"
+}

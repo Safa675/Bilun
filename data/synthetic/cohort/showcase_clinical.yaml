@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, patient 6 also has its neurology control S45 and its physiatry visit S46 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2, 15 is S18 with its second bill S24 as encounter_no 2) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, patient 5 also has its ER visit S41, its readmission S42, its physiatry visit S43 and its geriatrics visit S44 as encounter_no 2, 3, 4 and 5, patient 6 also has its neurology control S45 and its physiatry visit S46 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2, 15 is S18 with its second bill S24 as encounter_no 2) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -8,6 +8,7 @@ drug_routes:
     "8699809950696": "Subkütan" # CLEXANE 4000 ANTI-XA IU/0,4 ML kullanıma hazır enjektör
     "8697637690128": "Intravenöz" # NEOFLEKS %0,9 izotonik sodyum klorür PP-torba 1000 ML
     "8699862950046": "Intravenöz" # ARANESP 40 MCG kullanıma hazır dolu enjektör: given through the dialysis line
+    "8699862950244": "Subkütan" # EVENITY 105 MG kullanıma hazır enjektör: romosozumab is injected under the skin
   basis: judgment
   source: "Route of administration of the billed product (a pharmacological property, not patient history); clinician confirms in issue #309."
 patients:
@@ -179,6 +180,54 @@ patients:
       weight_kg: 62.0
     basis: judgment
     source: "Story S5 displaced femoral neck fracture presentation (pain-related systolic elevation in known hypertension); clinician confirms in issue #309."
+
+  - patient_no: 5
+    encounter_no: 2
+    vitals:
+      sbp: 152
+      dbp: 84
+      pulse: 94
+      spo2: 95
+      height_cm: 156
+      weight_kg: 62.0
+    basis: judgment
+    source: "Story S41 ER arrival after the fall, before her admission (pain, known hypertension; tests in normal ranges); clinician confirms in issue #309."
+
+  - patient_no: 5
+    encounter_no: 3
+    vitals:
+      sbp: 104
+      dbp: 62
+      pulse: 108
+      spo2: 94
+      height_cm: 156
+      weight_kg: 60.5
+    basis: judgment
+    source: "Story S42 readmission with an infected hemiarthroplasty (fever, tachycardia, low-normal pressure before the removal); clinician confirms in issue #309."
+
+  - patient_no: 5
+    encounter_no: 4
+    vitals:
+      sbp: 132
+      dbp: 76
+      pulse: 82
+      spo2: 96
+      height_cm: 156
+      weight_kg: 60.0
+    basis: judgment
+    source: "Story S43 physiatry visit three days after the removal of the prosthesis (stable, on oral antibiotics); clinician confirms in issue #309."
+
+  - patient_no: 5
+    encounter_no: 5
+    vitals:
+      sbp: 136
+      dbp: 78
+      pulse: 80
+      spo2: 96
+      height_cm: 156
+      weight_kg: 60.0
+    basis: judgment
+    source: "Story S44 geriatrics visit for severe osteoporosis (stable vitals, known hypertension); clinician confirms in issue #309."
 
   - patient_no: 6
     vitals:

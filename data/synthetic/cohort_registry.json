@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 28,
-    "lab_clean.parquet": 346,
-    "recete_clean.parquet": 24
+    "anadata_clean.parquet": 32,
+    "lab_clean.parquet": 363,
+    "recete_clean.parquet": 25
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "abe54f1f04e3852c6d9c778e00a879cba54d14f7af921ee701a0be889e1ec3f4",
-    "lab_clean.parquet": "833c99b988d2f2ae35182a51dd67bc1ec0472e797a5d045458f4ce1e01707c84",
-    "recete_clean.parquet": "aea25a3658bc4280e0dc3fc5d56720861ed417e15b8920bdcaf28de306209e9d"
+    "anadata_clean.parquet": "7ee1ec037425017098672ca7b815270c6df4e5094aee83b93bc043c256aed046",
+    "lab_clean.parquet": "c6bc2391c50f9d2c51f436d7bd47db7a11fffe0eb235c898b8cf48a131a8a29c",
+    "recete_clean.parquet": "c73f82b66a8e6de6b9bb9e71edd34ad64feaf3846217d37ab8f02b7480fc3131"
   },
   "counts": {
-    "claim_diagnoses.parquet": 68,
-    "claim_headers.parquet": 28,
-    "drug_claim_lines.parquet": 24,
-    "expected_rule_outputs.parquet": 23,
-    "material_claim_lines.parquet": 5,
+    "claim_diagnoses.parquet": 76,
+    "claim_headers.parquet": 32,
+    "drug_claim_lines.parquet": 25,
+    "expected_rule_outputs.parquet": 25,
+    "material_claim_lines.parquet": 6,
     "medula_rejection_events.parquet": 1,
     "patient_copay_profiles.parquet": 15,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 227
+    "procedure_claim_lines.parquet": 237
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -110,6 +110,42 @@
       "pathway_id": "femoral_neck_fracture_cemented_hemiarthroplasty_package",
       "patient_id": "SENTETIK-HASTA-0005",
       "story": "S5",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0005-002",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "femoral_neck_fracture_er_visit",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S41",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0005-003",
+      "fault_id": "F_S42_RED_CELLS_BILLED_IN_FULL_INSIDE_PACKAGE",
+      "is_clean": false,
+      "pathway_id": "infected_hemiarthroplasty_removal_package",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S42",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0005-004",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "femoral_neck_fracture_physiatry_first_walker",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S43",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0005-005",
+      "fault_id": "F_S44_ROMOSOZUMAB_REPORT_OF_TWELVE_MONTHS",
+      "is_clean": false,
+      "pathway_id": "severe_osteoporosis_geriatrics_romosozumab",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S44",
       "tier": "showcase"
     },
     {
@@ -419,6 +455,42 @@
       "patient_id": "SENTETIK-HASTA-0005",
       "story": "S5",
       "sut_section": "3.1.1(2)"
+    },
+    {
+      "amount_try": "5712.20",
+      "billed_clean_try": "10744.69",
+      "billed_faulty_try": "16456.89",
+      "claim_id": "F-SENTETIK-HASTA-0005-003",
+      "effect_kind": "deduction_risk",
+      "engine_rule": "blood_component_partial_bill",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S42_RED_CELLS_BILLED_IN_FULL_INSIDE_PACKAGE",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0005-003-F_S42_RED_CELLS_BILLED_IN_FULL_INSIDE_PACKAGE",
+      "line_id": "ISL-F-SENTETIK-HASTA-0005-003-001",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "infected_hemiarthroplasty_removal_package",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S42",
+      "sut_section": "2.2.2.B-1.e"
+    },
+    {
+      "amount_try": "0.00",
+      "billed_clean_try": "85.73",
+      "billed_faulty_try": "85.73",
+      "claim_id": "F-SENTETIK-HASTA-0005-005",
+      "effect_kind": "compliance_error",
+      "engine_rule": "drug_indication",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S44_ROMOSOZUMAB_REPORT_OF_TWELVE_MONTHS",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0005-005-F_S44_ROMOSOZUMAB_REPORT_OF_TWELVE_MONTHS",
+      "line_id": "ILC-F-SENTETIK-HASTA-0005-005-001",
+      "line_ids": [],
+      "line_type": "ilac",
+      "pathway_id": "severe_osteoporosis_geriatrics_romosozumab",
+      "patient_id": "SENTETIK-HASTA-0005",
+      "story": "S44",
+      "sut_section": "4.2.17.D"
     },
     {
       "amount_try": "0.00",
@@ -822,6 +894,30 @@
       ],
       "patient_id": "SENTETIK-HASTA-0004"
     },
+    "S41": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0005-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0005"
+    },
+    "S42": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0005-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0005"
+    },
+    "S43": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0005-004"
+      ],
+      "patient_id": "SENTETIK-HASTA-0005"
+    },
+    "S44": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0005-005"
+      ],
+      "patient_id": "SENTETIK-HASTA-0005"
+    },
     "S45": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0006-002"
@@ -856,14 +952,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "7befb5742d47e49a233fa43954ecc6e0d8b45cee9a6db19d4a9de3ccded16dce",
-    "claim_headers.parquet": "093bc87232780a81b69fe174676533f13794a766c06329521151372555dcf78a",
-    "drug_claim_lines.parquet": "34e9e7944580a6e8b90ab9284bdc1047bb8f6c93f21d0da30f9075faf924bdce",
-    "expected_rule_outputs.parquet": "b422b9b0f665d7ff580668129fc3fc6c2f3f40a8a69eb7f5dcc75ec8dcfd9bbe",
-    "material_claim_lines.parquet": "7c526570e67ffc6ebc1929bad1ff27253dcddabef931810b66bb9a5b2045c478",
+    "claim_diagnoses.parquet": "15f411adfe8f0575f75a6950cc09a58415b4dbcb0ebd83d1d6c72465c5b62840",
+    "claim_headers.parquet": "7ea8f11058171322a7aeac1c7f81207cd19391e4b409c31c95afdad51c4d0c0d",
+    "drug_claim_lines.parquet": "5fde8f4bc6d100e1119ec2c290130a8da3e51e3ce28e887d8acfea3a6aa78329",
+    "expected_rule_outputs.parquet": "38689329a326c43a22448713f218523b573f72ef2df2574b2793c9a1ee181b7d",
+    "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "1f4c2502821cebcdaf310bba2eb951da90dca2418236e5ff9bbeb1f35eb9f55f",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "f8000102f69b6f3321b7b200f8ad6470387334461eafa060ce3b23b110b8089f"
+    "procedure_claim_lines.parquet": "a9af42cb0cec80e1de6689385b52e6891504f98c7ad1b7cd6c6f83a4e189088c"
   }
 }

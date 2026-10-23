@@ -1286,15 +1286,19 @@ def test_the_committed_clean_tables_raise_no_problem(committed_problems, clean) 
     }
 
 
-def test_patients_5_and_8_are_package_bills_with_no_lab_rows(built, clean) -> None:
+def test_the_package_bills_of_patients_5_and_8_have_no_lab_rows(built, clean) -> None:
+    """S5, S8 and patient 5's readmission S42 are package bills: no billed lab line, no lab row. Patient 5's lab rows
+    are those of its ER visit (S41), the one bill of the patient that bills tests."""
     labs = clean[TABLE_LAB]
-    assert labs.filter(pl.col("HASTA_ID").is_in([PATIENT[5], PATIENT[8]])).height == 0
-    headers = built.tables[TABLE_HEADERS].filter(
-        pl.col("patient_id").is_in([PATIENT[5], PATIENT[8]])
-    )
-    assert headers["package_candidate"].to_list() == [True, True]
+    package_claims = [claim_id(PATIENT[5], 1), claim_id(PATIENT[8], 1), claim_id(PATIENT[5], 3)]
+    headers = built.tables[TABLE_HEADERS].filter(pl.col("claim_id").is_in(package_claims))
+    assert headers["package_candidate"].to_list() == [True, True, True]
     billed = built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_category") == "laboratuvar")
-    assert billed.filter(pl.col("patient_id").is_in([PATIENT[5], PATIENT[8]])).height == 0
+    assert billed.filter(pl.col("claim_id").is_in(package_claims)).height == 0
+    assert labs.filter(pl.col("basvuru_id").is_in([episode_id(PATIENT[n], 1) for n in (5, 8)])).height == 0
+    assert labs.filter(pl.col("HASTA_ID") == PATIENT[8]).height == 0
+    assert set(labs.filter(pl.col("HASTA_ID") == PATIENT[5])["basvuru_id"]) == {episode_id(PATIENT[5], 2)}
+    assert set(billed.filter(pl.col("patient_id") == PATIENT[5])["claim_id"]) == {claim_id(PATIENT[5], 2)}
 
 
 def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_and_s10_add_and_the_count_of_s33(
@@ -1311,7 +1315,7 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_and_s1
     )
     assert only_faulty_drugs.height == 3
     assert set(only_faulty_drugs["patient_id"]) == {PATIENT[1]}
-    assert twins[TABLE_DRUGS].height == 21 and built.tables[TABLE_DRUGS].height == 24
+    assert twins[TABLE_DRUGS].height == 22 and built.tables[TABLE_DRUGS].height == 25  # S44's romosozumab: a flag, not a line
     # S33: the same line, another count
     counts = built.tables[TABLE_DRUGS].join(
         twins[TABLE_DRUGS].select("drug_claim_line_id", pl.col("quantity").alias("twin_quantity")),
@@ -1532,12 +1536,12 @@ def test_every_committed_lab_row_is_looked_at_by_the_row_checks(
 
 
 RECETE_ROW_BREAKS = {
-    # a row without a line and a line without a row, for each of the 24 rows
-    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 24 * 2),
-    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 24),
-    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 23),  # all but the nebule
-    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 23),  # all but the tablet
-    **{f"null_{column}": (REQUIRED, {column: None}, 24) for column in REQUIRED_RECETE_COLUMNS},
+    # a row without a line and a line without a row, for each of the 25 rows
+    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 25 * 2),
+    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 25),
+    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 24),  # all but the nebule
+    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 24),  # all but the tablet
+    **{f"null_{column}": (REQUIRED, {column: None}, 25) for column in REQUIRED_RECETE_COLUMNS},
 }
 
 
@@ -3406,7 +3410,7 @@ def test_without_any_episode_id_in_anadata_the_egfr_relation_is_no_no_op(
     )
     found = data.problems(context, only=EGFR_RELATION)
     assert len(found) == BILLED_LAB_LINES and len({p.where for p in found}) == BILLED_LAB_LINES
-    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 6, 7, 9, 10, 12, 15)}
+    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 5, 6, 7, 9, 10, 12, 15)}
 
 
 # --- the reference read from a file: the variant of a tie goes to the first row of the file ---------------
@@ -3601,7 +3605,7 @@ def test_the_committed_units_fit_their_products_by_the_classes_of_the_review(cle
     assert pairs == [
         ("inhaled", "kutu", 1),
         ("injected", "ampul", 1),
-        ("injected", "enjektör", 5),
+        ("injected", "enjektör", 6),  # S44's romosozumab is the sixth
         ("injected", "flakon", 11),
         ("injected", "kutu", 1),
         ("injected", "torba", 1),

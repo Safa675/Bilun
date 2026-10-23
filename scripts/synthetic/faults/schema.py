@@ -13,6 +13,7 @@ from typing import Annotated, Literal, Self
 from pydantic import (
     Field,
     StrictBool,
+    StrictInt,
     StrictStr,
     StringConstraints,
     field_validator,
@@ -142,13 +143,16 @@ class DropEntry(_Model):
 
 
 class SetFlag(_Model):
-    """Set `flags[flag] = value` on every expanded row of `entry_id` in `section`; an empty text clears the flag."""
+    """Set `flags[flag] = value` on every expanded row of `entry_id` in `section`; an empty text clears the flag.
+
+    A value is a yes/no, a text or a whole number (`drug_report_duration_months`, slice G9: S44's report of 12 months);
+    `fault.flag` holds it to the flag's own type."""
 
     op: Literal["set_flag"]
     section: Literal["procedures", "materials", "drugs"]
     entry_id: Slug
     flag: FlagName
-    value: StrictBool | StrictStr
+    value: StrictBool | StrictInt | StrictStr
 
 
 class DropDiagnosis(_Model):

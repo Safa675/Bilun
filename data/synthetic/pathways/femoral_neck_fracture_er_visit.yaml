@@ -1,0 +1,91 @@
+# The ER visit after the fall of story S5 (femoral neck fracture), billed on its own acil takip; a clean bill.
+# Showcase story S41 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F5 b2): bill 2 of the patient of S5, a precursor. The visit is on
+# the day of S5's admission (2026-09-03), before the inpatient takip opens: the later claim id and, on the same date, the next row.
+# Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
+schema_version: 1
+id: femoral_neck_fracture_er_visit
+title: "Femoral neck fracture after a fall at home: the ER visit before the admission, billed itemized"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S41 is the woman of story S5 (the same patient, the ER visit before her stay); her stay codes M81.09, which a man cannot carry."
+  age:
+    min: 70
+    max: 95
+    basis: judgment
+    source: "Story S41 patient is 84, like story S5; the bounds are those of story S5 (the author's judgment)."
+
+diagnoses:
+  - icd10: S72.00
+    name: "FEMUR BOYUN KIRIĞI, KAPALI"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the pelvis film of the visit shows the femoral neck fracture that story S5 operates on the next day (NICE CG124)."
+  - icd10: W19
+    name: "DÜŞME, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10 Ch. XX: the external cause is coded beside the injury, as on the bill of story S5."
+
+procedures:
+  # --- the ER visit
+  - id: er_exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
+
+  # --- the work-up of a suspected hip fracture before the orthopaedic admission
+  - id: pelvis_xray
+    kind: imaging
+    code: "801880"
+    name: "Pelvis grafisi (Üç yön)"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: guideline
+    source: "NICE CG124 1.2: a hip fracture is confirmed on plain films (AP pelvis and a lateral of the hip) before the operation."
+  - id: ecg
+    kind: procedure
+    code: "530100"
+    name: "Elektrokardiyogram"
+    days: admit
+    basis: guideline
+    source: "AAGBI 2021 hip fracture guideline: a 12-lead ECG before surgery in an older patient; no repeat on the stay of story S5."
+  - id: hemogram
+    kind: lab
+    code: "L107020"
+    name: "Tam Kan Sayımı (Hemogram)"
+    days: admit
+    basis: guideline
+    source: "NICE CG124 and AAGBI 2021: a blood count before a hip fracture operation (a baseline haemoglobin for the blood loss)."
+  - id: creatinine
+    kind: lab
+    code: "L104780"
+    name: "Kreatinin (Serum/Plazma)"
+    days: admit
+    basis: guideline
+    source: "AAGBI 2021 hip fracture guideline: renal function before anaesthesia in an older patient. Clinician to confirm."
+
+notes:
+  - "Story S5's pathway note: the patient reaches the ward from the ER after a fall at home, and that ER visit is billed on its own acil takip; this is that bill."
+  - "The visit is on Thursday 2026-09-03, the admission day of story S5. The package of S5 (P612320) covers what follows the opening of the inpatient takip (C000685), not the ER takip before it: billing officer to confirm."
+  - "The tests are those of the ER work-up; the stay of story S5 bills no test (they are inside its package), so no test repeats within the seven days of the duplicate-test rule."
+  - "The diagnoses are those of story S5 (S72.00, W19), so the patient's list of diagnoses does not grow with this bill."
+
+showcase:
+  story: S41
+  sex: F
+  age: 84
+  admit: "2026-09-03"

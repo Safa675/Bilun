@@ -75,7 +75,7 @@ CHECKS: dict[str, str] = {
     "lab.in_table": "an L-code absent from lab_reference.csv",
     "lab.name": "a lab name that is not the table's catalog_name",
     "specialty.exists": "an EK-2A branch code that does not exist",
-    "package.mode": "a package pathway with a line a package includes (an ICU line too), or the reverse; an ICU package is no surgical package; a drug beside haemodialysis session packages only",
+    "package.mode": "a package pathway with a line a package includes (an ICU line too), or the reverse; an ICU package is no surgical package; a drug beside haemodialysis session packages only; a blood component of C000694 is billed apart at its share",
     "package.window": "a stay that outlasts the package window of its group (an ICU or a haemodialysis session package has no group and no window)",
     "anaesthesia.group": "an anaesthesia group that the operation's puan does not give",
     "anaesthesia.code": "an anaesthesia code that does not belong to its group",
@@ -203,6 +203,20 @@ SessionRole = Literal["primary", "same_incision", "separate_incision"]
 # chapter 7 (an add-on such as the polypectomy of a colonoscopy; `check_procedure_kinds` ties the kind
 # `procedure` to that chapter when it carries a role).
 SESSION_KINDS: tuple[str, ...] = ("package", "operation", "procedure")
+# The share of its list amount a blood component is billed at on the bill of an EK-2C package (slice G14): the package
+# includes the blood (C007927, SUT 4.6.(4)), except these components, which the provider bills apart at a share of
+# their puan (C000694, SUT 2.2.2.B-1.(1).e; C007927). On an itemized bill a blood component is billed in full (EK-2/B,
+# C007926). `expand` bills a line with one of these codes on a package pathway at its share.
+BLOOD_PACKAGE_SHARES: dict[str, Decimal] = {
+    "705371": Decimal("0.36"),
+    "705430": Decimal("0.36"),
+    "705440": Decimal("0.36"),
+    "705372": Decimal("0.24"),
+    "705373": Decimal("0.24"),
+    "705441": Decimal("0.20"),
+    "705442": Decimal("0.28"),
+    "705443": Decimal("0.28"),
+}
 Group = Literal["A1", "A2", "A3", "B", "C", "D", "E"]
 Unit = Literal["box", "vial", "ampoule", "bottle", "bag", "syringe", "tablet", "capsule"]
 

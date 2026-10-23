@@ -402,6 +402,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             "S33": "tablo15_11_drug_quantity_error",
             "S34": "tablo15_3_vakabasi_wrong_method",
             "S40": "tablo15_2_duplicate_exam_10day",
+            "S44": "report_duration_mismatch",
         }[story]
         assert any(marker in t for t in diff_tuples), (
             f"{story}: expected {marker!r} in a tuple of F - C, got {diff_tuples}"
@@ -852,3 +853,35 @@ def test_s22_direct_row_asks_for_30_percent_of_the_omitted_polypectomy_and_the_b
     assert b.f_counter[review] == b.c_counter[review] == 1
     assert {c.claim_id for c in b.faulty_ctx.history.claims} >= {"F-SENTETIK-HASTA-0012-001"}
 
+
+def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_shows_the_known_exposure(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    """Two red-cell units inside the removal package: the faulty bill bills them in full (4462.65 each), the clean one
+    at 36 % (1606.55, C000694). The rule reads 36 % of the line's payable, which the bill sets equal to the billed
+    amount, so the correct bill shows an exposure too (0.64 x 1606.55 a unit, EI-2, Safa675/Bilun#336): the proof
+    compares it as a signal of the clean twin, and the record carries the difference of the totals, 5712.20."""
+    b = story_bundles["S42"]
+    assert b.record.amount_try == "5712.20" and b.record.engine_rule == "blood_component_partial_bill"
+    assert [(r["actual_billed_try"], r["max_billable_try"], r["risk_amount_try"]) for r in b.direct_faulty] == [
+        (4462.65, 1606.55, 2856.1)
+    ] * 2
+    assert [(r["actual_billed_try"], r["max_billable_try"], r["risk_amount_try"]) for r in b.direct_clean] == [
+        (1606.55, 578.36, 1028.19)
+    ] * 2
+    assert (b.faulty_report.audit_exposure_try, b.clean_report.audit_exposure_try) == (5712.2, 2056.38)
+    # the units carry their ISBT 128 numbers on both bills: the ISBT rule is silent, the bill has one planted fault
+    assert not any("isbt128" in str(s) for s in (*b.f_counter, *b.c_counter))
+    # the patient's history holds all five bills: the stay, the ER visit, this one, the walker visit, the geriatrics visit
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {f"F-SENTETIK-HASTA-0005-00{n}" for n in range(1, 6)}
+    assert [c.claim_id for c in b.faulty_ctx.claims] == ["F-SENTETIK-HASTA-0005-003"]
+
+
+def test_s44_finds_the_romosozumab_report_of_twelve_months(story_bundles: dict[str, _StoryBundle]) -> None:
+    b = story_bundles["S44"]
+    rule = "4.2.17.teriparatid_severe_osteoporosis_board"
+    faulty, clean = b.direct_faulty[0], b.direct_clean[0]
+    assert (faulty["selected_rule_id"], faulty["violation_kind"]) == (rule, "report_duration_mismatch")
+    assert faulty["message_tr"] == "Sağlık kurulu rapor süresi 6 ay olmalı; faturada 12 ay (§4.2.17.D)."
+    assert (clean["selected_rule_id"], clean["applicability_status"], clean["violation_kind"]) == (rule, "eligible", None)
+    assert b.record.amount_try == "0.00" and b.faulty_report.audit_exposure_try == 0.0
