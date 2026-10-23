@@ -1,0 +1,67 @@
+# Physiatry visit of the patient of story S5 after the removal of her hip prosthesis, with her first walker; outpatient, billed itemized; a clean bill.
+# Showcase story S43 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F5 b4): bill 4 of the patient of S5. The physiatrist gives the
+# walker (EK-3/C-2 OP1106) on a specialist report; the walker is an EK-3/C-2 device (slice G7b) billed with the examination.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: femoral_neck_fracture_physiatry_first_walker
+title: "Physiatry visit after a hip fracture and the removal of the prosthesis, with a first walker, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Fiziksel Tıp ve Rehabilitasyon"
+  specialty: "1800"                  # EK-2A: Fiziksel Tıp ve Rehabilitasyon
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies; the EK-3/C-2 list is in force from 2026-01-24.
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S43 is the woman of story S5 (the same patient, the next bill); S72.00 has no sex gate, her stay codes M81.09."
+  age:
+    min: 70
+    max: 95
+    basis: judgment
+    source: "Story S43 patient is 84, like story S5; the bounds are those of story S5 (the author's judgment)."
+
+diagnoses:
+  - icd10: S72.00
+    name: "FEMUR BOYUN KIRIĞI, KAPALI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the rehabilitation is for the hip of story S5 (the fracture, now without a prosthesis). A symptom code cannot be the principal one."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+materials:
+  - id: walker
+    code: "OP1106"
+    name: "WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)"
+    annex: EK-3C-2
+    material_type: ortez               # EK-3/C-2 category ALT EKSTREMİTE ORTEZLERİ
+    qty: 1
+    day: admit
+    linked_to: exam
+    flags: {titubb_registered: true, uts_registered: true}
+    basis: sut
+    source: "EK-3/C-2 OP1106 (Yür. 24.01.2026): an aluminium walker on a specialist report of FTR, orthopaedics, geriatrics, neurology or neurosurgery; MIAT 1 year."
+
+notes:
+  - "The visit is on Tuesday 2026-09-22, three days after the discharge of story S42 (2026-09-19). After a resection arthroplasty the patient walks with a walker."
+  - "An orthopaedic control would bill its examination inside the package periods of stories S5 and S42: an outpatient examination of the same branch within 10 days of a package discharge, the end of the group's window counting as the discharge (C000713, C000714). So the demo sends the walker visit to physiatry, another branch; story F1 b3 is the bill that shows that rule (dormant, #337)."
+  - "The walker is the patient's first on the bills of the demo, so its MIAT of 1 year (C002781, SUT 3.1.2.(9)) starts on this day. Story S5 says she walked with a walker before the fracture: the demo assumes that one was not billed to SGK within the last year (billing officer to confirm)."
+  - "The specialist report the walker needs (report type H: uzman hekim raporu) is the physiatrist's, written at this visit; the claim model has no report field for a material."
+  - "No test is billed. S72.00 is a diagnosis of story S5, so the patient's list of diagnoses does not grow with this bill."
+
+showcase:
+  story: S43
+  sex: F
+  age: 84
+  admit: "2026-09-22"

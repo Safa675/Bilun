@@ -50,7 +50,10 @@ from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_vakabasi_wrong_method,
 )
 from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
-from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
+from src.bilun.domain.prose_rules.drg_unbundling import (
+    analyze_claim_unbundling,
+    detect_blood_component_violations,
+)
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
@@ -554,6 +557,10 @@ def _direct_rows_s18(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     return _drug_indication_rows(ctx, "HUMAN ALBUMIN")  # albumin billed without the specialist report
 
 
+def _direct_rows_s44(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    return _drug_indication_rows(ctx, "EVENITY")  # romosozumab on a report of 12 months
+
+
 def _drug_indication_rows(ctx: PatientClaimContext, drug: str) -> list[dict[str, Any]]:
     """The drug-indication rows of the drug lines whose name starts with `drug`, then the bill's findings."""
     claim = ctx.claims[0]
@@ -874,6 +881,26 @@ def _direct_rows_s24(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s42(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # red cells billed apart on a package bill: their share (C000694, C007927) against what the line bills
+    return [
+        _keep(
+            o,
+            (
+                "rule_id",
+                "procedure_code",
+                "allowed_fraction",
+                "max_billable_try",
+                "actual_billed_try",
+                "risk_amount_try",
+                "sut_section",
+                "detail",
+            ),
+        )
+        for o in detect_blood_component_violations(list(ctx.procedure_lines))
+    ]
+
+
 def _direct_rows_s46(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     # a cross-bill rule: the walker of the control S45 is history (ctx.history), the renewal is on this bill
     return [
@@ -910,6 +937,8 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S33": _direct_rows_s33,
     "S34": _direct_rows_s34,
     "S40": _direct_rows_s40,
+    "S42": _direct_rows_s42,
+    "S44": _direct_rows_s44,
     "S46": _direct_rows_s46,
     "S47": _direct_rows_s47,
 }

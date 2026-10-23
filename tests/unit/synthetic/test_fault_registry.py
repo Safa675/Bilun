@@ -303,6 +303,33 @@ PINNED_FINDINGS: dict[
         [],
         ["tablo15_2_duplicate_exam_10day"],
     ),
+    "S42": (
+        "blood_component_partial_bill",
+        "islem",
+        "red_cells_unit_1",
+        "kismi_red",
+        "deduction_risk",
+        ["C000694", "C007927"],
+        "2.2.2.B-1.e",
+        [
+            "src/bilun/domain/prose_rules/drg_unbundling.py:detect_blood_component_violations",
+            "src/bilun/domain/billing/claim_audit_exposure.py:audit_exposure_rows",
+        ],
+        [],
+        ["blood_component_partial_bill"],
+    ),
+    "S44": (
+        "drug_indication",
+        "ilac",
+        "romosozumab",
+        "kismi_red",
+        "compliance_error",
+        ["C006166", "C006167"],
+        "4.2.17.D",
+        ["src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"],
+        [],
+        ["report_duration_mismatch", "4.2.17.teriparatid_severe_osteoporosis_board"],
+    ),
     "S46": (
         "material_miat_interval",
         "malzeme",
@@ -432,7 +459,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S40", "S46"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S40", "S42", "S44", "S46"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:
@@ -661,8 +688,14 @@ CASES: list[Case] = [
     ),
     Case(
         "schema.bad_value",
+        lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"][0].update(value=1.5),
+        label="strict_value_rejects_float",
+    ),
+    Case(
+        # a whole number is a value of its own (S44's report months), so on a yes/no flag it is the flag's type that refuses it
+        "fault.flag",
         lambda r: _fault(r, "F_S5_IMPLANT_UTS_INCOMPLETE")["mutations"][0].update(value=1),
-        label="strict_bool_rejects_int",
+        label="int_on_a_bool_flag",
     ),
     Case(
         "schema.bad_value",
@@ -795,6 +828,14 @@ CASES: list[Case] = [
         lambda r: _fault(r, "F_S3_ANAESTHESIA_LINE_MISSING")["mutations"].append(
             {"op": "set_billed_ratio", "entry_id": "decompression", "billed_ratio": "1.0000"}
         ),
+    ),
+    Case(
+        # the share of red cells inside a package (slice G14) is no ratio of an itemized bill: S24 bills its units in full
+        "fault.billed_ratio_target",
+        lambda r: _fault(r, "F_S24_RED_CELLS_WITHOUT_ISBT128_NUMBERS")["mutations"].append(
+            {"op": "set_billed_ratio", "entry_id": "red_cells_unit_1", "billed_ratio": "0.3600"}
+        ),
+        label="blood_ratio_on_an_itemized_bill",
     ),
     Case(
         "fault.billed_ratio_target",

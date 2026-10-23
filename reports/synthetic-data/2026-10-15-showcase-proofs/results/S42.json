@@ -1,0 +1,371 @@
+{
+ "story": "S42",
+ "clean": {
+  "total_billed": "10744.69",
+  "rows": [
+   {
+    "date": "2026-09-17",
+    "code": "P612500",
+    "name": "Kalçadan hemiartroplasti protezi çıkartılması",
+    "qty": 1,
+    "unit": "7531.59",
+    "billed": "7531.59",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-17",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "1606.55",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-17",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "1606.55",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "T84.5",
+    true
+   ],
+   [
+    "D62",
+    false
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "blood_component_partial_bill",
+    "procedure_code": "705371",
+    "allowed_fraction": 0.36,
+    "max_billable_try": 578.36,
+    "actual_billed_try": 1606.55,
+    "risk_amount_try": 1028.19,
+    "sut_section": "2.2.2.B-1.e",
+    "detail": "Blood component 705371 may only be billed at 36% of points in package context."
+   },
+   {
+    "rule_id": "blood_component_partial_bill",
+    "procedure_code": "705371",
+    "allowed_fraction": 0.36,
+    "max_billable_try": 578.36,
+    "actual_billed_try": 1606.55,
+    "risk_amount_try": 1028.19,
+    "sut_section": "2.2.2.B-1.e",
+    "detail": "Blood component 705371 may only be billed at 36% of points in package context."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 2056.38,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 6
+  }
+ },
+ "faulty": {
+  "total_billed": "16456.89",
+  "rows": [
+   {
+    "date": "2026-09-17",
+    "code": "P612500",
+    "name": "Kalçadan hemiartroplasti protezi çıkartılması",
+    "qty": 1,
+    "unit": "7531.59",
+    "billed": "7531.59",
+    "source": "EK-2C valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-17",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "4462.65",
+    "source": "EK-2B valid_from 2026-07-07"
+   },
+   {
+    "date": "2026-09-17",
+    "code": "705371",
+    "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
+    "qty": 1,
+    "unit": "4462.65",
+    "billed": "4462.65",
+    "source": "EK-2B valid_from 2026-07-07"
+   }
+  ],
+  "diagnoses": [
+   [
+    "T84.5",
+    true
+   ],
+   [
+    "D62",
+    false
+   ],
+   [
+    "I10",
+    false
+   ]
+  ],
+  "performed": [],
+  "direct": [
+   {
+    "rule_id": "blood_component_partial_bill",
+    "procedure_code": "705371",
+    "allowed_fraction": 0.36,
+    "max_billable_try": 1606.55,
+    "actual_billed_try": 4462.65,
+    "risk_amount_try": 2856.1,
+    "sut_section": "2.2.2.B-1.e",
+    "detail": "Blood component 705371 may only be billed at 36% of points in package context."
+   },
+   {
+    "rule_id": "blood_component_partial_bill",
+    "procedure_code": "705371",
+    "allowed_fraction": 0.36,
+    "max_billable_try": 1606.55,
+    "actual_billed_try": 4462.65,
+    "risk_amount_try": 2856.1,
+    "sut_section": "2.2.2.B-1.e",
+    "detail": "Blood component 705371 may only be billed at 36% of points in package context."
+   }
+  ],
+  "report": {
+   "sgk_uplift_try": 0.0,
+   "audit_exposure_try": 5712.2,
+   "capture_gap_try": 0,
+   "compliance_adjustment_try": 0.0,
+   "action_count": 6
+  }
+ },
+ "only_in_faulty": [
+  [
+   "action",
+   "audit_exposure",
+   "blood_component_partial_bill",
+   "705371",
+   2856.1
+  ],
+  [
+   "action",
+   "audit_exposure",
+   "blood_component_partial_bill",
+   "705371",
+   2856.1
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   5712.2
+  ]
+ ],
+ "only_in_clean": [
+  [
+   "action",
+   "audit_exposure",
+   "blood_component_partial_bill",
+   "705371",
+   1028.19
+  ],
+  [
+   "action",
+   "audit_exposure",
+   "blood_component_partial_bill",
+   "705371",
+   1028.19
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   2056.38
+  ]
+ ],
+ "noise_in_clean": [
+  [
+   "action",
+   "audit_exposure",
+   "blood_component_partial_bill",
+   "705371",
+   1028.19
+  ],
+  [
+   "action",
+   "audit_exposure",
+   "blood_component_partial_bill",
+   "705371",
+   1028.19
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "documentation_requirement",
+   "",
+   0.0
+  ],
+  [
+   "scalar",
+   "audit_exposure_try",
+   "",
+   "",
+   2056.38
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_advisories",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_misc",
+   "1.9.1.(1).extra_fee_permissible_scope",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "gap_closing_treatment_2",
+   "2.2.2.B.(1).diagnosis_based_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-8.paket_islem_ilac_malzeme",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-14.onkolojik_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-28.ek2b_tetkik_gereksiz",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.1.B-1.a",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "payment_method_traceability",
+   "2.2.2.(1).package",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "treatment_pricing_2_4",
+   "2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay",
+   "",
+   0.0
+  ]
+ ]
+}

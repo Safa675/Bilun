@@ -25,6 +25,7 @@ import yaml
 from .loader import PATHWAYS_DIR, PathwayLoadError, load_pathway
 from .schema import (
     BED_KINDS,
+    BLOOD_PACKAGE_SHARES,
     ICU_KINDS,
     Pathway,
     Pins,
@@ -458,6 +459,9 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     A bill of haemodialysis session packages only (P704230, P704210) may hold drug lines: the session
     price includes the tests, the drugs of a complication of the session, heparin and the day bed
     (C000969, C004117), not an erythropoiesis-stimulating agent, which is billed apart (SUT 4.2.9.A-1).
+    A blood component of C000694 (red cells 705371 and the others of `BLOOD_PACKAGE_SHARES`) is inside the package
+    too, but the provider bills it apart at a share of its puan (SUT 2.2.2.B-1.(1).e, 4.6.(4): C000694, C007927), so a
+    package bill may hold it as a line of kind procedure; `expand` bills it at that share (slice G14).
     """
     if pathway.billing_mode == "itemized":
         return [
@@ -473,7 +477,7 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     return [
         Problem("package.mode", f"procedures[{p.id}]", f"a {p.kind} line is {why}")
         for p in pathway.procedures
-        if p.kind != "package"
+        if p.kind != "package" and not (p.kind == "procedure" and p.code in BLOOD_PACKAGE_SHARES)
     ] + [
         Problem("package.mode", f"drugs[{d.id}]", f"drugs are {why}")
         for d in pathway.drugs

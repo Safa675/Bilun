@@ -513,13 +513,17 @@ class TestClaimStrategySut:
 
     def test_spot_check_showcase_package_bill_has_no_price_comparison(self) -> None:
         """Golden check on S5, the cemented hemiarthroplasty billed as its package: a mandated
-        package that is billed correctly is confirmed in plain words, with no price comparison."""
-        from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
+        package that is billed correctly is confirmed in plain words, with no price comparison.
+
+        Read at bill level: patient 5 has a second package bill since WP15 (the removal P612500 of
+        its readmission, S42), so the patient holds two package lines; S5's bill holds one."""
+        from src.bilun.domain.claims import build_bill_claim_context, load_sut_claim_dataset
 
         role = cohort.role("showcase_S5")
         dataset = load_sut_claim_dataset()
-        ctx = build_patient_claim_context(role.patient_id, dataset)
+        ctx = build_bill_claim_context(role.patient_id, role.claim_id, dataset)
         assert ctx is not None
+        assert [claim.claim_id for claim in ctx.claims] == [role.claim_id]
         # The premise: one package line, so the package total is that line's billed amount.
         package_lines = [line for line in ctx.procedure_lines if line.procedure_category == "paket"]
         assert len(package_lines) == 1

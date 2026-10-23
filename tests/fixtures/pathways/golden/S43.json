@@ -1,0 +1,50 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-22",
+      "icd10": "S72.00",
+      "role": "primary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-09-22",
+    "claim_start_date": "2026-09-22",
+    "claim_type": "poliklinik",
+    "department": "Fiziksel Tıp ve Rehabilitasyon",
+    "discharge_date": null,
+    "primary_icd10": "S72.00"
+  },
+  "materials": [
+    {
+      "annex": "EK-3C-2",
+      "billed_ratio": "1.0000",
+      "code": "OP1106",
+      "date": "2026-09-22",
+      "flags": {
+        "titubb_registered": true,
+        "uts_registered": true
+      },
+      "linked_procedure": {
+        "code": "520030",
+        "date": "2026-09-22"
+      },
+      "material_type": "ortez",
+      "qty": 1
+    }
+  ],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-09-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1800"
+    }
+  ],
+  "story": "S43"
+}

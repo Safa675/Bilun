@@ -164,7 +164,9 @@ def test_the_demo_patients_list_all_their_diagnoses() -> None:
     # J44.1), then the others: the readmission adds the acute respiratory failure J96.0
     assert got["SENTETIK-HASTA-0002"] == ["J44.0", "J44.1", "I10", "J18.9", "J96.0"]
     assert got["SENTETIK-HASTA-0004"] == ["N10", "F05.1", "G30.1", "I10"]
-    assert got["SENTETIK-HASTA-0005"] == ["S72.00", "I10", "M81.09", "W19"]
+    # the principal codes of the five bills first (the stay, its ER visit S41 and the walker visit S43, S72.00; the
+    # readmission S42, T84.5; the geriatrics visit S44, M81.09), then the others: the readmission brings D62
+    assert got["SENTETIK-HASTA-0005"] == ["M81.09", "S72.00", "T84.5", "D62", "I10", "W19"]
     # the principal codes of the three bills first (the stay J69.0; the neurology control S45 and the physiatry visit S46,
     # G20), then the others: the visits bring G20, which the stay of S6 does not code (its fault)
     assert got["SENTETIK-HASTA-0006"] == ["G20", "J69.0", "I10", "R13"]

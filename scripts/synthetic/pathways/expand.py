@@ -1,9 +1,9 @@
 """Expand a pathway with its pins into one clean bill, in the golden format (format_version 1).
 
 Pure and deterministic: no catalog, no price, no randomness, no I/O. The result lists line
-identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio; a procedure
-line with a patient share also a `copay_rate`, "0.20"; the flags of a line are the ones its entry sets,
-slice G5a for procedures), plus pathway line annotations when
+identities only (codes, dates, quantities, specialties, links, flags and a billed_ratio, the session share or, on a
+package bill, a blood component's share, slice G14; a procedure line with a patient share also a `copay_rate`,
+"0.20"; the flags of a line are the ones its entry sets, slice G5a for procedures), plus pathway line annotations when
 `annotate=True`; the golden files in tests/fixtures/pathways/golden/ are the contract the default
 (`annotate=False`) expansion must reproduce.
 """
@@ -13,7 +13,17 @@ from __future__ import annotations
 from datetime import date, timedelta
 from decimal import Decimal
 
-from .schema import Drug, Pathway, Pins, anchors_for, included, last_day, pin_problems, resolve_days
+from .schema import (
+    BLOOD_PACKAGE_SHARES,
+    Drug,
+    Pathway,
+    Pins,
+    anchors_for,
+    included,
+    last_day,
+    pin_problems,
+    resolve_days,
+)
 
 FORMAT_VERSION = 1
 
@@ -39,8 +49,16 @@ class ExpandError(ValueError):
     """The pins do not fit the pathway, or the pathway has a dangling reference."""
 
 
-def _ratio(pathway: Pathway, role: str | None) -> str:
-    return format(SESSION_RATIOS[pathway.billing_mode][role or "primary"], ".4f")
+def _ratio(pathway: Pathway, line) -> str:
+    """The share of its list amount a procedure line is billed at: its session role's, or on a package bill the share
+    of a blood component (`BLOOD_PACKAGE_SHARES`, C000694 and C007927; slice G14)."""
+    if (
+        line.session_role is None
+        and pathway.billing_mode == "package"
+        and line.code in BLOOD_PACKAGE_SHARES
+    ):
+        return format(BLOOD_PACKAGE_SHARES[line.code], ".4f")
+    return format(SESSION_RATIOS[pathway.billing_mode][line.session_role or "primary"], ".4f")
 
 
 def _copay(line) -> dict[str, str]:
@@ -100,7 +118,7 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
             "date": when,
             "qty": line.qty,
             "specialty": spec(line),
-            "billed_ratio": _ratio(pathway, line.session_role),
+            "billed_ratio": _ratio(pathway, line),
             **_copay(line),
             "flags": line.flags.model_dump(exclude_none=True),
             **(

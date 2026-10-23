@@ -1,4 +1,4 @@
-"""Twenty-six showcase stories: clean bill + one injected fault each, except S23, S32, S39 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18 and S24 on 2026-10-22).
+"""Thirty-two showcase stories: clean bill + one injected fault each, except S23, S32, S39, S41, S43, S45 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -22,8 +22,8 @@ from harness import Bill, D, money
 from src.bilun.domain.claims.models import MedulaRejectionEvent
 
 # EK-2A branch codes (data/gazette/curated/ek2a_outpatient_visits.parquet)
-ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI, FTR = (
-    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062", "1800")
+ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI, FTR, GERIATRI = (
+    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062", "1800", "1073")
 
 # EK-4A barcodes (data/gazette/curated/ek4a_history.parquet; ingredient from the drug crosswalk)
 IESEF = "8699508270224"       # IESEF 1 G IV (seftriakson), 1 vial
@@ -40,6 +40,7 @@ PKMERZ = "8699708690525"      # PK-MERZ IV INF. COZ. 2x500 ML (amantadin sülfat
 MADOPAR = "8699525094841"     # MADOPAR 125 MG 30 TB (levodopa + benserazid)
 ARANESP = "8699862950046"     # ARANESP 40 MCG 4 KULL HAZ ENJ (darbepoetin alfa), 4 syringes
 ALBUMIN = "8699686690029"     # HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML (20 g), 1 bottle
+EVENITY = "8699862950244"     # EVENITY 105MG-1,17ML, 2 prefilled syringes (romosozumab): 210 mg a month
 
 # EK-3/C-2 codes (data/gazette/curated/ek3c2_materials.parquet, the list in force from 2026-01-24)
 WALKER = "OP1106"             # WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS): an aluminium walker, MIAT 1 year
@@ -709,7 +710,134 @@ def s46(variant: str) -> Bill:
     return b
 
 
-# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S45", "S48")
+# ── S41-S44 ─ the four bills after (and before) the hip-fracture stay of S5 ──
+# The patient of S5 (84 F) has five bills: the ER visit on the day of her admission (S41, a precursor), the stay of
+# S5, a readmission for an infection of the prosthesis (S42), a physiatry visit with a first walker (S43) and a
+# geriatrics visit starting romosozumab (S44). Each bill's proof has the patient's other bills as history, the way
+# the loaded cohort gives them (claim order: S5, S41, S42, S43, S44; faulty where the bill has a fault).
+_ISBT128_S42 = ("=X99992610002100", "=X99992610002200")  # synthetic, one per red-cell unit (not the numbers of S24)
+_BLOOD_SHARE = Decimal("0.36")  # 705371 inside an EK-2C package (C000694, C007927)
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S45": s45, "S46": s46, "S47": s47, "S48": s48}
+
+def _s41() -> Bill:
+    day = D("2026-09-03")
+    b = Bill("SH-05", "C-SH41", "acil", "Acil Tıp", None, None, "S72.00", start=day, end=day)
+    for i, icd in enumerate(("S72.00", "W19")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520020", day, specialty=ACIL)               # the ER examination
+    b.proc("801880", day, specialty=RAD)                # pelvis film: the femoral neck fracture
+    b.proc("530100", day, specialty=ACIL)               # pre-operative ECG
+    b.proc("L107020", day, specialty=ACIL)              # blood count
+    b.proc("L104780", day, specialty=ACIL)              # creatinine
+    return b
+
+
+def _s42(variant: str) -> Bill:
+    a, op, d = D("2026-09-16"), D("2026-09-17"), D("2026-09-19")
+    b = Bill("SH-05", "C-SH42", "yatis", "Ortopedi ve Travmatoloji", a, d, "T84.5", package_candidate=True)
+    b.diag("T84.5", primary=True)
+    b.diag("D62", on=op)
+    b.diag("I10")
+    b.proc("P612500", op, specialty=ORTO)               # removal of the hemiarthroplasty (debridement inside)
+    for number in _ISBT128_S42:                          # one line per red-cell unit, each with its own number
+        lid = b.proc("705371", op, specialty=ORTO, isbt128_barcode=number)
+        if variant == "clean":                           # inside the package: 36 % of the list amount
+            i = [p.procedure_line_id for p in b.procs].index(lid)
+            p = b.procs[i]
+            billed = money(p.unit_price_try * p.quantity * _BLOOD_SHARE)
+            b.procs[i] = replace(p, billed_amount_try=billed, expected_payable_try=billed)
+    return b
+
+
+def _s43() -> Bill:
+    day = D("2026-09-22")
+    b = Bill("SH-05", "C-SH43", "poliklinik", "Fiziksel Tıp ve Rehabilitasyon", None, None, "S72.00", start=day,
+             end=day)
+    b.diag("S72.00", primary=True, on=day)
+    exam = b.proc("520030", day, specialty=FTR)         # the visit
+    b.mat(WALKER, day, proc_line_id=exam, material_type="ortez", specialty_category="EK-3C-2",
+          titubb_registered=True, uts_registered=True)  # her first walker
+    return b
+
+
+def _s44(variant: str) -> Bill:
+    day = D("2026-09-24")
+    b = Bill("SH-05", "C-SH44", "poliklinik", "Geriatri", None, None, "M81.09", start=day, end=day)
+    for i, icd in enumerate(("M81.09", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=GERIATRI)           # the visit
+    b.drug(EVENITY, day, qty=2, unit="syringe", per_box=2, drug_specialty_board_report_present=True,
+           drug_report_duration_months=6 if variant == "clean" else 12, prescriber_specialty="Geriatri")
+    return b
+
+
+def _patient5_history(story: str) -> tuple[Bill, ...]:
+    """The other bills of the patient of S5 as the loaded cohort holds them, in claim order."""
+    bills = {"S5": lambda: s5("faulty"), "S41": _s41, "S42": lambda: _s42("faulty"), "S43": _s43,
+             "S44": lambda: _s44("faulty")}
+    return tuple(build() for name, build in bills.items() if name != story)
+
+
+# ── S41 ─ the ER visit after the fall, on the day of the admission of S5 (a clean bill) ──
+def s41(variant: str) -> Bill:
+    """84 F, the patient of S5: the ER visit after her fall at home, 2026-09-03, on its own acil takip.
+
+    A clean bill (CLEAN_ONLY), a precursor: dated on the admission day of S5, before the inpatient takip opens (the
+    package of S5 covers what follows it, C000685). The examination, the pelvis film, an ECG, a blood count and a
+    creatinine; the stay of S5 bills no test (inside its package), so nothing repeats within seven days.
+    """
+    if variant != "clean":
+        raise ValueError("S41 is a clean bill: it has no faulty variant")
+    b = _s41()
+    b.history = _patient5_history("S41")
+    return b
+
+
+# ── S42 ─ two red-cell units billed in full inside the package of a readmission ──
+def s42(variant: str) -> Bill:
+    """84 F, the patient of S5: readmitted 2026-09-16 to 09-19 with an early infection of her hemiarthroplasty.
+
+    The prosthesis is removed on 09-17 (EK-2C P612500, group C; debridement inside) and two red-cell units are
+    given. Inside an EK-2C package the blood is part of the package, but red cells 705371 are billed apart at 36 %
+    of their puan (C000694, C007927): 1606.55 a unit on the clean bill, the full 4462.65 on the faulty one. Each unit
+    carries its own ISBT 128 number on both bills. The engine reads the share against the payable, which the bill
+    sets equal to the billed amount, so the clean bill also shows an exposure (EI-2, Safa675/Bilun#336).
+    """
+    b = _s42(variant)
+    b.history = _patient5_history("S42")
+    return b
+
+
+# ── S43 ─ the physiatry visit with the patient's first walker (a clean bill) ──
+def s43(variant: str) -> Bill:
+    """84 F, the patient of S5: physiatry visit on 2026-09-22, three days after the removal of her prosthesis.
+
+    A clean bill (CLEAN_ONLY). The physiatrist gives her first walker, EK-3/C-2 OP1106 (MIAT 1 year), billed with the
+    examination. Physiatry, not orthopaedics: an orthopaedic examination would fall inside the package periods of
+    S5 and S42 (C000713, C000714). No test is billed.
+    """
+    if variant != "clean":
+        raise ValueError("S43 is a clean bill: it has no faulty variant")
+    b = _s43()
+    b.history = _patient5_history("S43")
+    return b
+
+
+# ── S44 ─ romosozumab started on a health-board report of 12 months ──
+def s44(variant: str) -> Bill:
+    """84 F, the patient of S5: geriatrics visit on 2026-09-24 for her severe osteoporosis; romosozumab is started.
+
+    SUT 4.2.17.D.(1) (C006166) pays romosozumab over 65 with a T-score of -3.5 or lower and two or more fractures,
+    on a 24-week health-board report with an endocrinologist, physiatrist or geriatrician; the engine's rule reads
+    6 months. The clean bill carries a report of 6 months, the faulty one of 12 (the most a whole course may last,
+    C006167). Drug prices enter at 0 TL: no money.
+    """
+    b = _s44(variant)
+    b.history = _patient5_history("S44")
+    return b
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S41", "S43", "S45", "S48")
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48}

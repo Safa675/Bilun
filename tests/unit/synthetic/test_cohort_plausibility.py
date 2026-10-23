@@ -165,6 +165,8 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S34": set(),  # the control examination flagged as a package component: no check reads a procedure flag, only the engine (tablo15_3) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
     "S46": set(),  # a second walker inside the MIAT of the first: a listed device at its price on the examination, only the engine (MIAT) sees it
+    "S42": set(),  # the red cells billed in full inside the package: the full price is on the ladder, only the engine (blood_component_partial_bill) sees it
+    "S44": set(),  # romosozumab on a report of 12 months: no check reads a drug's report, only the engine (drug_indication) sees it
     "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
     "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
 }
@@ -1052,10 +1054,11 @@ CASES: list[Case] = [
     ),
     Case(
         ARITH,
-        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[5], birth_year=None),
+        # patient 9: one bill, which the program does not extend (patient 5 has five since WP15, one finding each)
+        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[9], birth_year=None),
         label="no_birth_year",
-        at=CLAIM[5],
-        says="TANI_YASI is 84; the claim year is 2026 and the birth year missing, which makes the age unknown",
+        at=CLAIM[9],
+        says="TANI_YASI is 77; the claim year is 2026 and the birth year missing, which makes the age unknown",
     ),
     Case(
         ARITH,
@@ -1824,6 +1827,21 @@ CASES: list[Case] = [
         label="material_quantity_not_billed",
         at=mat_at(3),
         says="billed 985.70 is not the unit price 492.85 x quantity 3",
+    ),
+    Case(
+        "money.line_arithmetic",
+        # the share of red cells inside a package (C000694) on an itemized bill: S24's two units at 36 %
+        lambda d: edit(
+            d,
+            TABLE_PROCEDURES,
+            (pl.col("claim_id") == claim_id(PATIENT[15], 2)) & (pl.col("procedure_code") == "705371"),
+            billed_amount_try=1606.55,
+            expected_payable_try=1606.55,
+        ),
+        label="blood_share_on_an_itemized_bill",
+        at=f"{claim_id(PATIENT[15], 2)} procedure_claim_lines[",
+        says="billed 1606.55 is not the unit price 4462.65 x quantity 1 x 1, 0.5 or 0.25",
+        n=2,
     ),
     Case(
         "money.line_arithmetic",
@@ -4567,6 +4585,29 @@ def test_a_line_bills_the_full_price_or_a_rung_of_the_ladder(
         billed_amount_try=billed,
         expected_payable_try=billed,
     )
+    assert (data.problems(context, only="money.line_arithmetic") == []) is fits
+
+
+# S42's two red-cell units on the removal package of patient 5 (slice G14): the clean twin bills them at 36 % of 4462.65
+S42_PACKAGE_BLOOD = (pl.col("claim_id") == claim_id(PATIENT[5], 3)) & (pl.col("procedure_code") == "705371")
+
+
+@pytest.mark.parametrize(
+    ("billed", "fits"),
+    [
+        (1606.55, True),  # 36 % of 4462.65 = 1606.554: the share, to the cent
+        (1606.56, False),  # more than half a cent off the share
+        (4462.65, True),  # the full price stays on the ladder: billing it in full is S42's fault, the engine's to find
+        (2231.33, True),  # a half (the ladder)
+        (1071.04, False),  # 24 %, the share of another component
+    ],
+)
+def test_a_blood_component_on_a_package_claim_bills_its_share_or_a_rung_of_the_ladder(
+    billed, fits, twins, anadata, context
+) -> None:
+    data = Data(dict(twins), anadata)
+    assert data.tables[TABLE_PROCEDURES].filter(S42_PACKAGE_BLOOD)["billed_amount_try"].to_list() == [1606.55, 1606.55]
+    edit(data, TABLE_PROCEDURES, S42_PACKAGE_BLOOD, billed_amount_try=billed, expected_payable_try=billed)
     assert (data.problems(context, only="money.line_arithmetic") == []) is fits
 
 

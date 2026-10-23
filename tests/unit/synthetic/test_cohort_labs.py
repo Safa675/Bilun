@@ -133,7 +133,8 @@ LAB_ROWS = cohort.counts()["lab_clean.parquet"]  # the size of the table, from t
 # patient 4: the stay's 52 rows and the control's (S39) 27: blood count 15, creatinine 2, urinalysis 10
 # patient 12: the ER bill (S10) 16, a blood count 15 and the manual haematocrit 1, and the admission (S22) 15
 # patient 15: the cirrhosis stay (S18) 16, a blood count 15 and the albumin 1, and the rebleed (S24) 30, two blood counts
-_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 6: 40, 7: 25, 9: 15, 10: 18, 12: 31, 15: 46}
+# patient 5: the ER visit before her stay (S41) 17, a blood count 15 and the creatinine 2 (her two stays are packages)
+_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 17, 4: 79, 5: 17, 6: 40, 7: 25, 9: 15, 10: 18, 12: 31, 15: 46}
 _PATIENTS: dict[int, tuple[str, int]] = {
     1: ("M", 34),
     2: ("M", 81),
@@ -721,12 +722,15 @@ def test_the_lab_codes_of_each_episode_are_the_billed_lab_codes(
     fed = _codes_by_episode(lab, "basvuru_id", "SUB_CODE")
     for episode in episodes:
         assert fed.get(episode, []) == billed.get(episode, []), episode
-    # Patients 5 and 8 are package bills: no billed lab line, so no lab row either.
-    for patient_no in (5, 8):
-        assert _pid(patient_no) not in set(
-            procs.filter(pl.col("procedure_category") == "laboratuvar")["patient_id"]
-        )
-        assert lab.filter(pl.col("HASTA_ID") == _pid(patient_no)).is_empty()
+    # Patient 8 is a package bill: no billed lab line, so no lab row either. Patient 5's two stays are packages too; its
+    # lab rows are those of its ER visit (S41), the one bill of the patient that bills a lab line.
+    assert _pid(8) not in set(procs.filter(pl.col("procedure_category") == "laboratuvar")["patient_id"])
+    assert lab.filter(pl.col("HASTA_ID") == _pid(8)).is_empty()
+    fifth = lab.filter(pl.col("HASTA_ID") == _pid(5))
+    assert set(fifth["basvuru_id"]) == {"B-SENTETIK-HASTA-0005-002"}
+    assert set(procs.filter((pl.col("procedure_category") == "laboratuvar") & (pl.col("patient_id") == _pid(5)))[
+        "claim_id"
+    ]) == {"F-SENTETIK-HASTA-0005-002"}
     assert set(lab["HASTA_ID"]) == {_pid(n) for n in _ROWS_PER_PATIENT}
 
 
@@ -836,11 +840,12 @@ def test_mutation_removing_one_billed_lab_line_gives_exactly_one_gap_with_its_co
             assert gaps[0]["type"] == "lab_performed_not_submitted"
             assert gaps[0]["source"] == "lab"
             checked += 1
-    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 + 2 pairs (patient 4:
+    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 + 2 + 2 pairs (patient 4:
     # 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission; patient 7: the troponin and the
-    # D-dimer of the observation S47; patient 15: the blood count and the albumin of S18, the rebleed bills two counts).
+    # D-dimer of the observation S47; patient 15: the blood count and the albumin of S18, the rebleed bills two counts;
+    # patient 5: the blood count and the creatinine of its ER visit S41).
     once = _billed_lab_lines(procs).group_by("episode_id", "procedure_code").len()
-    assert checked == once.filter(pl.col("len") == 1).height == 45
+    assert checked == once.filter(pl.col("len") == 1).height == 47
 
 
 # --- 3.3 Values ----------------------------------------------------------------------------------
@@ -1036,8 +1041,9 @@ def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
     )
     assert outside.is_empty(), outside.select("HASTA_ID", "key", "sonuc_sayisal", "lo", "hi")
     # 288 numeric rows = 128 derived + 33 drawn from a state + 127 drawn without one (S47 adds a troponin without a
-    # state and a D-dimer with one); patient 15's three blood counts add 12 without a state (WBC, RDW-CV, PLT, MPV).
-    assert rows.height == 139
+    # state and a D-dimer with one); patient 15's three blood counts add 12 without a state (WBC, RDW-CV, PLT, MPV),
+    # patient 5's ER visit (S41) 8: its blood count's 7 (WBC, HGB, MCV, MCH, RDW-CV, PLT, MPV) and its creatinine.
+    assert rows.height == 147
 
 
 def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.DataFrame) -> None:
@@ -1099,7 +1105,7 @@ def test_creatinine_and_egfr_follow_the_age_band_or_the_state_band(
         "HASTA_ID", "k", pl.col("sonuc_sayisal").alias("egfr")
     )
     sets = scr.join(egfr, on=["HASTA_ID", "k"], how="inner")
-    assert sets.height == scr.height == egfr.height == 7  # 2 + 1 + 1 + 1 + 1 + 1 days of creatinine
+    assert sets.height == scr.height == egfr.height == 8  # 2 + 1 + 1 + 1 + 1 + 1 + 1 days of creatinine (+1: S41)
     band_lo = pl.lit(None, dtype=pl.Float64)
     band_hi = pl.lit(None, dtype=pl.Float64)
     for age_lo, age_hi, e_lo, e_hi in reversed(_egfr_age_bands(csv_rows)):
@@ -1109,7 +1115,7 @@ def test_creatinine_and_egfr_follow_the_age_band_or_the_state_band(
     sets = sets.with_columns(band_lo.alias("band_lo"), band_hi.alias("band_hi"))
 
     normal = sets.filter(pl.col("state") == "normal")
-    assert normal.height == 4
+    assert normal.height == 5  # S41's creatinine has no state
     # A normal creatinine stays inside its sex-specific limits and its eGFR inside the age band.
     assert normal.filter((pl.col("scr") < pl.col("lo")) | (pl.col("scr") > pl.col("hi"))).is_empty()
     assert normal.filter(
@@ -1141,7 +1147,7 @@ def test_derived_red_cell_values_lie_inside_the_limits_or_the_own_state_ranges(
         pl.col("parametre").is_in(["RBC (Eritrosit)", "HCT (Hematokrit)", "MCHC"])
     ).join(drivers, on=["HASTA_ID", "k"], how="left")
     inside = (pl.col("sonuc_sayisal") >= pl.col("lo")) & (pl.col("sonuc_sayisal") <= pl.col("hi"))
-    assert derived.height == 51  # patient 15's three blood counts add nine
+    assert derived.height == 54  # patient 15's three blood counts add nine, patient 5's ER blood count (S41) three
     # Without a state on HGB, MCV or MCH, the derived values are normal values.
     assert derived.filter(~pl.col("driver_state") & ~inside).is_empty()
     # With one (patients 3 and 9, postoperative HGB; patients 12 and 15, the HGB of a bleed and the small red cells of
@@ -1212,9 +1218,9 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
         )
     )
     sets = wide.join(wbc_state, on=["HASTA_ID", "k"], how="inner")
-    assert sets.height == 17
+    assert sets.height == 18
     assert sorted(sets["profile"].to_list()) == (
-        ["bacterial_infection"] * 5 + ["normal"] * 11 + ["steroid_use"]  # the blood counts of the control and of patients 12 and 15 have no WBC state
+        ["bacterial_infection"] * 5 + ["normal"] * 12 + ["steroid_use"]  # the blood counts of the control and of patients 5, 12 and 15 have no WBC state
     )
     for profile in _PROFILES:
         group = sets.filter(pl.col("profile") == profile)
@@ -1226,7 +1232,7 @@ def test_the_differential_follows_the_profile_of_the_wbc_state(annotated: pl.Dat
     normal = hemogram.filter(pl.col("parametre").is_in(list(_DIFFERENTIAL))).join(
         wbc_state.filter(pl.col("profile") == "normal"), on=["HASTA_ID", "k"], how="inner"
     )
-    assert normal.height == 55  # patient 15's three counts add fifteen
+    assert normal.height == 60  # patient 15's three counts add fifteen, patient 5's ER count (S41) five
     assert normal.filter(
         (pl.col("sonuc_sayisal") < pl.col("lo")) | (pl.col("sonuc_sayisal") > pl.col("hi"))
     ).is_empty()
@@ -1398,7 +1404,7 @@ def test_r1_the_five_differential_counts_sum_to_the_wbc(
     lab: pl.DataFrame, csv_rows: pl.DataFrame
 ) -> None:
     hemograms = _wide(lab, csv_rows, "L107020")
-    assert hemograms.height == 17
+    assert hemograms.height == 18
     gap = (pl.sum_horizontal(*_DIFFERENTIAL) - pl.col("WBC (Lökosit)")).abs()
     assert hemograms.select(gap.max().alias("gap"))["gap"][0] <= 0.05
 
@@ -1436,7 +1442,7 @@ def test_r3_egfr_is_ckd_epi_2021_of_the_creatinine_age_and_sex(
         (pl.col("CINSIYET") == "K").alias("female"),
     )
     sets = _wide(lab, csv_rows, "L104780").join(people, on="basvuru_id", how="left")
-    assert sets.height == 7
+    assert sets.height == 8
     expected = _ckd_epi_2021(pl.col("Kreatinin"), pl.col("age"), pl.col("female"))
     residual = sets.select((pl.col(_EGFR) - expected).abs().max().alias("r"))["r"][0]
     assert residual <= 0.5 + 1e-9  # the eGFR is printed as an integer
@@ -1559,7 +1565,7 @@ _DRIFT_CASES = [
     pytest.param("L103900", "pO2", 5.0, "R4", "SaO2", id="driver_po2_names_sao2"),
     pytest.param("L104780", "Kreatinin", 0.2, "R3", _EGFR, id="driver_creatinine_names_egfr"),
 ]
-_SETS_PER_CODE = {"L107020": 17, "L104780": 7, "L103900": 2}  # the control of patient 4 and the two bills of patient 12 add one blood count each, patient 15 three
+_SETS_PER_CODE = {"L107020": 18, "L104780": 8, "L103900": 2}  # the control of patient 4 and the two bills of patient 12 add one blood count each, patient 15 three, patient 5's ER visit a blood count and a creatinine
 
 
 @pytest.mark.parametrize(("code", "changed", "change", "rule", "reported"), _DRIFT_CASES)
@@ -2752,7 +2758,7 @@ def test_the_readme_describes_the_rules_the_code_implements() -> None:
         "SHA-256",
         "issue #309",
         "no automatic trend",
-        "Patients 5, 8, 13 and 14 have none because their bills are packages",
+        "Patients 8, 13 and 14 have none because their bills are packages",
         "cultures and serology are not L-codes",
     ):
         assert right in readme, right

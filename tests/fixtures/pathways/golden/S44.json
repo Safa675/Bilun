@@ -1,0 +1,51 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-24",
+      "icd10": "M81.09",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-24",
+      "icd10": "I10",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [
+    {
+      "barcode": "8699862950244",
+      "date": "2026-09-24",
+      "flags": {
+        "drug_report_duration_months": 6,
+        "drug_specialty_board_report_present": true,
+        "prescriber_specialty": "Geriatri"
+      },
+      "per_box": 2,
+      "qty": 2,
+      "unit": "syringe"
+    }
+  ],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-09-24",
+    "claim_start_date": "2026-09-24",
+    "claim_type": "poliklinik",
+    "department": "Geriatri",
+    "discharge_date": null,
+    "primary_icd10": "M81.09"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-09-24",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1073"
+    }
+  ],
+  "story": "S44"
+}

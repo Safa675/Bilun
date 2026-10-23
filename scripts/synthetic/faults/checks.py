@@ -19,7 +19,12 @@ from scripts.synthetic.pathways import Pathway, PathwayLoadError, load_pathway
 from scripts.synthetic.pathways.checks import Catalogs
 from scripts.synthetic.pathways.expand import expand
 from scripts.synthetic.pathways.loader import PATHWAYS_DIR
-from scripts.synthetic.pathways.schema import DrugFlags, MaterialFlags, ProcedureFlags
+from scripts.synthetic.pathways.schema import (
+    BLOOD_PACKAGE_SHARES,
+    DrugFlags,
+    MaterialFlags,
+    ProcedureFlags,
+)
 
 from .loader import REGISTRY_PATH, SIBLINGS_DIR, FaultRegistryLoadError, load_registry
 from .mutate import FaultApplyError, apply_fault
@@ -260,14 +265,18 @@ def check_mutations(registry: FaultRegistry, cat: Catalogs) -> list[Problem]:
                     )
                     continue
                 # A session ratio belongs to a session operation; an ICU package day is billed
-                # at a price shortfall instead, so a line of kind icu_package takes a ratio too.
-                if proc.session_role is None and proc.kind != "icu_package":
+                # at a price shortfall instead, so a line of kind icu_package takes a ratio too, and
+                # so does a blood component a package bill carries at its share (slice G14).
+                blood_share = (
+                    pathway.billing_mode == "package" and proc.code in BLOOD_PACKAGE_SHARES
+                )
+                if proc.session_role is None and proc.kind != "icu_package" and not blood_share:
                     out.append(
                         Problem(
                             "fault.billed_ratio_target",
                             f"{where}.entry_id",
-                            f"procedure {op.entry_id!r} in {pathway.id} has no session_role"
-                            " and is no icu_package line",
+                            f"procedure {op.entry_id!r} in {pathway.id} has no session_role, is no"
+                            " icu_package line and no blood component of a package bill",
                         )
                     )
 

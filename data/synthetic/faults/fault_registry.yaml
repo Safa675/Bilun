@@ -478,6 +478,56 @@ faults:
     basis: sut
     source: "C000573 (SUT 2.2.1.B-1.(2)): a second visit to the same branch within 10 days gets no examination fee; the control of story S39 was a week earlier."
 
+  - fault_id: F_S42_RED_CELLS_BILLED_IN_FULL_INSIDE_PACKAGE
+    story: S42
+    title: "Two red-cell units billed at their full list amount on a package bill instead of 36 % (the readmission of the patient of story S5)"
+    target_pathway: infected_hemiarthroplasty_removal_package
+    mutations:
+      - op: set_billed_ratio
+        entry_id: red_cells_unit_1
+        billed_ratio: "1.0000"
+      - op: set_billed_ratio
+        entry_id: red_cells_unit_2
+        billed_ratio: "1.0000"
+    expected_finding:
+      engine_rule: blood_component_partial_bill
+      detectors:
+        - "src/bilun/domain/prose_rules/drg_unbundling.py:detect_blood_component_violations"
+        - "src/bilun/domain/billing/claim_audit_exposure.py:audit_exposure_rows"
+      sut_section: "2.2.2.B-1.e"
+      sut_clauses: ["C000694", "C007927"]
+      effect_kind: deduction_risk
+      line_type: islem
+      target_entry_id: red_cells_unit_1
+      expected_status: kismi_red
+      finding_ids: ["blood_component_partial_bill"]
+    basis: sut
+    source: "C000694, C007927 (SUT 2.2.2.B-1.(1).e, 4.6.(4)): red cells 705371 used in an EK-2C package are billed apart at 36 % of their puan."
+
+  - fault_id: F_S44_ROMOSOZUMAB_REPORT_OF_TWELVE_MONTHS
+    story: S44
+    title: "Romosozumab started on a health-board report of 12 months where the first report covers 24 weeks (the geriatrics visit of the patient of story S5)"
+    target_pathway: severe_osteoporosis_geriatrics_romosozumab
+    mutations:
+      - op: set_flag
+        section: drugs
+        entry_id: romosozumab
+        flag: drug_report_duration_months
+        value: 12
+    expected_finding:
+      engine_rule: drug_indication
+      detectors:
+        - "src/bilun/domain/prose_rules/drug_indication.py:evaluate_drug_indication_line_detailed"
+      sut_section: "4.2.17.D"
+      sut_clauses: ["C006166", "C006167"]
+      effect_kind: compliance_error
+      line_type: ilac
+      target_entry_id: romosozumab
+      expected_status: kismi_red
+      finding_ids: ["report_duration_mismatch", "4.2.17.teriparatid_severe_osteoporosis_board"]
+    basis: sut
+    source: "C006166, C006167 (SUT 4.2.17.D.(1), (2)): romosozumab starts on a 24-week board report, then 6 months more on a new one; 12 months in all."
+
   - fault_id: F_S46_SECOND_WALKER_INSIDE_MIAT
     story: S46
     title: "A second walker billed 42 days after the first, inside its MIAT of 1 year (the third bill of the patient of story S6)"

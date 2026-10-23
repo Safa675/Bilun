@@ -76,6 +76,10 @@ _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, in
     (12, 2): (118, 70, 92, 98, 176, 83.5),
     (6, 2): (124, 72, 78, 96, 172, 62.0),  # S45, the neurology control three weeks after the aspiration pneumonia
     (6, 3): (128, 74, 76, 97, 172, 63.5),  # S46, the physiatry visit six weeks later
+    (5, 2): (152, 84, 94, 95, 156, 62.0),  # S41, the ER visit on the day of the admission of S5
+    (5, 3): (104, 62, 108, 94, 156, 60.5),  # S42, readmitted with an infected hemiarthroplasty
+    (5, 4): (132, 76, 82, 96, 156, 60.0),  # S43, the physiatry visit with the walker
+    (5, 5): (136, 78, 80, 96, 156, 60.0),  # S44, the geriatrics visit
 }
 
 
@@ -126,7 +130,12 @@ def test_real_clinical_file_loads_and_matches_pinned_vitals_and_recipes() -> Non
     assert routes is not None
     assert routes.basis == "judgment"
     assert "#309" in routes.source
-    assert routes.by_barcode == {"8699809950696": "Subkütan", "8697637690128": "Intravenöz", "8699862950046": "Intravenöz"}
+    assert routes.by_barcode == {
+        "8699809950696": "Subkütan",
+        "8697637690128": "Intravenöz",
+        "8699862950046": "Intravenöz",
+        "8699862950244": "Subkütan",  # S44's romosozumab: EVENITY's name states no route
+    }
 
     by_no = clinical.by_patient_no()
     assert set(by_no) == set(range(1, cohort.patient_count() + 1))
@@ -183,7 +192,8 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
                 "L107020|MCV": "iron_deficiency",
                 "L107020|MCH": "iron_deficiency",
             }
-        else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode), S32-S34 none
+        else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode), S32-S34 none;
+            # S41 bills a blood count and a creatinine drawn in their normal ranges (no state), S42-S44 none
             assert entry.labs is None
 
 
@@ -278,9 +288,9 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     assert check_clinical(clinical, recipes=recipes) == []
     pairs = [(p.patient_no, p.encounter_no) for p in clinical.patients]
     start = pairs.index((4, 1))
-    assert pairs[start : start + 9] == [
-        (4, 1), (4, 2), (4, 3), (4, 4), (5, 1), (6, 1), (6, 2), (6, 3), (7, 1)
-    ]  # fmt: skip  # (4, 2) and (4, 3) are S39 and S40, (4, 4) is the test extra, (6, 2) and (6, 3) are S45 and S46
+    assert pairs[start : start + 13] == [
+        (4, 1), (4, 2), (4, 3), (4, 4), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (6, 1), (6, 2), (6, 3), (7, 1)
+    ]  # fmt: skip  # (4, 2) and (4, 3) are S39 and S40, (4, 4) is the test extra, (5, 2)-(5, 5) S41-S44, (6, 2) and (6, 3) S45, S46
     by_encounter = clinical.by_encounter()
     assert set(by_encounter) == {(r.patient_no, r.encounter_no) for r in recipes.recipes}
     assert by_encounter[(4, 4)].vitals.pulse == by_encounter[(4, 1)].vitals.pulse + 3
@@ -292,12 +302,13 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # (S7, its observation S47 and its follow-up S48), patient 4 three
     # (S4, its control S39 and its second visit S40), patient 10 two (S11 and its ward bill S14) and patient 12 two
     # (S10, the ER visit, and S22, the admission); patient 6 three (S6, its neurology control S45 and its physiatry
-    # visit S46)
+    # visit S46); patient 5 five (S5, its ER visit S41, its readmission S42, its physiatry visit S43 and its geriatrics
+    # visit S44)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 6: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 4: [1, 2, 3], 5: [1, 2, 3, 4, 5], 6: [1, 2, 3], 7: [1, 2, 3], 10: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
 
 
 @pytest.mark.parametrize(

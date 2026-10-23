@@ -40,7 +40,14 @@ from scripts.synthetic.pathways.checks import (
 )
 from scripts.synthetic.pathways.expand import SESSION_RATIOS, expand
 from scripts.synthetic.pathways.loader import hygiene
-from scripts.synthetic.pathways.schema import CHECKS, DrugFlags, MaterialFlags, ProcedureFlags, pin_problems
+from scripts.synthetic.pathways.schema import (
+    BLOOD_PACKAGE_SHARES,
+    CHECKS,
+    DrugFlags,
+    MaterialFlags,
+    ProcedureFlags,
+    pin_problems,
+)
 from src.bilun.domain.claims.models import DrugClaimLine, MaterialClaimLine, ProcedureClaimLine
 from src.bilun.domain.materials.ek4a_as_of import ek4a_as_of
 from src.bilun.domain.prose_rules.blood_component_isbt128 import is_valid_isbt128_barcode
@@ -227,13 +234,14 @@ def test_a_chronic_report_pin_that_is_not_a_bool_is_a_bad_value(value: object) -
     assert "showcase.chronic_health_report" in str(error.value)
 
 
-def test_no_committed_pathway_sets_a_line_flag_of_slice_g5a_but_the_isbt128_numbers_of_s24() -> None:
+def test_no_committed_pathway_sets_a_line_flag_of_slice_g5a_but_the_isbt128_numbers_of_s24_and_s42() -> None:
     """The flags of slice G5a are fault material: a clean bill bills no exam as a package component and no material
     that waits for an approval (S34's fault sets the first with `set_flag`). The ISBT 128 number of a blood line is
-    the one clean flag: S24's red-cell units carry theirs (its fault clears them)."""
+    the one clean flag: the red-cell units of S24 and S42 carry theirs (S24's fault clears them)."""
+    transfused = {"decompensated_cirrhosis_variceal_rebleed_transfusion", "infected_hemiarthroplasty_removal_package"}
     for path in _FILES:
         pathway = load_pathway(path)
-        blood = {"705371"} if path.stem == "decompensated_cirrhosis_variceal_rebleed_transfusion" else set()
+        blood = {"705371"} if path.stem in transfused else set()
         assert all(p.flags == ProcedureFlags() for p in pathway.procedures if p.code not in blood), path.stem
         assert all(p.flags.isbt128_barcode and not p.flags.is_package_included for p in pathway.procedures if p.code in blood)
         assert all(m.flags.requires_pre_auth is None for m in pathway.materials), path.stem
@@ -1546,7 +1554,7 @@ def test_a_package_bill_names_each_icu_line_as_a_line_the_package_includes(catal
 # --- slice G9: the report duration of a drug; the haemodialysis session packages -----------------------
 
 
-def test_the_report_duration_of_a_drug_reaches_its_expansion_and_only_s17_sets_it(catalogs: Catalogs) -> None:
+def test_the_report_duration_of_a_drug_reaches_its_expansion_and_only_s17_and_s44_set_it(catalogs: Catalogs) -> None:
     """The ESA of S17 is billed on a one-month nephrology report (SUT 4.2.9.A-1): the pathway says so (slice G9)."""
     pathway = load_pathway(_DIR / f"{S17}.yaml")
     (esa,) = pathway.drugs
@@ -1559,7 +1567,7 @@ def test_the_report_duration_of_a_drug_reaches_its_expansion_and_only_s17_sets_i
     }
     assert run_all(pathway, catalogs) == []
     setting = [p.stem for p in _FILES if any(d.flags.drug_report_duration_months for d in load_pathway(p).drugs)]
-    assert setting == [S17]
+    assert setting == [S17, S44]  # S44's romosozumab: the first report of 24 weeks, which the engine reads as 6 months
 
 
 @pytest.mark.parametrize("months", [0, 25, -1, True, "1", 1.5])
@@ -1612,7 +1620,7 @@ S18 = "decompensated_cirrhosis_gi_bleed_albumin"  # albumin on the specialist re
 S24 = "decompensated_cirrhosis_variceal_rebleed_transfusion"  # two red-cell units, one ISBT 128 number each
 
 
-def test_only_s24_sets_isbt128_numbers_one_valid_and_distinct_number_per_red_cell_unit(catalogs: Catalogs) -> None:
+def test_s24_and_s42_set_isbt128_numbers_one_valid_and_distinct_number_per_red_cell_unit(catalogs: Catalogs) -> None:
     pathway = load_pathway(_DIR / f"{S24}.yaml")
     units = [p for p in pathway.procedures if p.code == "705371"]
     numbers = [p.flags.isbt128_barcode for p in units]
@@ -1625,7 +1633,10 @@ def test_only_s24_sets_isbt128_numbers_one_valid_and_distinct_number_per_red_cel
     assert [r["flags"] for r in rows] == [{"isbt128_barcode": number} for number in numbers]
     assert run_all(pathway, catalogs) == []
     setting = [p.stem for p in _FILES if any(x.flags.isbt128_barcode for x in load_pathway(p).procedures)]
-    assert setting == [S24]
+    assert setting == [S24, S42]
+    s42 = [p.flags.isbt128_barcode for p in load_pathway(_DIR / f"{S42}.yaml").procedures if p.code == "705371"]
+    assert len(set(s42)) == 2 and all(is_valid_isbt128_barcode(number) for number in s42)
+    assert not set(s42) & set(numbers)  # S42's units are other units than S24's
 
 
 def test_s18_bills_three_days_of_albumin_from_day_two_on_the_report(catalogs: Catalogs) -> None:
@@ -1638,3 +1649,74 @@ def test_s18_bills_three_days_of_albumin_from_day_two_on_the_report(catalogs: Ca
     labs = [(p.id, [i.code for i in p.items or []]) for p in pathway.procedures if p.kind == "lab"]
     assert labs == [("admission_labs", ["L107020", "L100320"])]  # the albumin level the SUT asks for, on the admission day
     assert run_all(pathway, catalogs) == []
+
+
+# --- S41 to S44 (WP15): the blood of a package bill (slice G14), the report months of romosozumab -----------------
+
+S42 = "infected_hemiarthroplasty_removal_package"  # the removal package P612500 and two red-cell units at their share
+S44 = "severe_osteoporosis_geriatrics_romosozumab"  # romosozumab on a health-board report of 6 months
+
+
+def test_the_blood_shares_are_the_ones_of_sut_c000694() -> None:
+    """SUT 2.2.2.B-1.(1).e (C000694) and 4.6.(4) (C007927): 36 % for 705371, 705430 and 705440, 24 % for 705372 and 705373,
+    20 % for 705441, 28 % for 705442 and 705443."""
+    assert {code: str(share) for code, share in BLOOD_PACKAGE_SHARES.items()} == {
+        "705371": "0.36", "705430": "0.36", "705440": "0.36", "705372": "0.24", "705373": "0.24",
+        "705441": "0.20", "705442": "0.28", "705443": "0.28",
+    }  # fmt: skip
+
+
+def test_a_package_bill_bills_its_red_cells_at_their_share_and_an_itemized_bill_in_full(catalogs: Catalogs) -> None:
+    pathway = load_pathway(_DIR / f"{S42}.yaml")
+    assert pathway.billing_mode == "package"
+    rows = {(r["code"], r["flags"].get("isbt128_barcode", "")): r["billed_ratio"] for r in expand(pathway)["procedures"]}
+    assert rows == {
+        ("705371", "=X99992610002100"): "0.3600",
+        ("705371", "=X99992610002200"): "0.3600",
+        ("P612500", ""): "1.0000",
+    }
+    assert check_package_mode(pathway, catalogs) == [] and run_all(pathway, catalogs) == []
+    itemized = load_pathway(_DIR / f"{S24}.yaml")  # the same code on an itemized bill: EK-2/B in full (C007926)
+    assert {r["billed_ratio"] for r in expand(itemized)["procedures"] if r["code"] == "705371"} == {"1.0000"}
+
+
+def test_a_package_bill_holds_a_blood_component_and_no_other_procedure(catalogs: Catalogs) -> None:
+    """`package.mode` lets a component of C000694 stand on a package bill; any other procedure line stays refused, a
+    blood component of another kind too."""
+    raw = _raw(S42)
+    raw["procedures"].append(
+        {"id": "ecg", "kind": "procedure", "code": "530100", "name": "Elektrokardiyogram", "days": "admit",
+         "basis": "judgment", "source": FIXTURE}
+    )
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S42}.yaml")
+    assert {p.where for p in check_package_mode(pathway, catalogs)} == {"procedures[ecg]"}
+    raw = _raw(S42)
+    raw["procedures"][1]["kind"] = "lab"
+    pathway = load_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), f"{S42}.yaml")
+    assert {p.where for p in check_package_mode(pathway, catalogs)} == {"procedures[red_cells_unit_1]"}
+
+
+def test_s44_starts_romosozumab_on_a_report_of_six_months_prescribed_by_geriatrics(catalogs: Catalogs) -> None:
+    pathway = load_pathway(_DIR / f"{S44}.yaml")
+    (romosozumab,) = pathway.drugs
+    assert (romosozumab.barcode, romosozumab.inn, romosozumab.indication) == ("8699862950244", "Romosozumab", "M81.09")
+    (row,) = expand(pathway)["drugs"]
+    assert row["flags"] == {
+        "drug_report_duration_months": 6,
+        "drug_specialty_board_report_present": True,
+        "prescriber_specialty": "Geriatri",
+    }
+    assert (row["qty"], row["unit"], row["per_box"]) == (2, "syringe", 2)  # 210 mg: one box of two syringes, one month
+    assert (pathway.department.name, pathway.department.specialty) == ("Geriatri", "1073")
+    assert run_all(pathway, catalogs) == []
+
+
+def test_the_walker_visit_of_patient_5_is_another_branch_than_its_orthopaedic_packages() -> None:
+    """SUT 2.2.2.B-3.(1) (C000713, C000714): an outpatient examination of the same branch within 10 days of a package
+    discharge (the end of the group's window counting as the discharge) is inside the package. Both stays of patient 5
+    (S5, S42) are orthopaedic packages whose periods reach past the code-set window, so S43's walker visit and S44's
+    geriatrics visit go to other branches; an orthopaedic control would carry the dormant fault of F1 b3 (#337)."""
+    stays = [load_pathway(_DIR / f"{pid}.yaml") for pid in ("femoral_neck_fracture_cemented_hemiarthroplasty_package", S42)]
+    visits = [load_pathway(_DIR / f"{pid}.yaml") for pid in ("femoral_neck_fracture_physiatry_first_walker", S44)]
+    assert {p.department.specialty for p in stays} == {"2600"} and all(p.billing_mode == "package" for p in stays)
+    assert [(p.claim_type, p.department.specialty) for p in visits] == [("poliklinik", "1800"), ("poliklinik", "1073")]

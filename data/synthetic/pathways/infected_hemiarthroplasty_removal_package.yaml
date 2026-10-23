@@ -1,0 +1,97 @@
+# Readmission of the patient of story S5 for an early infection of her hemiarthroplasty: removal of the prosthesis (resection arthroplasty),
+# billed as the EK-2C package P612500, with two red-cell units billed apart at their share of the package bill.
+# Showcase story S42 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F5 b3): bill 3 of the patient of S5. Every line below is a
+# clean-bill line: the two units are billed at 36 % of their list amount (C000694, C007927; slice G14). The fault bills them in full.
+# Grammar: README.md next to this file. A package bill carries the package line; bed, companion, labs and drugs are inside it.
+schema_version: 1
+id: infected_hemiarthroplasty_removal_package
+title: "Early infection of a hip hemiarthroplasty: removal of the prosthesis billed as the EK-2C package, two red-cell units at their share"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Ortopedi ve Travmatoloji"
+  specialty: "2600"                  # EK-2A: Ortopedi ve Travmatoloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S42 is the woman of story S5 (the same patient, readmitted); T84.5 and D62 have no sex gate, her stay codes M81.09."
+  age:
+    min: 70
+    max: 95
+    basis: judgment
+    source: "Story S42 patient is 84, like story S5; the bounds are those of story S5 (the author's judgment)."
+
+nights:
+  min: 3
+  max: 7
+  basis: judgment
+  source: "Story S42 has 3 nights. Max 7: the group C window is 8 days from the package day (C000704), and the bill stays a package."
+
+op_day: admit+1                      # admitted with the wound infection on day 0, operated on the day after
+
+diagnoses:
+  - icd10: T84.5
+    name: "İNTERNAL EKLEM PROTEZİNDEN DOLAYI ENFEKSİYON VE ENFLAMATUVAR REAKSİYON"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10: infection due to an internal joint prosthesis, the reason of the readmission. Orthopaedist to confirm."
+  - icd10: D62
+    name: "AKUT POSTHEMORAJİK ANEMİ"
+    role: secondary
+    day: op
+    basis: judgment
+    source: "SKRS leaf code; the blood loss of the removal is the reason of the two red-cell units (the anaemia after it). Orthopaedist to confirm."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S5 patient has hypertension (I10 on the bill of story S5); the readmission codes it again."
+
+procedures:
+  - id: removal_package
+    kind: package
+    code: "P612500"
+    name: "Kalçadan hemiartroplasti protezi çıkartılması"
+    days: op
+    qty: 1
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package; the P612500 açıklama: debridement is inside it."
+
+  # --- the transfusion after the removal: two red-cell units, one line each with its own ISBT 128 number (synthetic)
+  - id: red_cells_unit_1
+    kind: procedure
+    code: "705371"
+    name: "Eritrosit Süspansiyonu, Kızılay'dan temin edilen"
+    days: op
+    flags:
+      isbt128_barcode: "=X99992610002100"
+    basis: sut
+    source: "C000694, C007927 (SUT 2.2.2.B-1.(1).e, 4.6.(4)): red cells 705371 inside a package are billed apart at 36 % of their puan. Synthetic number."
+  - id: red_cells_unit_2
+    kind: procedure
+    code: "705371"
+    name: "Eritrosit Süspansiyonu, Kızılay'dan temin edilen"
+    days: op
+    flags:
+      isbt128_barcode: "=X99992610002200"
+    basis: sut
+    source: "C007927 (SUT 4.6.(4)): the second unit at 36 % as well, with its own ISBT 128 number registered in MEDULA. Synthetic number."
+
+notes:
+  - "The patient of story S5 (operated on 2026-09-04, discharged 09-08) comes back on Wednesday 2026-09-16 with a draining, red wound and fever: an early deep infection of the hemiarthroplasty. The package of S5 (group B, 10 days from 09-04, C000703) has ended, so this is a stay of its own."
+  - "Operated on 09-17: the prosthesis is removed and the joint debrided (a resection arthroplasty, P612500; its açıklama puts the debridement inside it). Open for an orthopaedist: whether an 84-year-old with an early infection 13 days after the operation gets a removal or a debridement with implant retention (DAIR), and whether a spacer is placed."
+  - "Two red-cell units after the removal (acute postoperative anaemia, D62). Inside an EK-2C package the blood is part of the package (C007927), except red cells 705371 and the components of C000694, which the provider bills apart at 36 % of their puan: 4462.65 x 0.36 = 1606.55 a unit. Each unit carries its own ISBT 128 number (C007926, C007927), so the ISBT rule stays silent on both bills."
+  - "Bed, companion, labs, antibiotics and the debridement are inside the package (C000685 to C000699), so none of them is listed. No implant is billed: the prosthesis comes out."
+  - "The faulty bill keys the two units at their full list amount (4462.65 each): the fault set_billed_ratio of the fault registry, not a sibling pathway."
+
+showcase:
+  story: S42
+  sex: F
+  age: 84
+  admit: "2026-09-16"
+  nights: 3

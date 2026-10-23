@@ -333,7 +333,8 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         assert row["Hipertansiyon Hastada"] is ("I10" in claim_dxs)
         assert row["Kalp Damar Hastada"] is False
         assert row["Diyabet Hastada"] is False
-        assert row["Kan Hastaliklari Hastada"] is False
+        # D50-D89: S42's acute posthaemorrhagic anaemia D62 (patient 5's readmission) is the one such code of the eight
+        assert row["Kan Hastaliklari Hastada"] is any(c[0] == "D" and 50 <= int(c[1:3]) <= 89 for c in claim_dxs)
 
         assert row["kohort"] == "showcase"
         assert row["donem"] == str(exp_dt.year)
@@ -389,12 +390,12 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         assert p7_row[col] == expected_str, f"Patient 7 {col}"
 
 
-def test_recete_clean_content_rules_for_all_24_billed_drug_lines(
+def test_recete_clean_content_rules_for_all_25_billed_drug_lines(
     built_showcase: BuildResult,
 ) -> None:
     rec_df = built_showcase.clean_tables["recete_clean.parquet"]
     drugs_df = built_showcase.tables["drug_claim_lines.parquet"]
-    assert rec_df.height == drugs_df.height == 24
+    assert rec_df.height == drugs_df.height == 25
 
     cw_df = pl.read_parquet(_REPO / "data/synthetic/reference/drug_crosswalk.parquet").filter(
         pl.col("titck_product_name").is_not_null()
@@ -619,13 +620,16 @@ def test_product_routes_come_from_the_titck_name_or_from_drug_routes(
     neofleks_saline = rec_df.filter(pl.col("ilac_adi_ham").str.contains("NEOFLEKS %0,9"))
     assert neofleks_saline["verilis_yolu"].to_list() == ["Intravenöz"]
 
-    # The declared routes serve exactly the six rows whose TITCK name states no route.
+    # The declared routes serve exactly the seven rows whose TITCK name states no route.
     names = rec_df["ilac_adi_ham"].to_list()
     without_route_in_name = [name for name in names if derive_route_from_titck(name) is None]
-    assert len(without_route_in_name) == 6
-    assert all(any(p in name for p in ("CLEXANE", "NEOFLEKS %0,9", "ARANESP")) for name in without_route_in_name)
+    assert len(without_route_in_name) == 7
+    products = ("CLEXANE", "NEOFLEKS %0,9", "ARANESP", "EVENİTY")  # the TİTCK name writes EVENİTY with a dotted İ
+    assert all(any(p in name for p in products) for name in without_route_in_name)
     aranesp = rec_df.filter(pl.col("ilac_adi_ham").str.contains("ARANESP"))
     assert aranesp["verilis_yolu"].to_list() == ["Intravenöz"]  # S17's ESA, given through the dialysis line
+    evenity = rec_df.filter(pl.col("ilac_adi_ham").str.contains("EVENİTY"))
+    assert evenity["verilis_yolu"].to_list() == ["Subkütan"]  # S44's romosozumab, injected under the skin
 
     declared = load_clinical().drug_routes
     assert declared is not None
@@ -634,6 +638,7 @@ def test_product_routes_come_from_the_titck_name_or_from_drug_routes(
         "8699809950696": "Subkütan",
         "8697637690128": "Intravenöz",
         "8699862950046": "Intravenöz",
+        "8699862950244": "Subkütan",
     }
     billed_barcodes = set(built_showcase.tables["drug_claim_lines.parquet"]["barkod"].to_list())
     assert set(declared.by_barcode) <= billed_barcodes
@@ -680,7 +685,12 @@ def _clinical_with_routes(by_barcode: dict[str, DrugRoute]) -> ShowcaseClinical:
 
 @pytest.mark.parametrize(
     ("barcode", "product"),
-    [("8699809950696", "CLEXANE"), ("8697637690128", "NEOFLEKS %0,9"), ("8699862950046", "ARANESP")],
+    [
+        ("8699809950696", "CLEXANE"),
+        ("8697637690128", "NEOFLEKS %0,9"),
+        ("8699862950046", "ARANESP"),
+        ("8699862950244", "EVENİTY"),
+    ],
 )
 def test_removing_a_declared_route_makes_the_build_raise(
     built_showcase: BuildResult, barcode: str, product: str
@@ -688,7 +698,7 @@ def test_removing_a_declared_route_makes_the_build_raise(
     declared = load_clinical().drug_routes
     assert declared is not None
     kept = {k: v for k, v in declared.by_barcode.items() if k != barcode}
-    assert len(kept) == 2
+    assert len(kept) == 3
     with pytest.raises(CleanTableError, match=rf"{product}.*{barcode}.*declare it in drug_routes"):
         build_clean_tables(built_showcase.claims, clinical=_clinical_with_routes(kept))
 
