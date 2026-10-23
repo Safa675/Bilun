@@ -48,17 +48,29 @@ def test_clean_twin_has_no_session_or_drg_uplift(role_name: str) -> None:
     assert report.sgk_uplift_try == 0.0
 
 
+# S50's clean bill bills the sphincterotomy and the stone extraction beside its ERCP package at the same-incision 30 %
+# (C000672). No claim line carries the incision, so the session block asks for a clinical review of the
+# separate-incision 50 % (C000673) on both lines: review rows without recoverable money (Safa675/Bilun#311 item 6, the
+# root of S8's divergence). Every other clean twin has no opportunity at all.
+_CLEAN_SESSION_REVIEWS: dict[str, tuple[str, ...]] = {"S50": ("701370", "701440")}
+
+
 @pytest.mark.parametrize("story", sorted(cohort.scenarios()))
 def test_clean_twin_of_a_story_after_the_eighth_has_no_session_or_drg_uplift(story: str) -> None:
     """The same control for the stories that are scenarios and not roles (S9 and later).
 
     S9's fault is a session fault: its clean twin bills the second operation at the separate-incision rate,
     which the engine reads as correct, so the block that finds the fault stays at zero on the clean bill.
-    A clean bill of the cohort (S39, the control visit of patient 4) is its own twin and must show the same zeros."""
+    A clean bill of the cohort (S39, the control visit of patient 4) is its own twin and must show the same zeros.
+    S50's clean twin shows the two review rows of `_CLEAN_SESSION_REVIEWS` and nothing to recover."""
     report = _report(clean_context_for_story(story))
+    session = report.session_uplift
 
-    assert report.session_uplift.confirmed_uplift_try == 0.0
-    assert report.session_uplift.opportunities == []
+    assert session.confirmed_uplift_try == 0.0
+    assert tuple(o["procedure_code"] for o in session.opportunities) == _CLEAN_SESSION_REVIEWS.get(story, ())
+    for opportunity in session.opportunities:
+        assert (opportunity["recoverable_uplift_try"], opportunity["missing_facts"]) == (0.0, ["kesi"])
+        assert opportunity["included_in_sgk_total"] is False
     assert report.drg_uplift.confirmed_uplift_try == 0.0
     assert report.sgk_uplift_try == 0.0
 

@@ -1292,29 +1292,31 @@ def test_the_committed_clean_tables_raise_no_problem(committed_problems, clean) 
 
 
 def test_the_package_bills_of_patients_5_and_8_have_no_lab_rows(built, clean) -> None:
-    """S5, S8 and patient 5's readmission S42 are package bills: no billed lab line, no lab row. Patient 5's lab rows
-    are those of its ER visit (S41), the one bill of the patient that bills tests."""
+    """S5, S8, patient 5's readmission S42 and patient 8's ERCP admission S50 are package bills: no billed lab line, no
+    lab row. The lab rows of each patient are those of its ER visit (S41, S49), the one bill of the patient that bills
+    tests (S49's CRP is the faulty line of its bill)."""
     labs = clean[TABLE_LAB]
-    package_claims = [claim_id(PATIENT[5], 1), claim_id(PATIENT[8], 1), claim_id(PATIENT[5], 3)]
+    stays = ((5, 1), (5, 3), (8, 1), (8, 3))
+    package_claims = [claim_id(PATIENT[n], k) for n, k in stays]
     headers = built.tables[TABLE_HEADERS].filter(pl.col("claim_id").is_in(package_claims))
-    assert headers["package_candidate"].to_list() == [True, True, True]
+    assert headers["package_candidate"].to_list() == [True, True, True, True]
     billed = built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_category") == "laboratuvar")
     assert billed.filter(pl.col("claim_id").is_in(package_claims)).height == 0
-    assert labs.filter(pl.col("basvuru_id").is_in([episode_id(PATIENT[n], 1) for n in (5, 8)])).height == 0
-    assert labs.filter(pl.col("HASTA_ID") == PATIENT[8]).height == 0
-    assert set(labs.filter(pl.col("HASTA_ID") == PATIENT[5])["basvuru_id"]) == {episode_id(PATIENT[5], 2)}
-    assert set(billed.filter(pl.col("patient_id") == PATIENT[5])["claim_id"]) == {claim_id(PATIENT[5], 2)}
+    assert labs.filter(pl.col("basvuru_id").is_in([episode_id(PATIENT[n], k) for n, k in stays])).height == 0
+    for n in (5, 8):
+        assert set(labs.filter(pl.col("HASTA_ID") == PATIENT[n])["basvuru_id"]) == {episode_id(PATIENT[n], 2)}
+        assert set(billed.filter(pl.col("patient_id") == PATIENT[n])["claim_id"]) == {claim_id(PATIENT[n], 2)}
 
 
-def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_and_s10_add_and_the_count_of_s33(
+def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_s10_and_s49_add_and_the_count_of_s33(
     built, twins
 ) -> None:
     """S1's fault bills two lab lines and three drug lines on a package claim, S10's a third lab line (the manual
-    haematocrit beside the hemogram), S33's the count of one drug line (4000 enoxaparin syringes for 4); the clean
-    tables mirror them."""
+    haematocrit beside the hemogram), S49's a fourth (the CRP beside the green-area examination), S33's the count of
+    one drug line (4000 enoxaparin syringes for 4); the clean tables mirror them."""
     only_faulty_labs = faulty_only_labs(built, twins)
-    assert sorted(only_faulty_labs["procedure_code"]) == ["L101850", "L103120", "L107020"]
-    assert set(only_faulty_labs["patient_id"]) == {PATIENT[1], PATIENT[12]}
+    assert sorted(only_faulty_labs["procedure_code"]) == ["L101850", "L101850", "L103120", "L107020"]
+    assert set(only_faulty_labs["patient_id"]) == {PATIENT[1], PATIENT[8], PATIENT[12]}
     only_faulty_drugs = built.tables[TABLE_DRUGS].join(
         twins[TABLE_DRUGS].select("drug_claim_line_id"), on="drug_claim_line_id", how="anti"
     )
@@ -1356,10 +1358,11 @@ def faulty_only_labs(built, twins) -> pl.DataFrame:
     return labs.join(twins[TABLE_PROCEDURES].select(keys), on=keys, how="anti")
 
 
-def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines_of_s1_s10_and_s33(
+def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines_of_s1_s10_s33_and_s49(
     built, twins, clean, context
 ) -> None:
-    """The clean tables are built from the faulty bills, so against the twin they hold S1's extra lines and S33's count.
+    """The clean tables are built from the faulty bills, so against the twin they hold the extra lines of S1, S10 and
+    S49 and S33's count.
 
     The footprint is derived here from the faulty-versus-twin anti-join of the billed lines, not
     written down as strings: one result set (with its rows in lab_clean) for each billed lab line the
@@ -1368,7 +1371,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
     """
     found = check_clean_plausibility(twins, clean, context=context)
     assert only_ids(found) == {SETS, MATCHES}
-    assert {p.patient_id for p in found} == {PATIENT[1], PATIENT[2], PATIENT[12]}
+    assert {p.patient_id for p in found} == {PATIENT[1], PATIENT[2], PATIENT[8], PATIENT[12]}
     labs = {p.where: p.message for p in found if p.check == SETS}
     drugs = {p.where: p.message for p in found if p.check == MATCHES}
 
@@ -1392,6 +1395,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
     assert sorted(expected_labs) == [
         "ISL-F-SENTETIK-HASTA-0001-001-006",  # the CRP of 2026-07-15
         "ISL-F-SENTETIK-HASTA-0001-001-007",  # the hemogram of 2026-07-15
+        "ISL-F-SENTETIK-HASTA-0008-002-003",  # the CRP of 2026-08-25 beside the green-area examination (S49)
         "ISL-F-SENTETIK-HASTA-0012-001-002",  # the manual haematocrit of 2026-05-09 (S10)
     ]
     assert labs == dict(expected_labs.values())
@@ -1425,18 +1429,19 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
         "twin ILC-F-SENTETIK-HASTA-0002-003-001",  # S33's twin line of 4 syringes
     ]
     assert drugs == dict(expected_drugs.values())
-    assert len(found) == len(expected_labs) + len(expected_drugs) == 8
+    assert len(found) == len(expected_labs) + len(expected_drugs) == 9
 
 
 def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
-    """Twin claims and clean tables without S1's lab and prescription rows and S10's manual haematocrit, and with S33's
-    enoxaparin at the twin's count: nothing depends on the fault."""
+    """Twin claims and clean tables without S1's lab and prescription rows, S10's manual haematocrit and S49's CRP, and
+    with S33's enoxaparin at the twin's count: nothing depends on the fault."""
     twin_clean = {
         name: (frame.filter(pl.col(_EPISODE_COLUMN[name]) != EPISODE[1]) if name != TABLE_ANADATA else frame)
         for name, frame in clean.items()
     }
     twin_clean[TABLE_LAB] = twin_clean[TABLE_LAB].filter(
         ~((pl.col("basvuru_id") == EPISODE[12]) & (pl.col("SUB_CODE") == "L103120"))
+        & ~((pl.col("basvuru_id") == episode_id(PATIENT[8], 2)) & (pl.col("SUB_CODE") == "L101850"))
     )
     s33 = (pl.col("RF_EPISODE") == "B-SENTETIK-HASTA-0002-003") & (pl.col("miktar") == 4000)
     assert twin_clean[TABLE_RECETE].filter(s33).height == 1
@@ -1444,7 +1449,8 @@ def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
         pl.when(s33).then(pl.lit(4, dtype=pl.Int64)).otherwise(pl.col("miktar")).alias("miktar"),
         pl.when(s33).then(pl.lit("4 enjektör")).otherwise(pl.col("dozaj_ham")).alias("dozaj_ham"),
     )
-    assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16 - 1  # S1 has 16 lab rows, S10's bill one set of one row it alone bills
+    # S1 has 16 lab rows; S10's bill and S49's bill one set of one row each that only the faulty bill bills
+    assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16 - 1 - 1
     assert twin_clean[TABLE_RECETE].height == RX_ROWS - 3  # and 3 prescription rows
     found = check_clean_plausibility(twins, twin_clean, context=context)
     assert [str(p) for p in found] == []
@@ -3415,7 +3421,7 @@ def test_without_any_episode_id_in_anadata_the_egfr_relation_is_no_no_op(
     )
     found = data.problems(context, only=EGFR_RELATION)
     assert len(found) == BILLED_LAB_LINES and len({p.where for p in found}) == BILLED_LAB_LINES
-    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 5, 6, 7, 9, 10, 12, 15)}
+    assert {p.patient_id for p in found} == {PATIENT[n] for n in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15)}
 
 
 # --- the reference read from a file: the variant of a tie goes to the first row of the file ---------------

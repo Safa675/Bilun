@@ -30,6 +30,8 @@ FORMAT_VERSION = 1
 # Share of the list amount a line is billed at when several operations are done in one session.
 # Packages: SUT 2.2.2.B(3), C000670 (same incision, 25 %) and C000671 (separate incision, 50 %).
 # Itemized: SUT 2.2.2.A(5), C000660 (same incision, 30 %) and C000661 (separate incision, 50 %).
+# An EK-2B line beside an EK-2C package of its session is billed like an itemized one: SUT 2.2.2.B(3)(c), (ç), C000672
+# (same incision, 30 %) and C000673 (separate incision, 50 %), so the table follows the line's own list (slice G15).
 # The +25 points for different specialties (C000662, C000674) are not applied: issue #295.
 SESSION_RATIOS: dict[str, dict[str, Decimal]] = {
     "package": {
@@ -51,14 +53,19 @@ class ExpandError(ValueError):
 
 def _ratio(pathway: Pathway, line) -> str:
     """The share of its list amount a procedure line is billed at: its session role's, or on a package bill the share
-    of a blood component (`BLOOD_PACKAGE_SHARES`, C000694 and C007927; slice G14)."""
+    of a blood component (`BLOOD_PACKAGE_SHARES`, C000694 and C007927; slice G14).
+
+    The role's share follows the line's own list: an EK-2C package line the package table, any other line (an EK-2B
+    line, also one beside a package of its session: C000672, C000673; slice G15) the itemized table.
+    """
     if (
         line.session_role is None
         and pathway.billing_mode == "package"
         and line.code in BLOOD_PACKAGE_SHARES
     ):
         return format(BLOOD_PACKAGE_SHARES[line.code], ".4f")
-    return format(SESSION_RATIOS[pathway.billing_mode][line.session_role or "primary"], ".4f")
+    table = "package" if line.kind == "package" else "itemized"
+    return format(SESSION_RATIOS[table][line.session_role or "primary"], ".4f")
 
 
 def _copay(line) -> dict[str, str]:

@@ -98,10 +98,12 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S44": "0.00",  # romosozumab on a report of 12 months: a drug line, and drugs enter at 0 TL
     "S46": "252.00",  # the second walker inside the MIAT of the first: the walker line is at risk (deduction_risk)
     "S47": "44.45",
+    "S49": "0.00",  # the CRP and the ultrasound beside the flat-fee green-area visit: a review without money (compliance_error)
+    "S50": "1347.95",  # the sphincterotomy and the stone extraction billed in full beside the ERCP package instead of 30 %
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S23, S32, S36, S37, S39, S41, S43, S45 and S48 are clean bills (no fault, no record), the others carry one.
+# S23, S32, S36, S37, S39, S41, S43, S45, S48 and S51 are clean bills (no fault, no record), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
@@ -122,6 +124,9 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S24": {"patient_id": "SENTETIK-HASTA-0015", "claim_ids": ["F-SENTETIK-HASTA-0015-002"]},
     "S47": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-002"]},
     "S48": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-003"]},
+    "S49": {"patient_id": "SENTETIK-HASTA-0008", "claim_ids": ["F-SENTETIK-HASTA-0008-002"]},
+    "S50": {"patient_id": "SENTETIK-HASTA-0008", "claim_ids": ["F-SENTETIK-HASTA-0008-003"]},
+    "S51": {"patient_id": "SENTETIK-HASTA-0008", "claim_ids": ["F-SENTETIK-HASTA-0008-004"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
     "S40": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-003"]},
     "S41": {"patient_id": "SENTETIK-HASTA-0005", "claim_ids": ["F-SENTETIK-HASTA-0005-002"]},
@@ -357,13 +362,14 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     assert s7_rec.line_ids == ("EMR-F-SENTETIK-HASTA-0007-001-004",)
 
     # S1, S5, S8, S20, S42 (the removal package of patient 5's readmission), S38 (the instrumentation package of patient
-    # 3's second operation) and the haemodialysis bills S17 and S23 (EK-2C session packages) have package_candidate=True
-    # in both clean and faulty composed headers; others False. The story of a bill comes from its encounter (a clean
-    # bill, S23, S32, S36, S37, S39, S41, S43, S45 or S48, has no record).
+    # 3's second operation), S50 (the ERCP package of patient 8's readmission) and the haemodialysis bills S17 and S23
+    # (EK-2C session packages) have package_candidate=True in both clean and faulty composed headers; others False. The
+    # story of a bill comes from its encounter (a clean bill, S23, S32, S36, S37, S39, S41, S43, S45, S48 or S51, has no
+    # record).
     story_of_claim = {e["claim_id"]: e["story"] for e in built_showcase.registry["encounters"]}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
         story = story_of_claim[faulty_c.header.claim_id]
-        expected_pkg_cand = story in {"S1", "S5", "S8", "S17", "S20", "S23", "S38", "S42"}
+        expected_pkg_cand = story in {"S1", "S5", "S8", "S17", "S20", "S23", "S38", "S42", "S50"}
         assert clean_c.header.package_candidate is expected_pkg_cand
         assert faulty_c.header.package_candidate is expected_pkg_cand
 
@@ -731,7 +737,7 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
     assert profiles.height == cohort.patient_count() == 15
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 35
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 38
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1075,7 +1081,11 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0007-001",
         "F-SENTETIK-HASTA-0007-002",  # the committed observation (S47) and follow-up (S48) of patient 7, dated later
         "F-SENTETIK-HASTA-0007-003",
-        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (8, 9, 10)),
+        "F-SENTETIK-HASTA-0008-002",  # the committed ER visit of patient 8 (S49), three weeks before her stay: the later id
+        "F-SENTETIK-HASTA-0008-001",
+        "F-SENTETIK-HASTA-0008-003",  # her ERCP admission (S50) and the control after it (S51), dated later
+        "F-SENTETIK-HASTA-0008-004",
+        *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (9, 10)),
         "F-SENTETIK-HASTA-0010-002",  # the committed second bill (S14, the ward bill after the ICU bill), dated later
         "F-SENTETIK-HASTA-0011-001",
         "F-SENTETIK-HASTA-0012-001",  # the ER visit of patient 12 (S10) and the admission two days later (S22)
@@ -1093,6 +1103,7 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
     assert starts["F-SENTETIK-HASTA-0004-001"] < starts["F-SENTETIK-HASTA-0004-004"] < starts["F-SENTETIK-HASTA-0004-002"]
     assert starts["F-SENTETIK-HASTA-0004-002"] < starts["F-SENTETIK-HASTA-0004-003"]
     assert starts["F-SENTETIK-HASTA-0007-004"] < starts["F-SENTETIK-HASTA-0007-001"]
+    assert starts["F-SENTETIK-HASTA-0008-002"] < starts["F-SENTETIK-HASTA-0008-001"] < starts["F-SENTETIK-HASTA-0008-003"]
     # the composed claims are in the table order; a claim is built from its own recipe
     assert [c.header.claim_id for c in two_bills.claims] == headers["claim_id"].to_list()
     assert [c.header.claim_id for c in two_bills.clean_claims] == headers["claim_id"].to_list()

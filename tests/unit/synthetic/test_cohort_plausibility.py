@@ -170,6 +170,8 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S44": set(),  # romosozumab on a report of 12 months: no check reads a drug's report, only the engine (drug_indication) sees it
     "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
     "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
+    "S49": set(),  # the CRP and the ultrasound beside the green-area examination: lines of the sibling pathway, only the engine (tablo15_7) sees it
+    "S50": set(),  # the two EK-2B procedures beside the ERCP package in full: the full price is on the ladder, only the engine (drg_unbundling) sees it
 }
 
 # The ids of slice E1 and of slice E2; later slices add their own to CHECKS.
@@ -1179,7 +1181,7 @@ CASES: list[Case] = [
         also=(PATHWAY,),  # 520030 is not a line of the ER pathway
         label="poliklinik_visit_on_an_acil_claim",
         at=row_at(7, TABLE_PROCEDURES, line(7, "520020")),
-        says="examination 520030 on a claim of type acil; 520020 is the examination of that type",
+        says="examination 520030 on a claim of type acil; 520020 or 520021 is the examination of that type",
     ),
     Case(
         VISIT,
@@ -2884,10 +2886,11 @@ PAIRS: list[Pair] = [
     ),
     Pair(
         "age: O80.9 on a patient missing from anadata (no sex, no age)",
-        lambda d: (_drop_anadata_row(d, 8), add_diagnosis(d, 8, "O80.9")),
+        # patient 9 has one bill (patient 8 has four since WP17): one claim without its anadata row
+        lambda d: (_drop_anadata_row(d, 9), add_diagnosis(d, 9, "O80.9")),
         (AGE, ARITH, PATHWAY),
         3,
-        at=new_row_at(8, TABLE_DIAGNOSES),
+        at=new_row_at(9, TABLE_DIAGNOSES),
         says="needs sex F, age 10..55; the patient is of unknown sex aged unknown",
     ),
     Pair(
@@ -3139,10 +3142,11 @@ PAIRS: list[Pair] = [
         2,
     ),
     Pair(
-        "visit: the green-area visit 520021 on an acil claim",
+        # an examination code of the acil type since S49 (C000370, C000438): only S7's pathway does not hold it
+        "visit: the green-area visit 520021 on an acil claim is an acil examination",
         lambda d: set_code(d, 7, "520020", "520021"),
-        (VISIT, PATHWAY),
-        2,
+        (PATHWAY,),
+        1,
     ),
     Pair(
         "visit: a health board report 520050 as an examination on a yatis claim",
@@ -4286,6 +4290,7 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
         "lumbar_instability_posterior_instrumentation_package": [
             "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
         ],
+        "cholelithiasis_biliary_colic_er_green_area": ["cholelithiasis_biliary_colic_er_green_area_tests_billed"],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []
@@ -4615,6 +4620,62 @@ def test_a_blood_component_on_a_package_claim_bills_its_share_or_a_rung_of_the_l
     assert data.tables[TABLE_PROCEDURES].filter(S42_PACKAGE_BLOOD)["billed_amount_try"].to_list() == [1606.55, 1606.55]
     edit(data, TABLE_PROCEDURES, S42_PACKAGE_BLOOD, billed_amount_try=billed, expected_payable_try=billed)
     assert (data.problems(context, only="money.line_arithmetic") == []) is fits
+
+
+# S50's sphincterotomy on the ERCP package of patient 8 (slice G15): the clean twin bills it at 30 % of 1079.36 (C000672)
+S50_BESIDE_THE_PACKAGE = (pl.col("claim_id") == claim_id(PATIENT[8], 3)) & (pl.col("procedure_code") == "701370")
+
+
+@pytest.mark.parametrize(
+    ("billed", "fits"),
+    [
+        (323.81, True),  # 30 % of 1079.36 = 323.808: the share beside the package, to the cent
+        (323.82, False),  # more than half a cent off the share
+        (1079.36, True),  # the full price stays on the ladder: billing it in full is S50's fault, the engine's to find
+        (539.68, True),  # a half: the separate incision of C000673 (and the ladder)
+        (388.57, False),  # 36 %, the share of red cells
+    ],
+)
+def test_a_procedure_line_on_a_package_claim_bills_30_percent_or_a_rung_of_the_ladder(
+    billed, fits, twins, anadata, context
+) -> None:
+    data = Data(dict(twins), anadata)
+    assert data.tables[TABLE_PROCEDURES].filter(S50_BESIDE_THE_PACKAGE)["billed_amount_try"].to_list() == [323.81]
+    edit(data, TABLE_PROCEDURES, S50_BESIDE_THE_PACKAGE, billed_amount_try=billed, expected_payable_try=billed)
+    assert (data.problems(context, only="money.line_arithmetic") == []) is fits
+
+
+def test_an_er_claim_bills_the_er_or_the_green_area_examination_and_a_clinic_claim_neither(twins, anadata, context) -> None:
+    """fit.visit_code: S49's green-area examination 520021 fits its ER claim (SUT 1.8.5.(5), 1.9.3.(a): C000370,
+    C000438); filed on a clinic claim it does not."""
+    data = Data(dict(twins), anadata)
+    green = (pl.col("claim_id") == claim_id(PATIENT[8], 2)) & (pl.col("procedure_category") == "muayene")
+    assert data.tables[TABLE_PROCEDURES].filter(green)["procedure_code"].to_list() == ["520021"]
+    assert run_only(data, context, VISIT) == []
+    edit(data, TABLE_CLAIM_HEADERS, pl.col("claim_id") == claim_id(PATIENT[8], 2), claim_type="poliklinik")
+    (problem,) = run_only(data, context, VISIT)
+    assert problem.message == "examination 520021 on a claim of type poliklinik; 520030 is the examination of that type"
+
+
+def test_only_a_procedure_line_on_a_package_claim_may_bill_30_percent(twins, anadata, context) -> None:
+    """The 30 % beside a package is for an EK-2B procedure (category `islem`): the same line filed as a lab test, or the
+    package line itself at 30 %, is off the ladder (the 30 % of an itemized bill is `ratio_of_0_3`)."""
+    data = Data(dict(twins), anadata)
+    edit(data, TABLE_PROCEDURES, S50_BESIDE_THE_PACKAGE, procedure_category="laboratuvar")
+    (problem,) = data.problems(context, only="money.line_arithmetic")
+    assert problem.where.startswith(f"{claim_id(PATIENT[8], 3)} procedure_claim_lines[")
+    assert "billed 323.81 is not the unit price 1079.36 x quantity 1 x 1, 0.5 or 0.25" in problem.message
+    data = Data(dict(twins), anadata)
+    package = (pl.col("claim_id") == claim_id(PATIENT[8], 3)) & (pl.col("procedure_code") == "P701360")
+    edit(data, TABLE_PROCEDURES, package, billed_amount_try=2933.88, expected_payable_try=2933.88)  # 30 % of 9779.61
+    assert [p.claim_id for p in data.problems(context, only="money.line_arithmetic")] == [claim_id(PATIENT[8], 3)]
+    # a procedure line of an itemized claim: S9's second operation at 30 % is not on the ladder (no committed itemized
+    # bill uses the same-incision 30 % of C000660; the 30 % rung is a package claim's)
+    data = Data(dict(twins), anadata)
+    second = (pl.col("claim_id") == claim_id(PATIENT[9], 1)) & (pl.col("procedure_code") == "615995")
+    edit(data, TABLE_PROCEDURES, second, billed_amount_try=909.60, expected_payable_try=909.60)  # 30 % of 3032.01
+    (problem,) = data.problems(context, only="money.line_arithmetic")
+    assert problem.claim_id == claim_id(PATIENT[9], 1) and "billed 909.60 is not the unit price 3032.01" in problem.message
 
 
 def test_the_one_line_with_a_patient_share_pays_billed_less_it_and_the_header_follows(built, anadata, context) -> None:

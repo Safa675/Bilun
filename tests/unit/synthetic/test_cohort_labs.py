@@ -134,7 +134,7 @@ LAB_ROWS = cohort.counts()["lab_clean.parquet"]  # the size of the table, from t
 # patient 12: the ER bill (S10) 16, a blood count 15 and the manual haematocrit 1, and the admission (S22) 15
 # patient 15: the cirrhosis stay (S18) 16, a blood count 15 and the albumin 1, and the rebleed (S24) 30, two blood counts
 # patient 5: the ER visit before her stay (S41) 17, a blood count 15 and the creatinine 2 (her two stays are packages)
-_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 34, 4: 79, 5: 17, 6: 40, 7: 25, 9: 15, 10: 18, 12: 31, 15: 46}
+_ROWS_PER_PATIENT: dict[int, int] = {1: 16, 2: 59, 3: 34, 4: 79, 5: 17, 6: 40, 7: 25, 8: 1, 9: 15, 10: 18, 12: 31, 15: 46}
 _PATIENTS: dict[int, tuple[str, int]] = {
     1: ("M", 34),
     2: ("M", 81),
@@ -722,10 +722,14 @@ def test_the_lab_codes_of_each_episode_are_the_billed_lab_codes(
     fed = _codes_by_episode(lab, "basvuru_id", "SUB_CODE")
     for episode in episodes:
         assert fed.get(episode, []) == billed.get(episode, []), episode
-    # Patient 8 is a package bill: no billed lab line, so no lab row either. Patient 5's two stays are packages too; its
-    # lab rows are those of its ER visit (S41), the one bill of the patient that bills a lab line.
-    assert _pid(8) not in set(procs.filter(pl.col("procedure_category") == "laboratuvar")["patient_id"])
-    assert lab.filter(pl.col("HASTA_ID") == _pid(8)).is_empty()
+    # Patient 8's two stays are package bills: no billed lab line, so no lab row either; its one lab row is the CRP of
+    # its ER visit (S49), the faulty line billed beside the flat-fee green-area examination. Patient 5's two stays are
+    # packages too; its lab rows are those of its ER visit (S41), the one bill of the patient that bills a lab line.
+    eighth = lab.filter(pl.col("HASTA_ID") == _pid(8))
+    assert (set(eighth["basvuru_id"]), set(eighth["SUB_CODE"])) == ({"B-SENTETIK-HASTA-0008-002"}, {"L101850"})
+    assert set(procs.filter((pl.col("procedure_category") == "laboratuvar") & (pl.col("patient_id") == _pid(8)))[
+        "claim_id"
+    ]) == {"F-SENTETIK-HASTA-0008-002"}
     fifth = lab.filter(pl.col("HASTA_ID") == _pid(5))
     assert set(fifth["basvuru_id"]) == {"B-SENTETIK-HASTA-0005-002"}
     assert set(procs.filter((pl.col("procedure_category") == "laboratuvar") & (pl.col("patient_id") == _pid(5)))[
@@ -840,13 +844,13 @@ def test_mutation_removing_one_billed_lab_line_gives_exactly_one_gap_with_its_co
             assert gaps[0]["type"] == "lab_performed_not_submitted"
             assert gaps[0]["source"] == "lab"
             checked += 1
-    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 + 2 + 2 + 2 pairs
-    # (patient 4: 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission; patient 7: the
-    # troponin and the D-dimer of the observation S47; patient 15: the blood count and the albumin of S18, the rebleed bills
-    # two counts; patient 5: the blood count and the creatinine of its ER visit S41; patient 3: the blood count and the
-    # creatinine of its pre-operative visit S36).
+    # Every (episode, code) pair billed exactly once was tried: 2 + 6 + 2 + 10 + 7 + 6 + 1 + 4 + 3 + 2 + 2 + 2 + 2 + 1
+    # pairs (patient 4: 7 on the stay and 3 on the control; patient 12: 2 on the ER bill, 1 on the admission; patient 7:
+    # the troponin and the D-dimer of the observation S47; patient 15: the blood count and the albumin of S18, the rebleed
+    # bills two counts; patient 5: the blood count and the creatinine of its ER visit S41; patient 3: the blood count and
+    # the creatinine of its pre-operative visit S36; patient 8: the CRP of its ER visit S49).
     once = _billed_lab_lines(procs).group_by("episode_id", "procedure_code").len()
-    assert checked == once.filter(pl.col("len") == 1).height == 49
+    assert checked == once.filter(pl.col("len") == 1).height == 50
 
 
 # --- 3.3 Values ----------------------------------------------------------------------------------
@@ -1043,9 +1047,9 @@ def test_drawn_values_without_a_state_lie_inside_the_sex_specific_limits(
     assert outside.is_empty(), outside.select("HASTA_ID", "key", "sonuc_sayisal", "lo", "hi")
     # 288 numeric rows = 128 derived + 33 drawn from a state + 127 drawn without one (S47 adds a troponin without a
     # state and a D-dimer with one); patient 15's three blood counts add 12 without a state (WBC, RDW-CV, PLT, MPV),
-    # patient 5's ER visit (S41) 8: its blood count's 7 (WBC, HGB, MCV, MCH, RDW-CV, PLT, MPV) and its creatinine, and
-    # patient 3's pre-operative visit (S36) 8 more the same way.
-    assert rows.height == 155
+    # patient 5's ER visit (S41) 8: its blood count's 7 (WBC, HGB, MCV, MCH, RDW-CV, PLT, MPV) and its creatinine,
+    # patient 3's pre-operative visit (S36) 8 more the same way, and patient 8's ER visit (S49) 1, its CRP.
+    assert rows.height == 156
 
 
 def test_drawn_values_with_a_state_lie_inside_the_state_range(annotated: pl.DataFrame) -> None:
@@ -2760,7 +2764,8 @@ def test_the_readme_describes_the_rules_the_code_implements() -> None:
         "SHA-256",
         "issue #309",
         "no automatic trend",
-        "Patients 8, 13 and 14 have none because their bills are packages",
+        "Patients 13 and 14 have none because their bills are packages",
+        "patient 8 only the CRP of her ER visit (S49",
         "cultures and serology are not L-codes",
     ):
         assert right in readme, right

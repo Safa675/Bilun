@@ -1,0 +1,58 @@
+# The control the day after the ERCP of story S50 (a common-bile-duct stone after the cholecystectomy of story S8), in
+# gastroenterology, outpatient, billed itemized; a clean bill.
+# Showcase story S51 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F8 b4): bill 4 of the patient of S8.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: retained_common_bile_duct_stone_gastroenterology_control
+title: "Control after an ERCP for a common-bile-duct stone, in gastroenterology, outpatient, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Gastroenteroloji"
+  specialty: "1076"                  # EK-2A: Gastroenteroloji
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S51 is the woman of story S8 (the same patient, the control after her ERCP); K80.5 and K91.5 have no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 75
+    basis: judgment
+    source: "Story S51 patient is 47, like story S8; the bounds are those of story S8 (the author's judgment)."
+
+diagnoses:
+  - icd10: K80.5
+    name: "SAFRA YOLU TAŞI, KOLANJİT VEYA KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the control follows the removal of the common-bile-duct stone of story S50, so K80.5 stays the principal code."
+  - icd10: K91.5
+    name: "POSTKOLESİSTEKTEMİ SENDROMU"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; coded on the stay of story S50. Clinician to confirm."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+notes:
+  - "The visit is on Wednesday 2026-09-30, the day after the discharge of story S50 (09-29), in gastroenterology: the last day of the service window."
+  - "Not general surgery: SUT 2.2.2.B-3.(1) (C000714) puts an outpatient examination of the same branch within 10 days of a package discharge inside the package, the end of the group's window counting as the discharge. Story S8's group B package ends on 09-24, so a general-surgery examination up to 10-04 is inside it; the ERCP package of story S50 (Genel Cerrahi) too."
+  - "No test is billed: the liver tests of the stay of story S50 are inside its package, and the duplicate-test rule reads seven days."
+
+showcase:
+  story: S51
+  sex: F
+  age: 47
+  admit: "2026-09-30"

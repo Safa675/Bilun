@@ -749,7 +749,7 @@ def test_every_patient_of_the_registry_is_measured(measured: dict[str, dict[str,
 def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_their_later_bills_add(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
-    """The plan measured 273 / 14 / 14 on the eight first bills; the later bills of patients 2, 3, 4, 5, 6 and 7 add the rest."""
+    """The plan measured 273 / 14 / 14 on the eight first bills; the later bills of patients 2 to 8 add the rest."""
     summary = cm.summarize(showcase_eight)
     assert summary["patients"] == 8
     assert summary["blocks"]["total"] == 20
@@ -761,9 +761,11 @@ def test_the_eight_showcase_patients_keep_the_plans_blocks_and_gain_what_their_l
     # patient 7's observation (S47) adds the duplicate test: +1 evaluated, +1 matched, +1 with a row (a review);
     # patient 2's readmission (S33) and its control (S34) add the drug count and the vakabaşı examination: +2 evaluated,
     # +3 matched (the two and GÖĞÜS-6, which matches any inpatient chest-disease bill: EI-24), +2 with a row (reviews);
-    # patient 3's instrumentation (S38) adds BEYİN-2 (+1 matched, +1 with a row) and the neuromonitoring review (+1 with a row)
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 16, 14 + 7, 14 + 6)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (14, 6, 0)
+    # patient 3's instrumentation (S38) adds BEYİN-2 (+1 matched, +1 with a row) and the neuromonitoring review (+1 with a row);
+    # patient 8's ER visit (S49) adds the green-area rule `tablo15_7` (+1 evaluated, +1 matched, +1 with a row: a review)
+    # and its ERCP admission (S50) GENEL CERRAHİ-1 (+1 matched, +1 with a row: a review keyed on the codes alone, EI-24)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (273 + 17, 14 + 9, 14 + 8)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (16, 6, 0)
 
 
 def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
@@ -771,19 +773,25 @@ def _row(entry: dict[str, Any]) -> tuple[int, int, int, int, int]:
     return (len(entry["blocks_with_output"]), wavea["evaluated"], wavea["matched"], wavea["review"], wavea["advisory"])
 
 
-def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patients_2_to_7(
+def test_the_eight_showcase_patients_reproduce_the_plans_per_patient_table_but_for_patients_2_to_8(
     showcase_eight: dict[str, dict[str, Any]],
 ) -> None:
     rows = [_row(entry) for _, entry in sorted(showcase_eight.items())]
     second, third = cohort.role("showcase_S2").patient_id, cohort.role("showcase_S3").patient_id
     fourth, fifth = cohort.role("showcase_S4").patient_id, cohort.role("showcase_S5").patient_id
     sixth, seventh = cohort.role("showcase_S6").patient_id, cohort.role("showcase_S7").patient_id
-    assert [showcase_eight[p]["claims"] for p in (second, third, fourth, fifth, sixth, seventh)] == [4, 4, 3, 5, 3, 3]
-    # the plan's table is the first bill of each patient: the two patients with one bill still give it
-    several = (second, third, fourth, fifth, sixth, seventh)
+    eighth = cohort.role("showcase_S8").patient_id
+    several = (second, third, fourth, fifth, sixth, seventh, eighth)
+    assert [showcase_eight[p]["claims"] for p in several] == [4, 4, 3, 5, 3, 3, 4]
+    # the plan's table is the first bill of each patient: patient 1, the one patient with one bill, still gives it
     assert [r for (pid, _), r in zip(sorted(showcase_eight.items()), rows, strict=True) if pid not in several] == [
-        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i not in (1, 2, 3, 4, 5, 6)
+        r for i, r in enumerate(PLAN_BASELINE_PER_PATIENT) if i not in (1, 2, 3, 4, 5, 6, 7)
     ]
+    # patient 8 is read over its stay, its ER visit (S49), its ERCP admission (S50) and its control (S51): 25 more rules
+    # evaluated (the ER and outpatient rules, all evaluated elsewhere already, and the green-area rule), 6 more matched
+    # with a row (GENEL CERRAHİ-1, ORTAK-13, -19, -20, -22 and `tablo15_7`, reviews); no block of its own (the copay
+    # exemption of its ER visit shows on the app path only)
+    assert _row(showcase_eight[eighth]) == (4, 250 + 25, 7 + 6, 4 + 6, 3)
     # patient 3 is read over its stay, its pre-operative visit (S36), its control (S37) and its instrumentation (S38):
     # 15 more rules evaluated (the outpatient and package rules, all evaluated elsewhere already), 7 more matched with a
     # row (ORTAK-8, -13, -20 and BEYİN-2, reviews; the package advisories 2.2.1.B-1.a, 2.2.2.(1).package and
@@ -870,14 +878,26 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
     23 -> 24 (BEYİN VE SİNİR CERRAHİSİ-2, a Fatura İnceleme rule keyed on the code P614040 alone, on the clean bill too),
     with a row 20 -> 22 (BEYİN-2 and the neuromonitoring add-on `conditional_addon_ek2d_neuromonitoring`, two reviews; the
     add-on's evaluation is unavailable by its spec, so it is no match), finding kinds unchanged.
+
+    After S49 to S51 (WP17, patient 8: the ER visit in the green area three weeks before her stay, an ERCP admission
+    with the sphincterotomy and the stone extraction billed in full beside the package, the control after it): bills
+    35 -> 38, blocks unchanged, evaluated 291 -> 292 and matched 24 -> 26 (the green-area rule `tablo15_7`, and
+    GENEL CERRAHİ-1, a Fatura İnceleme rule keyed on the ERCP codes alone, on the clean bill too: EI-24), with a row
+    22 -> 24 (both reviews), finding kinds unchanged (the session violation of S50 is the kind of S8).
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (15, 35)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (15, 38)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
-    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (291, 24, 22)
-    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (15, 6, 1)
+    assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (292, 26, 24)
+    assert (wavea["review"], wavea["advisory"], wavea["financial"]) == (17, 6, 1)
     assert summary["finding_kinds"]["count"] == 42
+    eighth = cohort.role("showcase_S8").patient_id
+    green, ercp = "tablo15_7_green_area_bundled_extra", "GENEL CERRAHİ-1.endoskopik_bilier_islemler_bundling"
+    assert {pid for pid, entry in measured.items() if {green, ercp} & set(entry["wavea"]["matched_ids"])} == {eighth}
+    assert {green, ercp} <= set(measured[eighth]["wavea"]["review_ids"])
+    without_eighth = cm.summarize({pid: entry for pid, entry in measured.items() if pid != eighth})["wavea"]
+    assert green not in without_eighth["evaluated_ids"] and ercp in without_eighth["evaluated_ids"]
     third = cohort.role("showcase_S3").patient_id
     beyin2, neuromonitoring = "BEYİN-2.posterior_segmental_enstruman_artrodez", "conditional_addon_ek2d_neuromonitoring"
     assert {pid for pid, entry in measured.items() if beyin2 in entry["wavea"]["matched_ids"]} == {third}
@@ -952,6 +972,7 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_only_s14_has_a_finan
         cohort.role("showcase_S6").patient_id: 3,  # the stay, the neurology control S45 and the physiatry visit S46
         cohort.role("showcase_S5").patient_id: 5,  # the stay, its ER visit S41, readmission S42, walker S43, geriatrics S44
         cohort.role("showcase_S3").patient_id: 4,  # the stay, its pre-operative visit S36, control S37, instrumentation S38
+        cohort.role("showcase_S8").patient_id: 4,  # the stay, its ER visit S49, its ERCP admission S50 and its control S51
         cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
         cohort.scenario("S17").patient_id: 2,  # patient 14: the month of haemodialysis and the emergency session
         cohort.scenario("S18").patient_id: 2,  # patient 15: the cirrhosis stay and the variceal rebleed
@@ -975,7 +996,8 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
     assert {duplicate, ortak20, ortak13} <= set(entry["wavea"]["matched_ids"])
     # the duplicate exam is this patient's alone; ORTAK-20 matches every outpatient bill that bills an EK-2B line, so
     # patient 2's control visit (S32), patient 3's two visits (S36, S37), patient 5's two visits (S43, S44), patient 6's
-    # two visits (S45, S46), patient 7's follow-up (S48) and patient 13's day case (S20) have it too
+    # two visits (S45, S46), patient 7's follow-up (S48), patient 8's control (S51) and patient 13's day case (S20) have it
+    # too
     assert {pid for pid, e in measured.items() if duplicate in e["wavea"]["matched_ids"]} == {patient}
     assert {pid for pid, e in measured.items() if ortak20 in e["wavea"]["matched_ids"]} == {
         patient,
@@ -984,6 +1006,7 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
         cohort.scenario("S43").patient_id,
         cohort.scenario("S45").patient_id,
         cohort.scenario("S48").patient_id,
+        cohort.scenario("S51").patient_id,
         cohort.scenario("S20").patient_id,
         cohort.scenario("S17").patient_id,  # the month of haemodialysis, a day-case claim of EK-2C sessions
     }
@@ -1054,10 +1077,13 @@ def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state
         second: True
     }
     assert {pid for pid, item in copay.items() if item["outcome"] == "partial_exempt"} == _partial_patients()
-    # S2 is exempt on EK-1/A; the three emergency visits (S7, S10 of patient 12 and S41 of patient 5) on the visit type,
-    # which the copay check reads at patient level: patient 5's EK-1/A match no longer shows (WP15)
-    fifth = cohort.role("showcase_S5").patient_id
-    exempt = {second, cohort.role("showcase_S7").patient_id, cohort.scenario("S10").patient_id, fifth}
+    # S2 is exempt on EK-1/A; the four emergency visits (S7, S10 of patient 12, S41 of patient 5 and S49 of patient 8)
+    # on the visit type, which the copay check reads at patient level: patient 5's EK-1/A match no longer shows (WP15),
+    # and patient 8, without a ground before, is exempt over all four of its bills (WP17). Patient 8's is an engine
+    # error: S49 is a green-area visit, which SUT 1.8.5.(5) (C000370) leaves out of the exemption, and the check leaves
+    # 520021 out only when it is the patient's only code (`copay_exemption_rules/visit_type.py`)
+    fifth, eighth = cohort.role("showcase_S5").patient_id, cohort.role("showcase_S8").patient_id
+    exempt = {second, cohort.role("showcase_S7").patient_id, cohort.scenario("S10").patient_id, fifth, eighth}
     assert {pid for pid, item in copay.items() if item["outcome"] == "exempt"} == exempt
     for pid in _partial_patients():
         assert "ek1a_report_unknown" in copay[pid]["rate_correction_codes"]
@@ -1080,7 +1106,7 @@ def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state
     assert sum(item["rate_corrections"] for item in copay.values()) == 16
     assert cm.summarize(measured_app_path)["copay"] == {
         "rate_corrections": 16,
-        "outcomes": {"exempt": 4, "none": 5, "partial_exempt": 6},  # patient 13 (S20, K42.9): no exemption ground
+        "outcomes": {"exempt": 5, "none": 4, "partial_exempt": 6},  # patient 13 (S20, K42.9): no exemption ground
     }
 
 
@@ -1090,7 +1116,7 @@ def test_the_app_path_moves_no_block_and_no_wave_a_rule_of_the_claims_only_measu
     plain, app = cm.summarize(measured), cm.summarize(measured_app_path)
     assert app["blocks"] == plain["blocks"]
     assert app["wavea"] == plain["wavea"]
-    # the copay exemption adds one kind: the exemption review of the exempt patients (S2 on EK-1/A, the three emergency visits)
+    # the copay exemption adds one kind: the exemption review of the exempt patients (S2 on EK-1/A, the four emergency visits)
     assert set(app["finding_kinds"]["kinds"]) - set(plain["finding_kinds"]["kinds"]) == {"action:copay:exemption_review"}
     assert set(plain["finding_kinds"]["kinds"]) <= set(app["finding_kinds"]["kinds"])
 

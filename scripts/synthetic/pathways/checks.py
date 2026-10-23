@@ -48,6 +48,9 @@ EK3F1_FROM = "2025-12-13"
 # annex=EK-3C-2/effective_date=2026-01-24, the list "Yür. 24.01.2026" of the 2026-10-02 SUT. It carries no end date.
 EK3C2_FROM = "2026-01-24"
 
+# Line kinds of an EK-2B procedure that may stand beside an EK-2C package of its session (C000672, C000673; slice G15).
+EK2B_SESSION_KINDS: tuple[str, ...] = ("procedure", "operation")
+
 # Package window in days, counted from the day of the package (SUT 2.2.2.B-1(3): C000702-C000706).
 PACKAGE_WINDOW_DAYS = {"A": 15, "B": 10, "C": 8, "D": 5, "E": 3}
 
@@ -462,6 +465,10 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     A blood component of C000694 (red cells 705371 and the others of `BLOOD_PACKAGE_SHARES`) is inside the package
     too, but the provider bills it apart at a share of its puan (SUT 2.2.2.B-1.(1).e, 4.6.(4): C000694, C007927), so a
     package bill may hold it as a line of kind procedure; `expand` bills it at that share (slice G14).
+    An EK-2B procedure done in the session of an EK-2C package (a line of kind procedure or operation with the role
+    same_incision or separate_incision, beside a package line with the role primary) is billed beside the package at
+    30 % or 50 % of its own puan (SUT 2.2.2.B(3)(c), (ç): C000672, C000673; slice G15); `expand` bills it at that share
+    and `session.order` checks that the package's puan leads (else the whole session goes itemized, C000672).
     """
     if pathway.billing_mode == "itemized":
         return [
@@ -474,10 +481,17 @@ def check_package_mode(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     why = "inside the package (SUT 2.2.2.B-1(1): C000685 to C000699); remove it"
     dialysis = set(dialysis_package_codes(cat))
     sessions_only = all(p.code in dialysis for p in pathway.procedures if p.kind == "package")
+    led = any(p.kind == "package" and p.session_role == "primary" for p in pathway.procedures)
+
+    def beside_the_package(p) -> bool:  # an EK-2B line of the package's session (C000672, C000673)
+        return led and p.kind in EK2B_SESSION_KINDS and p.session_role in ("same_incision", "separate_incision")
+
     return [
         Problem("package.mode", f"procedures[{p.id}]", f"a {p.kind} line is {why}")
         for p in pathway.procedures
-        if p.kind != "package" and not (p.kind == "procedure" and p.code in BLOOD_PACKAGE_SHARES)
+        if p.kind != "package"
+        and not (p.kind == "procedure" and p.code in BLOOD_PACKAGE_SHARES)
+        and not beside_the_package(p)
     ] + [
         Problem("package.mode", f"drugs[{d.id}]", f"drugs are {why}")
         for d in pathway.drugs
@@ -593,7 +607,15 @@ def check_sessions(pathway: Pathway, cat: Catalogs) -> list[Problem]:
     for line in pathway.procedures:
         if line.session_role and included(line, pins):
             sessions.setdefault(resolve_days(line.days[0], anchors)[0], []).append(line)
-    history = cat.ek2c if pathway.billing_mode == "package" else cat.ek2b
+    # each code's puan from its own list: EK-2C for a package code, EK-2B for the others (a session of a package bill
+    # may hold EK-2B lines beside the package, C000672 and C000673: slice G15)
+    columns = ["code", "name", "puan", "valid_from", "valid_to"]
+    history = pl.concat(
+        [
+            cat.ek2c.select(columns).filter(pl.col("code").str.starts_with("P")),
+            cat.ek2b.select(columns).filter(~pl.col("code").str.starts_with("P")),
+        ]
+    )
     window = effective_window(pathway, cat)
     out = []
     for day, lines in sorted(sessions.items()):

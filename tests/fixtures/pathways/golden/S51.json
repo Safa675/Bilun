@@ -1,0 +1,38 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-30",
+      "icd10": "K80.5",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-30",
+      "icd10": "K91.5",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-09-30",
+    "claim_start_date": "2026-09-30",
+    "claim_type": "poliklinik",
+    "department": "Gastroenteroloji",
+    "discharge_date": null,
+    "primary_icd10": "K80.5"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-09-30",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1076"
+    }
+  ],
+  "story": "S51"
+}

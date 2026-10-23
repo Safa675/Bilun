@@ -357,6 +357,33 @@ PINNED_FINDINGS: dict[
         [],
         ["material_miat_ek3c2"],
     ),
+    # the CRP and the ultrasound billed beside the flat-fee green-area examination (El Kitabı Tablo 15 #7): a review
+    # without money
+    "S49": (
+        "tablo15_7_green_area_bundled_extra",
+        "islem",
+        "crp",
+        "kismi_red",
+        "compliance_error",
+        ["C000370"],
+        "1.8.5",
+        ["src/bilun/domain/prose_rules/common_billing_errors.py:detect_green_area_bundled_extras"],
+        [],
+        ["tablo15_7_green_area_bundled_extra"],
+    ),
+    # the sphincterotomy and the stone extraction billed in full beside the ERCP package instead of 30 % (C000672)
+    "S50": (
+        "drg_unbundling",
+        "islem",
+        "sphincterotomy",
+        "kismi_red",
+        "deduction_risk",
+        ["C000672"],
+        "2.2.2.B(3)(c)",
+        ["src/bilun/domain/prose_rules/drg_unbundling.py:analyze_claim_unbundling"],
+        [],
+        ["2.2.2.B.c"],
+    ),
     "S17": (
         "drug_indication",
         "ilac",
@@ -471,7 +498,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46", "S49", "S50"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:

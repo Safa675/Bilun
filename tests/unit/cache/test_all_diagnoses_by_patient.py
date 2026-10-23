@@ -173,4 +173,6 @@ def test_the_demo_patients_list_all_their_diagnoses() -> None:
     # the principal codes of the three bills first (the stay J69.0; the neurology control S45 and the physiatry visit S46,
     # G20), then the others: the visits bring G20, which the stay of S6 does not code (its fault)
     assert got["SENTETIK-HASTA-0006"] == ["G20", "J69.0", "I10", "R13"]
-    assert got["SENTETIK-HASTA-0008"] == ["K80.2", "K42.9"]
+    # the principal codes of the four bills first (the stay and its ER visit S49, K80.2; the ERCP admission S50 and its
+    # control S51, K80.5), then the others: the admission brings the post-cholecystectomy syndrome K91.5
+    assert got["SENTETIK-HASTA-0008"] == ["K80.2", "K80.5", "K42.9", "K91.5"]

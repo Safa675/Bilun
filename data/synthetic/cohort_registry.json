@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 35,
-    "lab_clean.parquet": 380,
+    "anadata_clean.parquet": 38,
+    "lab_clean.parquet": 381,
     "recete_clean.parquet": 25
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "ea961d78f6c6aa740b0acaaa5e12d747a5e73ab3df957c28e75fc6405daeca4d",
-    "lab_clean.parquet": "57216d24445656721909eba901190a6deb646060108b99747f4033b5af1ad72b",
+    "anadata_clean.parquet": "1e17ea49e8073fbc9054ddd2c39f5b96e40a73fbd224d6bed7784b033b662451",
+    "lab_clean.parquet": "f70f048fdd3861a85ca840df2753b14888b3898650bee989be2886f4fd3f0a44",
     "recete_clean.parquet": "c73f82b66a8e6de6b9bb9e71edd34ad64feaf3846217d37ab8f02b7480fc3131"
   },
   "counts": {
-    "claim_diagnoses.parquet": 84,
-    "claim_headers.parquet": 35,
+    "claim_diagnoses.parquet": 89,
+    "claim_headers.parquet": 38,
     "drug_claim_lines.parquet": 25,
-    "expected_rule_outputs.parquet": 26,
+    "expected_rule_outputs.parquet": 28,
     "material_claim_lines.parquet": 6,
     "medula_rejection_events.parquet": 1,
     "patient_copay_profiles.parquet": 15,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 245
+    "procedure_claim_lines.parquet": 252
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -236,6 +236,33 @@
       "pathway_id": "cholelithiasis_umbilical_hernia_two_packages",
       "patient_id": "SENTETIK-HASTA-0008",
       "story": "S8",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0008-002",
+      "fault_id": "F_S49_GREEN_AREA_TESTS_BILLED_BESIDE_THE_FLAT_FEE",
+      "is_clean": false,
+      "pathway_id": "cholelithiasis_biliary_colic_er_green_area",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S49",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0008-003",
+      "fault_id": "F_S50_ERCP_SESSION_LINES_BILLED_IN_FULL",
+      "is_clean": false,
+      "pathway_id": "retained_common_bile_duct_stone_ercp_package",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S50",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0008-004",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "retained_common_bile_duct_stone_gastroenterology_control",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S51",
       "tier": "showcase"
     },
     {
@@ -630,6 +657,42 @@
       "sut_section": "2.2.2.B(3)(a)"
     },
     {
+      "amount_try": "0.00",
+      "billed_clean_try": "108.26",
+      "billed_faulty_try": "180.68",
+      "claim_id": "F-SENTETIK-HASTA-0008-002",
+      "effect_kind": "compliance_error",
+      "engine_rule": "tablo15_7_green_area_bundled_extra",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S49_GREEN_AREA_TESTS_BILLED_BESIDE_THE_FLAT_FEE",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0008-002-F_S49_GREEN_AREA_TESTS_BILLED_BESIDE_THE_FLAT_FEE",
+      "line_id": "ISL-F-SENTETIK-HASTA-0008-002-003",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "cholelithiasis_biliary_colic_er_green_area",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S49",
+      "sut_section": "1.8.5"
+    },
+    {
+      "amount_try": "1347.95",
+      "billed_clean_try": "10357.30",
+      "billed_faulty_try": "11705.25",
+      "claim_id": "F-SENTETIK-HASTA-0008-003",
+      "effect_kind": "deduction_risk",
+      "engine_rule": "drg_unbundling",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S50_ERCP_SESSION_LINES_BILLED_IN_FULL",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0008-003-F_S50_ERCP_SESSION_LINES_BILLED_IN_FULL",
+      "line_id": "ISL-F-SENTETIK-HASTA-0008-003-001",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "retained_common_bile_duct_stone_ercp_package",
+      "patient_id": "SENTETIK-HASTA-0008",
+      "story": "S50",
+      "sut_section": "2.2.2.B(3)(c)"
+    },
+    {
       "amount_try": "758.01",
       "billed_clean_try": "8574.85",
       "billed_faulty_try": "7816.84",
@@ -1005,6 +1068,24 @@
       ],
       "patient_id": "SENTETIK-HASTA-0007"
     },
+    "S49": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0008-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0008"
+    },
+    "S50": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0008-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0008"
+    },
+    "S51": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0008-004"
+      ],
+      "patient_id": "SENTETIK-HASTA-0008"
+    },
     "S9": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0009-001"
@@ -1015,14 +1096,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "31d4df85420b206611a031630b510aa83a46900a7dcdc07568de560a55b3dd17",
-    "claim_headers.parquet": "3b01dd9bdd9d271f7bb803b59cba2bec3f3a1e8e64b2dcdd218d81c84ba29cf4",
+    "claim_diagnoses.parquet": "79a39323ff859f021ce5674863034b150e2521cb1bf9ad7b523899cb51be7d21",
+    "claim_headers.parquet": "028970f73caa87c3c18a0ba82f50d34820c047ccd1aa715ba3f476172f00db86",
     "drug_claim_lines.parquet": "5fde8f4bc6d100e1119ec2c290130a8da3e51e3ce28e887d8acfea3a6aa78329",
-    "expected_rule_outputs.parquet": "db902a5544990cc225ecfd9de6d8ec30bab3c7b4b9b8966facbb1cd3eba9123b",
+    "expected_rule_outputs.parquet": "475820362934e7bd4ccad2f8231feb2c8684d5eda2867ff834d9c7e9bd328764",
     "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "1f4c2502821cebcdaf310bba2eb951da90dca2418236e5ff9bbeb1f35eb9f55f",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "696bdb84609a0a4fe37475509dc3098b12da46c8485c4ccdda14de63837e4981"
+    "procedure_claim_lines.parquet": "fd962eba53e32f16d4c0f9291db13896a988bbb9f90fbc6e0fc9ddb58dd415c6"
   }
 }

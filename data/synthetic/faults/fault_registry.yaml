@@ -591,3 +591,49 @@ faults:
       expected_status: eksik_faturalama
     basis: sut
     source: "C000648 (SUT 2.2.2.(3)): the bed of a stay under 24 hours is billed as the day bed 510120; the observation of S47 billed no bed line."
+
+  - fault_id: F_S49_GREEN_AREA_TESTS_BILLED_BESIDE_THE_FLAT_FEE
+    story: S49
+    title: "A CRP and an abdominal ultrasound billed beside the flat-fee green-area examination (the ER visit of the patient of story S8)"
+    target_pathway: cholelithiasis_biliary_colic_er_green_area
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: cholelithiasis_biliary_colic_er_green_area_tests_billed
+    expected_finding:
+      engine_rule: tablo15_7_green_area_bundled_extra
+      detectors:
+        - "src/bilun/domain/prose_rules/common_billing_errors.py:detect_green_area_bundled_extras"
+      sut_section: "1.8.5"
+      sut_clauses: ["C000370"]
+      effect_kind: compliance_error
+      line_type: islem
+      target_entry_id: crp
+      expected_status: kismi_red
+      finding_ids: ["tablo15_7_green_area_bundled_extra"]
+    basis: sut
+    source: "C000370 (SUT 1.8.5.(5)): green-area ER services are billed under the name of 520021; El Kitabı Tablo 15 #7 bills no test or imaging beside it."
+
+  - fault_id: F_S50_ERCP_SESSION_LINES_BILLED_IN_FULL
+    story: S50
+    title: "Sphincterotomy and stone extraction billed in full beside the ERCP package instead of 30 % (the readmission of the patient of story S8)"
+    target_pathway: retained_common_bile_duct_stone_ercp_package
+    mutations:
+      - op: set_billed_ratio
+        entry_id: sphincterotomy
+        billed_ratio: "1.0000"
+      - op: set_billed_ratio
+        entry_id: stone_extraction
+        billed_ratio: "1.0000"
+    expected_finding:
+      engine_rule: drg_unbundling
+      detectors:
+        - "src/bilun/domain/prose_rules/drg_unbundling.py:analyze_claim_unbundling"
+      sut_section: "2.2.2.B(3)(c)"
+      sut_clauses: ["C000672"]
+      effect_kind: deduction_risk
+      line_type: islem
+      target_entry_id: sphincterotomy
+      expected_status: kismi_red
+      finding_ids: ["2.2.2.B.c"]
+    basis: sut
+    source: "C000672 (SUT 2.2.2.B(3)(c)): an EK-2B procedure of the session of an EK-2C package, same incision, is billed at 30 % of its puan, not in full."

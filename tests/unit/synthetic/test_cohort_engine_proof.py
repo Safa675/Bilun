@@ -329,7 +329,7 @@ def test_report_scalars_match_proof(
     assert report_scalars(b.clean_report) == normalize(b.proof["clean"]["report"])
 
 
-# --- 5. Fault is found with its amount (or drug_indication for S6, a divergence for S8, S9) ----
+# --- 5. Fault is found with its amount (or drug_indication for S6, a divergence for S8, S9, S22, S50) ----
 
 
 @pytest.mark.parametrize("story", _STORIES)
@@ -342,7 +342,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
     expected_amount = _f(b.record.amount_try)
 
     if story == "S8":
-        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8", "S9", "S22"}
+        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8", "S9", "S22", "S50"}
         div = KNOWN_REPORT_DIVERGENCES["S8"]
         assert isinstance(div, ReportDivergence)
         assert div.report_amount_try == "3584.80"
@@ -388,6 +388,23 @@ def test_fault_found_with_expected_amount_in_signal_diff(
         assert target_signal_found("S22", b.record.amount_try, diff_tuples) is True
         return
 
+    if story == "S50":
+        # The report prices the two EK-2B procedures beside the ERCP package at the lenient separate-incision reading
+        # (50 %, C000673); the record carries the gap to the clean bill, which bills the same-incision 30 % (C000672).
+        div = KNOWN_REPORT_DIVERGENCES["S50"]
+        assert isinstance(div, ReportDivergence)
+        assert (div.report_amount_try, div.record_amount_try) == ("962.82", "1347.95")
+        assert b.record.amount_try == div.record_amount_try
+        rows = [(r["procedure_code"], r["expected_point_factor"], r["risk_amount_try"]) for r in b.direct_faulty]
+        assert rows == [("701370", 0.3, 755.55), ("701440", 0.3, 592.4)]  # the strict reading: 1347.95 together
+        assert ("scalar", "audit_exposure_try", "", "", 962.82) in diff_tuples
+        assert ("action", "audit_exposure", "session_point_violation", "701370", 539.68) in diff_tuples
+        assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
+        assert "962.82" in b.story_proof.note and "1347.95" in b.story_proof.note
+        assert "Safa675/Bilun#311 item 6" in b.story_proof.note
+        assert target_signal_found("S50", b.record.amount_try, diff_tuples) is True
+        return
+
     assert b.story_proof.note == ""
     if expected_amount > 0.0:
         assert any(_f(t[-1]) == expected_amount for t in diff_tuples), (
@@ -405,6 +422,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             "S38": "conditional_addon_ek2d_neuromonitoring",
             "S40": "tablo15_2_duplicate_exam_10day",
             "S44": "report_duration_mismatch",
+            "S49": "tablo15_7_green_area_bundled_extra",
         }[story]
         assert any(marker in t for t in diff_tuples), (
             f"{story}: expected {marker!r} in a tuple of F - C, got {diff_tuples}"
@@ -570,8 +588,8 @@ def test_cli_main_prints_one_line_per_story_and_returns_zero(
     captured = capsys.readouterr()
     lines = [ln for ln in captured.out.strip().splitlines() if ln.strip()]
     assert len(lines) == len(_STORIES)
-    # S8, S9 and S22 carry a divergence between the report and the record; S11 does not
-    assert {line.split()[0] for line in lines if "note:" in line} == {"S8", "S9", "S22"}
+    # S8, S9, S22 and S50 carry a divergence between the report and the record; S11 does not
+    assert {line.split()[0] for line in lines if "note:" in line} == {"S8", "S9", "S22", "S50"}
     assert captured.err == ""
     assert rc == 0
 
@@ -917,6 +935,30 @@ def test_s38_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bun
     assert elsewhere.claim_id in {c.claim_id for c in with_other.history.claims}
     assert direct_rows("S38", with_other) == []
     assert [r["procedure_code"] for r in direct_rows("S38", replace(b.faulty_ctx, patient_history=history))] == ["703365"]
+
+
+def test_s49_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bundles: dict[str, _StoryBundle]) -> None:
+    """The green-area rule is about one claim and its own lines: a green-area examination with a CRP on another bill of the
+    patient (in the history) is that bill's finding, not this bill's, so the clean bill's rows stay empty beside it."""
+    b = story_bundles["S49"]
+    lines = [line for line in b.faulty_ctx.procedure_lines if line.procedure_code in ("520021", "L101850")]
+    elsewhere = replace(b.clean_ctx.claims[0], claim_id="F-SENTETIK-HASTA-0008-090")
+    moved = tuple(
+        replace(line, claim_id=elsewhere.claim_id, procedure_line_id=f"ISL-F-SENTETIK-HASTA-0008-090-00{n}")
+        for n, line in enumerate(lines, start=1)
+    )
+    kept = b.clean_ctx.patient_history
+    assert kept is not None and len(moved) == 2
+    history = PatientClaimHistory(
+        claims=(*kept.claims, elsewhere),
+        procedure_lines=(*kept.procedure_lines, *moved),
+        material_lines=kept.material_lines,
+    )
+    with_other = replace(b.clean_ctx, patient_history=history)
+    assert elsewhere.claim_id in {c.claim_id for c in with_other.history.claims}
+    assert direct_rows("S49", with_other) == []
+    faulty = direct_rows("S49", replace(b.faulty_ctx, patient_history=history))
+    assert [r["procedure_code"] for r in faulty] == ["803602", "L101850"]
 
 
 def test_s44_finds_the_romosozumab_report_of_twelve_months(story_bundles: dict[str, _StoryBundle]) -> None:

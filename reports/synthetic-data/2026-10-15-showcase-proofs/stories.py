@@ -1,4 +1,4 @@
-"""Thirty-five showcase stories: clean bill + one injected fault each, except S23, S32, S36, S37, S39, S41, S43, S45 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37 and S38 on 2026-10-23).
+"""Thirty-eight showcase stories: clean bill + one injected fault each, except S23, S32, S36, S37, S39, S41, S43, S45, S48 and S51 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37, S38, S49, S50 and S51 on 2026-10-23).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -24,6 +24,7 @@ from src.bilun.domain.claims.models import MedulaRejectionEvent
 # EK-2A branch codes (data/gazette/curated/ek2a_outpatient_visits.parquet)
 ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI, FTR, GERIATRI = (
     "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062", "1800", "1073")
+GASTRO = "1076"
 
 # EK-4A barcodes (data/gazette/curated/ek4a_history.parquet; ingredient from the drug crosswalk)
 IESEF = "8699508270224"       # IESEF 1 G IV (seftriakson), 1 vial
@@ -923,7 +924,98 @@ def s38(variant: str) -> Bill:
     return b
 
 
-# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48")
+# ── S49-S51 ─ the three bills before and after the cholecystectomy of S8 ──
+# The patient of S8 (47 F) has four bills: the green-area ER visit three weeks before her stay (S49, a precursor), the
+# stay of S8, a readmission for a stone left in the common bile duct with an ERCP (S50) and the control the day after it
+# (S51). Each bill's proof has the patient's other bills as history, the way the loaded cohort gives them (claim order:
+# S8, S49, S50, S51; faulty where the bill has a fault).
+_EK2B_BESIDE_PACKAGE = Decimal("0.30")  # an EK-2B procedure of the session of an EK-2C package, same incision (C000672)
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48}
+
+def _s49(variant: str) -> Bill:
+    day = D("2026-08-25")
+    b = Bill("SH-08", "C-SH49", "acil", "Acil Tıp", None, None, "K80.2", start=day, end=day)
+    b.diag("K80.2", primary=True, on=day)
+    b.proc("520021", day, specialty=ACIL)               # the green-area examination: a flat-fee visit
+    if variant != "clean":                              # the fault: a test and an imaging billed beside the flat fee
+        b.proc("803602", day, specialty=RAD)            # abdominal ultrasound: the gallstones (the bill's line order)
+        b.proc("L101850", day, specialty=ACIL)          # CRP
+    return b
+
+
+def _s50(variant: str) -> Bill:
+    a, op, d = D("2026-09-27"), D("2026-09-28"), D("2026-09-29")
+    b = Bill("SH-08", "C-SH50", "yatis", "Genel Cerrahi", a, d, "K80.5", package_candidate=True)
+    b.diag("K80.5", primary=True)
+    b.diag("K91.5")
+    b.proc("P701360", op, specialty=GENCER)             # the ERCP package (group C): bed, sedation, tests inside
+    for code in ("701370", "701440"):                   # sphincterotomy, stone extraction: EK-2B, beside the package
+        lid = b.proc(code, op, specialty=GENCER)
+        if variant == "clean":                           # same endoscope: 30 % of their own puan (C000672)
+            i = [p.procedure_line_id for p in b.procs].index(lid)
+            p = b.procs[i]
+            billed = money(p.unit_price_try * p.quantity * _EK2B_BESIDE_PACKAGE)
+            b.procs[i] = replace(p, billed_amount_try=billed, expected_payable_try=billed)
+    return b
+
+
+def _s51() -> Bill:
+    day = D("2026-09-30")
+    b = Bill("SH-08", "C-SH51", "poliklinik", "Gastroenteroloji", None, None, "K80.5", start=day, end=day)
+    for i, icd in enumerate(("K80.5", "K91.5")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=GASTRO)             # the control, in another branch than the general surgeons
+    return b
+
+
+def _patient8_history(story: str) -> tuple[Bill, ...]:
+    """The other bills of the patient of S8 as the loaded cohort holds them, in claim order."""
+    bills = {"S8": lambda: s8("faulty"), "S49": lambda: _s49("faulty"), "S50": lambda: _s50("faulty"), "S51": _s51}
+    return tuple(build() for name, build in bills.items() if name != story)
+
+
+# ── S49 ─ a CRP and an abdominal ultrasound billed beside the green-area examination ──
+def s49(variant: str) -> Bill:
+    """47 F, the patient of S8: a biliary colic seen in the ER green area on 2026-08-25, three weeks before her stay.
+
+    A precursor. The green-area examination 520021 is a flat-fee visit (El Kitabı Tablo 15 #7; SUT 1.8.5.(5) bills the
+    green-area services under its name, C000370): the clean bill bills the examination alone, the faulty one also the
+    CRP and the abdominal ultrasound of the visit. No money of its own in the engine: a review per extra line.
+    """
+    b = _s49(variant)
+    b.history = _patient8_history("S49")
+    return b
+
+
+# ── S50 ─ the EK-2B procedures of the ERCP session billed in full beside its package ──
+def s50(variant: str) -> Bill:
+    """47 F, the patient of S8: readmitted 2026-09-27 to 09-29 with a stone left in the common bile duct.
+
+    The ERCP has an EK-2C package (P701360, group C), so the inpatient bill is the package (C000646); the sphincterotomy
+    and the stone extraction have none and are billed beside it at 30 % of their EK-2B puan (SUT 2.2.2.B(3)(c),
+    C000672). The faulty bill bills both in full. The engine reads the session without an incision: the report shows the
+    lenient 50 % reading (962.82), the record the strict 30 % one (1347.95), as for S8.
+    """
+    b = _s50(variant)
+    b.history = _patient8_history("S50")
+    return b
+
+
+# ── S51 ─ the control the day after the ERCP, in gastroenterology (a clean bill) ──
+def s51(variant: str) -> Bill:
+    """47 F, the patient of S8: the gastroenterology control on 2026-09-30, the day after her discharge.
+
+    A clean bill (CLEAN_ONLY). Not general surgery: an examination of that branch within 10 days of S8's package
+    discharge (the end of its group B window counting as the discharge) is inside the package (C000714).
+    """
+    if variant != "clean":
+        raise ValueError("S51 is a clean bill: it has no faulty variant")
+    b = _s51()
+    b.history = _patient8_history("S51")
+    return b
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51}
