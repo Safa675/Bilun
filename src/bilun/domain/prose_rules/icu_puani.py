@@ -29,7 +29,10 @@ sunucularınca yapılması halinde"). The uplift is applied to the intermediate
 package puan/price only — the 510090 day-rate (EK-2B hizmet başı) is not in
 EK-2/C-1 and is never uplifted. The tier gate is resolved from the claim
 header via ``normalize_facility_tier``; unresolved or non-3rd-basamak tiers
-get no uplift (honest skip, not a default-apply).
+get no uplift (honest skip, not a default-apply). SUT 2.2.(20) (C000549) adds
+the EK-2/C-1 rate to the procedure's points, so the rows of these packages are
+no copay rate: the EK-2/C-1 copay-rate check does not read them
+(``ICU_PACKAGE_CODES``).
 
 See plans/billing/icu-ilave-oran-plan.md for the regulatory basis.
 """
@@ -63,6 +66,9 @@ _SUT_SECTION_ID = "2.4.4.H"
 # care (matches refakatci._ICU_PROCEDURE_CODES convention).
 _ICU_DAY_RATE_CODE = "510090"
 _ICU_PACKAGE_PREFIXES = ("552001", "552002", "552003", "552006", "552007", "552008")
+# The same codes as a set: the EK-2/C-1 copay-rate check (``optimization.catalog_join``) leaves their EK-2/C-1 rows to
+# this motor, which reads the rate as the Sınıf-3 uplift (``_resolve_ilave_oran``), not as a copay rate.
+ICU_PACKAGE_CODES = frozenset(_ICU_PACKAGE_PREFIXES)
 _TIER_3_PACKAGE_CODES: dict[str, tuple[str, str]] = {
     "552003": ("552002", "552001"),  # Adult 3rd -> (2nd, 1st)
     "552008": ("552007", "552006"),  # Newborn 3rd -> (2nd, 1st)

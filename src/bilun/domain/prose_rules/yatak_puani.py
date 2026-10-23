@@ -17,6 +17,11 @@ days after the package window are separately billable under EK-2/B 510010.
 A claim billed hizmet başı whose package is mandated (§2.2.2(1)) is treated
 the same way (``claim_package_window``): it must be billed as that package,
 so the package's components add no itemized uplift inside the window.
+An EK-2/C ICU day package (P552001-3, P552006-8) opens no window for the bed
+days (``claim_bed_package_window``): the window lengths of §2.2.2.B-1(3) are
+those of an işlem grubu, and the ICU packages have none; they are billed for
+each ICU day, and their days are the ICU stay (below), not an operation's
+window from the admission.
 
 **Stays under 24 hours (SUT §2.2.2.(3), EK-2/B 510120):** "24 saatten kısa süreli
 yatışlarda yatak bedeli, gündüz yatak bedeli üzerinden faturalandırılır." The claim
@@ -103,6 +108,9 @@ HEMODIALYSIS_CODES = frozenset({"704210", "704230"})
 # covers (the days between the first and the last are the stay), so they are not in ``BED_INCLUDING_CODES``.
 ICU_DAY_RATE_CODE = "510090"
 ICU_BED_CODES = frozenset({ICU_DAY_RATE_CODE, "552001", "552002", "552003", "552006", "552007", "552008"})
+# The EK-2/C ICU day packages of ``ICU_BED_CODES``. EK-2/C gives them no işlem grubu, so §2.2.2.B-1(3) (C000701-C000706:
+# A 15, B 10, C 8, D 5, E 3 days) gives them no window: they open none in the bed-day logic (``claim_bed_package_window``).
+ICU_PACKAGE_CODES = ICU_BED_CODES - {ICU_DAY_RATE_CODE}
 
 # SUT §2.2.2.B-1(3) EK-2/C package window lengths (inclusive calendar days
 # starting on the package procedure date).
@@ -318,6 +326,39 @@ def claim_package_window(
     inside the window.
     """
     billed = [line for line in claim_procs if line_billed_as_package(line)]
+    return _package_window(claim, claim_procs, billed)
+
+
+def claim_bed_package_window(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+) -> PackageWindow | None:
+    """The package window of the bed-day logic: ``claim_package_window`` without the EK-2/C ICU day packages.
+
+    §2.2.2.B-1(3) (C000701-C000706) sets the window by the package's işlem grubu, from its procedure date. The ICU
+    packages (``ICU_PACKAGE_CODES``, read from the procedure code as the ICU stay reads them) have none: they are
+    billed for each ICU day between the first and the exit day (§2.4.4.H.(8)), so they are not an operation whose
+    window takes the stay from the admission. The days they pay are the ICU stay of ``bed_days_not_expected``; the
+    days around it are ward days. Read as one-day package windows, they took the ward days before the stay,
+    stretched an operation's window to the last ICU day, set its start and hid a mandated package (§2.2.2(1)) behind
+    a billed one. This motor and ``yatak_icu_overlap`` read this window; the unbundling gate and the companion,
+    newborn bed and mandated-package motors read ``claim_package_window`` (the last three leave an ICU-coded claim,
+    or a claim with a billed package, before any window).
+    """
+    billed = [
+        line
+        for line in claim_procs
+        if line_billed_as_package(line) and normalize_procedure_code(line.procedure_code) not in ICU_PACKAGE_CODES
+    ]
+    return _package_window(claim, claim_procs, billed)
+
+
+def _package_window(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+    billed: list[ProcedureClaimLine],
+) -> PackageWindow | None:
+    """The window of the ``billed`` package lines and of the claim's mandated ones; mandated when none is billed."""
     lines = billed + mandated_package_lines(claim, claim_procs)
     end = _package_window_end(
         lines, admission_date=claim.admission_date, discharge_date=claim.discharge_date,
@@ -551,8 +592,9 @@ def detect_yatak_puani_opportunities(
     while its package is mandated, bed days from admission through the end
     of the package group's window (A1/A2/A3=15, B=10, C=8, D=5, E=3 days
     from ``procedure_date``) are bundled into the package; only post-window
-    days are billed. Without ``procedure_lines``, all days are billed
-    (backwards-compatible default).
+    days are billed. An ICU day package opens no window
+    (``claim_bed_package_window``): its days are the ICU stay. Without
+    ``procedure_lines``, all days are billed (backwards-compatible default).
     """
     # Group procedure lines by claim for package-bundling detection.
     procedures_by_claim: dict[str, list[ProcedureClaimLine]] = {}
@@ -592,9 +634,9 @@ def detect_yatak_puani_opportunities(
         # Package-bundling (§2.2.2.B-1(1), (3)-(4)): when the claim carries an
         # EK-2/C package procedure, or must be billed as one, all bed days from
         # admission through the package group's window end are bundled into
-        # the package.
+        # the package. An ICU day package has no işlem grubu and opens no window.
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
-        window = claim_package_window(claim, claim_procs)
+        window = claim_bed_package_window(claim, claim_procs)
         surgery_day_bundled = window is not None
         if window is not None:
             days = max((claim.discharge_date - window.end).days, 0)

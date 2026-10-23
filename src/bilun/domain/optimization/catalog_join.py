@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from src.bilun.domain.catalog import get_ek2c1_copay_rates, get_ek2g_no_surcharge
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+from src.bilun.domain.prose_rules.icu_puani import ICU_PACKAGE_CODES
 
 _ek2g_normalized: set[str] | None = None
 _ek2c1_normalized: dict[str, dict] | None = None
@@ -50,9 +51,15 @@ def catalog_surcharge_eligible(procedure_code: str) -> bool:
 
 
 def get_ek2c1_mandated_copay_rate_pct(procedure_code: str) -> float | None:
-    """Mandated copay rate % from EK-2C-1, or None if not listed."""
+    """Mandated copay rate % from EK-2C-1, or None if not listed.
+
+    The ICU day packages (P552001-3, P552006-8, ``icu_puani.ICU_PACKAGE_CODES``) read as not listed: EK-2C-1
+    holds them at 100, and SUT 2.2.(20) (C000549) adds that rate to the procedure's points when a Sınıf-3
+    facility performs it. The ICU motor applies it so (``icu_puani._resolve_ilave_oran``, the +100 % uplift
+    of the package days); it is no patient copay rate.
+    """
     norm = normalize_procedure_code(procedure_code)
-    if not norm:
+    if not norm or norm in ICU_PACKAGE_CODES:
         return None
     row = _load_ek2c1().get(norm)
     if row is None:
