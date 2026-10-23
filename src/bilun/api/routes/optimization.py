@@ -103,7 +103,9 @@ def _compute_optimization_payload(
     When ``claim_id`` is given, procedure-line analyses (surcharge, copay-rate,
     DRG unbundling) and the claim context are scoped to that bill. Copay
     exemption stays patient-level because chronic-disease exemption is a patient
-    property, not a per-bill one.
+    property, not a per-bill one; the emergency ground (SUT 1.8.5.(5)) is read
+    over the claims given, so it exempts the emergency bill, and the patient only
+    when every bill is one.
     """
     chapters = _extract_patient_icd10_chapters(cached_diagnoses)
 

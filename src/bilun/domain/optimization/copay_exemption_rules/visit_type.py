@@ -27,7 +27,14 @@ def evaluate_visit_type_exemptions(
     claim_visit_types: tuple[str, ...],
     claim_procedure_codes: tuple[str, ...] = (),
 ) -> list[dict[str, Any]]:
-    """Return exemption sources for emergency or preventive visit types."""
+    """Return exemption sources for emergency or preventive visit types.
+
+    The emergency source is claim-scoped: SUT 1.8.5.(5) waives the share of "acil servislerde verilen sağlık
+    hizmetleri", the services of the emergency department, not the patient. It is listed when one of the
+    claims is an emergency claim (its own lines keep the waiver), and `covers_every_claim` says whether
+    every claim is one: only then does it exempt the patient (`evaluate_copay_exemption`) or a report over
+    several bills (`optimize_copay_from_claims`).
+    """
     sources: list[dict[str, Any]] = []
     normalized = {_normalize_visit_type(v) for v in claim_visit_types if v}
     if not normalized:
@@ -48,6 +55,8 @@ def evaluate_visit_type_exemptions(
                 "rule_source": "SUT §1.8.5(5) emergency visit copay waiver (520021 excluded)",
                 "counts_toward_exempt": True,
                 "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
+                "claim_scoped": True,
+                "covers_every_claim": normalized <= _EMERGENCY_TYPES,
                 "evidence": {
                     "visit_type": matched,
                     "procedure_codes": sorted(procedure_codes),

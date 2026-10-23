@@ -85,7 +85,8 @@ def compute_all_bill_billing_reports(
     Mirrors :func:`compute_all_billing_reports` but scopes each report to a
     single ``claim_id`` via ``build_bill_claim_context``, with the clinical lab
     feed filtered to the claim's episode (``visit_id``). Reuses the same
-    patient-level ``copay_exemption`` (exemption is a patient property). Keyed
+    patient-level ``copay_exemption``; the copay block reads a claim-scoped
+    ground (the emergency visit, SUT 1.8.5.(5)) on the bill's own claim only. Keyed
     by ``f"{patient_id}::{claim_id}"`` so it stores in the generic payload-rows
     table. Returns ``{}`` when no claim dataset is present.
     """

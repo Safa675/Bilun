@@ -22,6 +22,17 @@ __all__ = [
 ]
 
 
+def _exempts_every_claim(source: dict[str, Any]) -> bool:
+    """A ground that counts exempts the evaluated claims, unless it is claim-scoped and leaves one out.
+
+    The emergency ground (SUT 1.8.5.(5)) waives its own bills: over a patient with other bills it is listed
+    but does not make the patient exempt.
+    """
+    return bool(source.get("counts_toward_exempt", True)) and bool(
+        source.get("covers_every_claim", True)
+    )
+
+
 def evaluate_copay_exemption(inp: CopayExemptionInput) -> dict[str, Any]:
     """Evaluate all applicable copay exemption grounds for one patient."""
     sources: list[dict[str, Any]] = []
@@ -59,10 +70,10 @@ def evaluate_copay_exemption(inp: CopayExemptionInput) -> dict[str, Any]:
     if ek1a is not None:
         qualifying = list(ek1a.get("evidence", {}).get("qualifying_diagnoses", []))
 
-    exempt = any(bool(s.get("counts_toward_exempt", True)) for s in sources)
+    exempt = any(_exempts_every_claim(s) for s in sources)
     partial_exempt = bool(qualifying) and not exempt
     primary = next(
-        (s["category"] for s in sources if s.get("counts_toward_exempt", True)),
+        (s["category"] for s in sources if _exempts_every_claim(s)),
         sources[0]["category"] if sources else None,
     )
 
