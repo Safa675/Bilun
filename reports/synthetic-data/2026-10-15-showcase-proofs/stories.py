@@ -802,8 +802,8 @@ def s42(variant: str) -> Bill:
     The prosthesis is removed on 09-17 (EK-2C P612500, group C; debridement inside) and two red-cell units are
     given. Inside an EK-2C package the blood is part of the package, but red cells 705371 are billed apart at 36 %
     of their puan (C000694, C007927): 1606.55 a unit on the clean bill, the full 4462.65 on the faulty one. Each unit
-    carries its own ISBT 128 number on both bills. The engine reads the share against the payable, which the bill
-    sets equal to the billed amount, so the clean bill also shows an exposure (EI-2, Safa675/Bilun#336).
+    carries its own ISBT 128 number on both bills. The engine takes the share of the list price (Safa675/Bilun#336),
+    so the clean bill is silent and the faulty one is at risk for 2856.10 a unit.
     """
     b = _s42(variant)
     b.history = _patient5_history("S42")

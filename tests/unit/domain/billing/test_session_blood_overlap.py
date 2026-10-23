@@ -108,13 +108,15 @@ def test_original_plasma_gap_counts_once_in_direct_detectors_and_blocks(reverse)
 @pytest.mark.parametrize(
     "code,unit,payable,billed,expected",
     [
-        ("705430", "1000", "1000", "310", "50"),  # 36% of payable 1000.
-        ("705441", "1000", "1000", "250", None),  # Above the 20% ceiling.
-        ("705441", "1000", "1000", "100", "100"),
-        ("705430", "2000", "1000", "100", "260"),  # Payable, not list, is the base.
-        ("705430", "1000", "2000", "100", "620"),
-        ("705430", "1000", "1000", "295", "65"),
-        ("705441", "1000", "1000", "197", None),  # Within the 2% tolerance.
+        # #336: the base is the EK-2/B list price on the date (705430 1134.71, 705441
+        # 2564.26), never the line's unit price or payable (was 36 % of payable 1000).
+        ("705430", "1000", "1000", "310", "98.50"),  # 36 % of 1134.71 = 408.4956.
+        ("705441", "1000", "1000", "600", None),  # Above the 20 % ceiling 512.85.
+        ("705441", "1000", "1000", "100", "412.85"),
+        ("705430", "2000", "1000", "100", "308.50"),  # The list, not the unit price, is the base.
+        ("705430", "1000", "2000", "100", "308.50"),  # Nor the payable.
+        ("705430", "1000", "1000", "295", "113.50"),
+        ("705441", "1000", "1000", "503", None),  # Within the 2 % tolerance (502.59).
     ],
 )
 def test_blood_ceiling_alone_applies_on_the_operation_date(
@@ -143,8 +145,8 @@ def test_blood_gap_is_not_held_back_by_the_session_review_heuristic():
         ),
     ])
     assert session.opportunities == []
-    assert blood.opportunities[0]["max_billable_try"] == 200
-    assert blood.confirmed_uplift_try == 150
+    assert blood.opportunities[0]["max_billable_try"] == 512.85  # 20 % of the list price 2564.26 (#336)
+    assert blood.confirmed_uplift_try == 462.85
 
 
 def test_partial_overlap_preserves_same_code_on_other_lines_dates_and_claims():
@@ -211,10 +213,11 @@ def test_quantity_and_fractional_cent_rounding_use_whole_line_bases():
         _blood(quantity=2, unit_price_try=Decimal("500.025"),
                expected_payable_try=Decimal("1000.05"), billed_amount_try=Decimal("100")),
     ])
-    # #261: 36 % of the whole-line payable 1000.05 (was a 30 % session secondary).
+    # #261: not a 30 % session secondary. #336: 36 % of the list price times the
+    # whole quantity, 2 x 1134.71 x 0.36 = 816.9912, whatever the line's payable says.
     assert session.opportunities == []
-    assert blood.opportunities[0]["max_billable_try"] == 360.02
-    assert blood.confirmed_uplift_try == 260.02
+    assert blood.opportunities[0]["max_billable_try"] == 816.99
+    assert blood.confirmed_uplift_try == 716.99
 
 
 def test_direct_detector_never_borrows_another_claims_session():
@@ -244,9 +247,11 @@ def test_operation_secondary_gap_remains_independent_of_blood():
     assert blood.confirmed_uplift_try == 208.5
 
 
-def test_missing_positive_payable_preserves_blood_billed_fallback():
+def test_a_missing_payable_leaves_the_list_price_ceiling_unchanged():
+    # #336: the ceiling never read the payable's billed fallback (200 x 36 % = 72).
     session, blood = _blocks([_primary(), _blood(expected_payable_try=Decimal("0"))])
-    assert session.opportunities == blood.opportunities == []
+    assert session.opportunities == []
+    assert [r["recoverable_uplift_try"] for r in blood.opportunities] == [208.5]
 
 
 @pytest.mark.parametrize(

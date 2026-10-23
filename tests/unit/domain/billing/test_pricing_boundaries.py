@@ -104,7 +104,7 @@ def test_itemized_blood_does_not_create_package_fraction_audit_exposure(candidat
 
 
 def test_blood_package_audit_requires_matching_claim_and_episode():
-    blood = _proc(billed_amount_try=Decimal("1000"))
+    blood = _proc(billed_amount_try=Decimal("4462.65"))  # 705371 in full, above its 36 % share
     package = _proc(procedure_line_id="package", procedure_category="paket", procedure_code="P610070")
     assert len(detect_blood_component_violations([package, blood])) == 1
     for foreign in (replace(package, claim_id="OTHER"), replace(package, episode_id="OTHER")):

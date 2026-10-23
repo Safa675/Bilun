@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from .session_pricing import (
-    billed_package_scopes, blood_component_billable_fraction, blood_component_max_billable_try,
+    billed_package_scopes, blood_component_billable_fraction, blood_component_list_amount_try,
+    blood_component_max_billable_try,
 )
 from .session_uplift import iter_session_secondary_assessments
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
@@ -35,7 +36,14 @@ def detect_blood_component_underbilling_opportunities(
     cross_specialty: bool | None = None,
     claim: ClaimHeader | None = None,
 ) -> list[dict[str, Any]]:
-    """Flag blood component lines billed below allowed package-context fraction."""
+    """Flag blood component lines billed below allowed package-context fraction.
+
+    The ceiling is the share of the component's EK-2/B list price on the line's
+    date (``blood_component_max_billable_try``, #336), never the line's payable,
+    which equals billed on most exports and made this block dark for any bill.
+    ``reference_payable_try`` is that list amount (unit price x quantity). A
+    line whose list price is unknown that day is not assessed.
+    """
     opportunities: list[dict[str, Any]] = []
     package_scopes = billed_package_scopes(lines)
     blood_lines = [
@@ -62,14 +70,14 @@ def detect_blood_component_underbilling_opportunities(
         if fraction is None:
             continue
 
-        payable = _line_payable(line)
         billed = _line_billed(line)
-        if payable <= 0 and billed <= 0:
+        if _line_payable(line) <= 0 and billed <= 0:
             continue
 
-        reference = payable if payable > 0 else billed
         max_billable = blood_component_max_billable_try(line, package_context=True)
-        assert max_billable is not None
+        reference = blood_component_list_amount_try(line)
+        if max_billable is None or reference is None:
+            continue
         if billed >= max_billable * (1.0 - _BILLING_TOLERANCE):
             continue
 
@@ -97,7 +105,7 @@ def detect_blood_component_underbilling_opportunities(
                 "detail": (
                     f"Blood component {line.procedure_code} billed at "
                     f"{billed:.2f} TRY; up to {max_billable:.2f} TRY "
-                    f"({fraction:.0%} of reference) may be recoverable per "
+                    f"({fraction:.0%} of its list price {reference:.2f} TRY) may be recoverable per "
                     f"SUT §2.2.2.B-1.e."
                 ),
             }

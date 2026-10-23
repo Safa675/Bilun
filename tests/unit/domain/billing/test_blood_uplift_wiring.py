@@ -86,13 +86,14 @@ class TestBloodUpliftWiring:
         ]
         ctx = _ctx(claim, *lines)
         blood = recommend_blood_uplift_from_claims(ctx)
-        assert blood.confirmed_uplift_try == pytest.approx(310.0)
+        # 36 % of 705371's list price 4462.65 (#336), less the 50 billed.
+        assert blood.confirmed_uplift_try == pytest.approx(1556.55)
 
         report = compute_patient_billing_report(
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
         )
-        assert report.blood_uplift.confirmed_uplift_try == pytest.approx(310.0)
-        assert report.sgk_uplift_try >= 310.0
+        assert report.blood_uplift.confirmed_uplift_try == pytest.approx(1556.55)
+        assert report.sgk_uplift_try >= 1556.55
         assert report.audit_exposure_try == 0.0

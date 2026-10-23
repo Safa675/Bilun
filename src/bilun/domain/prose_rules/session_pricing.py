@@ -527,20 +527,32 @@ def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float | None:
         price = float(entry.get("price_try") or 0)
         return _money(price * qty) if price > 0 else None
 
+    price = ek2b_list_unit_price_try(normalized, line.procedure_date)
+    return None if price is None else _money(price * qty)
+
+
+def ek2b_list_unit_price_try(procedure_code: str, as_of_date: Any) -> float | None:
+    """EK-2/B list price of one unit of ``procedure_code`` in force on ``as_of_date``.
+
+    ``None`` when the list has no positive price for the code that day.
+    """
+    normalized = normalize_procedure_code(procedure_code)
+    if not normalized:
+        return None
     try:
         from ..catalog import lookup_procedure_code
 
-        lookup = lookup_procedure_code(normalized, visit_date=line.procedure_date)
+        lookup = lookup_procedure_code(normalized, visit_date=as_of_date)
         entry = (
             lookup.get("entry")
             if lookup and lookup.get("match_type") in {"exact", "package_prefix"}
             else None
         )
         effective = str(entry.get("effective_date") or "") if entry else ""
-        if entry is not None and (not effective or effective <= str(line.procedure_date)):
+        if entry is not None and (not effective or effective <= str(as_of_date)):
             price = float(entry.get("price_try") or 0)
             if price > 0:
-                return _money(price * qty)
+                return price
     except Exception:
         pass
 
@@ -579,9 +591,9 @@ def _session_adjusted_line_payable(
     amount = base * point_factor
 
     if apply_blood_fraction:
-        fraction = blood_component_billable_fraction(line.procedure_code)
-        if fraction is not None:
-            amount = min(amount, base * fraction)
+        ceiling = blood_component_max_billable_try(line, package_context=True)
+        if ceiling is not None:
+            amount = min(amount, ceiling)
     return amount
 
 
@@ -728,10 +740,27 @@ def billed_package_scopes(
 def blood_component_max_billable_try(
     line: ProcedureClaimLine, *, package_context: bool = False,
 ) -> float | None:
-    """Package-only blood ceiling on the whole-line payable (billed fallback)."""
+    """Package-only blood ceiling: the component's share of its EK-2/B list price (#336).
+
+    SUT 2.2.2.B-1.(1).e (C000694) and 4.6.(4) (C007927): a blood component used
+    inside a diagnosis-based package is billed apart at a share of its puan
+    (``blood_component_billable_fraction``). The ceiling is that share of the
+    list price in force on the line's date, times the line's quantity; never the
+    line's own unit price, payable or billed amount, which a bill at the share
+    already holds (payable == billed). ``None`` outside a package (the component
+    is billed in full there), for a code without a share, or when the list has
+    no price for the code that day: the line cannot be assessed.
+    """
     if not package_context:
         return None
     fraction = blood_component_billable_fraction(line.procedure_code)
     if fraction is None:
         return None
-    return _line_itemized_payable(line) * fraction
+    listed = blood_component_list_amount_try(line)
+    return None if listed is None else listed * fraction
+
+
+def blood_component_list_amount_try(line: ProcedureClaimLine) -> float | None:
+    """EK-2/B list price of the line's code on its date times its quantity (#336)."""
+    unit = ek2b_list_unit_price_try(line.procedure_code, line.procedure_date)
+    return None if unit is None else unit * max(int(line.quantity), 1)
