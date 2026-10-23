@@ -138,10 +138,10 @@ def test_every_story_has_its_golden_file_and_no_other_file_is_there(variant: str
 
 
 def test_a_story_has_a_faulty_golden_exactly_when_it_has_a_fault() -> None:
-    """A bill without a fault (S23, S32, S39, S41, S43, S45, S48) is a clean golden only; every other story's fault record has its faulty golden."""
+    """A bill without a fault (S23, S32, S36, S37, S39, S41, S43, S45, S48) is a clean golden only; every other story's fault record has its faulty golden."""
     with_fault = {record["story"] for record in cohort.load_registry()["faults"]}
     assert set(FAULTY_STORIES) == with_fault
-    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S39", "S41", "S43", "S45", "S48"]
+    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48"]
     assert FAULTY_STORIES == [s for s in STORIES if s not in clean_only_stories()]  # stories.py order
 
 
@@ -418,7 +418,7 @@ def test_the_s39_story_bill_is_a_clean_bill_with_no_faulty_variant() -> None:
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
-    assert out["clean_only"] == ["S23", "S32", "S39", "S41", "S43", "S45", "S48"] and out["in_stories"] is True and out["refused"] is True
+    assert out["clean_only"] == ["S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48"] and out["in_stories"] is True and out["refused"] is True
     assert out["history"] == ["C-SH04", "C-SH39"]  # the stay of the same patient is its history
     assert out["codes"] == ["520030", "905671", "L104780", "L107010", "L107020"]  # the visit, the culture, three tests
 
@@ -460,9 +460,14 @@ def test_the_proof_script_proves_every_story_with_a_fault_and_reads_the_row_of_s
         "print(json.dumps({'stories': prove.default_stories(),\n"
         "                  'fires': prove.target_amount('S40', [row]),\n"
         "                  'silent': prove.target_amount('S40', []),\n"
-        "                  'other_rule': prove.target_amount('S40', [{'rule_id': 'x'}])}))\n"
+        "                  'other_rule': prove.target_amount('S40', [{'rule_id': 'x'}]),\n"
+        "                  'addon': prove.target_amount('S38', [{'rule_id': 'conditional_addon_ek2d_neuromonitoring'}]),\n"
+        "                  'addon_silent': prove.target_amount('S38', []),\n"
+        "                  'addon_other': prove.target_amount('S38', [{'rule_id': 'conditional_addon_ek2d_neuronavigation'}])}))\n"
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
     assert out["stories"] == FAULTY_STORIES  # S39 has no proof
     assert out["fires"] == 0.0 and out["silent"] is None and out["other_rule"] is None  # a row without money is the finding
+    # S38's neuromonitoring review has no money either: its row is the finding, and the neuronavigation one is not it
+    assert out["addon"] == 0.0 and out["addon_silent"] is None and out["addon_other"] is None

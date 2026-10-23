@@ -44,6 +44,7 @@ from scripts.synthetic.cohort import (
     write_showcase,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, _medula_event_rows, check_showcase, main
+from scripts.synthetic.cohort.ids import claim_id, patient_id
 from scripts.synthetic.cohort.recipes import EncounterPins, MedulaEvent
 from scripts.synthetic.faults import (
     FaultApplyError,
@@ -91,6 +92,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S24": "0.00",  # the red-cell units without their ISBT 128 numbers: a flag of the lines, no amount (a compliance error)
     "S33": "0.00",  # the enoxaparin count: a drug line, and drugs enter at 0 TL
     "S34": "0.00",  # the examination flagged as a package component: a flag without money
+    "S38": "0.00",  # the neuromonitoring beside an instrumentation not on EK-2/D-4: a review without money (compliance_error)
     "S40": "0.00",
     "S42": "5712.20",  # two red-cell units billed in full inside a package instead of 36 %: the difference of the totals
     "S44": "0.00",  # romosozumab on a report of 12 months: a drug line, and drugs enter at 0 TL
@@ -99,7 +101,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S23, S32, S39, S41, S43, S45 and S48 are clean bills (no fault, no record), the others carry one.
+# S23, S32, S36, S37, S39, S41, S43, S45 and S48 are clean bills (no fault, no record), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
@@ -110,6 +112,9 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S32": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-002"]},
     "S33": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-003"]},
     "S34": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-004"]},
+    "S36": {"patient_id": "SENTETIK-HASTA-0003", "claim_ids": ["F-SENTETIK-HASTA-0003-002"]},
+    "S37": {"patient_id": "SENTETIK-HASTA-0003", "claim_ids": ["F-SENTETIK-HASTA-0003-003"]},
+    "S38": {"patient_id": "SENTETIK-HASTA-0003", "claim_ids": ["F-SENTETIK-HASTA-0003-004"]},
     "S20": {"patient_id": "SENTETIK-HASTA-0013", "claim_ids": ["F-SENTETIK-HASTA-0013-001"]},
     "S17": {"patient_id": "SENTETIK-HASTA-0014", "claim_ids": ["F-SENTETIK-HASTA-0014-001"]},
     "S23": {"patient_id": "SENTETIK-HASTA-0014", "claim_ids": ["F-SENTETIK-HASTA-0014-002"]},
@@ -351,13 +356,14 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     assert s7_rec.line_id == ""
     assert s7_rec.line_ids == ("EMR-F-SENTETIK-HASTA-0007-001-004",)
 
-    # S1, S5, S8, S20, S42 (the removal package of patient 5's readmission) and the haemodialysis bills S17 and S23
-    # (EK-2C session packages) have package_candidate=True in both clean and faulty composed headers; others False. The
-    # story of a bill comes from its encounter (a clean bill, S23, S32, S39, S41, S43, S45 or S48, has no record).
+    # S1, S5, S8, S20, S42 (the removal package of patient 5's readmission), S38 (the instrumentation package of patient
+    # 3's second operation) and the haemodialysis bills S17 and S23 (EK-2C session packages) have package_candidate=True
+    # in both clean and faulty composed headers; others False. The story of a bill comes from its encounter (a clean
+    # bill, S23, S32, S36, S37, S39, S41, S43, S45 or S48, has no record).
     story_of_claim = {e["claim_id"]: e["story"] for e in built_showcase.registry["encounters"]}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
         story = story_of_claim[faulty_c.header.claim_id]
-        expected_pkg_cand = story in {"S1", "S5", "S8", "S17", "S20", "S23", "S42"}
+        expected_pkg_cand = story in {"S1", "S5", "S8", "S17", "S20", "S23", "S38", "S42"}
         assert clean_c.header.package_candidate is expected_pkg_cand
         assert faulty_c.header.package_candidate is expected_pkg_cand
 
@@ -725,7 +731,7 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
     assert profiles.height == cohort.patient_count() == 15
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 32
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 35
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1049,7 +1055,10 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0002-002",  # the committed control of patient 2 (S32), three weeks after the stay
         "F-SENTETIK-HASTA-0002-003",  # its readmission through the ER (S33) and the control after it (S34)
         "F-SENTETIK-HASTA-0002-004",
+        "F-SENTETIK-HASTA-0003-002",  # the committed pre-operative visit of patient 3 (S36): the later id, the earlier date
         "F-SENTETIK-HASTA-0003-001",
+        "F-SENTETIK-HASTA-0003-003",  # her control (S37) and her instrumentation (S38), dated later
+        "F-SENTETIK-HASTA-0003-004",
         "F-SENTETIK-HASTA-0004-001",
         "F-SENTETIK-HASTA-0004-004",  # the extra stay: the last id, the date next to the first stay's
         "F-SENTETIK-HASTA-0004-002",  # the committed control (S39) and second visit (S40), dated later
@@ -1186,8 +1195,12 @@ def test_roles_and_scenarios_of_a_patient_with_two_bills(two_bills: BuildResult,
 def test_the_effective_pins_travel_on_every_composed_claim(two_bills: BuildResult, built_showcase: BuildResult) -> None:
     pathways = load_all()
     recipes = load_recipes()
-    for claim, recipe in zip(built_showcase.claims, recipes.recipes, strict=True):
-        assert claim.pins == pathways[recipe.pathway].showcase  # a recipe without pins: the pathway's own
+    # the claims are laid out by patient and date and the recipes by patient and encounter (a precursor such as S36 is
+    # the second recipe and the first claim of its patient): pair them by the claim id, never by position
+    by_claim = {claim_id(patient_id(r.patient_no), r.encounter_no): r for r in recipes.recipes}
+    assert sorted(by_claim) == sorted(c.header.claim_id for c in built_showcase.claims)
+    for claim in built_showcase.claims:
+        assert claim.pins == pathways[by_claim[claim.header.claim_id].pathway].showcase  # no recipe pins: the pathway's
     for claim in two_bills.claims:
         encounter = next(e for e in two_bills.registry["encounters"] if e["claim_id"] == claim.header.claim_id)
         pathway = pathways[encounter["pathway_id"]]
@@ -1489,13 +1502,15 @@ def test_the_chronic_report_pin_reaches_the_patients_copay_profile_and_nothing_e
     assert known.pop(cohort.role("showcase_S2").patient_id) is True
     assert set(known.values()) == {None}
 
-    patient = cohort.role("showcase_S3").patient_id  # a one-bill patient with an EK-1/A match and no report
+    # a one-bill patient with an EK-1/A match and no report: patient 9 (S9), which the program does not extend (patient 3,
+    # the first host, has four bills since WP16)
+    patient = cohort.scenario("S9").patient_id
     recipes = load_recipes()
     pinned = [
-        r.model_copy(update={"pins": EncounterPins(chronic_health_report=False)}) if r.patient_no == 3 else r
+        r.model_copy(update={"pins": EncounterPins(chronic_health_report=False)}) if r.patient_no == 9 else r
         for r in recipes.recipes
     ]
-    assert sum(r.patient_no == 3 for r in pinned) == 1 and all(r.pins is None for r in recipes.recipes if r.patient_no == 3)
+    assert sum(r.patient_no == 9 for r in pinned) == 1 and all(r.pins is None for r in recipes.recipes if r.patient_no == 9)
     built = build_showcase(recipes=recipes.model_copy(update={"recipes": pinned}))
 
     profiles = built.tables["patient_copay_profiles.parquet"]

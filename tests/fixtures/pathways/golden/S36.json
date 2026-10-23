@@ -1,0 +1,62 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-08-04",
+      "icd10": "M48.06",
+      "role": "primary"
+    },
+    {
+      "date": "2026-08-04",
+      "icd10": "I10",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-08-04",
+    "claim_start_date": "2026-08-04",
+    "claim_type": "poliklinik",
+    "department": "Beyin ve Sinir Cerrahisi",
+    "discharge_date": null,
+    "primary_icd10": "M48.06"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-08-04",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L104780",
+      "date": "2026-08-04",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "L107020",
+      "date": "2026-08-04",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "R103410",
+      "date": "2026-08-04",
+      "flags": {},
+      "qty": 1,
+      "specialty": "3300"
+    }
+  ],
+  "story": "S36"
+}

@@ -1,4 +1,4 @@
-"""Thirty-two showcase stories: clean bill + one injected fault each, except S23, S32, S39, S41, S43, S45 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22).
+"""Thirty-five showcase stories: clean bill + one injected fault each, except S23, S32, S36, S37, S39, S41, S43, S45 and S48 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37 and S38 on 2026-10-23).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -837,7 +837,93 @@ def s44(variant: str) -> Bill:
     return b
 
 
-# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S41", "S43", "S45", "S48")
+# ── S36-S38 ─ the three bills before and after the decompression of S3 ──
+# The patient of S3 (77 F) has four bills: the pre-operative visit two weeks before her stay (S36, a precursor), the
+# stay of S3, the control twelve days after it (S37) and a second stay for the instability that control found (S38).
+# Each bill's proof has the patient's other bills as history, the way the loaded cohort gives them (claim order: S3,
+# S36, S37, S38; faulty where the bill has a fault).
+def _s36() -> Bill:
+    day = D("2026-08-04")
+    b = Bill("SH-03", "C-SH36", "poliklinik", "Beyin ve Sinir Cerrahisi", None, None, "M48.06", start=day, end=day)
+    for i, icd in enumerate(("M48.06", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=BEYIN)              # the visit
+    b.proc("R103410", day, specialty=RAD)               # lumbar MRI: the narrowing that decides the operation
+    _labs(b, day, ("L107020", "L104780"), BEYIN)        # pre-operative blood count and creatinine
+    return b
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48}
+
+def _s37() -> Bill:
+    day = D("2026-09-01")
+    b = Bill("SH-03", "C-SH37", "poliklinik", "Beyin ve Sinir Cerrahisi", None, None, "M48.06", start=day, end=day)
+    for i, icd in enumerate(("M48.06", "M53.26", "I10")):
+        b.diag(icd, primary=(i == 0), on=day)
+    b.proc("520030", day, specialty=BEYIN)              # the control
+    b.proc("801950", day, specialty=RAD)                # standing lumbar film: the segment slips
+    return b
+
+
+def _s38(variant: str) -> Bill:
+    a, d = D("2026-09-15"), D("2026-09-19")
+    b = Bill("SH-03", "C-SH38", "yatis", "Beyin ve Sinir Cerrahisi", a, d, "M53.26", package_candidate=True)
+    for i, icd in enumerate(("M53.26", "M48.06", "I10")):
+        b.diag(icd, primary=(i == 0))
+    b.proc("P614040", a, specialty=BEYIN)               # posterior instrumentation, six or fewer segments (group A3)
+    if variant != "clean":                              # the fault: neuromonitoring without an EK-2/D-4 procedure
+        b.proc("P703365", a, specialty=BEYIN)
+    return b
+
+
+def _patient3_history(story: str) -> tuple[Bill, ...]:
+    """The other bills of the patient of S3 as the loaded cohort holds them, in claim order."""
+    bills = {"S3": lambda: s3("faulty"), "S36": _s36, "S37": _s37, "S38": lambda: _s38("faulty")}
+    return tuple(build() for name, build in bills.items() if name != story)
+
+
+# ── S36 ─ the pre-operative visit two weeks before the decompression of S3 (a clean bill) ──
+def s36(variant: str) -> Bill:
+    """77 F, the patient of S3: the pre-operative neurosurgery visit on 2026-08-04, two weeks before her admission.
+
+    A clean bill (CLEAN_ONLY), a precursor: the earlier outpatient takip the S3 pathway names. The examination, a
+    lumbar MRI, a blood count and a creatinine; S3's own tests are on 2026-08-19, fifteen days later, outside the
+    seven days of the duplicate-test rule.
+    """
+    if variant != "clean":
+        raise ValueError("S36 is a clean bill: it has no faulty variant")
+    b = _s36()
+    b.history = _patient3_history("S36")
+    return b
+
+
+# ── S37 ─ the control twelve days after the decompression (a clean bill) ──
+def s37(variant: str) -> Bill:
+    """77 F, the patient of S3: the neurosurgery control on 2026-09-01, twelve days after her discharge.
+
+    A clean bill (CLEAN_ONLY). S3 is billed itemized, so no package period (C000714) covers the control. The standing
+    lumbar film shows the segment slipping (M53.26), the instability that S38 instruments. No test is billed.
+    """
+    if variant != "clean":
+        raise ValueError("S37 is a clean bill: it has no faulty variant")
+    b = _s37()
+    b.history = _patient3_history("S37")
+    return b
+
+
+# ── S38 ─ neuromonitoring billed beside an instrumentation that is not on the EK-2/D-4 list ──
+def s38(variant: str) -> Bill:
+    """77 F, the patient of S3: admitted 2026-09-15 to 09-19 for a posterior instrumentation (P614040, group A3).
+
+    The package includes the bed, the companion, the anaesthesia, the tests and the drugs; the spinal implants are left
+    off (a material list the demo does not price). The intraoperative neuromonitoring P703365 is paid only beside an
+    EK-2/D-4 procedure (C001389, SUT 2.4.4.M.(1)), and 614040 is not on that list: the clean bill does not bill it, the
+    faulty one does. The engine's review row has no amount (EI-19), so the fault carries none.
+    """
+    b = _s38(variant)
+    b.history = _patient3_history("S38")
+    return b
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48")
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48}

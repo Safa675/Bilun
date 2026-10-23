@@ -1,0 +1,43 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-15",
+      "icd10": "M53.26",
+      "role": "primary"
+    },
+    {
+      "date": "2026-09-15",
+      "icd10": "I10",
+      "role": "secondary"
+    },
+    {
+      "date": "2026-09-15",
+      "icd10": "M48.06",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-09-15",
+    "claim_end_date": "2026-09-19",
+    "claim_start_date": "2026-09-15",
+    "claim_type": "yatis",
+    "department": "Beyin ve Sinir Cerrahisi",
+    "discharge_date": "2026-09-19",
+    "primary_icd10": "M53.26"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "P614040",
+      "date": "2026-09-15",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2400"
+    }
+  ],
+  "story": "S38"
+}

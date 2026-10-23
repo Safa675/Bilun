@@ -1,0 +1,77 @@
+# Lumbar instability after a decompression: posterior segmental instrumentation of six or fewer segments, ward stay billed as the EK-2C package.
+# Showcase story S38 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F3 b4): bill 4 of the patient of S3. Every line below is a
+# clean-bill line: the intraoperative neuromonitoring is not billed, because P614040 is not on the EK-2/D-4 list (C001389). The fault bills it.
+# Grammar: README.md next to this file. A package bill carries the package line; bed, companion, anaesthesia, labs and drugs are inside it.
+schema_version: 1
+id: lumbar_instability_posterior_instrumentation_package
+title: "Lumbar instability after a decompression: posterior instrumentation of six or fewer segments billed as the EK-2C package"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Beyin ve Sinir Cerrahisi"
+  specialty: "2400"                  # EK-2A: Beyin ve Sinir Cerrahisi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S38 is the woman of story S3 (the same patient, her second operation); M53.26, M48.06 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 55
+    max: 80
+    basis: judgment
+    source: "Story S38 patient is 77, like story S3; the bounds are those of story S3 (the author's judgment)."
+
+nights:
+  min: 3
+  max: 7
+  basis: judgment
+  source: "Story S38 has 4 nights. The range is the author's judgment for an instrumented lumbar operation; the group A package window is 15 days (C000702)."
+
+op_day: admit                        # elective admission, operated on the day of admission (as story S3)
+
+diagnoses:
+  - icd10: M53.26
+    name: "SPİNAL İNSTABİLİTELER, LOMBER BÖLGE"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the instability that the control film of story S37 showed is the reason of the operation. Neurosurgeon to confirm."
+  - icd10: M48.06
+    name: "SPİNAL STENOZ, LOMBER BÖLGE"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the lumbar stenosis of story S3, decompressed four weeks earlier, stays a diagnosis of the operated segment."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S3 lists controlled hypertension (ASA 2) for this patient; it is coded on every bill of hers."
+
+procedures:
+  - id: instrumentation_package
+    kind: package
+    code: "P614040"
+    name: "Posteriyor segmental enstrümantasyon; 6 veya daha az vertebra segmenti"
+    days: op
+    qty: 1
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package; C000685, C000699 list what is inside."
+
+notes:
+  - "The patient of story S3 (decompressed on 2026-08-18, discharged on 08-20) has back pain again at the control of story S37 (09-01), whose film shows the segment slipping. She is admitted on Tuesday 2026-09-15 and operated that day: a posterior segmental instrumentation of six or fewer segments (P614040, group A3)."
+  - "Bed, companion, anaesthesia, labs and drugs are inside the group A package (15-day window counted from the package day, C000702), so none of them is listed."
+  - "The spinal implants (pedicle screws, rods) are billed on top of the package (SUT 3.1.4(2)(d), C002862) from a material list the demo does not price; this bill leaves them off. Open for a neurosurgeon: which implants, how many segments."
+  - "The P614040 açıklama bills it once per treatment and, for an iatrogenic instability that develops during an operation, on a post-operative CT (not paid apart). Here the instability is found two weeks after the decompression; whether SGK asks the CT too is open."
+  - "The intraoperative neuromonitoring P703365 is billable only beside an EK-2/D-4 procedure, without the session rules of 2.2.2.B(3) (C001389). The list has 614050 (seven or more segments), not 614040, so the clean bill does not bill it, whether or not it was performed."
+  - "The Fatura İnceleme rule BEYİN VE SİNİR CERRAHİSİ-2 (arthrodesis is inside the instrumentation) matches any bill with P614040 or P614050; this bill bills no arthrodesis, so the match is a review, not a fault."
+
+showcase:
+  story: S38
+  sex: F
+  age: 77
+  admit: "2026-09-15"
+  nights: 4

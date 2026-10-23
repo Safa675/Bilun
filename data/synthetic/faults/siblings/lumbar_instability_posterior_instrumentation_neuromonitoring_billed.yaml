@@ -1,0 +1,83 @@
+# Lumbar instability, posterior instrumentation of six or fewer segments with the intraoperative neuromonitoring billed beside it: faulty sibling of S38.
+# Showcase story S38 faulty bill (reports/synthetic-data/2026-10-15-showcase-proofs/stories.py, s38("faulty")).
+# P703365 is paid only beside a procedure of the EK-2/D-4 list (C001389, SUT 2.4.4.M.(1)); 614040 is not on it (614050, seven or more
+# segments, is). The bill carries the package of the clean bill and also the neuromonitoring package.
+# Grammar: README.md next to this file. A package bill carries the package lines; bed, companion, anaesthesia, labs and drugs are inside them.
+schema_version: 1
+id: lumbar_instability_posterior_instrumentation_neuromonitoring_billed
+title: "Lumbar instability: posterior instrumentation of six or fewer segments with the intraoperative neuromonitoring billed beside it"
+claim_type: yatis
+billing_mode: package
+department:
+  name: "Beyin ve Sinir Cerrahisi"
+  specialty: "2400"                  # EK-2A: Beyin ve Sinir Cerrahisi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S38 is the woman of story S3 (the same patient, her second operation); M53.26, M48.06 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 55
+    max: 80
+    basis: judgment
+    source: "Story S38 patient is 77, like story S3; the bounds are those of story S3 (the author's judgment)."
+
+nights:
+  min: 3
+  max: 7
+  basis: judgment
+  source: "Story S38 has 4 nights. Max 7: the neuromonitoring's group C window is 8 days (C000704), the instrumentation's group A one 15 (C000702)."
+
+op_day: admit                        # elective admission, operated on the day of admission (as story S3)
+
+diagnoses:
+  - icd10: M53.26
+    name: "SPİNAL İNSTABİLİTELER, LOMBER BÖLGE"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the instability that the control film of story S37 showed is the reason of the operation. Neurosurgeon to confirm."
+  - icd10: M48.06
+    name: "SPİNAL STENOZ, LOMBER BÖLGE"
+    role: secondary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the lumbar stenosis of story S3, decompressed four weeks earlier, stays a diagnosis of the operated segment."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S3 lists controlled hypertension (ASA 2) for this patient; it is coded on every bill of hers."
+
+procedures:
+  - id: instrumentation_package
+    kind: package
+    code: "P614040"
+    name: "Posteriyor segmental enstrümantasyon; 6 veya daha az vertebra segmenti"
+    days: op
+    qty: 1
+    basis: sut
+    source: "C000646 (SUT 2.2.2(1)): tier 2-3 inpatient care with an EK-2C code goes by package; C000685, C000699 list what is inside."
+  - id: neuromonitoring
+    kind: package
+    code: "P703365"
+    name: "Intraoperatif nöromonitörizasyon"
+    days: op
+    qty: 1
+    basis: sut
+    source: "The faulty line: C001389 (SUT 2.4.4.M.(1)) pays P703365 only beside an EK-2/D-4 procedure, and 614040 is not on that list."
+
+notes:
+  - "The same stay as the clean bill of story S38, operated on Tuesday 2026-09-15, with the neuromonitoring package P703365 billed beside the instrumentation P614040."
+  - "Neuromonitoring is billed without the session rules of 2.2.2.B(3) (C001389), so the line is billed in full and carries no session role."
+  - "Bed, companion, anaesthesia, labs and drugs are inside the packages, as on the clean bill; the spinal implants are left off on both bills."
+
+showcase:
+  story: S38
+  sex: F
+  age: 77
+  admit: "2026-09-15"
+  nights: 4

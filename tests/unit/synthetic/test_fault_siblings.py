@@ -35,6 +35,7 @@ S14_SIBLING = "urosepsis_ward_stay_transfer_day_billed"
 S40_SIBLING = "pyelonephritis_dementia_second_visit_exam_billed"
 S20_SIBLING = "umbilical_hernia_day_case_itemized"
 S46_SIBLING = "parkinson_physiatry_visit_second_walker_billed"
+S38_SIBLING = "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
 
 
 @pytest.fixture(scope="module")
@@ -94,7 +95,9 @@ def test_deleting_a_bed_day_in_memory_makes_faulty_golden_equality_fail() -> Non
 def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_would_not_be(
     tmp_path: Path,
 ) -> None:
-    assert [p.stem for p in _GOLDEN_SIBLINGS] == [S1_SIBLING, S10_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING]
+    assert [p.stem for p in _GOLDEN_SIBLINGS] == [
+        S1_SIBLING, S10_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
+    ]  # fmt: skip  # by file name
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
     later = tmp_path / "later.yaml"
@@ -124,6 +127,41 @@ def test_the_s46_sibling_bills_a_second_walker_and_nothing_else_differs() -> Non
     assert walker["linked_procedure"] == {"code": "520030", "date": "2026-08-10"}
     assert (date(2026, 8, 10) - date(2026, 6, 29)).days == 42
     assert target.showcase == sibling.showcase and (target.showcase.sex, target.showcase.age) == (first.showcase.sex, first.showcase.age)
+
+
+# --- S38: the instrumentation of the patient of S3. The sibling is the target pathway with the neuromonitoring billed ---
+
+
+def _s38_pair():
+    target = load_pathway(_PATHWAYS_DIR / "lumbar_instability_posterior_instrumentation_package.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S38_SIBLING}.yaml")
+    return target, sibling
+
+
+def test_the_s38_sibling_bills_the_neuromonitoring_in_full_and_nothing_else_differs() -> None:
+    """The twin differs by a line, not by a date: P703365 on the day of the operation, billed in full and without a
+    session role (C001389 bills it without the rules of 2.2.2.B(3)); the clean bill is the package alone."""
+    target, sibling = _s38_pair()
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "materials", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    assert [p for p in clean["procedures"] if p not in faulty["procedures"]] == []
+    extra = [p for p in faulty["procedures"] if p not in clean["procedures"]]
+    assert [(p["code"], p["date"], p["qty"], p["billed_ratio"]) for p in extra] == [("P703365", "2026-09-15", 1, "1.0000")]
+    assert [p["code"] for p in clean["procedures"]] == ["P614040"]  # bed, anaesthesia, tests and drugs are inside it
+    assert target.showcase == sibling.showcase and target.billing_mode == sibling.billing_mode == "package"
+    assert [line.session_role for line in sibling.procedures] == [None, None]
+
+
+def test_the_s38_instrumentation_is_not_on_the_ek2d4_list_and_the_seven_segment_one_is() -> None:
+    """The fault rests on the list the engine reads: P703365 is paid only beside an EK-2/D-4 procedure (C001389)."""
+    from src.bilun.domain.prose_rules.conditional_addon_ek2d import load_ek2d4_code_set
+
+    listed = load_ek2d4_code_set()
+    assert len(listed) == 67 and "614050" in listed and "614040" not in listed
+    target, sibling = _s38_pair()
+    assert {line.code for line in target.procedures} == {"P614040"}
+    assert {line.code for line in sibling.procedures} == {"P614040", "P703365"}
 
 
 # --- S14: the ward bill after the ICU bill. The sibling is the target pathway with the transfer day billed ---

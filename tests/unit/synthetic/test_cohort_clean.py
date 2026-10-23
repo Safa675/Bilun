@@ -1584,13 +1584,15 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
 
 
 def test_a_later_bill_of_another_pathway_has_the_age_and_sex_of_its_pins() -> None:
-    """Patient 3 is a woman of 77; the pathway of her second bill has an 86-year-old woman as its showcase patient."""
+    """Patient 3 is a woman of 77; the pathway of her extra fifth bill (her committed second to fourth bills are S36 to
+    S38) has an 86-year-old woman as its showcase patient."""
     recipes, clinical = with_encounters(
-        Extra(3, 2, "pyelonephritis_dementia_delirium_ward", {"story": "S93", "age": 77, "sex": "F"})
+        Extra(3, 5, "pyelonephritis_dementia_delirium_ward", {"story": "S93", "age": 77, "sex": "F"})
     )
     built = build_showcase(recipes=recipes, clinical=clinical)
     ana = built.clean_tables["anadata_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0003")
-    assert ana["SQ_EPISODE"].to_list() == [_episode_of(3, 2), _episode_of(3, 1)]  # dated before her first bill
-    assert ana["TANI_YASI"].to_list() == [77, 77] and ana["CINSIYET"].to_list() == ["K", "K"]
+    # the extra is dated before every bill of hers; then the pre-operative visit S36, the stay S3, S37 and S38
+    assert ana["SQ_EPISODE"].to_list() == [_episode_of(3, n) for n in (5, 2, 1, 3, 4)]
+    assert ana["TANI_YASI"].to_list() == [77] * 5 and ana["CINSIYET"].to_list() == ["K"] * 5
     assert ana["OYKU"][0].startswith("77 yaşında kadın hasta, ")  # the story of the bill uses its own age too
     assert load_all()["pyelonephritis_dementia_delirium_ward"].showcase.age == 86

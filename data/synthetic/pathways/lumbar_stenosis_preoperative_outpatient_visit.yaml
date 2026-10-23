@@ -1,0 +1,77 @@
+# The pre-operative outpatient visit before the decompression of story S3 (lumbar spinal stenosis), billed itemized; a clean bill.
+# Showcase story S36 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F3 b2): bill 2 of the patient of S3, a precursor. The S3 pathway
+# note says the pre-operative exam and labs were done on an earlier outpatient takip: this is that bill, two weeks before the admission.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: lumbar_stenosis_preoperative_outpatient_visit
+title: "Lumbar spinal stenosis: the pre-operative outpatient visit with a lumbar MRI, billed itemized"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Beyin ve Sinir Cerrahisi"
+  specialty: "2400"                  # EK-2A: Beyin ve Sinir Cerrahisi
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S36 is the woman of story S3 (the same patient, the visit before her stay); M48.06 and I10 have no sex gate. Clinician to confirm."
+  age:
+    min: 55
+    max: 80
+    basis: judgment
+    source: "Story S36 patient is 77, like story S3; the bounds are those of story S3 (the author's judgment)."
+
+diagnoses:
+  - icd10: M48.06
+    name: "SPİNAL STENOZ, LOMBER BÖLGE"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; neurogenic claudication from lumbar stenosis, confirmed on the MRI of the visit (NASS guideline on degenerative lumbar stenosis)."
+  - icd10: I10
+    name: "ESANSİYEL (PRİMER) HİPERTANSİYON"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "Story S3 lists controlled hypertension (ASA 2) for this patient; it is coded on every bill of hers."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+  # --- the work-up that decides the operation: the MRI and the pre-operative tests
+  - id: lumbar_mri
+    kind: imaging
+    code: "R103410"
+    name: "MRG, Lomber vertebra, kontrastsız"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: guideline
+    source: "NASS guideline on degenerative lumbar stenosis: MRI is the noninvasive test that confirms the narrowing before a decompression."
+  - id: preop_labs
+    kind: lab
+    items:
+      - {code: "L107020", name: "Tam Kan Sayımı (Hemogram)"}
+      - {code: "L104780", name: "Kreatinin (Serum/Plazma)"}
+    days: admit
+    basis: judgment
+    source: "lab_reference_notes.md panel preop (hemogram, creatinine) before the elective operation of a 77-year-old; no guideline named. Clinician to confirm."
+
+notes:
+  - "The visit is on Tuesday 2026-08-04, two weeks before the admission of story S3 (2026-08-18): the earlier outpatient takip that the S3 pathway names. It has the later claim id and, on its earlier date, the earlier row."
+  - "The tests are fifteen days before the post-operative tests of story S3 (2026-08-19), outside the seven-day window of the duplicate-test rule (Tablo 15 #12)."
+  - "Story S3 is billed itemized, so no package period (C000714) applies to any visit of the patient; the next neurosurgery visit is the control four weeks later."
+  - "The diagnoses are those of story S3 (M48.06, I10), so the patient's list of diagnoses does not grow with this bill."
+
+showcase:
+  story: S36
+  sex: F
+  age: 77
+  admit: "2026-08-04"
