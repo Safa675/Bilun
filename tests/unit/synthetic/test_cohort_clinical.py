@@ -86,6 +86,9 @@ _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, in
     (8, 2): (132, 82, 88, 98, 163, 80.0),  # S49, the green-area ER visit three weeks before the cholecystectomy of S8
     (8, 3): (128, 78, 96, 97, 163, 77.5),  # S50, readmitted with colic and jaundice from a common-bile-duct stone
     (8, 4): (122, 76, 76, 98, 163, 77.5),  # S51, the gastroenterology control the day after the discharge
+    (1, 2): (130, 80, 98, 98, 178, 82.0),  # S30, the ER visit on the day of the appendectomy of S1
+    (1, 3): (122, 76, 72, 99, 178, 80.5),  # S31, the control six days after the discharge
+    (11, 2): (66, 38, 142, 98, 46, 2.4),  # S15, the newborn of S12 in a cot on the ward (infant ranges)
 }
 
 
@@ -200,7 +203,7 @@ def test_the_second_bills_of_the_committed_cohort_have_their_own_entries() -> No
             }
         else:  # S40 bills the ultrasound only, S14 no laboratory line (the ICU bill holds every test of the episode), S32-S34 none;
             # S41 and S36 bill a blood count and a creatinine drawn in their normal ranges (no state), S42-S44, S37 and S38 none;
-            # S49's faulty bill bills a CRP drawn in its normal range (no state), S50 and S51 none
+            # S49's faulty bill bills a CRP drawn in its normal range (no state), S50 and S51 none; S30, S31 and S15 none
             assert entry.labs is None
 
 
@@ -312,12 +315,13 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     # (S10, the ER visit, and S22, the admission); patient 6 three (S6, its neurology control S45 and its physiatry
     # visit S46); patient 5 five (S5, its ER visit S41, its readmission S42, its physiatry visit S43 and its geriatrics
     # visit S44); patient 3 four (S3, its pre-operative visit S36, its control S37 and its instrumentation S38); patient 8
-    # four (S8, its ER visit S49, its ERCP admission S50 and its control S51)
+    # four (S8, its ER visit S49, its ERCP admission S50 and its control S51); patient 1 three (S1, its ER visit S30 and
+    # its control S31); patient 11 two (S12 and its ward stay S15)
     numbers: dict[int, list[int]] = {}
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {2: [1, 2, 3, 4], 3: [1, 2, 3, 4], 4: [1, 2, 3], 5: [1, 2, 3, 4, 5], 6: [1, 2, 3], 7: [1, 2, 3], 8: [1, 2, 3, 4], 10: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {1: [1, 2, 3], 2: [1, 2, 3, 4], 3: [1, 2, 3, 4], 4: [1, 2, 3], 5: [1, 2, 3, 4, 5], 6: [1, 2, 3], 7: [1, 2, 3], 8: [1, 2, 3, 4], 10: [1, 2], 11: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
 
 
 @pytest.mark.parametrize(
@@ -360,18 +364,18 @@ def test_an_encounter_is_named_by_its_patient_and_number_in_a_problem() -> None:
 
 def test_the_vitals_band_is_the_patients_not_the_encounters() -> None:
     """A baby's later bill is judged by the infant table, though its pathway is an adult one with an adult age."""
-    recipes, clinical = with_encounters(
-        Extra(11, 2, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-07-15"}, pulse_shift=-8)
+    recipes, clinical = with_encounters(  # after patient 11's committed bills (S12, S15)
+        Extra(11, 3, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-07-20"}, pulse_shift=-8)
     )
-    extra = next(r for r in recipes.recipes if (r.patient_no, r.encounter_no) == (11, 2))  # after patient 11's first bill
+    extra = next(r for r in recipes.recipes if (r.patient_no, r.encounter_no) == (11, 3))
     assert load_all()[extra.pathway].showcase.age > 60  # the second bill alone would be an adult's
     assert check_clinical(clinical, recipes=recipes) == []  # the baby's vitals (62/36, 140, 46 cm, 2.4 kg) fit
     adult = list(clinical.patients)
-    index = next(i for i, entry in enumerate(adult) if (entry.patient_no, entry.encounter_no) == (11, 2))
+    index = next(i for i, entry in enumerate(adult) if (entry.patient_no, entry.encounter_no) == (11, 3))
     adult[index] = adult[index].model_copy(update={"vitals": load_clinical().patients[0].vitals})
     found = check_clinical(clinical.model_copy(update={"patients": adult}), recipes=recipes)
     assert {p.check for p in found} == {"vitals.height_range", "vitals.weight_range"}
-    assert all(p.where.startswith("patients[11.2].vitals.") for p in found)
+    assert all(p.where.startswith("patients[11.3].vitals.") for p in found)
 
 
 def test_unregistered_problem_check_id_raises_key_error() -> None:
@@ -847,13 +851,14 @@ def test_a_problem_is_located_by_patient_number_unless_the_numbers_repeat() -> N
         ("labs.blood_gas", "patients[2].labs.blood_gas"),
         ("labs.unknown_key", "patients[3].labs.states['L999999|X']"),
     ]
-    # With a number twice (patient 3 is renumbered 1) the number says nothing: the position is used (patient 3's
-    # entry comes after the two entries of patient 2).
-    position = [p["patient_no"] for p in raw["patients"]].index(3)
+    # With a number twice (patient 3 is renumbered 1) the number says nothing: the position is used (the first entries
+    # of patients 2 and 3 come after the bills of the patients before them).
+    numbers = [p["patient_no"] for p in raw["patients"]]
+    second, position = numbers.index(2), numbers.index(3)
     _patient(raw, 3)["patient_no"] = 1
     assert sorted((p.check, p.where) for p in _problems(raw)) == [
         ("clinical.patient_numbers", "patients"),
-        ("labs.blood_gas", "patients[1].labs.blood_gas"),
+        ("labs.blood_gas", f"patients[{second}].labs.blood_gas"),
         ("labs.unknown_key", f"patients[{position}].labs.states['L999999|X']"),
     ]
 

@@ -1,12 +1,20 @@
 # Showcase encounter recipes for the synthetic demo cohort (v3, P4).
 # Each recipe maps patient_no (1, 2, 3 ... in order, no gaps) to its clinical care pathway and injected
-# billing fault: patients 1..8 are the stories S1..S8, patient 2 has three more bills, a control visit S32 (encounter_no 2, a clean bill), a readmission through the ER S33 and the control after it S34 (encounter_no 3 and 4), patient 3 has three more bills, the pre-operative visit S36 (encounter_no 2, a clean bill dated two weeks before her stay), the control S37 (encounter_no 3, a clean bill) and the instrumentation S38 (encounter_no 4), patient 5 has four more bills, the ER visit before her stay S41 (encounter_no 2, a clean bill dated on the day of the admission), a readmission for an infection of her prosthesis with two red-cell units S42 (encounter_no 3), a physiatry visit with a first walker S43 (encounter_no 4, a clean bill) and a geriatrics visit starting romosozumab S44 (encounter_no 5), patient 6 has a neurology control with a first walker S45 and a physiatry visit with a second walker S46 (encounter_no 2 and 3; S45 is a clean bill), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 8 has three more bills, the ER visit S49 three weeks before her stay (encounter_no 2), a readmission for a common-bile-duct stone with an ERCP S50 (encounter_no 3) and the control after it S51 (encounter_no 4, a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12; patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case; patient 14 is S17 (a month of haemodialysis) and, as its second bill (encounter_no 2), S23 (an emergency session); patient 15 is S18 (decompensated cirrhosis with albumin) and, as its second bill (encounter_no 2), S24 (a variceal rebleed with two red-cell units) (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
+# billing fault: patients 1..8 are the stories S1..S8, patient 1 has two more bills, the ER visit S30 on the day of his admission (encounter_no 2, a clean bill) and the control S31 six days after his discharge (encounter_no 3; inside the package period of S1, C000714, a dormant fault without a record), patient 2 has three more bills, a control visit S32 (encounter_no 2, a clean bill), a readmission through the ER S33 and the control after it S34 (encounter_no 3 and 4), patient 3 has three more bills, the pre-operative visit S36 (encounter_no 2, a clean bill dated two weeks before her stay), the control S37 (encounter_no 3, a clean bill) and the instrumentation S38 (encounter_no 4), patient 5 has four more bills, the ER visit before her stay S41 (encounter_no 2, a clean bill dated on the day of the admission), a readmission for an infection of her prosthesis with two red-cell units S42 (encounter_no 3), a physiatry visit with a first walker S43 (encounter_no 4, a clean bill) and a geriatrics visit starting romosozumab S44 (encounter_no 5), patient 6 has a neurology control with a first walker S45 and a physiatry visit with a second walker S46 (encounter_no 2 and 3; S45 is a clean bill), patient 7 has an observation under 24 hours S47 and a follow-up S48 (encounter_no 2 and 3; S48 is a clean bill), patient 8 has three more bills, the ER visit S49 three weeks before her stay (encounter_no 2), a readmission for a common-bile-duct stone with an ERCP S50 (encounter_no 3) and the control after it S51 (encounter_no 4, a clean bill), patient 9 is S9, patient 4 has two more bills, a control visit S39 (a clean bill) and a second visit S40 (encounter_no 2 and 3); patient 10 is S11 and, as its second bill (encounter_no 2), S14; patient 11 is S12 and, as its second bill (encounter_no 2), S15 (the ward stay in a cot after the incubator); patient 12 is S10 (the ER visit, with a MEDULA rejection event) and, as its second bill (encounter_no 2), S22; patient 13 is S20, the first day case; patient 14 is S17 (a month of haemodialysis) and, as its second bill (encounter_no 2), S23 (an emergency session); patient 15 is S18 (decompensated cirrhosis with albumin) and, as its second bill (encounter_no 2), S24 (a variceal rebleed with two red-cell units) (the story ids are not contiguous). A recipe without a fault is a clean bill; `medula_events` lists the MEDULA rejections of the bill.
 # Encounter pins come from each pathway's own showcase block; no prices or amounts are stored here.
 schema_version: 1
 recipes:
   - patient_no: 1
     pathway: appendicitis_lap_appendectomy_package
     fault: F_S1_PACKAGE_BILLED_ITEMIZED
+
+  - patient_no: 1
+    encounter_no: 2
+    pathway: appendicitis_er_visit_ultrasound
+
+  - patient_no: 1
+    encounter_no: 3
+    pathway: appendicitis_post_appendectomy_control
 
   - patient_no: 2
     pathway: copd_exacerbation_pneumonia_ward
@@ -138,6 +146,11 @@ recipes:
   - patient_no: 11
     pathway: late_preterm_newborn_incubator_stay
     fault: F_S12_INCUBATOR_DAYS_UNDERBILLED
+
+  - patient_no: 11
+    encounter_no: 2
+    pathway: late_preterm_newborn_cot_ward_stay
+    fault: F_S15_STANDARD_BED_BESIDE_THE_COT
 
   - patient_no: 12
     pathway: gi_bleed_melena_er_visit

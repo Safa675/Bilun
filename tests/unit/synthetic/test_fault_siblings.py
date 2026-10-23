@@ -37,6 +37,10 @@ S20_SIBLING = "umbilical_hernia_day_case_itemized"
 S46_SIBLING = "parkinson_physiatry_visit_second_walker_billed"
 S38_SIBLING = "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
 S49_SIBLING = "cholelithiasis_biliary_colic_er_green_area_tests_billed"
+S15_SIBLING = "late_preterm_newborn_cot_ward_stay_standard_bed_billed"
+# A sibling whose fault is a defect the grammar itself refuses: its checks find exactly that defect and nothing else.
+# S15's ward bed beside the cot is a second bed line on the admission day (stay.coverage).
+_SIBLING_FAULTS_THE_GRAMMAR_NAMES = {S15_SIBLING: ("stay.coverage", "two bed lines on days [0]")}
 
 
 @pytest.fixture(scope="module")
@@ -68,7 +72,14 @@ def test_sibling_pathway_loads(path: Path) -> None:
 
 @pytest.mark.parametrize("path", _FILES, ids=lambda p: p.stem)
 def test_sibling_pathway_passes_every_check(path: Path, catalogs: Catalogs) -> None:
-    assert run_all(load_pathway(path), catalogs) == []
+    """A sibling is a pathway and passes every check, but for a fault the grammar refuses (`_SIBLING_FAULTS_THE_GRAMMAR_NAMES`)."""
+    problems = run_all(load_pathway(path), catalogs)
+    expected = _SIBLING_FAULTS_THE_GRAMMAR_NAMES.get(path.stem)
+    if expected is None:
+        assert problems == []
+        return
+    check, text = expected
+    assert [p.check for p in problems] == [check] and text in problems[0].message
 
 
 @pytest.mark.parametrize("path", _GOLDEN_SIBLINGS, ids=lambda p: p.stem)
@@ -97,7 +108,7 @@ def test_the_sibling_of_s1_is_compared_with_a_faulty_golden_and_a_later_story_wo
     tmp_path: Path,
 ) -> None:
     assert [p.stem for p in _GOLDEN_SIBLINGS] == [
-        S1_SIBLING, S49_SIBLING, S10_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
+        S1_SIBLING, S49_SIBLING, S10_SIBLING, S15_SIBLING, S38_SIBLING, S46_SIBLING, S40_SIBLING, S20_SIBLING, S14_SIBLING
     ]  # fmt: skip  # by file name
     raw = yaml.safe_load((_SIBLINGS_DIR / f"{S1_SIBLING}.yaml").read_text(encoding="utf-8"))
     raw["showcase"]["story"] = "S99"
@@ -200,6 +211,45 @@ def test_the_s49_pathways_are_one_er_visit_three_weeks_before_the_stay_of_s8() -
         assert (date.fromisoformat(stay.showcase.admit) - date.fromisoformat(visit.showcase.admit)).days == 21
     # the visit's diagnosis is coded on the stay too, so the patient's union list does not grow with this bill
     assert {d.icd10 for d in target.diagnoses} <= {d.icd10 for d in stay.diagnoses}
+
+
+# --- S15: the newborn's ward stay after the incubator. The sibling is the target pathway with the ward bed beside the cot ---
+
+
+def _s15_pair():
+    target = load_pathway(_PATHWAYS_DIR / "late_preterm_newborn_cot_ward_stay.yaml")
+    sibling = load_pathway(_SIBLINGS_DIR / f"{S15_SIBLING}.yaml")
+    return target, sibling
+
+
+def test_the_s15_sibling_bills_the_ward_bed_beside_the_cot_on_the_admission_day_and_nothing_else_differs() -> None:
+    """The twin differs by a line, not by a date: the ward bed 510010 on the admission day, a day the cot pays (EK-2B gives
+    both the same text: yemek, yatak, vizit)."""
+    target, sibling = _s15_pair()
+    clean, faulty = expand(target), expand(sibling)
+    for part in ("header", "diagnoses", "materials", "drugs", "performed"):
+        assert clean[part] == faulty[part], part
+    assert [p for p in clean["procedures"] if p not in faulty["procedures"]] == []
+    extra = [p for p in faulty["procedures"] if p not in clean["procedures"]]
+    assert [(p["code"], p["date"], p["qty"], p["billed_ratio"]) for p in extra] == [("510010", "2026-07-16", 1, "1.0000")]
+    cots = [p["date"] for p in clean["procedures"] if p["code"] == "510081"]
+    assert cots == ["2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19"]  # every day of the stay, the discharge day too
+
+
+def test_the_s15_ward_stay_starts_the_day_after_the_billed_discharge_day_of_the_incubator_stay() -> None:
+    """S12 bills its discharge day (07-15) with a Kuvöz line: the ward stay of the same baby is admitted on 07-16, so no day
+    is billed on both bills (the grammar and the engine know a day paid by an earlier bill only after an ICU bill)."""
+    incubator = load_pathway(_PATHWAYS_DIR / "late_preterm_newborn_incubator_stay.yaml")
+    target, sibling = _s15_pair()
+    last = date.fromisoformat(incubator.showcase.admit) + timedelta(days=incubator.showcase.nights)
+    incubator_days = [p["date"] for p in expand(incubator)["procedures"] if p["code"] == "510070"]
+    assert incubator_days[-1] == last.isoformat() == "2026-07-15"
+    for ward in (target, sibling):
+        assert ward.showcase.admit == (last + timedelta(days=1)).isoformat() == "2026-07-16"
+        assert (ward.showcase.sex, ward.showcase.age) == (incubator.showcase.sex, incubator.showcase.age) == ("M", 0)
+        assert not ward.arrives_from_icu
+    # the ward stay's diagnoses are coded on the incubator stay too, so the patient's list does not grow
+    assert {d.icd10 for d in target.diagnoses} <= {d.icd10 for d in incubator.diagnoses}
 
 
 # --- S14: the ward bill after the ICU bill. The sibling is the target pathway with the transfer day billed ---

@@ -1,4 +1,4 @@
-"""Thirty-eight showcase stories: clean bill + one injected fault each, except S23, S32, S36, S37, S39, S41, S43, S45, S48 and S51 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37, S38, S49, S50 and S51 on 2026-10-23).
+"""Forty-one showcase stories: clean bill + one injected fault each, except S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 and S51 (S1-S8 a scratch draft, S9, S10, S11, S12, S14, S22, S39 and S40 added 2026-10-21, S32, S20, S47, S48, S33, S34, S17, S23, S18, S24, S45, S46, S41, S42, S43 and S44 on 2026-10-22, S36, S37, S38, S49, S50, S51, S15, S30 and S31 on 2026-10-23).
 
 Facility: one SGK-contracted private hospital, facility_tier=2_3_basamak_ozel,
 provider_type=Ozel (accepted values: src/bilun/domain/prose_rules/facility_tier.py:26-30).
@@ -1015,7 +1015,86 @@ def s51(variant: str) -> Bill:
     return b
 
 
-# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")
+# ── S15 ─ the ward bed billed beside the cot on the admission day (the newborn of S12 after the incubator) ──
+def _s15(variant: str) -> Bill:
+    a, d = D("2026-07-16"), D("2026-07-19")
+    b = Bill("SH-12", "C-SH15", "yatis", "Çocuk Sağlığı ve Hastalıkları", a, d, "P07.3")
+    for i, icd in enumerate(("P07.3", "P59.9")):
+        b.diag(icd, primary=(i == 0))
+    for day in _days(a, d):                               # a cot for every calendar day, the discharge day included
+        b.proc("510081", day, specialty=COCUK)
+    if variant != "clean":                                # the ward's standard bed beside the cot on the admission day
+        b.proc("510010", a, specialty=COCUK)
+    _companion(b, a, d, COCUK)                            # 3 nights: the mother stays as the companion
+    return b
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51}
+
+def s15(variant: str) -> Bill:
+    """Boy born 2026-07-10, the patient of S12: 3 nights in a cot on the paediatric ward after the incubator stay.
+
+    S12 bills its discharge day (07-15) with a Kuvöz line, so the ward stay starts the day after (a ward bill admitted on
+    07-15 would bill that day again). EK-2B gives 510010 and 510081 the same text (yemek, yatak, vizit): the faulty bill
+    also bills the ward bed on the admission day, a day the cot pays; the engine reads it as an audit exposure of the
+    510010 line (src/bilun/domain/prose_rules/yatak_newborn_overlap.py), on this bill's own cot.
+    """
+    b = _s15(variant)
+    b.history = (s12("faulty"),)
+    return b
+
+
+# ── S30, S31 ─ the ER visit on the day of S1's admission and the control after the stay (clean bills) ──
+def _s30() -> Bill:
+    day = D("2026-07-14")
+    b = Bill("SH-01", "C-SH30", "acil", "Acil Tıp", None, None, "K35.9", start=day, end=day)
+    b.diag("K35.9", primary=True, on=day)
+    b.proc("520020", day, specialty=ACIL)                 # the ER examination
+    b.proc("803602", day, specialty=RAD)                  # abdominal ultrasound: the inflamed appendix
+    return b
+
+
+def _s31() -> Bill:
+    day = D("2026-07-22")
+    b = Bill("SH-01", "C-SH31", "poliklinik", "Genel Cerrahi", None, None, "K35.9", start=day, end=day)
+    b.diag("K35.9", primary=True, on=day)
+    b.proc("520030", day, specialty=GENCER)               # the control, in the branch of the package (C000714)
+    return b
+
+
+def _patient1_history(story: str) -> tuple[Bill, ...]:
+    """The other bills of the patient of S1 as the loaded cohort holds them, in claim order."""
+    bills = {"S1": lambda: s1("faulty"), "S30": _s30, "S31": _s31}
+    return tuple(build() for name, build in bills.items() if name != story)
+
+
+def s30(variant: str) -> Bill:
+    """34 M, the patient of S1: the ER visit on 2026-07-14, the day of his admission (a clean bill, CLEAN_ONLY).
+
+    A precursor on the same date as S1: the claim sequence breaks the tie. The ER examination and the abdominal
+    ultrasound; the blood count and the CRP that S1's note names are left off, because S1's faulty bill repeats them on
+    07-15 and the duplicate-test rule (seven days, the patient's whole history) would then move S1's own report.
+    """
+    if variant != "clean":
+        raise ValueError("S30 is a clean bill: it has no faulty variant")
+    b = _s30()
+    b.history = _patient1_history("S30")
+    return b
+
+
+def s31(variant: str) -> Bill:
+    """34 M, the patient of S1: the general-surgery control on 2026-07-22, six days after his discharge.
+
+    Clean by its recipe, wrong by the SUT: an examination of the same branch within 10 days of S1's package discharge
+    (the end of its group C window, 07-21, counting as the discharge) is inside the package (C000714). The engine has no
+    detector for it (#337), so the bill carries no fault record (CLEAN_ONLY): a dormant fault.
+    """
+    if variant != "clean":
+        raise ValueError("S31 is a clean bill: it has no faulty variant")
+    b = _s31()
+    b.history = _patient1_history("S31")
+    return b
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S15": s15, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S30": s30, "S31": s31, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51}

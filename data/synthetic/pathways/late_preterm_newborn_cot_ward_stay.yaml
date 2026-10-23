@@ -1,0 +1,75 @@
+# The ward stay of the late-preterm baby of story S12 after its incubator stay: a cot (Kot) on the paediatric ward, billed
+# itemized (hizmet başı); a clean bill.
+# Showcase story S15 (plans/data/2026-10-20-demo-coverage-first-plan.md, card S15): bill 2 of the patient of S12. Built by WP18.
+# Grammar: README.md next to this file. Every line below is a clean-bill line; faults are not part of a pathway.
+# Newborn bed billing (EK-2B 510070 Kuvöz, 510081 Kot): one bed line per calendar day, the discharge day included.
+schema_version: 1
+id: late_preterm_newborn_cot_ward_stay
+title: "Late-preterm newborn after the incubator stay, cot (Kot) on the paediatric ward, billed itemized"
+claim_type: yatis
+billing_mode: itemized
+department:
+  name: "Çocuk Sağlığı ve Hastalıkları"
+  specialty: "1500"                  # EK-2A: Çocuk Sağlığı ve Hastalıkları
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S15 is the boy of story S12 (the same patient, the next bill); P07.3 and P59.9 have no sex gate. Neonatologist to confirm."
+  age:
+    min: 0
+    max: 0
+    basis: judgment
+    source: "A newborn: the baby of story S15 is six days old (born on 2026-07-10, story S12). The claim has a birth year only, so the age is 0 years."
+
+nights:
+  min: 1
+  max: 7
+  basis: judgment
+  source: "Story S15 has 3 nights: feeding and weight gain in a cot before going home. 1 and 7 are the author's judgment. Neonatologist to confirm."
+
+diagnoses:
+  - icd10: P07.3
+    name: "MİAD ÖNCESİ DİĞER İNFANTLAR"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; WHO ICD-10 P07.3: other preterm infants, 28 to under 37 completed weeks. The stay continues the care of the baby of story S12."
+  - icd10: P59.9
+    name: "YENİDOĞAN SARILIĞI, TANIMLANMAMIŞ"
+    role: secondary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the neonatal jaundice of story S12, still followed on the ward. Coder: P59.0 (jaundice with preterm delivery) is the more specific code."
+
+procedures:
+  # --- the stay: one cot line per calendar day, one companion line per night
+  - id: cot
+    kind: newborn_bed
+    code: "510081"
+    name: "Kot (beşik)"
+    days: admit..discharge             # a bed for every calendar day: 4 lines for 3 nights
+    basis: ek2b_aciklama
+    source: "EK-2B 510081: covers yemek, yatak, vizit; not with 510070; not for a baby rooming in. The discharge date is a bed day as for 510010 (Kılavuz p.62, p.168)."
+  - id: companion
+    kind: companion
+    code: "510121"
+    name: "Refakat"
+    days: admit..discharge-1           # 3 lines for 3 nights
+    basis: sut
+    source: "C001628 (SUT 2.6.3(2)): the companion's bed and meals are billed with 510121; a child under 18 needs no medical-need statement (C001627). Clinician to confirm."
+
+notes:
+  - "The baby leaves the incubator of story S12 on Wednesday 2026-07-15 (its discharge day, which S12 bills with a Kuvöz line) and is admitted to the paediatric ward on Thursday 07-16; home on Sunday 07-19 (3 nights)."
+  - "Why the admission is on 07-16: S12 bills its discharge day (the newborn grammar bills it), so a ward bill admitted on 07-15 would bill that day again. The grammar and the engine know a day paid by an earlier bill only for an ICU bill (arrives_from_icu, icu_last_days)."
+  - "The cot 510081 is the bed on every calendar day; the ward bed 510010 is an alternative for one day, never beside it (EK-2B text; yatak_newborn_overlap). The baby is not rooming in: the mother stays as its companion."
+  - "No laboratory, phototherapy, drug or material line on purpose: lab_reference.csv holds adult reference ranges (the note of story S12)."
+
+showcase:
+  story: S15
+  sex: M
+  age: 0
+  admit: "2026-07-16"
+  nights: 3

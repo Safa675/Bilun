@@ -1,0 +1,53 @@
+# The control six days after the discharge of story S1 (the laparoscopic appendectomy), in general surgery, outpatient,
+# billed as one examination. By SUT 2.2.2.B-3.(1) (C000714) this examination is inside S1's package: a dormant fault that
+# has no record, because the engine has no detector for it (issue #337).
+# Showcase story S31 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F1 b3): bill 3 of the patient of S1.
+# Grammar: README.md next to this file. A visit has no nights and no stay: `admit` is the visit day and the only day.
+schema_version: 1
+id: appendicitis_post_appendectomy_control
+title: "Control after a laparoscopic appendectomy, in general surgery, outpatient, billed as one examination"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"                  # EK-2A: Genel Cerrahi (the surgeons of story S1)
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S31 is the man of story S1 (the same patient, the control after his stay); K35.9 has no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 70
+    basis: judgment
+    source: "Story S31 patient is 34, like story S1; the bounds are those of story S1 (the author's judgment)."
+
+diagnoses:
+  - icd10: K35.9
+    name: "AKUT APANDİSİT, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "SKRS leaf code; the control follows the appendectomy of story S1. Surgeon or coder to confirm: Z09.0 or Z48.8 (follow-up after surgery) are the other choices."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application; the demo bills the visit as one EK-2B 520030 line."
+
+notes:
+  - "The visit is on Wednesday 2026-07-22, six days after the discharge of story S1 (07-16), in the same branch."
+  - "The dormant fault: SUT 2.2.2.B-3.(1) (C000714) puts an outpatient examination of the same branch within 10 days after the discharge from a diagnosis-based package inside the package. S1's group C window (8 days from 07-14, C000704) ends on 07-21, which counts as the discharge, so the period runs to 07-31; this examination is not billed on its own."
+  - "The engine has no detector for it (the corpus rule's inputs are never derived: issue #337, EI-12 of the coverage plan), so the recipe has no fault record and the demo counts the bill as clean until a detector exists."
+
+showcase:
+  story: S31
+  sex: M
+  age: 34
+  admit: "2026-07-22"

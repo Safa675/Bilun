@@ -1,24 +1,24 @@
 {
   "clean_counts": {
-    "anadata_clean.parquet": 38,
+    "anadata_clean.parquet": 41,
     "lab_clean.parquet": 381,
     "recete_clean.parquet": 25
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "1e17ea49e8073fbc9054ddd2c39f5b96e40a73fbd224d6bed7784b033b662451",
+    "anadata_clean.parquet": "706800877e5917fae5efd9079c71eb5f106eef306f124d072ba17b2947d3780a",
     "lab_clean.parquet": "f70f048fdd3861a85ca840df2753b14888b3898650bee989be2886f4fd3f0a44",
     "recete_clean.parquet": "c73f82b66a8e6de6b9bb9e71edd34ad64feaf3846217d37ab8f02b7480fc3131"
   },
   "counts": {
-    "claim_diagnoses.parquet": 89,
-    "claim_headers.parquet": 38,
+    "claim_diagnoses.parquet": 93,
+    "claim_headers.parquet": 41,
     "drug_claim_lines.parquet": 25,
-    "expected_rule_outputs.parquet": 28,
+    "expected_rule_outputs.parquet": 29,
     "material_claim_lines.parquet": 6,
     "medula_rejection_events.parquet": 1,
     "patient_copay_profiles.parquet": 15,
     "performed_procedure_lines.parquet": 4,
-    "procedure_claim_lines.parquet": 252
+    "procedure_claim_lines.parquet": 263
   },
   "dataset_id": "showcase-v3",
   "encounters": [
@@ -29,6 +29,24 @@
       "pathway_id": "appendicitis_lap_appendectomy_package",
       "patient_id": "SENTETIK-HASTA-0001",
       "story": "S1",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0001-002",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "appendicitis_er_visit_ultrasound",
+      "patient_id": "SENTETIK-HASTA-0001",
+      "story": "S30",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0001-003",
+      "fault_id": null,
+      "is_clean": true,
+      "pathway_id": "appendicitis_post_appendectomy_control",
+      "patient_id": "SENTETIK-HASTA-0001",
+      "story": "S31",
       "tier": "showcase"
     },
     {
@@ -299,6 +317,15 @@
       "pathway_id": "late_preterm_newborn_incubator_stay",
       "patient_id": "SENTETIK-HASTA-0011",
       "story": "S12",
+      "tier": "showcase"
+    },
+    {
+      "claim_id": "F-SENTETIK-HASTA-0011-002",
+      "fault_id": "F_S15_STANDARD_BED_BESIDE_THE_COT",
+      "is_clean": false,
+      "pathway_id": "late_preterm_newborn_cot_ward_stay",
+      "patient_id": "SENTETIK-HASTA-0011",
+      "story": "S15",
       "tier": "showcase"
     },
     {
@@ -765,6 +792,24 @@
       "sut_section": "2.2.2.A(1)"
     },
     {
+      "amount_try": "222.36",
+      "billed_clean_try": "1467.50",
+      "billed_faulty_try": "1689.86",
+      "claim_id": "F-SENTETIK-HASTA-0011-002",
+      "effect_kind": "deduction_risk",
+      "engine_rule": "yatak_newborn_overlap_510010",
+      "expected_status": "kismi_red",
+      "fault_id": "F_S15_STANDARD_BED_BESIDE_THE_COT",
+      "injection_id": "INJ-F-SENTETIK-HASTA-0011-002-F_S15_STANDARD_BED_BESIDE_THE_COT",
+      "line_id": "ISL-F-SENTETIK-HASTA-0011-002-001",
+      "line_ids": [],
+      "line_type": "islem",
+      "pathway_id": "late_preterm_newborn_cot_ward_stay",
+      "patient_id": "SENTETIK-HASTA-0011",
+      "story": "S15",
+      "sut_section": "2.2.2.A(1)"
+    },
+    {
       "amount_try": "5.88",
       "billed_clean_try": "105.46",
       "billed_faulty_try": "111.34",
@@ -936,6 +981,12 @@
       ],
       "patient_id": "SENTETIK-HASTA-0010"
     },
+    "S15": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0011-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0011"
+    },
     "S17": {
       "claim_ids": [
         "F-SENTETIK-HASTA-0014-001"
@@ -971,6 +1022,18 @@
         "F-SENTETIK-HASTA-0015-002"
       ],
       "patient_id": "SENTETIK-HASTA-0015"
+    },
+    "S30": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0001-002"
+      ],
+      "patient_id": "SENTETIK-HASTA-0001"
+    },
+    "S31": {
+      "claim_ids": [
+        "F-SENTETIK-HASTA-0001-003"
+      ],
+      "patient_id": "SENTETIK-HASTA-0001"
     },
     "S32": {
       "claim_ids": [
@@ -1096,14 +1159,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "79a39323ff859f021ce5674863034b150e2521cb1bf9ad7b523899cb51be7d21",
-    "claim_headers.parquet": "028970f73caa87c3c18a0ba82f50d34820c047ccd1aa715ba3f476172f00db86",
+    "claim_diagnoses.parquet": "f411785873775e71c0f4f8c94d85c913e955d1f948a3b8480f70bd1ed5e6308c",
+    "claim_headers.parquet": "bc4d17798ce399e58d63a29e51ec80eec33a36d598b7bc746f46ad4bc417f456",
     "drug_claim_lines.parquet": "5fde8f4bc6d100e1119ec2c290130a8da3e51e3ce28e887d8acfea3a6aa78329",
-    "expected_rule_outputs.parquet": "475820362934e7bd4ccad2f8231feb2c8684d5eda2867ff834d9c7e9bd328764",
+    "expected_rule_outputs.parquet": "f7e59ddc827496769b15e1c495dc6233909994e4cc50dd5a9dc2943b05daa8a8",
     "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "1f4c2502821cebcdaf310bba2eb951da90dca2418236e5ff9bbeb1f35eb9f55f",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "fd962eba53e32f16d4c0f9291db13896a988bbb9f90fbc6e0fc9ddb58dd415c6"
+    "procedure_claim_lines.parquet": "1eea0bbf9cb28ff4528c8094fafb1ca2bf0adf7235dd20cad553335963eb586f"
   }
 }

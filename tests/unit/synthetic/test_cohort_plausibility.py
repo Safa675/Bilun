@@ -157,6 +157,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S11": set(),  # half the price of the ICU package days: only the engine (icu_puani) sees it
     "S12": {"stay.bed_coverage"},  # the first three incubator days are not billed: a bed day is missing (as S2)
     "S14": {"stay.bed_coverage"},  # the ward bed on the day the ICU bill ends: the ICU bill's 510090 already pays it
+    "S15": {"stay.bed_coverage"},  # the ward bed beside the cot on the admission day: two bed lines on one day
     "S17": set(),  # the ESA prescribed by general surgery: no check reads a prescriber, only the engine (drug_indication) sees it
     "S18": set(),  # the albumin without the specialist report: no check reads a drug's report, only the engine (drug_indication) sees it
     "S24": set(),  # the red-cell units without their ISBT 128 numbers: no check reads the number, only the engine (4.6) sees it
@@ -377,6 +378,16 @@ def edit_patient(data: Data, story: int, birth_year: int | None = None, **change
     )
     if birth_year is not None:
         edit(data, TABLE_COPAY, pl.col("patient_id") == PATIENT[story], birth_year=birth_year)
+
+
+def age_patient(data: Data, story: int, age: int, year: int = 2026) -> None:
+    """The story's patient is `age` on every one of its bills (the bills of the cohort are dated in `year`): the
+    TANI_YASI of each of its anadata rows and the birth year of its copay profile agree."""
+    rows = pl.col("HASTA_ID") == PATIENT[story]
+    data.anadata = data.anadata.with_columns(
+        pl.when(rows).then(_value(data.anadata, "TANI_YASI", age)).otherwise(pl.col("TANI_YASI")).alias("TANI_YASI")
+    )
+    edit(data, TABLE_COPAY, pl.col("patient_id") == PATIENT[story], birth_year=year - age)
 
 
 def _category(code: str) -> str:
@@ -641,9 +652,19 @@ def _bill_every_bed_day_as_a_day_bed(d: Data) -> None:
         set_code(d, 2, "510010", "510120", day)
 
 
+def _newborn_grown_to_34(d: Data) -> None:
+    # S12's baby grown to 34 (the birth year follows, so only the age gate is wrong): P07.3, P59.9 and Z38.0. Its ward
+    # bill S15 is left out of this world, so the defect stays on one bill (S15's P07.3 and P59.9 would trip as well)
+    ward = pl.col("claim_id") == claim_id(PATIENT[11], 2)
+    for table in (TABLE_CLAIM_HEADERS, TABLE_DIAGNOSES, TABLE_PROCEDURES):
+        drop(d, table, ward)
+    d.anadata = d.anadata.filter(pl.col("SQ_EPISODE") != episode_id(PATIENT[11], 2))
+    age_patient(d, 11, 34)
+
+
 def _adult_name_on_a_child(d: Data) -> None:
-    # S1 becomes a 12-year-old (age and birth year agree, so only the name is wrong)
-    edit_patient(d, 1, birth_year=2014, TANI_YASI=12)
+    # S1 becomes a 12-year-old on every bill (age and birth year agree, so only the name is wrong)
+    age_patient(d, 1, 12)
     rename(d, 1, "P610131", "Erişkin tedavisel soğutma")
 
 
@@ -976,8 +997,7 @@ CASES: list[Case] = [
     ),
     Case(
         AGE,
-        # S12's baby grown to 34 (the birth year follows, so only the age gate is wrong): P07.3, P59.9 and Z38.0
-        lambda d: edit_patient(d, 11, birth_year=1992, TANI_YASI=34),
+        _newborn_grown_to_34,
         label="the_newborn_stay_of_a_34_year_old",
         n=3,
         at=row_at(11, TABLE_DIAGNOSES, of(11) & (pl.col("icd10_code") == "P07.3")),
@@ -4291,6 +4311,7 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
             "lumbar_instability_posterior_instrumentation_neuromonitoring_billed"
         ],
         "cholelithiasis_biliary_colic_er_green_area": ["cholelithiasis_biliary_colic_er_green_area_tests_billed"],
+        "late_preterm_newborn_cot_ward_stay": ["late_preterm_newborn_cot_ward_stay_standard_bed_billed"],
     }
     data = Data(dict(built.tables), anadata)
     assert data.problems(context, only="fit.pathway_membership") == []
