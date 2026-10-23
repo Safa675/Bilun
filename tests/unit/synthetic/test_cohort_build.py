@@ -85,6 +85,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S11": "6089.82",
     "S12": "1322.94",
     "S14": "222.36",
+    "S15": "222.36",  # the ward bed beside the cot on the admission day: the 510010 line at risk (deduction_risk)
     "S17": "0.00",  # the ESA prescribed by the wrong branch: a drug line, and drugs enter at 0 TL
     "S18": "0.00",  # the albumin without the specialist report: a drug line, and drugs enter at 0 TL
     "S20": "4724.84",
@@ -103,12 +104,14 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S23, S32, S36, S37, S39, S41, S43, S45, S48 and S51 are clean bills (no fault, no record), the others carry one.
+# S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 and S51 are clean bills (no fault, no record; S31 is the dormant
+# fault of C000714, which no detector reads), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
     "S12": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-001"]},
     "S14": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-002"]},
+    "S15": {"patient_id": "SENTETIK-HASTA-0011", "claim_ids": ["F-SENTETIK-HASTA-0011-002"]},
     "S10": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-001"]},
     "S22": {"patient_id": "SENTETIK-HASTA-0012", "claim_ids": ["F-SENTETIK-HASTA-0012-002"]},
     "S32": {"patient_id": "SENTETIK-HASTA-0002", "claim_ids": ["F-SENTETIK-HASTA-0002-002"]},
@@ -127,6 +130,8 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S49": {"patient_id": "SENTETIK-HASTA-0008", "claim_ids": ["F-SENTETIK-HASTA-0008-002"]},
     "S50": {"patient_id": "SENTETIK-HASTA-0008", "claim_ids": ["F-SENTETIK-HASTA-0008-003"]},
     "S51": {"patient_id": "SENTETIK-HASTA-0008", "claim_ids": ["F-SENTETIK-HASTA-0008-004"]},
+    "S30": {"patient_id": "SENTETIK-HASTA-0001", "claim_ids": ["F-SENTETIK-HASTA-0001-002"]},
+    "S31": {"patient_id": "SENTETIK-HASTA-0001", "claim_ids": ["F-SENTETIK-HASTA-0001-003"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
     "S40": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-003"]},
     "S41": {"patient_id": "SENTETIK-HASTA-0005", "claim_ids": ["F-SENTETIK-HASTA-0005-002"]},
@@ -364,8 +369,8 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     # S1, S5, S8, S20, S42 (the removal package of patient 5's readmission), S38 (the instrumentation package of patient
     # 3's second operation), S50 (the ERCP package of patient 8's readmission) and the haemodialysis bills S17 and S23
     # (EK-2C session packages) have package_candidate=True in both clean and faulty composed headers; others False. The
-    # story of a bill comes from its encounter (a clean bill, S23, S32, S36, S37, S39, S41, S43, S45, S48 or S51, has no
-    # record).
+    # story of a bill comes from its encounter (a clean bill, S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 or S51,
+    # has no record).
     story_of_claim = {e["claim_id"]: e["story"] for e in built_showcase.registry["encounters"]}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
         story = story_of_claim[faulty_c.header.claim_id]
@@ -617,17 +622,20 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
     ):
         validate_cohort_registry(built_showcase.registry, mutated_tables)
 
-    # (d) A recipe whose fault belongs to another pathway:
+    # (d) A recipe whose fault belongs to another pathway (patient 9, one bill: the pathway changes no other bill's
+    # patient identity):
     base_recipes = load_recipes()
+    ninth = next(i for i, r in enumerate(base_recipes.recipes) if r.patient_no == 9)
     mismatched_recipes = ShowcaseRecipes(
         schema_version=1,
         recipes=[
+            *base_recipes.recipes[:ninth],
             ShowcaseRecipe(
-                patient_no=1,
+                patient_no=9,
                 pathway="copd_exacerbation_pneumonia_ward",
-                fault="F_S1_PACKAGE_BILLED_ITEMIZED",
+                fault=base_recipes.recipes[ninth].fault,
             ),
-            *base_recipes.recipes[1:],
+            *base_recipes.recipes[ninth + 1 :],
         ],
     )
     # (every pathway is in use, so the story of patient 2 is now on two bills as well)
@@ -737,7 +745,7 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
     assert profiles.height == cohort.patient_count() == 15
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 38
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 41
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1057,6 +1065,8 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
     headers = two_bills.tables["claim_headers.parquet"]
     assert headers["claim_id"].to_list() == [
         "F-SENTETIK-HASTA-0001-001",
+        "F-SENTETIK-HASTA-0001-002",  # the committed ER visit of patient 1 (S30), on the day of his stay: the id breaks the tie
+        "F-SENTETIK-HASTA-0001-003",  # his control (S31), six days after the discharge
         "F-SENTETIK-HASTA-0002-001",
         "F-SENTETIK-HASTA-0002-002",  # the committed control of patient 2 (S32), three weeks after the stay
         "F-SENTETIK-HASTA-0002-003",  # its readmission through the ER (S33) and the control after it (S34)
@@ -1088,6 +1098,7 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         *(f"F-SENTETIK-HASTA-{n:04d}-001" for n in (9, 10)),
         "F-SENTETIK-HASTA-0010-002",  # the committed second bill (S14, the ward bill after the ICU bill), dated later
         "F-SENTETIK-HASTA-0011-001",
+        "F-SENTETIK-HASTA-0011-002",  # the committed ward stay of patient 11 after the incubator (S15)
         "F-SENTETIK-HASTA-0012-001",  # the ER visit of patient 12 (S10) and the admission two days later (S22)
         "F-SENTETIK-HASTA-0012-002",
         "F-SENTETIK-HASTA-0013-001",  # the day case of patient 13 (S20)
@@ -1104,6 +1115,7 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
     assert starts["F-SENTETIK-HASTA-0004-002"] < starts["F-SENTETIK-HASTA-0004-003"]
     assert starts["F-SENTETIK-HASTA-0007-004"] < starts["F-SENTETIK-HASTA-0007-001"]
     assert starts["F-SENTETIK-HASTA-0008-002"] < starts["F-SENTETIK-HASTA-0008-001"] < starts["F-SENTETIK-HASTA-0008-003"]
+    assert starts["F-SENTETIK-HASTA-0001-001"] == starts["F-SENTETIK-HASTA-0001-002"] < starts["F-SENTETIK-HASTA-0001-003"]
     # the composed claims are in the table order; a claim is built from its own recipe
     assert [c.header.claim_id for c in two_bills.claims] == headers["claim_id"].to_list()
     assert [c.header.claim_id for c in two_bills.clean_claims] == headers["claim_id"].to_list()

@@ -1,0 +1,33 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-07-22",
+      "icd10": "K35.9",
+      "role": "primary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-07-22",
+    "claim_start_date": "2026-07-22",
+    "claim_type": "poliklinik",
+    "department": "Genel Cerrahi",
+    "discharge_date": null,
+    "primary_icd10": "K35.9"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-07-22",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    }
+  ],
+  "story": "S31"
+}

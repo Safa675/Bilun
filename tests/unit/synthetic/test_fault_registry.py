@@ -277,6 +277,19 @@ PINNED_FINDINGS: dict[
         [],
         ["yatak_icu_overlap_510010"],
     ),
+    # the ward bed billed beside the cot on the admission day of the newborn's ward stay: the 510010 line at risk
+    "S15": (
+        "yatak_newborn_overlap_510010",
+        "islem",
+        "standard_bed",
+        "kismi_red",
+        "deduction_risk",
+        ["C000652"],
+        "2.2.2.A(1)",
+        ["src/bilun/domain/prose_rules/yatak_newborn_overlap.py:detect_yatak_newborn_overlap"],
+        [],
+        ["yatak_newborn_overlap_510010"],
+    ),
     "S22": (
         "procedure_addon_uplift",
         "fatura",
@@ -498,7 +511,7 @@ def test_finding_ids_occur_in_showcase_proof_results() -> None:
         result_text = (_SHOWCASE_RESULTS_DIR / f"{fault.story}.json").read_text(encoding="utf-8")
         for finding_id in fault.expected_finding.finding_ids:
             assert finding_id in result_text, f"{finding_id!r} missing from {fault.story}.json"
-    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S17", "S18", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46", "S49", "S50"]
+    assert stories_with_findings == ["S5", "S6", "S8", "S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S22", "S24", "S33", "S34", "S38", "S40", "S42", "S44", "S46", "S49", "S50"]
 
 
 def test_coverage_every_story_six_ops_unique_ids() -> None:

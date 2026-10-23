@@ -20,7 +20,16 @@ def dataset():
 
 
 def _pick_patient_with_claims(dataset) -> tuple[str, str]:
-    pid = next(p for p, claims in dataset.claims_by_patient.items() if claims)
+    """The first patient whose bills give no copay ground of their own: no emergency bill (the emergency exemption is
+    the patient's, on every bill) and no chronic health report on file (the report test sets it). Since WP18 patient 1
+    has an ER visit (S30), so this is patient 3."""
+    pid = next(
+        p
+        for p, claims in dataset.claims_by_patient.items()
+        if claims
+        and all(claim.claim_type != "acil" for claim in claims)
+        and dataset.copay_profiles_by_patient[p].has_chronic_health_report is None
+    )
     return pid, dataset.claims_by_patient[pid][0].claim_id
 
 

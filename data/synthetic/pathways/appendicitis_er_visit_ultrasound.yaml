@@ -1,0 +1,60 @@
+# The ER visit on the day of the appendectomy of story S1: right lower quadrant pain, an abdominal ultrasound, admitted to
+# general surgery the same evening; billed on its own acil takip; a clean bill.
+# Showcase story S30 (plans/data/2026-10-20-demo-coverage-first-plan.md, card F1 b2): bill 2 of the patient of S1, a precursor.
+# Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
+schema_version: 1
+id: appendicitis_er_visit_ultrasound
+title: "Acute appendicitis seen in the ER, billed as the ER examination and an abdominal ultrasound"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"                  # EK-2A: Acil Tıp
+# No window: the default service window of code_sets.yaml (2026-02-01 .. 2026-09-30) applies.
+
+patient:
+  sex:
+    values: [M, F]
+    basis: judgment
+    source: "Story S30 is the man of story S1 (the same patient, the ER visit before his stay); K35.9 has no sex gate. Clinician to confirm."
+  age:
+    min: 18
+    max: 70
+    basis: judgment
+    source: "Story S30 patient is 34, like story S1; the bounds are those of story S1 (the author's judgment)."
+
+diagnoses:
+  - icd10: K35.9
+    name: "AKUT APANDİSİT, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: guideline
+    source: "SKRS leaf code; the appendicitis the ultrasound shows and story S1 operates that night: a known cause, so not R10.3 (the engine refuses an R-code, #304)."
+
+procedures:
+  - id: er_exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2) a): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
+  - id: abdominal_ultrasound
+    kind: imaging
+    code: "803602"
+    name: "Ultrason, genel"
+    days: admit
+    specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
+    basis: guideline
+    source: "WSES 2020 Jerusalem guidelines: ultrasound first in suspected appendicitis. Story S30: it shows the inflamed appendix. Surgeon to confirm."
+
+notes:
+  - "The visit is on Tuesday 2026-07-14, the day story S1 admits the patient and operates him that night: the ER visit that S1's pathway note bills on its own acil takip. It has the later claim id and, on the same date as S1, the row after S1's (the claim sequence breaks the tie)."
+  - "The blood count and the CRP that S1's note names are not billed here: S1's faulty (itemized) bill repeats them on 07-15, and the duplicate-test rule (El Kitabı Tablo 15 #12, seven days, the patient's whole history) would then flag S1's lines, so S1's committed report would move."
+  - "K35.9 is the code of story S1, so the patient's list of diagnoses does not grow with this bill."
+
+showcase:
+  story: S30
+  sex: M
+  age: 34
+  admit: "2026-07-14"

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterator
 from dataclasses import dataclass, replace
+from datetime import date
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -935,6 +936,29 @@ def test_s38_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bun
     assert elsewhere.claim_id in {c.claim_id for c in with_other.history.claims}
     assert direct_rows("S38", with_other) == []
     assert [r["procedure_code"] for r in direct_rows("S38", replace(b.faulty_ctx, patient_history=history))] == ["703365"]
+
+
+def test_s15_proof_rows_read_the_newborn_bed_of_the_patients_other_bills(story_bundles: dict[str, _StoryBundle]) -> None:
+    """The overlap rule reads the patient's whole history: a ward bed of this bill on the day the incubator bill (S12) pays
+    with its Kuvöz is found too (the cross-bill form), and named with that bill. The committed fault is the same-bill
+    form (the cot of S15 itself on the admission day)."""
+    b = story_bundles["S15"]
+    (row,) = direct_rows("S15", b.faulty_ctx)
+    assert (row["procedure_code"], row["overlap_date"], row["newborn_bed_codes"]) == ("510010", "2026-07-16", ["510081"])
+    assert row["newborn_claim_id"] == b.record.claim_id and row["risk_amount_try"] == 222.36
+    ward = next(line for line in b.faulty_ctx.procedure_lines if line.procedure_code == "510010")
+    kept = b.faulty_ctx.patient_history
+    assert kept is not None
+    moved = replace(ward, procedure_date=date(2026, 7, 15))  # the incubator stay's last day, which S12 bills
+    history = PatientClaimHistory(
+        claims=kept.claims,
+        procedure_lines=tuple(moved if line is ward else line for line in kept.procedure_lines),
+        material_lines=kept.material_lines,
+    )
+    lines = tuple(moved if line is ward else line for line in b.faulty_ctx.procedure_lines)
+    (row,) = direct_rows("S15", replace(b.faulty_ctx, procedure_lines=lines, patient_history=history))
+    assert (row["overlap_date"], row["newborn_bed_codes"]) == ("2026-07-15", ["510070"])
+    assert row["newborn_claim_id"] == "F-SENTETIK-HASTA-0011-001"  # the incubator bill of S12
 
 
 def test_s49_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bundles: dict[str, _StoryBundle]) -> None:

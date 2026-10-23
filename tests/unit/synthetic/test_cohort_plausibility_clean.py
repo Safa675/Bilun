@@ -4805,11 +4805,11 @@ def test_the_scan_of_the_loops_sees_every_kind_of_iteration_over_a_column() -> N
 
 @pytest.fixture(scope="module")
 def more_bills():
-    """Patients 4 and 7 with a second bill (a stay one day after, a visit nine days before) and the newborn of
-    patient 11 with a second stay after its first: the three clean tables of 14 bills. In memory only."""
+    """Patients 4 and 7 with one more bill (a stay one day after, a visit nine days before) and the newborn of patient
+    11 with a third stay after its ward stay (S15): the three clean tables of three more bills. In memory only."""
     recipes, clinical = with_encounters(
         *STANDARD_EXTRAS,
-        Extra(11, 2, "late_preterm_newborn_incubator_stay", {"admit": "2026-07-20", "story": "S92"}),
+        Extra(11, 3, "late_preterm_newborn_incubator_stay", {"admit": "2026-07-20", "story": "S92"}),
     )
     return build_showcase(recipes=recipes, clinical=clinical)
 
@@ -4821,15 +4821,15 @@ def test_more_bills_of_a_patient_raise_no_clean_table_problem(more_bills, contex
 
 
 def test_the_second_bill_of_a_baby_is_judged_by_the_infant_ranges_row_by_row(more_bills, context) -> None:
-    """The age of the row decides the band, so the baby's second bill (age 0) is an infant row as well."""
+    """The age of the row decides the band, so the baby's later bills (age 0) are infant rows as well."""
     ana = more_bills.clean_tables[TABLE_ANADATA]
     babies = ana.filter(pl.col("HASTA_ID") == PATIENT[11])
-    assert babies.height == 2 and babies["TANI_YASI"].to_list() == [0, 0]
+    assert babies.height == 3 and babies["TANI_YASI"].to_list() == [0, 0, 0]  # S12, S15 and the extra stay
     adult = {**more_bills.clean_tables, TABLE_ANADATA: ana.with_columns(
         pl.when(pl.col("HASTA_ID") == PATIENT[11]).then(pl.lit(30, dtype=pl.Int64)).otherwise(pl.col("TANI_YASI")).alias("TANI_YASI")
     )}
     found = check_clean_plausibility(more_bills.tables, adult, context=context, only=VITALS)
-    # an adult's age on a baby's vitals: both bills of the patient are outside the adult ranges
+    # an adult's age on a baby's vitals: every bill of the patient is outside the adult ranges
     assert sorted({p.where for p in found}) == sorted(
         f"{PATIENT[11]} anadata_clean[{episode}]" for episode in babies["SQ_EPISODE"].to_list()
     )

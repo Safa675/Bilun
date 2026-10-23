@@ -1,0 +1,86 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-07-16",
+      "icd10": "P07.3",
+      "role": "primary"
+    },
+    {
+      "date": "2026-07-16",
+      "icd10": "P59.9",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": "2026-07-16",
+    "claim_end_date": "2026-07-19",
+    "claim_start_date": "2026-07-16",
+    "claim_type": "yatis",
+    "department": "Çocuk Sağlığı ve Hastalıkları",
+    "discharge_date": "2026-07-19",
+    "primary_icd10": "P07.3"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "510081",
+      "date": "2026-07-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-07-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510081",
+      "date": "2026-07-17",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-07-17",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510081",
+      "date": "2026-07-18",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510121",
+      "date": "2026-07-18",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "510081",
+      "date": "2026-07-19",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1500"
+    }
+  ],
+  "story": "S15"
+}

@@ -290,6 +290,27 @@ faults:
     basis: sut
     source: "C001243 (SUT 2.4.4.H.(8)), EK-2B 510090 (yemek, yatak, vizit): the ICU bill pays the day the patient leaves; the ward bill billed 510010 on it too (story S14)."
 
+  - fault_id: F_S15_STANDARD_BED_BESIDE_THE_COT
+    story: S15
+    title: "Ward bed billed beside the cot on the admission day (the ward stay of the newborn of story S12 after the incubator)"
+    target_pathway: late_preterm_newborn_cot_ward_stay
+    mutations:
+      - op: use_sibling_pathway
+        sibling_pathway_id: late_preterm_newborn_cot_ward_stay_standard_bed_billed
+    expected_finding:
+      engine_rule: yatak_newborn_overlap_510010
+      detectors:
+        - "src/bilun/domain/prose_rules/yatak_newborn_overlap.py:detect_yatak_newborn_overlap"
+      sut_section: "2.2.2.A(1)"
+      sut_clauses: ["C000652"]
+      effect_kind: deduction_risk
+      line_type: islem
+      target_entry_id: standard_bed
+      expected_status: kismi_red
+      finding_ids: ["yatak_newborn_overlap_510010"]
+    basis: ek2b_aciklama
+    source: "C000652 (SUT 2.2.2.A(1)) and EK-2B 510010, 510081 (yemek, yatak, vizit): a day billed with the ward bed and the cot asks the bed twice (story S15)."
+
   - fault_id: F_S17_ESA_PRESCRIBED_BY_GENERAL_SURGERY
     story: S17
     title: "Darbepoetin of a haemodialysis patient prescribed by general surgery instead of nephrology (end-stage kidney disease)"
