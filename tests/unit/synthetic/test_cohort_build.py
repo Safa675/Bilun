@@ -92,11 +92,12 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S33": "0.00",  # the enoxaparin count: a drug line, and drugs enter at 0 TL
     "S34": "0.00",  # the examination flagged as a package component: a flag without money
     "S40": "0.00",
+    "S46": "252.00",  # the second walker inside the MIAT of the first: the walker line is at risk (deduction_risk)
     "S47": "44.45",
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S23, S32, S39 and S48 are clean bills (no fault, no record), the others carry one.
+# S23, S32, S39, S45 and S48 are clean bills (no fault, no record), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
     "S11": {"patient_id": "SENTETIK-HASTA-0010", "claim_ids": ["F-SENTETIK-HASTA-0010-001"]},
@@ -116,6 +117,8 @@ _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S48": {"patient_id": "SENTETIK-HASTA-0007", "claim_ids": ["F-SENTETIK-HASTA-0007-003"]},
     "S39": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-002"]},
     "S40": {"patient_id": "SENTETIK-HASTA-0004", "claim_ids": ["F-SENTETIK-HASTA-0004-003"]},
+    "S45": {"patient_id": "SENTETIK-HASTA-0006", "claim_ids": ["F-SENTETIK-HASTA-0006-002"]},
+    "S46": {"patient_id": "SENTETIK-HASTA-0006", "claim_ids": ["F-SENTETIK-HASTA-0006-003"]},
 }
 
 _ANON_RE = re.compile(r"anon_|\banon[\s-]*[0-9]", re.IGNORECASE)
@@ -271,7 +274,7 @@ def test_loader_accepts_committed_showcase_dataset_and_matches_composed_claims(
     assert len(dataset.procedure_lines) == expected_counts["procedure_claim_lines.parquet"]
     assert len(dataset.material_lines) == expected_counts["material_claim_lines.parquet"]
     assert len(dataset.drug_lines) == expected_counts["drug_claim_lines.parquet"]
-    # an answer row for every injected fault, none for a clean bill (S32, S39, S48)
+    # an answer row for every injected fault, none for a clean bill (S32, S39, S45, S48)
     assert len(dataset.expected_outputs) == len(cohort.load_registry()["faults"]) == expected_counts["expected_rule_outputs.parquet"]
     assert (
         len(dataset.copay_profiles_by_patient)
@@ -344,7 +347,7 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
 
     # S1, S5, S8, S20 and the haemodialysis bills S17 and S23 (EK-2C session packages) have package_candidate=True in
     # both clean and faulty composed headers; others False. The story of a bill comes from its encounter (a clean bill,
-    # S23, S32, S39 or S48, has no record).
+    # S23, S32, S39, S45 or S48, has no record).
     story_of_claim = {e["claim_id"]: e["story"] for e in built_showcase.registry["encounters"]}
     for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
         story = story_of_claim[faulty_c.header.claim_id]
@@ -716,7 +719,7 @@ def test_the_ward_bill_has_its_own_anadata_row_and_the_patient_keeps_one_profile
     profiles = built_showcase.tables["patient_copay_profiles.parquet"]
     assert profiles.filter(pl.col("patient_id") == _WARD_PATIENT).height == 1  # one profile for the two bills
     assert profiles.height == cohort.patient_count() == 15
-    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 26
+    assert built_showcase.tables["claim_headers.parquet"].height == cohort.claim_count() == 28
     registry = built_showcase.registry
     assert registry["counts"]["patient_copay_profiles.parquet"] == cohort.patient_count()
     assert registry["clean_counts"]["anadata_clean.parquet"] == cohort.claim_count()  # one anadata row a bill, not a patient
@@ -1047,6 +1050,8 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
         "F-SENTETIK-HASTA-0004-003",
         "F-SENTETIK-HASTA-0005-001",
         "F-SENTETIK-HASTA-0006-001",
+        "F-SENTETIK-HASTA-0006-002",  # the committed neurology control (S45) and physiatry visit (S46) of patient 6
+        "F-SENTETIK-HASTA-0006-003",
         "F-SENTETIK-HASTA-0007-004",  # the precursor: the later id, the earlier date
         "F-SENTETIK-HASTA-0007-001",
         "F-SENTETIK-HASTA-0007-002",  # the committed observation (S47) and follow-up (S48) of patient 7, dated later

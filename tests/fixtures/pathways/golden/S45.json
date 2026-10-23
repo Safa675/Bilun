@@ -1,0 +1,55 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-06-29",
+      "icd10": "G20",
+      "role": "primary"
+    },
+    {
+      "date": "2026-06-29",
+      "icd10": "R13",
+      "role": "secondary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-06-29",
+    "claim_start_date": "2026-06-29",
+    "claim_type": "poliklinik",
+    "department": "Nöroloji",
+    "discharge_date": null,
+    "primary_icd10": "G20"
+  },
+  "materials": [
+    {
+      "annex": "EK-3C-2",
+      "billed_ratio": "1.0000",
+      "code": "OP1106",
+      "date": "2026-06-29",
+      "flags": {
+        "titubb_registered": true,
+        "uts_registered": true
+      },
+      "linked_procedure": {
+        "code": "520030",
+        "date": "2026-06-29"
+      },
+      "material_type": "ortez",
+      "qty": 1
+    }
+  ],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520030",
+      "date": "2026-06-29",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1300"
+    }
+  ],
+  "story": "S45"
+}

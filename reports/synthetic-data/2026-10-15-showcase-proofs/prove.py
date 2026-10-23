@@ -28,6 +28,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
+from src.bilun.domain.prose_rules.material_miat_ek3c2 import check_material_miat_for_context
 from src.bilun.domain.prose_rules.medula_rejection import detect_medula_rejection_playbook_entries
 from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
@@ -180,6 +181,11 @@ def direct(story: str, ctx) -> list[dict]:
         return [_keep(o, ("rule_id", "procedure_code", "barcode_status", "isbt128_barcode", "sut_section_id",
                           "savings_category", "severity", "detail"))
                 for o in detect_blood_component_isbt128_violations(claims, procs)]
+    if story == "S46":
+        # a cross-bill rule: the walker of the control S45 is history, read through ctx.history
+        return [{**_keep(v, ("rule", "material_code", "risk_amount", "material_outcome", "sut_section", "message")),
+                 **_keep(v["details"], ("last_use_date", "days_since_last_use", "minimum_interval_days"))}
+                for v in check_material_miat_for_context(ctx)]
     raise KeyError(story)
 
 
@@ -249,7 +255,7 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         return total("recoverable_uplift_try")
     if story == "S10":
         return total("savings_try")
-    if story == "S5":
+    if story in ("S5", "S46"):
         return total("risk_amount")
     if story in ("S6", "S17", "S18"):  # a drug-indication violation without money
         kind = {"S6": "indication_mismatch", "S17": "prescriber_specialty_mismatch",

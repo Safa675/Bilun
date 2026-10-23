@@ -60,6 +60,7 @@ S11 = "urosepsis_septic_shock_icu_stay"
 S12 = "late_preterm_newborn_incubator_stay"
 S14 = "urosepsis_ward_stay_after_icu_transfer"  # a ward stay that arrives from an ICU bill: its bed starts the day after admission
 S39 = "pyelonephritis_dementia_post_discharge_control"  # a control visit (poliklinik): one date, no stay
+S45 = "parkinson_neurology_control_first_walker"  # a visit with an EK-3/C-2 device (slice G7b): the walker OP1106
 S47 = "syncope_er_observation_under_24_hours"  # a stay of one date (nights 0): admission and discharge on 2026-02-25
 S20 = "umbilical_hernia_day_case_package"  # the first gunubirlik pathway: a day case billed as the EK-2C package
 S32 = "copd_exacerbation_post_discharge_control"  # S2's control visit: its examination carries the patient's share (G5b)
@@ -443,6 +444,30 @@ def test_the_ek3f1_list_is_in_force_only_from_its_own_date(catalogs: Catalogs) -
     assert [p.check for p in early] == ["material.in_force"]
 
 
+def test_the_ek3c2_list_is_in_force_only_from_its_own_date(catalogs: Catalogs) -> None:
+    """Slice G7b: the curated EK-3/C-2 list is the raw partition of 2026-01-24; its name is the device's alone."""
+    from scripts.synthetic.pathways.checks import EK3C2_FROM
+
+    occurrences = _frame([("OP1106", "WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS)", "materials[walker]")], "code", "name", "where")
+    assert EK3C2_FROM == "2026-01-24"
+    assert (_REPO / "data/gazette/raw/annex=EK-3C-2/effective_date=2026-01-24").is_dir()
+    assert identity_problems(occurrences, catalogs.ek3c2, ("2026-02-01", "2026-09-30"), "material") == []
+    early = identity_problems(occurrences, catalogs.ek3c2, ("2026-01-01", "2026-01-31"), "material")
+    assert [p.check for p in early] == ["material.in_force"]
+    assert "2026-01-01" in early[0].message
+    # each annex is its own list: the walker is no EK-3/F-1 code, the femoral stem no EK-3/C-2 code
+    assert [p.check for p in identity_problems(occurrences, catalogs.ek3f1, ("2026-02-01", "2026-09-30"), "material")] == ["material.in_force"]
+    assert catalogs.ek3("EK-3C-2") is catalogs.ek3c2 and catalogs.ek3("EK-3F-1") is catalogs.ek3f1
+
+
+def test_only_an_ek3c2_material_writes_its_annex_on_the_expanded_row() -> None:
+    """The annex is an optional golden key: S5's EK-3/F-1 rows carry none, S45's walker carries `EK-3C-2`."""
+    (walker,) = expand(load_pathway(_DIR / f"{S45}.yaml"))["materials"]
+    assert (walker["annex"], walker["material_type"]) == ("EK-3C-2", "ortez")
+    assert walker["linked_procedure"] == {"code": "520030", "date": "2026-06-29"}  # the examination of the visit
+    assert all("annex" not in row for row in expand(load_pathway(_DIR / f"{S5}.yaml"))["materials"])
+
+
 def test_anaesthesia_group_follows_the_band_table_in_force_on_each_day() -> None:
     totals = pl.DataFrame(
         {"day": ["2026-03-01", "2026-03-01", "2026-08-01", "2026-08-01", "2026-08-01"],
@@ -758,6 +783,7 @@ CASES = [
     Case("schema.missing_field", S2, lambda r, c: r["window"].pop("source", None), label="window source"),
     Case("schema.bad_enum", S2, lambda r, c: r.update(claim_type="yatiss"), label="claim_type"),
     Case("schema.bad_enum", S39, lambda r, c: r.update(claim_type="ayaktan"), label="a claim type that is no visit either"),
+    Case("schema.bad_enum", S45, lambda r, c: r["materials"][0].update(annex="EK-3C-3"), label="an EK-3 annex the cohort does not price"),
     Case("schema.bad_enum", S2, lambda r, c: line(r, "bed").update(basis="hearsay"), label="basis"),
     Case("schema.bad_value", S2, lambda r, c: drug(r, "enoxaparin").update(barcode="123")),
     Case("schema.bad_value", S2, lambda r, c: set_pins(r, admit="20260309"), label="a compact date"),
@@ -774,6 +800,8 @@ CASES = [
     Case("schema.duplicate_id", S2, lambda r, c: line(r, "nebulizer").update(id="bed"), label="line"),
     Case("schema.duplicate_id", S2, lambda r, c: diagnosis(r, "J18.9").update(icd10="I10"), label="diagnosis"),
     Case("schema.unknown_reference", S1, lambda r, c: r["materials"][0].update(linked_to="nowhere"), prepare=with_material, label="material"),
+    Case("schema.unknown_reference", S45, lambda r, c: r["materials"][0].update(annex="EK-3F-1", material_type="implant"), label="an EK-3/F-1 material on an examination"),
+    Case("schema.unknown_reference", S1, lambda r, c: r["materials"][0].update(annex="EK-3C-2", material_type="ortez"), prepare=with_material, label="an EK-3/C-2 device on a package"),
     Case("schema.unknown_reference", S2, lambda r, c: line(r, "anaesthesia").update(operations=["bed"]), prepare=with_anaesthesia, label="anaesthesia"),
     Case("schema.unknown_reference", S1, lambda r, c: line(r, "appendectomy_package").update(optional=chance()), prepare=with_material, label="a material on an optional package"),
     Case("schema.unknown_reference", S3, lambda r, c: line(r, "laminectomy").update(optional=chance()), prepare=with_two_operations, label="an anaesthesia line on an optional operation"),
@@ -784,6 +812,8 @@ CASES = [
     Case("schema.anchor_undefined", S39, lambda r, c: line(r, "exam").update(days="discharge"), label="discharge on a poliklinik pathway"),
     Case("schema.anchor_undefined", S39, lambda r, c: (r.update(claim_type="gunubirlik"), line(r, "exam").update(days="discharge-1")), label="discharge on a gunubirlik pathway"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "chest_xray").update(session_role="primary"), label="role on imaging"),
+    Case("schema.line_shape", S45, lambda r, c: r["materials"][0].update(material_type="implant"), label="an EK-3/C-2 device typed as an implant"),
+    Case("schema.line_shape", S1, lambda r, c: r["materials"][0].update(material_type="ortez"), prepare=with_material, label="an EK-3/F-1 material typed as an orthosis"),
     Case("schema.line_shape", S2, lambda r, c: line(r, "bed").update(group="B"), label="group on a bed"),
     Case("schema.line_shape", S22, lambda r, c: line(r, "admission_hemogram").update(session_role="primary"), label="a role on a lab line"),
     Case("schema.line_shape", S1, lambda r, c: line(r, "appendectomy_package").update(session_role="primary", days=["op", "op+1"]), label="a role on a two-day line"),
@@ -826,6 +856,10 @@ CASES = [
     Case("procedure.kind", S12, lambda r, c: line(r, "pediatric_consult").update(code="510070", name="Kuvöz"), label="an exam on the incubator code"),
     Case("material.in_force", S1, lambda r, c: r["materials"][0].update(code="AP9999"), prepare=with_material),
     Case("material.name", S1, lambda r, c: r["materials"][0].update(name="KALÇA | FEMORAL STEM"), prepare=with_material),
+    # --- G7b: an EK-3/C-2 device is read on its own list
+    Case("material.in_force", S45, lambda r, c: r["materials"][0].update(code="AP2000"), label="an EK-3/F-1 code on the EK-3/C-2 list"),
+    Case("material.name", S45, lambda r, c: r["materials"][0].update(name="WALKER (ALÜMİNYUM)"), label="an EK-3/C-2 name"),
+    Case("material.name", S45, lambda r, c: r["materials"][0].update(name="WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS) | Fiziksel tıp ve rehabilitasyon"), label="an EK-3/C-2 name with its description"),
     Case("drug.in_force", S2, lambda r, c: r.pop("window"), label="repealed on 2026-08-29"),
     Case("drug.in_force", S2, lambda r, c: r["window"].update(end="2026-08-29"), label="valid_until is exclusive"),
     Case("drug.in_force", S2, lambda r, c: drug(r, "enoxaparin").update(barcode="8699999999999"), label="no such barcode", also=("drug.inn",)),

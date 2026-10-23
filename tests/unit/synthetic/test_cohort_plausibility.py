@@ -61,6 +61,7 @@ from scripts.synthetic.cohort.plausibility import (
     AGE_GATES,
     CHECK_FUNCTIONS,
     CHECKS,
+    EK3C2_FROM,
     EK3F1_FROM,
     FEMALE_ONLY_WHOLE_WORDS,
     FEMALE_ONLY_WORDS,
@@ -163,6 +164,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S33": set(),  # the enoxaparin strength keyed as the count (4000 syringes): no check bounds a drug count, only the engine (tablo15_11) sees it
     "S34": set(),  # the control examination flagged as a package component: no check reads a procedure flag, only the engine (tablo15_3) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
+    "S46": set(),  # a second walker inside the MIAT of the first: a listed device at its price on the examination, only the engine (MIAT) sees it
     "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
     "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
 }
@@ -191,6 +193,9 @@ SECOND_VISIT_CLAIM = claim_id(PATIENT[4], 3)  # her second visit (S40), a week a
 # the control visit of patient 2 (S32, a clean bill) three weeks after his stay (S2): its examination is the one line of the
 # cohort with a patient share (the copay flag, rate 0.20: billed 85.73, payable 68.58)
 S2_CONTROL = claim_id(PATIENT[2], 2)
+# the neurology control of patient 6 (S45, a clean bill): its walker, EK-3/C-2 OP1106 (slice G7b), is the one material of
+# the cohort that is no EK-3/F-1 line; it hangs on the examination of the visit
+WALKER_CLAIM = claim_id(PATIENT[6], 2)
 
 
 # --- fixtures -----------------------------------------------------------------------------------
@@ -684,13 +689,23 @@ def _extra_drug(d: Data) -> None:
 
 
 def mat(n: int) -> pl.Expr:
-    """The n-th material line of S5's claim (the only claim with materials)."""
+    """The n-th material line of S5's claim (the EK-3/F-1 implants of the hemiarthroplasty)."""
     return pl.col("material_line_id") == material_line_id(CLAIM[5], n)
 
 
 def mat_at(n: int) -> str:
     """The `where` of a finding about S5's n-th material line, after the claim id."""
     return f"{CLAIM[5]} material_claim_lines[{material_line_id(CLAIM[5], n)}]"
+
+
+def walker() -> pl.Expr:
+    """The walker of S45's bill (EK-3/C-2 OP1106, its one material line)."""
+    return pl.col("material_line_id") == material_line_id(WALKER_CLAIM, 1)
+
+
+def walker_at() -> str:
+    """The `where` of a finding about S45's walker."""
+    return f"{WALKER_CLAIM} material_claim_lines[{material_line_id(WALKER_CLAIM, 1)}]"
 
 
 def drug(story: int, n: int) -> pl.Expr:
@@ -1641,7 +1656,24 @@ CASES: list[Case] = [
         lambda d: edit(d, TABLE_MATERIALS, mat(1), material_date="2026-09-05"),
         label="dated_the_day_after_the_operation",
         at=mat_at(1),
-        says="it is dated 2026-09-05 but the operation P612320 it hangs on is dated 2026-09-04",
+        says="it is dated 2026-09-05 but the line P612320 it hangs on is dated 2026-09-04",
+    ),
+    # --- material.operation_link of slice G7b: an EK-3/C-2 device hangs on the examination of its visit
+    Case(
+        OPLINK,
+        lambda d: edit(d, TABLE_MATERIALS, walker(), specialty_category="EK-3F-1"),
+        also=("price.material_in_force",),  # OP1106 is no code of the EK-3/F-1 list either
+        label="a_walker_read_as_an_ek3f1_material_hangs_on_an_examination",
+        at=walker_at(),
+        says="material OP1106: the line 520030 (Normal poliklinik muayenesi, category muayene) it hangs on is not an operation",
+    ),
+    Case(
+        OPLINK,
+        lambda d: edit(d, TABLE_MATERIALS, mat(2), specialty_category="EK-3C-2"),
+        also=("price.material_in_force",),  # AP2000 is no code of the EK-3/C-2 list
+        label="an_ek3c2_device_on_a_package",
+        at=mat_at(2),
+        says="the EK-3/C-2 device hangs on is not an examination",
     ),
     # --- material.stray_flag
     Case(
@@ -1722,6 +1754,30 @@ CASES: list[Case] = [
         label="dated_the_day_before_the_list_starts",
         at=mat_at(1),
         says="is before the list is in force (from 2025-12-13)",
+    ),
+    # --- price.material_in_force of slice G7b: the walker of S45 is priced on the EK-3/C-2 list
+    Case(
+        "price.material_in_force",
+        lambda d: reprice(d, TABLE_MATERIALS, walker(), 322.56),
+        label="a_walker_at_the_price_of_the_ek3c2_list_s_other_walker",
+        at=walker_at(),
+        says="material OP1106 dated 2026-06-29 has the unit price 322.56 but the list price is 252.00",
+    ),
+    Case(
+        "price.material_in_force",
+        lambda d: edit(d, TABLE_MATERIALS, walker(), material_date="2026-01-23"),
+        also=(DATES, OPLINK),  # dated before the visit, and not on the day of its examination
+        label="a_walker_dated_the_day_before_the_ek3c2_list_starts",
+        at=walker_at(),
+        says="is before the list is in force (from 2026-01-24)",
+    ),
+    Case(
+        "price.material_in_force",
+        lambda d: edit(d, TABLE_MATERIALS, walker(), specialty_category="EK-3C-5"),
+        also=(OPLINK,),  # only an EK-3/C-2 device may hang on an examination: any other line must hang on an operation
+        label="a_material_of_an_ek3_list_the_cohort_does_not_read",
+        at=walker_at(),
+        says="material OP1106 dated 2026-06-29 is not in the EK-3/C-5 list",
     ),
     # --- price.drug_in_force (S6's first drug is Neofleks, barcode 8697637690128)
     Case(
@@ -4202,6 +4258,7 @@ def test_s1_faulty_bill_fits_the_pathway_through_its_sibling(built, anadata, con
     assert context.sibling_ids == {
         "appendicitis_lap_appendectomy_package": ["appendicitis_lap_appendectomy_itemized"],
         "pyelonephritis_dementia_second_visit_ultrasound": ["pyelonephritis_dementia_second_visit_exam_billed"],
+        "parkinson_physiatry_visit": ["parkinson_physiatry_visit_second_walker_billed"],
         "urosepsis_ward_stay_after_icu_transfer": ["urosepsis_ward_stay_transfer_day_billed"],
         "gi_bleed_melena_er_visit": ["gi_bleed_melena_er_visit_manual_hct_billed"],
         "umbilical_hernia_day_case_package": ["umbilical_hernia_day_case_itemized"],
@@ -4334,9 +4391,24 @@ def test_the_ek3f1_start_is_the_yurutluk_date_of_the_list() -> None:
 
 
 def test_the_ek3f1_list_has_one_price_per_code(context) -> None:
-    ek3f1 = context.ek3f1
+    ek3f1 = context.ek3.filter(pl.col("annex") == "EK-3F-1")
     assert ek3f1["sut_code"].n_unique() == ek3f1.height > 300
     assert ek3f1["price_try"].null_count() == 0
+
+
+def test_the_ek3c2_list_has_one_price_per_code_and_starts_on_its_yururluk_date(context) -> None:
+    """Slice G7b: the second EK-3 list the check reads, the raw partition annex=EK-3C-2/effective_date=2026-01-24."""
+    from scripts.synthetic.cohort.catalogs import EK3C2_FROM as GENERATOR_EK3C2_FROM
+    from scripts.synthetic.pathways.checks import EK3C2_FROM as PATHWAY_CHECKS_EK3C2_FROM
+
+    ek3c2 = context.ek3.filter(pl.col("annex") == "EK-3C-2")
+    assert ek3c2["sut_code"].n_unique() == ek3c2.height > 400
+    # a row of the list without a price (16 of them) is read as not listed: no material can be billed at its price
+    assert ek3c2.filter(pl.col("price_try").is_not_null()).height > 400
+    assert ek3c2.filter(pl.col("sut_code") == "OP1106")["price_try"].to_list() == [252.0]
+    assert set(ek3c2["list_from"].to_list()) == {EK3C2_FROM} and EK3C2_FROM == date(2026, 1, 24)
+    assert EK3C2_FROM.isoformat() == PATHWAY_CHECKS_EK3C2_FROM == GENERATOR_EK3C2_FROM
+    assert (_REPO / "data/gazette/raw/annex=EK-3C-2/effective_date=2026-01-24").is_dir()
 
 
 def test_every_cent_a_list_price_can_be_billed_at_fits_and_no_other_does(context) -> None:
@@ -4346,7 +4418,7 @@ def test_every_cent_a_list_price_can_be_billed_at_fits_and_no_other_does(context
     an exact half up 15076.22, and both are the list price to the cent. The module's whole-number
     rule is compared with a Decimal reference on every price and seven neighbouring cents.
     """
-    prices = context.ek3f1["price_try"].to_list()
+    prices = context.ek3.filter(pl.col("annex") == "EK-3F-1")["price_try"].to_list()
     assert 15076.214999999998 in prices
     exact = [Decimal(repr(price)) for price in prices]
     half_up = [d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) for d in exact]

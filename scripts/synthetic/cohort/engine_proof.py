@@ -54,6 +54,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line_detailed
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
+from src.bilun.domain.prose_rules.material_miat_ek3c2 import check_material_miat_for_context
 from src.bilun.domain.prose_rules.medula_rejection import detect_medula_rejection_playbook_entries
 from src.bilun.domain.prose_rules.payment_method import check_payment_method_compliance
 from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
@@ -873,6 +874,20 @@ def _direct_rows_s24(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     ]
 
 
+def _direct_rows_s46(ctx: PatientClaimContext) -> list[dict[str, Any]]:
+    # a cross-bill rule: the walker of the control S45 is history (ctx.history), the renewal is on this bill
+    return [
+        {
+            **_keep(
+                v,
+                ("rule", "material_code", "risk_amount", "material_outcome", "sut_section", "message"),
+            ),
+            **_keep(v["details"], ("last_use_date", "days_since_last_use", "minimum_interval_days")),
+        }
+        for v in check_material_miat_for_context(ctx)
+    ]
+
+
 _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, Any]]]] = {
     "S1": _direct_rows_s1,
     "S2": _direct_rows_s2,
@@ -895,6 +910,7 @@ _DIRECT_ROWS_BY_STORY: dict[str, Callable[[PatientClaimContext], list[dict[str, 
     "S33": _direct_rows_s33,
     "S34": _direct_rows_s34,
     "S40": _direct_rows_s40,
+    "S46": _direct_rows_s46,
     "S47": _direct_rows_s47,
 }
 

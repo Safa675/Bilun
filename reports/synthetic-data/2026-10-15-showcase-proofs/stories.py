@@ -22,8 +22,8 @@ from harness import Bill, D, money
 from src.bilun.domain.claims.models import MedulaRejectionEvent
 
 # EK-2A branch codes (data/gazette/curated/ek2a_outpatient_visits.parquet)
-ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI = (
-    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062")
+ACIL, ANEST, BEYIN, GENCER, GOGUS, DAHILIYE, NORO, ORTO, RAD, COCUK, NEONATOLOJI, NEFROLOJI, FTR = (
+    "4400", "3100", "2400", "1900", "1171", "1000", "1300", "2600", "3300", "1500", "1561", "1062", "1800")
 
 # EK-4A barcodes (data/gazette/curated/ek4a_history.parquet; ingredient from the drug crosswalk)
 IESEF = "8699508270224"       # IESEF 1 G IV (seftriakson), 1 vial
@@ -40,6 +40,9 @@ PKMERZ = "8699708690525"      # PK-MERZ IV INF. COZ. 2x500 ML (amantadin sülfat
 MADOPAR = "8699525094841"     # MADOPAR 125 MG 30 TB (levodopa + benserazid)
 ARANESP = "8699862950046"     # ARANESP 40 MCG 4 KULL HAZ ENJ (darbepoetin alfa), 4 syringes
 ALBUMIN = "8699686690029"     # HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML (20 g), 1 bottle
+
+# EK-3/C-2 codes (data/gazette/curated/ek3c2_materials.parquet, the list in force from 2026-01-24)
+WALKER = "OP1106"             # WALKER (ALÜMİNYUM)(HAREKETLİ-SABİT-TERS): an aluminium walker, MIAT 1 year
 
 
 def _days(a, b):
@@ -664,7 +667,49 @@ def s40(variant: str) -> Bill:
     return b
 
 
-# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S48")
+# ── S45 ─ the neurology control of the patient of S6 with his first walker (a clean bill) ──
+def s45(variant: str) -> Bill:
+    """79 M, the patient of S6: neurology control 15 days after the aspiration pneumonia, 2026-06-29, outpatient.
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S47": s47, "S48": s48}
+    A clean bill (CLEAN_ONLY). The neurologist gives the patient his first walker, EK-3/C-2 OP1106 (an aluminium
+    walker on a specialist report, MIAT 1 year), billed with the examination it was prescribed at. The stay of S6
+    is its history: itemized, so no package period applies; no EK-3/C-2 device was billed before. No test is billed.
+    """
+    if variant != "clean":
+        raise ValueError("S45 is a clean bill: it has no faulty variant")
+    day = D("2026-06-29")
+    b = Bill("SH-06", "C-SH45", "poliklinik", "Nöroloji", None, None, "G20", start=day, end=day)
+    b.history = (s6("faulty"),)
+    for i, icd in enumerate(("G20", "R13")):
+        b.diag(icd, primary=(i == 0), on=day)
+    exam = b.proc("520030", day, specialty=NORO)        # the visit
+    b.mat(WALKER, day, proc_line_id=exam, material_type="ortez", specialty_category="EK-3C-2",
+          titubb_registered=True, uts_registered=True)  # the first walker
+    return b
+
+
+# ── S46 ─ a second walker inside the MIAT of the first ──────────────────────
+def s46(variant: str) -> Bill:
+    """79 M, the patient of S6: physiatry visit for the gait of his Parkinson's disease, 2026-08-10, outpatient.
+
+    The walker of S45 is 42 days old; EK-3/C-2 devices are not renewed before their MIAT (C002781, SUT 3.1.2.(9)),
+    which is 1 year for OP1106. The clean bill bills the examination only; the faulty one also a second walker,
+    which the MIAT check finds with the control of S45 as history. Another branch than neurology, 42 days later:
+    no duplicate-exam window applies.
+    """
+    day = D("2026-08-10")
+    b = Bill("SH-06", "C-SH46", "poliklinik", "Fiziksel Tıp ve Rehabilitasyon", None, None, "G20", start=day,
+             end=day)
+    b.history = (s6("faulty"), s45("clean"))
+    b.diag("G20", primary=True, on=day)
+    exam = b.proc("520030", day, specialty=FTR)         # the visit
+    if variant != "clean":                              # the fault: a second walker inside the MIAT of the first
+        b.mat(WALKER, day, proc_line_id=exam, material_type="ortez", specialty_category="EK-3C-2",
+              titubb_registered=True, uts_registered=True)
+    return b
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S32", "S39", "S45", "S48")
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S17": s17, "S18": s18, "S20": s20, "S22": s22, "S23": s23, "S24": s24, "S32": s32, "S33": s33, "S34": s34, "S39": s39, "S40": s40, "S45": s45, "S46": s46, "S47": s47, "S48": s48}

@@ -79,8 +79,9 @@ LINE_KEYS = {
     "performed": {"code", "date", "source"},
 }
 # The optional keys of a line: a procedure line with a patient share (slice G5b, S32's examination) carries its
-# `copay_rate`, a share above 0 and below 1 with two decimals ("0.20"); a line without one has no such key.
-OPTIONAL_LINE_KEYS = {"procedures": {"copay_rate"}}
+# `copay_rate`, a share above 0 and below 1 with two decimals ("0.20"); a line without one has no such key. A material
+# of another EK-3 list than EK-3/F-1 (slice G7b, S45's and S46's walker) names its `annex` ("EK-3C-2").
+OPTIONAL_LINE_KEYS = {"procedures": {"copay_rate"}, "materials": {"annex"}}
 # The order the format fixes for each list.
 SORT_KEYS = {
     "diagnoses": lambda r: (r["role"] != "primary", r["icd10"]),
@@ -137,10 +138,10 @@ def test_every_story_has_its_golden_file_and_no_other_file_is_there(variant: str
 
 
 def test_a_story_has_a_faulty_golden_exactly_when_it_has_a_fault() -> None:
-    """A bill without a fault (S23, S32, S39, S48) is a clean golden only; every other story's fault record has its faulty golden."""
+    """A bill without a fault (S23, S32, S39, S45, S48) is a clean golden only; every other story's fault record has its faulty golden."""
     with_fault = {record["story"] for record in cohort.load_registry()["faults"]}
     assert set(FAULTY_STORIES) == with_fault
-    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S39", "S48"]
+    assert clean_only_stories() == [s for s in STORIES if s not in with_fault] == ["S23", "S32", "S39", "S45", "S48"]
     assert FAULTY_STORIES == [s for s in STORIES if s not in clean_only_stories()]  # stories.py order
 
 
@@ -261,6 +262,7 @@ def test_layout_and_format_version(golden) -> None:
         assert all(isinstance(row["flags"], dict) for row in doc[name]), name
     rates = [row["copay_rate"] for row in doc["procedures"] if "copay_rate" in row]
     assert all(re.fullmatch(r"0\.[0-9]{2}", rate) and rate != "0.00" for rate in rates), rates
+    assert all(row["annex"] == "EK-3C-2" for row in doc["materials"] if "annex" in row)  # EK-3/F-1 is the default
 
 
 def test_only_the_examination_of_s32_carries_a_copay_rate(golden) -> None:
@@ -416,7 +418,7 @@ def test_the_s39_story_bill_is_a_clean_bill_with_no_faulty_variant() -> None:
     )
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
-    assert out["clean_only"] == ["S23", "S32", "S39", "S48"] and out["in_stories"] is True and out["refused"] is True
+    assert out["clean_only"] == ["S23", "S32", "S39", "S45", "S48"] and out["in_stories"] is True and out["refused"] is True
     assert out["history"] == ["C-SH04", "C-SH39"]  # the stay of the same patient is its history
     assert out["codes"] == ["520030", "905671", "L104780", "L107010", "L107020"]  # the visit, the culture, three tests
 

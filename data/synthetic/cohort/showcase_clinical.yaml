@@ -1,5 +1,5 @@
 # Showcase patient clinical presentation (vitals and lab states) for the synthetic demo cohort (v3, P4).
-# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2, 15 is S18 with its second bill S24 as encounter_no 2) to plausible admission/visit vitals and optional lab
+# Each entry maps patient_no (1..8 are the stories S1..S8, patient 2 also has its control S32, its readmission S33 and the control after it S34 as encounter_no 2, 3 and 4, patient 4 also has its control S39 and its second visit S40 as encounter_no 2 and 3, patient 6 also has its neurology control S45 and its physiatry visit S46 as encounter_no 2 and 3, 9 is S9, 10 is S11 with its second bill S14 as encounter_no 2, 11 is S12, 12 is S10 with its second bill S22 as encounter_no 2, patient 7 also has its observation S47 and its follow-up S48 as encounter_no 2 and 3, 13 is S20, 14 is S17 with its second bill S23 as encounter_no 2, 15 is S18 with its second bill S24 as encounter_no 2) to plausible admission/visit vitals and optional lab
 # state profiles for its clinical pathway; clinician review in issue #309. No prices or amounts are stored here.
 # `drug_routes` gives the route of administration of the billed products whose TITCK product name states none.
 schema_version: 1
@@ -200,6 +200,30 @@ patients:
       source: "Story S6 aspiration pneumonia in Parkinson disease admission and follow-up inflammatory markers; clinician confirms in issue #309."
     basis: judgment
     source: "Story S6 aspiration pneumonia in Parkinson disease presentation (hypoxaemia SpO2 90%, tachycardia); clinician confirms in issue #309."
+
+  - patient_no: 6
+    encounter_no: 2
+    vitals:
+      sbp: 124
+      dbp: 72
+      pulse: 78
+      spo2: 96
+      height_cm: 172
+      weight_kg: 62.0
+    basis: judgment
+    source: "Story S45 neurology control three weeks after the aspiration pneumonia (recovered, room-air SpO2 96 %, weight still low); clinician confirms in issue #309."
+
+  - patient_no: 6
+    encounter_no: 3
+    vitals:
+      sbp: 128
+      dbp: 74
+      pulse: 76
+      spo2: 97
+      height_cm: 172
+      weight_kg: 63.5
+    basis: judgment
+    source: "Story S46 physiatry visit for gait instability in Parkinson disease (stable vitals); clinician confirms in issue #309."
 
   - patient_no: 7
     vitals:

@@ -8,7 +8,11 @@ from decimal import Decimal
 import pytest
 
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
-from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
+from src.bilun.domain.claims import (
+    build_bill_claim_context,
+    build_patient_claim_context,
+    load_sut_claim_dataset,
+)
 from tests.fixtures import synthetic_cohort as cohort
 
 pytestmark = pytest.mark.unit
@@ -79,8 +83,10 @@ def test_exempt_patient_rx_copay_in_total() -> None:
     inpatient rule (SUT 1.8.5(8)) waives because the patient's claim is an inpatient one.
     """
     dataset = load_sut_claim_dataset()
-    patient_id = cohort.role("showcase_S6").patient_id
-    ctx = build_patient_claim_context(patient_id, dataset)
+    role = cohort.role("showcase_S6")
+    patient_id = role.patient_id
+    # the stay of S6, read as its bill: the patient's later bills (the visits S45 and S46) bill no drug
+    ctx = build_bill_claim_context(patient_id, role.claim_id, dataset)
     assert ctx is not None
     assert {claim.claim_type for claim in ctx.claims} == {"yatis"}
     priced_line = dataclasses.replace(

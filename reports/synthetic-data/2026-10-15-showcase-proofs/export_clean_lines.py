@@ -81,6 +81,11 @@ def copay(line: Any) -> dict[str, str]:
     return {"copay_rate": str(line.copay_rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))}
 
 
+def annex(line: Any) -> dict[str, str]:
+    """`{"annex": "EK-3C-2"}` for a material line of another EK-3 annex than EK-3/F-1 (slice G7b), `{}` otherwise."""
+    return {} if line.specialty_category == "EK-3F-1" else {"annex": line.specialty_category}
+
+
 def flags(line: Any) -> dict[str, Any]:
     """Optional fields of the raw claim line that differ from the dataclass default."""
     out = {}
@@ -130,6 +135,7 @@ def export(sid: str, variant: str = "clean") -> dict[str, Any]:
             "date": iso(m.material_date),
             "qty": m.quantity,
             "material_type": m.material_type,
+            **annex(m),
             "linked_procedure": link(m),
             "billed_ratio": ratio(m),
             "flags": flags(m),
