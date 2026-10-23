@@ -302,10 +302,10 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
 
 
 # A clean bill the engine does not read as clean, with the amount its target rule and its report show on it: an
-# engine issue, not a fault of the bill. S42: red cells billed at 36 % inside a package with payable = billed; the
-# blood rule takes 36 % of the payable as the ceiling, so the correct bill shows 0.64 x 1606.55 a unit (EI-2 of the
-# plan, Safa675/Bilun#336).
-KNOWN_CLEAN_EXPOSURE: dict[str, float] = {"S42": 2056.38}
+# engine issue, not a fault of the bill. None at present: S42's clean twin (red cells at 36 % inside a package, payable
+# = billed) showed 2056.38 until the blood rule took its ceiling from the list price instead of the payable
+# (Safa675/Bilun#336).
+KNOWN_CLEAN_EXPOSURE: dict[str, float] = {}
 
 
 def summary(results: list[dict]) -> bool:

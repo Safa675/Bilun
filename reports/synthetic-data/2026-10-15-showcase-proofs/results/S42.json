@@ -46,34 +46,13 @@
    ]
   ],
   "performed": [],
-  "direct": [
-   {
-    "rule_id": "blood_component_partial_bill",
-    "procedure_code": "705371",
-    "allowed_fraction": 0.36,
-    "max_billable_try": 578.36,
-    "actual_billed_try": 1606.55,
-    "risk_amount_try": 1028.19,
-    "sut_section": "2.2.2.B-1.e",
-    "detail": "Blood component 705371 may only be billed at 36% of points in package context."
-   },
-   {
-    "rule_id": "blood_component_partial_bill",
-    "procedure_code": "705371",
-    "allowed_fraction": 0.36,
-    "max_billable_try": 578.36,
-    "actual_billed_try": 1606.55,
-    "risk_amount_try": 1028.19,
-    "sut_section": "2.2.2.B-1.e",
-    "detail": "Blood component 705371 may only be billed at 36% of points in package context."
-   }
-  ],
+  "direct": [],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 2056.38,
+   "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 6
+   "action_count": 4
   }
  },
  "faulty": {
@@ -175,46 +154,10 @@
    5712.2
   ]
  ],
- "only_in_clean": [
-  [
-   "action",
-   "audit_exposure",
-   "blood_component_partial_bill",
-   "705371",
-   1028.19
-  ],
-  [
-   "action",
-   "audit_exposure",
-   "blood_component_partial_bill",
-   "705371",
-   1028.19
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   2056.38
-  ]
- ],
+ "only_in_clean": [],
  "noise_in_clean": [
   [
    "action",
-   "audit_exposure",
-   "blood_component_partial_bill",
-   "705371",
-   1028.19
-  ],
-  [
-   "action",
-   "audit_exposure",
-   "blood_component_partial_bill",
-   "705371",
-   1028.19
-  ],
-  [
-   "action",
    "claim_checklist",
    "documentation_requirement",
    "",
@@ -240,13 +183,6 @@
    "documentation_requirement",
    "",
    0.0
-  ],
-  [
-   "scalar",
-   "audit_exposure_try",
-   "",
-   "",
-   2056.38
   ],
   [
    "wavea",

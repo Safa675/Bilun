@@ -57,23 +57,25 @@ class TestBloodComponentUplift:
         assert len(hits) == 1
         assert hits[0]["type"] == "blood_component_underbilling"
         assert hits[0]["allowed_fraction"] == pytest.approx(0.36)
-        assert hits[0]["max_billable_try"] == pytest.approx(360.0)
-        assert hits[0]["recoverable_uplift_try"] == pytest.approx(310.0)
+        # #336: 36 % of 705371's list price 4462.65, not of the line's payable 1000.
+        assert hits[0]["max_billable_try"] == pytest.approx(1606.55)
+        assert hits[0]["reference_payable_try"] == pytest.approx(4462.65)
+        assert hits[0]["recoverable_uplift_try"] == pytest.approx(1556.55)
         assert hits[0]["savings_category"] == "sgk_uplift"
 
     def test_skips_when_billed_within_tolerance(self) -> None:
         hits = detect_blood_component_underbilling_opportunities(
-            [_package(), _proc(billed_amount_try=Decimal("360"))],
+            [_package(), _proc(billed_amount_try=Decimal("1580"))],  # within 2 % of 1606.55
             claim_id="CLM1",
         )
         assert hits == []
 
     def test_overbilling_goes_to_audit_not_uplift(self) -> None:
-        line = _proc(billed_amount_try=Decimal("500"))
+        line = _proc(billed_amount_try=Decimal("4462.65"))  # in full inside the package
         assert detect_blood_component_underbilling_opportunities([_package(), line]) == []
         violations = detect_blood_component_violations([_package(), line])
         assert len(violations) == 1
-        assert violations[0]["risk_amount_try"] > 0
+        assert violations[0]["risk_amount_try"] == pytest.approx(2856.10)
 
     def test_ignores_non_blood_codes(self) -> None:
         hits = detect_blood_component_underbilling_opportunities(

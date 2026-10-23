@@ -876,22 +876,23 @@ def test_s22_direct_row_asks_for_30_percent_of_the_omitted_polypectomy_and_the_b
     assert {c.claim_id for c in b.faulty_ctx.history.claims} >= {"F-SENTETIK-HASTA-0012-001"}
 
 
-def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_shows_the_known_exposure(
+def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_is_silent(
     story_bundles: dict[str, _StoryBundle],
 ) -> None:
     """Two red-cell units inside the removal package: the faulty bill bills them in full (4462.65 each), the clean one
-    at 36 % (1606.55, C000694). The rule reads 36 % of the line's payable, which the bill sets equal to the billed
-    amount, so the correct bill shows an exposure too (0.64 x 1606.55 a unit, EI-2, Safa675/Bilun#336): the proof
-    compares it as a signal of the clean twin, and the record carries the difference of the totals, 5712.20."""
+    at 36 % (1606.55, C000694). The rule's ceiling is 36 % of 705371's EK-2/B list price on the bill date (4462.65 x
+    0.36 = 1606.55), never the line's own payable, which the bill sets equal to the billed amount (Safa675/Bilun#336):
+    the faulty bill is at risk for 2856.10 a unit, the clean bill for nothing, and the record carries the difference
+    of the totals, 5712.20."""
     b = story_bundles["S42"]
     assert b.record.amount_try == "5712.20" and b.record.engine_rule == "blood_component_partial_bill"
     assert [(r["actual_billed_try"], r["max_billable_try"], r["risk_amount_try"]) for r in b.direct_faulty] == [
         (4462.65, 1606.55, 2856.1)
     ] * 2
-    assert [(r["actual_billed_try"], r["max_billable_try"], r["risk_amount_try"]) for r in b.direct_clean] == [
-        (1606.55, 578.36, 1028.19)
-    ] * 2
-    assert (b.faulty_report.audit_exposure_try, b.clean_report.audit_exposure_try) == (5712.2, 2056.38)
+    assert b.direct_clean == []
+    assert (b.faulty_report.audit_exposure_try, b.clean_report.audit_exposure_try) == (5712.2, 0.0)
+    assert (b.faulty_report.sgk_uplift_try, b.clean_report.sgk_uplift_try) == (0.0, 0.0)  # no unit under its share
+    assert not any("blood_component_partial_bill" in str(s) for s in b.c_counter)
     # the units carry their ISBT 128 numbers on both bills: the ISBT rule is silent, the bill has one planted fault
     assert not any("isbt128" in str(s) for s in (*b.f_counter, *b.c_counter))
     # the patient's history holds all five bills: the stay, the ER visit, this one, the walker visit, the geriatrics visit

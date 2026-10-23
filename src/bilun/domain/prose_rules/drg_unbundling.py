@@ -13,6 +13,7 @@ from .payment_method import resolve_payment_method
 from .session_pricing import (
     billed_package_scopes,
     blood_component_billable_fraction,
+    blood_component_max_billable_try,
     expected_session_billed_try,
 )
 from .session_scope import line_billed_as_package
@@ -233,6 +234,13 @@ def detect_session_point_reviews(
 def detect_blood_component_violations(
     lines: list[ProcedureClaimLine],
 ) -> list[dict[str, Any]]:
+    """Blood components billed above their share inside a billed package (SUT 2.2.2.B-1.e).
+
+    The ceiling is the share of the component's EK-2/B list price on the line's
+    date (``blood_component_max_billable_try``, #336), not of the line's payable:
+    a unit billed at its share is clean, one billed in full is at risk for the
+    rest. A line whose list price is unknown that day is not assessed.
+    """
     violations: list[dict[str, Any]] = []
     package_scopes = billed_package_scopes(lines)
 
@@ -245,10 +253,10 @@ def detect_blood_component_violations(
         if fraction is None:
             continue
 
-        payable = _line_payable(line)
+        max_billable = blood_component_max_billable_try(line, package_context=True)
+        if max_billable is None:
+            continue
         billed = _line_billed(line)
-        reference = payable if payable > 0 else billed
-        max_billable = reference * fraction
         if billed <= max_billable * (1.0 + _BILLING_TOLERANCE):
             continue
 

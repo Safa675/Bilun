@@ -272,12 +272,19 @@ class TestSessionAdjustedItemizedTotal:
         assert total == 10.01
 
     # #261: blood is not a session operation, so without the package cap it
-    # keeps its full 100 (was 50 % as a separate-incision secondary).
-    @pytest.mark.parametrize("apply_blood_fraction, expected", [(True, 1036.0), (False, 1100.0)])
-    def test_blood_cap_still_uses_own_payable(self, catalog, apply_blood_fraction, expected) -> None:
+    # keeps its full amount (was 50 % as a separate-incision secondary). #336:
+    # the cap is 36 % of 705430's list price on the date (1134.71 x 0.36 =
+    # 408.4956), never of the line's own payable (was 36 % of 100 = 36).
+    @pytest.mark.parametrize(
+        "billed, apply_blood_fraction, expected",
+        [("1134.71", True, 1408.5), ("1134.71", False, 2134.71), ("100", True, 1100.0), ("100", False, 1100.0)],
+    )
+    def test_blood_cap_is_the_share_of_the_list_price(
+        self, catalog, billed, apply_blood_fraction, expected,
+    ) -> None:
         total, _ = compute_session_adjusted_itemized_total(
             [
-                _priced("primary", "611111", "1000"), _priced("blood", "705430", "100"),
+                _priced("primary", "611111", "1000"), _priced("blood", "705430", billed),
                 _priced("package", "611111", "5000", procedure_category="paket"),
             ],
             same_incision=False, cross_specialty=False, apply_blood_fraction=apply_blood_fraction,
