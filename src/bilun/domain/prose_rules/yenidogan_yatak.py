@@ -100,7 +100,7 @@ from typing import TYPE_CHECKING, Any
 from src.bilun.domain.catalog import lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
 from src.bilun.domain.prose_rules.icu_puani import claim_has_icu_code
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
@@ -271,8 +271,8 @@ def detect_yenidogan_yatak_opportunities(
         procedures_by_claim.setdefault(line.claim_id, []).append(line)
 
     for claim in claims:
-        # Gate on inpatient.
-        if infer_care_setting(claim) != "inpatient":
+        # Gate on inpatient, or a day case in any spelling (the standard-bed motor's gate, #335).
+        if infer_care_setting(claim) != "inpatient" and not claim_is_day_case(claim):
             continue
 
         # Gate on procedure lines present (if filter provided).

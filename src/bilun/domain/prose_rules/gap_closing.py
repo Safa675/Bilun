@@ -27,6 +27,12 @@ import json
 from functools import lru_cache, cache, wraps
 from typing import Any
 
+from src.bilun.domain.claims.claim_type import (
+    claim_type_care_setting,
+    is_day_case,
+)
+from src.bilun.domain.claims.claim_type import is_emergency as is_emergency_claim_type
+
 from ..constants import _PROSE_RULES_DIR
 from .facility_tier import normalize_facility_tier
 
@@ -321,27 +327,20 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
         "provider_type": header.provider_type or "",
         "claim_type": header.claim_type or "",
     }
-    # SUT §2.1.2.A/§2.2.2 use yatan-hasta/yatarak terminology. Recognize
-    # yatarak just like claim_utils.infer_care_setting and treatment_pricing;
-    # leaking that raw token silently fails authored inpatient predicates.
-    # Preserve other legacy fallbacks; their metadata gates handle unknowns.
+    # The care setting comes from the one claim-type vocabulary (claims/claim_type.py,
+    # #335), the same one claim_utils.infer_care_setting and treatment_pricing read:
+    # yatis/yatan/yatarak inpatient, poliklinik/ayakta, günübirlik/day_case and acil
+    # outpatient. A type without a care setting (koruyucu, meslek_hastaligi) or an
+    # unknown one keeps its raw value, so no authored setting predicate matches it;
+    # the metadata gates leave such a claim unavailable.
     claim_type_lower = (header.claim_type or "").lower()
-    if any(token in claim_type_lower for token in ("yatis", "yatarak", "inpatient")):
-        context["care_setting"] = "inpatient"
-    elif (
-        "ayakta" in claim_type_lower
-        or "outpatient" in claim_type_lower
-        or "poliklinik" in claim_type_lower
-        or "gunubirlik" in claim_type_lower
-    ):
-        context["care_setting"] = "outpatient"
-    else:
-        context["care_setting"] = claim_type_lower or "outpatient"
+    context["care_setting"] = (
+        claim_type_care_setting(header.claim_type) or claim_type_lower or "outpatient"
+    )
     # Emergency: claim_type or department carries emergency signal.
     dept = (header.department or "").lower()
     context["is_emergency"] = (
-        "acil" in claim_type_lower
-        or "emergency" in claim_type_lower
+        is_emergency_claim_type(header.claim_type)
         or "acil" in dept
         or "emergency" in dept
     )
@@ -437,10 +436,11 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     elif header.provider_type in ("uncontracted", "sozlesmesiz"):
         context["provider_contract_status"] = "uncontracted"
     # visit_type: the day-case marker "gunubirlik" surfaces directly from
-    # claim_type (SUT §2.2.2.(4)/(5) gunubirlik no day-bed / companion-fee
-    # rules). Other visit types (telehealth, followup) require line-level data
-    # the model does not carry → left unset (honest skip).
-    if "gunubirlik" in claim_type_lower:
+    # claim_type in any spelling (günübirlik, day_case; SUT §2.2.2.(4)/(5)
+    # gunubirlik no day-bed / companion-fee rules). Other visit types
+    # (telehealth, followup) require line-level data the model does not
+    # carry → left unset (honest skip).
+    if is_day_case(header.claim_type):
         context["visit_type"] = "gunubirlik"
     # facility_type: training/research hospitals (universite / egitim_arastirma
     # provider types) are the §2.2.1.B-1.c / §2.2.2.A(6) / §2.2.1.B-2.(4) gate.

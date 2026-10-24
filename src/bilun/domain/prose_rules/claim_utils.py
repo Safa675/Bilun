@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
-import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, Literal
 from collections.abc import Iterable
+
+from src.bilun.domain.claims.claim_type import (
+    claim_type_care_setting,
+    claim_type_kind,
+    fold_claim_type,
+    is_day_case,
+    is_emergency,
+)
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -38,15 +45,9 @@ class CareSettingAmbiguity:
     detail: str
 
 
-def _normalized_claim_type(claim: ClaimHeader) -> str:
-    return str(getattr(claim, "claim_type", "") or "").casefold()
-
-
 def _fold_header_value(value: object) -> str:
     """Case- and Turkish-fold a header value; spaces and hyphens become ``_``."""
-    folded = unicodedata.normalize("NFKD", str(value or "").casefold().replace("ı", "i"))
-    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
-    return "_".join(folded.replace("-", " ").split())
+    return fold_claim_type(value)
 
 
 def claim_is_traffic_accident(claim: ClaimHeader) -> bool:
@@ -66,35 +67,44 @@ def claim_is_day_case(claim: ClaimHeader | None) -> bool:
 
     SUT counts it as yatarak tedavi ("Yatarak tedavilerde (yatan hasta ve günübirlik
     tedavi)", C003484) and §2.2.2(4) (C000649) bills its EK-2/C procedures there, so
-    the payment-method rules SUT writes for yatarak services apply to it.
+    the payment-method rules SUT writes for yatarak services apply to it. Every
+    spelling of the type counts (``gunubirlik``, ``günübirlik``, ``day_case``: #335).
     """
     if claim is None:
         return False
-    claim_type = _normalized_claim_type(claim)
-    return "gunubirlik" in claim_type or "day_case" in claim_type
+    return is_day_case(getattr(claim, "claim_type", ""))
+
+
+def claim_is_emergency(claim: ClaimHeader | None) -> bool:
+    """An emergency-department claim (``acil``), which ``infer_care_setting`` reads as outpatient.
+
+    SUT keeps it out of the rules of the other outpatient visits ("acil servise başvuruları
+    hariç olmak üzere", the ten-day rule of 2.2.1.B-1(2), C000573).
+    """
+    if claim is None:
+        return False
+    return is_emergency(getattr(claim, "claim_type", ""))
 
 
 def infer_care_setting(claim: ClaimHeader) -> str:
-    claim_type = _normalized_claim_type(claim)
-    if "yatis" in claim_type or "yatarak" in claim_type or "inpatient" in claim_type:
-        return "inpatient"
-    if (
-        "poliklinik" in claim_type
-        or "ayakta" in claim_type
-        or "outpatient" in claim_type
-        or "gunubirlik" in claim_type
-    ):
-        return "outpatient"
-    return "inpatient"
+    """The care setting of the claim's type in the one vocabulary (``claims/claim_type.py``, #335).
+
+    ``yatis`` is inpatient; ``poliklinik``, ``gunubirlik`` (with the day-case flag) and
+    ``acil`` (emergency care is ayakta tedavi billed fee for service, SUT 2.2.1.B-2(2)(a))
+    are outpatient. A type with no care setting (``koruyucu``, ``meslek_hastaligi``) or an
+    unknown one keeps the engine's old default, inpatient; the Wave A evaluators leave
+    such a claim unavailable instead of reading that default.
+    """
+    return claim_type_care_setting(getattr(claim, "claim_type", "")) or "inpatient"
 
 
 def detect_care_setting_ambiguity(claim: ClaimHeader) -> CareSettingAmbiguity | None:
     """Return dual interpretations only when claim metadata is genuinely ambiguous."""
-    claim_type = _normalized_claim_type(claim)
+    kind = claim_type_kind(getattr(claim, "claim_type", ""))
     admission = getattr(claim, "admission_date", None)
     discharge = getattr(claim, "discharge_date", None)
 
-    if "gunubirlik" in claim_type or "day_case" in claim_type:
+    if kind == "gunubirlik":
         return CareSettingAmbiguity(
             primary_setting="outpatient",
             alternate_setting="inpatient",
@@ -106,7 +116,7 @@ def detect_care_setting_ambiguity(claim: ClaimHeader) -> CareSettingAmbiguity | 
         )
 
     if (
-        ("yatis" in claim_type or "yatarak" in claim_type)
+        kind == "yatis"
         and admission is not None
         and discharge is not None
         and admission == discharge
@@ -122,7 +132,7 @@ def detect_care_setting_ambiguity(claim: ClaimHeader) -> CareSettingAmbiguity | 
         )
 
     if (
-        "poliklinik" in claim_type
+        kind == "poliklinik"
         and admission is not None
         and discharge is not None
         and admission != discharge

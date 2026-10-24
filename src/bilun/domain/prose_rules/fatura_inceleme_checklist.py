@@ -25,6 +25,8 @@ import re
 from functools import lru_cache
 from typing import Any
 
+from src.bilun.domain.claims.claim_type import claim_type_kind, fold_claim_type
+
 from ..constants import _PROSE_RULES_DIR
 
 _RULES_PATH = _PROSE_RULES_DIR / "fatura_inceleme_checklist.json"
@@ -65,26 +67,10 @@ _SURGERY_BIOPSY_NAME_RE = re.compile(
     r"biyopsi|eksizyon|rezeksiyon|ameliyat|cerrah[iı]|operasyon|torakotom|lamin[eo]",
     re.I,
 )
-_OUTPATIENT_TYPES = frozenset(
-    {
-        "poliklinik",
-        "ayaktan",
-        "outpatient",
-        "muayene",
-    }
-)
-_INPATIENT_DAYCASE_ICU_TYPES = frozenset(
-    {
-        "yatis",
-        "inpatient",
-        "gunubirlik",
-        "day_case",
-        "daycase",
-        "yogun bakim",
-        "icu",
-        "ybu",
-    }
-)
+# The claim type is read through the one vocabulary (claims/claim_type.py, #335);
+# these folded values are the checklist's own additions to it.
+_OUTPATIENT_TYPES = frozenset({"muayene"})
+_INPATIENT_DAYCASE_ICU_TYPES = frozenset({"yogun_bakim", "icu", "ybu"})
 _ICU_CODE_PREFIXES = ("510090", "P55200", "P55201", "P55202", "P55203", "P55206", "P55207", "P55208")
 
 
@@ -195,7 +181,7 @@ def _evaluate(
     return requirements
 
 
-def _normalize_claim_type(raw: str | None) -> str:
+def _fold_department(raw: str | None) -> str:
     text = (raw or "").strip().lower()
     return text.translate(
         str.maketrans(
@@ -220,7 +206,9 @@ def _compute_relevance_flags(
     """Derive Option-B relevance flags from claim header + lines."""
     from src.bilun.domain.prose_rules.catalog_membership import procedure_annex_membership
 
-    claim_type = _normalize_claim_type(getattr(header, "claim_type", None))
+    raw_claim_type = getattr(header, "claim_type", None)
+    claim_type = fold_claim_type(raw_claim_type)
+    kind = claim_type_kind(raw_claim_type)
     dept = (getattr(header, "department", None) or "").lower()
     discharge = getattr(header, "discharge_date", None)
 
@@ -277,10 +265,15 @@ def _compute_relevance_flags(
         if _TPN_NAME_RE.search(name):
             has_tpn = True
 
-    dept_folded = _normalize_claim_type(dept)
-    is_outpatient = claim_type in _OUTPATIENT_TYPES or "poliklinik" in dept_folded
+    dept_folded = _fold_department(dept)
+    # An ER visit (acil) is outpatient but not a polyclinic visit; a provision
+    # ground (koruyucu, meslek_hastaligi) is neither.
+    is_outpatient = (
+        kind == "poliklinik" or claim_type in _OUTPATIENT_TYPES or "poliklinik" in dept_folded
+    )
     is_inpatient_daycase_or_icu = (
-        claim_type in _INPATIENT_DAYCASE_ICU_TYPES
+        kind in ("yatis", "gunubirlik")
+        or claim_type in _INPATIENT_DAYCASE_ICU_TYPES
         or has_icu_code
         or "yogun" in dept_folded
         or "ybu" in dept_folded

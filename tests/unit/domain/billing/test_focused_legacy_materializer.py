@@ -294,17 +294,26 @@ def test_patient_report_uses_one_focused_pass_and_keeps_financial_actions() -> N
     assert {row["rule_id"] for row in report.wavea_evidence_detail["evaluations"]} >= _RULE_IDS
     # #261: an exam and radiotherapy lines on one date are not a session of
     # operations, so no §2.2.2.A(5) audit exposure (was 140.0).
+    # #335: an `ayakta` claim is a polyclinic visit for the documentation
+    # checklist too (it read `ayaktan` only), so each of the two bills has its
+    # informational checklist row.
     assert (
         report.sgk_uplift_try,
         report.compliance_adjustment_try,
         report.audit_exposure_try,
         report.total_recoverable_try,
         report.action_count,
-    ) == (0.0, 0.0, 0.0, 0.0, 1)
+    ) == (0.0, 0.0, 0.0, 0.0, 3)
     assert [
         (row["surface"], row["kind"], row["material_code"], row["billed_try"])
         for row in report.recommended_actions
+        if row["surface"] != "claim_checklist"
     ] == [("materials", "material_prose_bundling", "500000", 100.0)]
+    assert sorted(
+        (row["claim_id"], row["kind"])
+        for row in report.recommended_actions
+        if row["surface"] == "claim_checklist"
+    ) == [("C1", "documentation_requirement"), ("C2", "documentation_requirement")]
 
     with patch.object(
         patient_report, "project_focused_legacy_rows", return_value=FocusedProjectionBatch()

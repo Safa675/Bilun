@@ -53,6 +53,8 @@ from datetime import date
 from functools import lru_cache
 from typing import Any
 
+from src.bilun.domain.claims.claim_type import claim_type_kind
+
 from ..constants import _PROSE_RULES_DIR
 
 _RULES_PATH = _PROSE_RULES_DIR / "treatment_pricing_2_4.json"
@@ -606,21 +608,21 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
 
     context["origin_is_traffic_accident"] = claim_is_traffic_accident(header)
 
-    # Visit-type / care-setting derived fields. visit_type mirrors the raw
-    # claim_type vocabulary the rules use (outpatient/inpatient/gunubirlik);
-    # treatment_setting comes from the shared ``infer_care_setting`` helper.
+    # Visit-type / care-setting derived fields. visit_type maps the one
+    # claim-type vocabulary (claims/claim_type.py, #335) onto the values the
+    # rules use (outpatient/inpatient/gunubirlik): an ER visit (acil) is an
+    # outpatient one (SUT 2.2.1.B-2(2)(a)); a type without a care setting keeps
+    # its raw value. treatment_setting comes from the shared
+    # ``infer_care_setting`` helper.
     if getattr(header, "claim_type", ""):
         claim_type_raw = header.claim_type or ""
         ct_lower = claim_type_raw.lower()
-        if "yatis" in ct_lower or "yatarak" in ct_lower or "inpatient" in ct_lower:
+        kind = claim_type_kind(claim_type_raw)
+        if kind == "yatis":
             context["visit_type"] = "inpatient"
-        elif "gunubirlik" in ct_lower or "day_case" in ct_lower:
+        elif kind == "gunubirlik":
             context["visit_type"] = "gunubirlik"
-        elif (
-            "ayakta" in ct_lower
-            or "outpatient" in ct_lower
-            or "poliklinik" in ct_lower
-        ):
+        elif kind in ("poliklinik", "acil"):
             context["visit_type"] = "outpatient"
         else:
             context["visit_type"] = ct_lower or "outpatient"

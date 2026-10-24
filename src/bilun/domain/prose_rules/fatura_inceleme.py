@@ -32,6 +32,9 @@ import json
 from functools import lru_cache
 from typing import Any
 
+from src.bilun.domain.claims.claim_type import claim_type_care_setting, is_day_case
+from src.bilun.domain.claims.claim_type import is_emergency as is_emergency_claim_type
+
 from ..constants import _PROSE_RULES_DIR
 from .facility_tier import normalize_facility_tier
 from .gap_closing import _condition_matches, _derive_payment_method_path
@@ -192,25 +195,17 @@ def _build_fatura_inceleme_context(ctx: Any) -> dict[str, Any]:
         "provider_specialty": provider_specialty,
     }
 
-    # Care setting
+    # Care setting: the one claim-type vocabulary (claims/claim_type.py, #335), read
+    # the same way as gap_closing. A type without a care setting keeps its raw value.
     claim_type_lower = (header.claim_type or "").lower()
-    if "yatis" in claim_type_lower or "inpatient" in claim_type_lower:
-        context["care_setting"] = "inpatient"
-    elif (
-        "ayakta" in claim_type_lower
-        or "outpatient" in claim_type_lower
-        or "poliklinik" in claim_type_lower
-        or "gunubirlik" in claim_type_lower
-    ):
-        context["care_setting"] = "outpatient"
-    else:
-        context["care_setting"] = claim_type_lower or "outpatient"
+    context["care_setting"] = (
+        claim_type_care_setting(header.claim_type) or claim_type_lower or "outpatient"
+    )
 
     # Emergency detection
     dept = (header.department or "").lower()
     context["is_emergency"] = (
-        "acil" in claim_type_lower
-        or "emergency" in claim_type_lower
+        is_emergency_claim_type(header.claim_type)
         or "acil" in dept
         or "emergency" in dept
     )
@@ -249,7 +244,7 @@ def _build_fatura_inceleme_context(ctx: Any) -> dict[str, Any]:
         context["provider_contract_status"] = "uncontracted"
 
     # Visit type
-    if "gunubirlik" in claim_type_lower:
+    if is_day_case(header.claim_type):
         context["visit_type"] = "gunubirlik"
 
     # Facility type

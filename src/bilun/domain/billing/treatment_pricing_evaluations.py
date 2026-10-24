@@ -21,6 +21,7 @@ from src.bilun.domain.billing.broad_rule_catalog import (
 )
 from src.bilun.domain.billing.payment_traceability_evaluations import _ObservedContext
 from src.bilun.domain.billing.rule_findings import RuleEvaluation
+from src.bilun.domain.claims.claim_type import care_setting_gap
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.treatment_pricing import (
     _build_treatment_pricing_context,
@@ -201,23 +202,14 @@ def _metadata_gate(condition, claim_ctx, flat) -> tuple[str, list[str], str] | N
             if values - _FACILITY_TYPES_DERIVED:
                 return "unavailable", [], "facility_type_vocabulary_not_derived"
     if set(condition) & {"visit_type", "treatment_setting"}:
-        claim_type = str(header.claim_type or "").strip().lower()
-        if not claim_type:
+        # One claim-type vocabulary (claims/claim_type.py, #335).
+        gap = care_setting_gap(header.claim_type)
+        if gap == "missing":
             return "missing_inputs", ["claim_type"], "raw_claim_type_missing"
-        if not any(
-            token in claim_type
-            for token in (
-                "yatis",
-                "yatarak",
-                "inpatient",
-                "gunubirlik",
-                "day_case",
-                "ayakta",
-                "outpatient",
-                "poliklinik",
-            )
-        ):
+        if gap == "unrecognized":
             return "unavailable", [], "claim_type_unrecognized"
+        if gap == "not_settled":
+            return "unavailable", [], "claim_type_care_setting_not_settled"
     return None
 
 

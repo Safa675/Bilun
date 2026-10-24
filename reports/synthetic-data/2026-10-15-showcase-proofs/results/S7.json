@@ -391,6 +391,27 @@
   [
    "wavea",
    "claim_reviews",
+   "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
+   "ORTAK-22.seans_kesi_kurali",
+   "",
+   0.0
+  ],
+  [
+   "wavea",
+   "claim_reviews",
    "ORTAK-28.ek2b_tetkik_gereksiz",
    "",
    0.0
@@ -420,6 +441,13 @@
    "validate",
    "fatura_inceleme_prose",
    "ORTAK-19.eksik_faturalama_yuzde10",
+   "",
+   0.0
+  ],
+  [
+   "validate",
+   "fatura_inceleme_prose",
+   "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
    "",
    0.0
   ],

@@ -26,8 +26,9 @@ from src.bilun.domain.billing.rule_findings import (
     RuleFinding,
     build_finding_id,
 )
+from src.bilun.domain.claims.claim_type import care_setting_gap
 from src.bilun.domain.claims.patient_context import PatientClaimContext
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import claim_is_emergency, infer_care_setting
 from src.bilun.domain.prose_rules.common_billing_errors import (
     _EXAM_CATEGORIES,
     _EXAM_DUPLICATE_WINDOW_DAYS,
@@ -67,15 +68,13 @@ _CARE_SETTING_GROUPS = frozenset(
         "detect_yatak_icu_overlap",
     }
 )
-_RECOGNIZED_CARE_TOKENS = (
-    "yatis",
-    "yatarak",
-    "inpatient",
-    "poliklinik",
-    "ayakta",
-    "outpatient",
-    "gunubirlik",
-)
+# A care-setting group reads the claim type through the one vocabulary
+# (claims/claim_type.py, #335); these are the reasons of a type it cannot read.
+_CARE_SETTING_GAP_REASONS = {
+    "missing": ("missing_inputs", ["claim_type"], "raw_claim_type_missing"),
+    "unrecognized": ("unavailable", [], "raw_claim_type_unrecognized"),
+    "not_settled": ("unavailable", [], "raw_claim_type_care_setting_not_settled"),
+}
 
 
 @dataclass(frozen=True)
@@ -490,15 +489,17 @@ def _input_limitation(
         return "unavailable", missing, spec.predicate_limitation
 
     if spec.group in _CARE_SETTING_GROUPS:
-        claim_type = str(getattr(claim, "claim_type", "") or "").strip().casefold()
-        if not claim_type:
-            return "missing_inputs", ["claim_type"], "raw_claim_type_missing"
-        if not any(token in claim_type for token in _RECOGNIZED_CARE_TOKENS):
-            return "unavailable", [], "raw_claim_type_unrecognized"
+        gap = care_setting_gap(getattr(claim, "claim_type", ""))
+        if gap is not None:
+            status, missing, reason = _CARE_SETTING_GAP_REASONS[gap]
+            return status, list(missing), reason
 
     if spec.rule_id == "tablo15_2_duplicate_exam_10day":
         if infer_care_setting(claim) != "outpatient":
             return "unavailable", [], "exam_outpatient_setting_unverified"
+        if claim_is_emergency(claim):
+            # SUT 2.2.1.B-1(2) (C000573): "acil servise başvuruları hariç".
+            return "unavailable", [], "emergency_visit_outside_ten_day_rule"
         if source_line is None or source_line.procedure_category not in _EXAM_CATEGORIES:
             return "unavailable", [], "exam_category_unverified"
         if source_line is None or not str(source_line.procedure_specialty_code or "").strip():
@@ -520,10 +521,10 @@ def _input_limitation(
         prior_claim = next((item for item in history.claims if item.claim_id == prior_claim_id), None)
         if prior_claim is None:
             return "unavailable", [], "cross_claim_history_evidence_unavailable"
-        prior_claim_type = str(getattr(prior_claim, "claim_type", "") or "").strip().casefold()
         if (
-            not any(token in prior_claim_type for token in _RECOGNIZED_CARE_TOKENS)
+            care_setting_gap(getattr(prior_claim, "claim_type", "")) is not None
             or infer_care_setting(prior_claim) != "outpatient"
+            or claim_is_emergency(prior_claim)
         ):
             return "unavailable", [], "prior_exam_outpatient_setting_unverified"
         if not any(

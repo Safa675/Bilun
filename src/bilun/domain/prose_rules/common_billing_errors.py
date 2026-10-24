@@ -41,7 +41,7 @@ from collections import defaultdict
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import claim_is_emergency, infer_care_setting
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -160,6 +160,10 @@ def detect_duplicate_exam_10day(
     Honest skips: outpatient setting cannot be determined, missing
     specialty, missing procedure_date, or the same-claim self-pair (an
     exam repeated on the *same* bill is a different error class).
+
+    An emergency-department visit (``acil``) is outpatient but outside the
+    rule: SUT 2.2.1.B-1(2) (C000573) counts the applications "acil servise
+    başvuruları hariç olmak üzere", so it neither opens nor repeats a window.
     """
     claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
 
@@ -173,7 +177,7 @@ def detect_duplicate_exam_10day(
         if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
             continue
         claim = claims_by_id.get(line.claim_id)
-        if claim is None or infer_care_setting(claim) != "outpatient":
+        if claim is None or infer_care_setting(claim) != "outpatient" or claim_is_emergency(claim):
             continue
         exams.append(line)
 

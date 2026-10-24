@@ -66,7 +66,12 @@ from .catalog_membership import (
     get_ek2c_description,
     normalize_procedure_code,
 )
-from .claim_utils import claim_is_day_case, group_procedure_lines_by_session, infer_care_setting
+from .claim_utils import (
+    claim_is_day_case,
+    claim_is_emergency,
+    group_procedure_lines_by_session,
+    infer_care_setting,
+)
 from .material_bundling import material_paid_next_to_package
 from .payment_method import check_payment_method_compliance
 from .session_pricing import (
@@ -198,6 +203,7 @@ def line_payment_method_compliance(
         provider_type=claim.provider_type,
         as_of_date=line.procedure_date or claim.admission_date or claim.claim_start_date,
         day_case=claim_is_day_case(claim),
+        emergency=claim_is_emergency(claim),
     )
 
 
