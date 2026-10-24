@@ -24,6 +24,7 @@ from src.bilun.domain.claims.models import (
     ProcedureClaimLine,
 )
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.money import money_round_half_up
 from src.bilun.domain.optimization.unbundling import detect_drg_unbundling
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
@@ -470,6 +471,231 @@ class TestMissingUnitPrice:
     def test_a_full_price_secondary_is_still_flagged(self, build, code, risk) -> None:
         rows = _finding(_without_unit_price(build())).session_violations
         assert [(r["procedure_code"], r["risk_amount_try"]) for r in rows] == [(code, risk)]
+
+
+# How a bill may state a procedure line's unit price (#300): ``list`` the catalog's, as
+# the builders write it; ``billed`` the line's billed amount per unit, which is what
+# MEDULA returns for an operation after the session reduction (the hospital sends no
+# price for it, only the incision code); ``absent`` none; ``quarter`` / ``triple`` a
+# quarter / three times the list price.
+_UNIT_PRICES = ("list", "billed", "absent", "quarter", "triple")
+
+
+def _with_unit_prices(ctx: PatientClaimContext, unit_price: str) -> PatientClaimContext:
+    def unit(line: ProcedureClaimLine) -> Decimal:
+        if unit_price == "list":
+            return line.unit_price_try
+        if unit_price == "billed":
+            return (line.billed_amount_try / line.quantity).quantize(_CENT, rounding=ROUND_HALF_UP)
+        if unit_price == "absent":
+            return Decimal("0")
+        factor = {"quarter": Decimal("0.25"), "triple": Decimal("3")}[unit_price]
+        return (line.unit_price_try * factor).quantize(_CENT, rounding=ROUND_HALF_UP)
+
+    return replace(ctx, procedure_lines=tuple(
+        replace(line, unit_price_try=unit(line)) for line in ctx.procedure_lines
+    ))
+
+
+def _uplift_rows(ctx: PatientClaimContext) -> list[tuple]:
+    return [
+        (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"],
+         r.get("strict_expected_billed_try"), r.get("lenient_expected_billed_try"),
+         r.get("missing_facts"))
+        for r in recommend_session_uplift_from_claims(ctx).opportunities
+    ]
+
+
+def _exposure_rows(ctx: PatientClaimContext) -> list[tuple]:
+    finding = _finding_unknown_incision(ctx)
+    return [
+        (r["procedure_code"], r["risk_amount_try"], r["expected_billed_try"], r.get("review_risk_try"))
+        for r in (*finding.session_violations, *finding.session_reviews)
+    ]
+
+
+def _eah_pair(tier: str, *, unit: str, factor: str, second: str = "P603840",
+              provider_type: str = "Ozel") -> PatientClaimContext:
+    """P609235 in full and ``second`` billed at ``factor`` of a unit price of ``unit`` × its
+    EK-2/C list, one branch, at ``tier`` (C000678: +30 % for a starred package at
+    training and research hospitals and university hospitals with a medical faculty)."""
+    day = _d("2026-07-14")
+    bill = _Bill("C-EAH", "yatis", day, day, tier=tier)
+    bill.proc("P609235", day, specialty=GENCER)
+    line = bill.proc(second, day, specialty=GENCER)
+    unit_price = (line.unit_price_try * Decimal(unit)).quantize(_CENT, rounding=ROUND_HALF_UP)
+    billed = (unit_price * Decimal(factor)).quantize(_CENT, rounding=ROUND_HALF_UP)
+    bill.procs[-1] = replace(line, unit_price_try=unit_price, billed_amount_try=billed,
+                             expected_payable_try=billed)
+    ctx = bill.ctx()
+    return replace(ctx, claims=(replace(ctx.claims[0], provider_type=provider_type),))
+
+
+class TestTheListPriceIsNeverTheBillsUnitPrice300:
+    """§2.2.2 session money compares a line with its list price in force on its date (#300).
+
+    MEDULA prices an operation itself (``AmeliyatveGirisimBilgisiDVO`` has no price
+    field) and returns each line's amount after the reduction, so a bill's unit price
+    may already hold it. The list price is the EK-2/C package price (+30 % for a
+    starred package at the tiers C000678 names) or the EK-2/B price, never the bill's.
+    """
+
+    @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
+    def test_clean_s8_has_no_exposure_whatever_the_unit_price(self, unit_price) -> None:
+        # The issue's probe: P603840 billed at 25 % of 7,169.60 with a unit price of
+        # 1,792.40 read 1,792.40 as its list, so the lenient 50 % was 896.20 and
+        # 896.20 TL was exposure (``billed``, ``quarter``).
+        ctx = _with_unit_prices(s8("clean").ctx(), unit_price)
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert _exposure_rows(ctx) == []
+        # The 0-TL "kontrol et … kesi" row stays: one incision pays 25 %, two 50 %
+        # (#311 item 6, no incision on the bill). Was no row (``billed``,
+        # ``quarter``) and 3,584.80 TL recoverable (``triple``).
+        assert _uplift_rows(ctx) == [("P603840", 0.0, 1792.40, 1792.40, 3584.80, ["kesi"])]
+
+    @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
+    def test_faulty_s8_is_exposure_above_half_its_list_whatever_the_unit_price(
+        self, unit_price,
+    ) -> None:
+        # Was 6,273.40 (``quarter``) and 0.00 (``triple``).
+        ctx = _with_unit_prices(s8("faulty").ctx(), unit_price)
+        assert compute_audit_exposure_from_claims(ctx) == 3584.80
+        assert _exposure_rows(ctx) == [("P603840", 3584.80, 3584.80, 1792.40)]
+        assert _uplift_rows(ctx) == []
+
+    @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
+    def test_a_hizmet_basi_secondary_at_30_percent_has_no_exposure(self, unit_price) -> None:
+        # 601200 at 30 % of 10,072.97 next to 613730. Was 1,510.94 (``billed``) and
+        # 1,762.77 (``quarter``) TL exposure.
+        day = _d("2026-07-14")
+        bill = _Bill("C-PR", "yatis", day, day, tier="egitim_arastirma")
+        bill.proc("613730", day, specialty=ORTO)
+        bill.proc("601200", day, specialty=ORTO, factor="0.3")
+        ctx = _with_unit_prices(bill.ctx(), unit_price)
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert _exposure_rows(ctx) == []
+        assert _uplift_rows(ctx) == [("601200", 0.0, 2014.60, 3021.89, 5036.49, ["kesi"])]
+
+    @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
+    def test_an_under_billed_secondary_keeps_its_uplift(self, unit_price) -> None:
+        # 615995 at 10 % of 3,032.01: 30 % (909.60) is owed, 606.40 more. A unit price
+        # of its billed 303.20 hid the uplift and showed 151.60 TL of exposure.
+        ctx = _with_unit_prices(s3(second_operation=True, second_factor="0.1").ctx(), unit_price)
+        assert _uplift_rows(ctx) == [("615995", 606.40, 0.0, 909.60, 1516.01, ["kesi"])]
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert _exposure_rows(ctx) == []
+
+    @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
+    def test_the_mandated_package_side_prices_an_ek2b_operation_at_its_list(
+        self, unit_price,
+    ) -> None:
+        # 615931 billed 6,000.00 next to the must-package 610131: the package side is
+        # 8,636.51 + 0.55 × 3,837.32 = 10,747.04 (C000672, C000674). Was 11,936.51
+        # (``billed``: 0.55 × 6,000.00), 9,356.01 and 1,194.63 TL exposure
+        # (``quarter``), 14,968.09 (``triple``).
+        bill = s1("faulty")
+        extra = bill.proc("615931", bill.start, specialty=BEYIN)
+        bill.procs[-1] = replace(extra, billed_amount_try=Decimal("6000.00"),
+                                 expected_payable_try=Decimal("6000.00"))
+        ctx = _with_unit_prices(bill.ctx(), unit_price)
+        row = _claim_row(ctx)
+        assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
+            10747.04, 10550.64, 196.40,
+        )
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    @pytest.mark.parametrize(
+        "tier, provider_type",
+        [("egitim_arastirma", "Ozel"), ("universite_vakif", "Ozel"), ("3_basamak", "universite")],
+    )
+    @pytest.mark.parametrize("unit", ["1.3", "0.65"], ids=["starred-list", "billed"])
+    def test_a_starred_secondary_billed_with_the_c000678_uplift_has_no_exposure(
+        self, tier, provider_type, unit,
+    ) -> None:
+        # P603840 at 50 % of 7,169.60 + 30 % = 4,660.24, the separate-incision reading:
+        # a 0-TL review under the one-incision 25 % (2,330.12). Without the uplift its
+        # lenient side would be 3,584.80 and 1,075.44 exposure (``billed``: was 2,330.12).
+        ctx = _eah_pair(tier, unit=unit, factor="0.5" if unit == "1.3" else "1",
+                        provider_type=provider_type)
+        assert float(ctx.procedure_lines[1].billed_amount_try) == 4660.24
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+        assert _exposure_rows(ctx) == [("P603840", 0.0, 2330.12, 2330.12)]
+        assert _uplift_rows(ctx) == []
+
+    def test_a_starred_secondary_at_a_c000678_tier_billed_without_the_uplift_is_under_billed(
+        self,
+    ) -> None:
+        # 25 % of 7,169.60 (1,792.40) where 25 % of 9,320.48 (2,330.12) is owed.
+        ctx = _eah_pair("egitim_arastirma", unit="1", factor="0.25")
+        assert _uplift_rows(ctx) == [("P603840", 537.72, 0.0, 2330.12, 4660.24, ["kesi"])]
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    def test_a_private_hospital_billing_the_c000678_uplift_is_exposure(self) -> None:
+        # The tier does not take the 30 %: 4,660.24 against a lenient 3,584.80. Was 0.00
+        # (the unit price of 9,320.48 was read as the list).
+        ctx = _eah_pair("2_3_basamak_ozel", unit="1.3", factor="0.5")
+        assert compute_audit_exposure_from_claims(ctx) == 1075.44
+        assert _exposure_rows(ctx) == [("P603840", 1075.44, 3584.80, 1792.40)]
+
+    def test_an_unstarred_package_takes_no_uplift_at_a_c000678_tier(self) -> None:
+        # P600720 (V-Y flap, group C) has no star: 50 % of 5,532.44 is 2,766.22, so a
+        # bill at 50 % of 7,192.17 (3,596.09) overstates 829.87.
+        ctx = _eah_pair("egitim_arastirma", unit="1.3", factor="0.5", second="P600720")
+        assert compute_audit_exposure_from_claims(ctx) == 829.87
+        ctx = _eah_pair("egitim_arastirma", unit="1", factor="0.5", second="P600720")
+        assert compute_audit_exposure_from_claims(ctx) == 0.0
+
+    @pytest.mark.parametrize(
+        "line_kwargs, tier, listed",
+        [
+            ({"code": "P603840"}, "2_3_basamak_ozel", 7169.60),
+            ({"code": "P603840", "qty": 2}, "2_3_basamak_ozel", 14339.20),
+            ({"code": "P603840"}, "egitim_arastirma", 9320.48),  # Starred: + 30 %.
+            ({"code": "P603840", "qty": 2}, "universite_devlet", 18640.96),
+            ({"code": "P600720"}, "egitim_arastirma", 5532.44),  # No star.
+            ({"code": "603840"}, "egitim_arastirma", 1914.43),  # EK-2/B: no C000678.
+            ({"code": "601200", "qty": 2}, "2_3_basamak_ozel", 20145.94),
+            ({"code": "P603840", "day": "2025-06-01"}, "2_3_basamak_ozel", 5515.08),
+            ({"code": "601200", "day": "2025-06-01"}, "2_3_basamak_ozel", 8394.15),
+        ],
+    )
+    @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
+    def test_the_list_amount_is_the_catalog_on_the_line_date(
+        self, line_kwargs, tier, listed, unit_price,
+    ) -> None:
+        from src.bilun.domain.prose_rules.session_pricing import (
+            expected_session_billed_try,
+            line_gazette_list_billed_try,
+        )
+
+        kwargs = dict(line_kwargs)
+        day = _d(kwargs.pop("day", "2026-07-14"))
+        bill = _Bill("C-LIST", "yatis", day, day, tier=tier)
+        bill.proc(kwargs.pop("code"), day, qty=kwargs.pop("qty", 1), specialty=GENCER)
+        ctx = _with_unit_prices(bill.ctx(), unit_price)
+        line, claim = ctx.procedure_lines[0], ctx.claims[0]
+        assert line_gazette_list_billed_try(line, claim=claim) == listed
+        assert expected_session_billed_try(line, point_factor=0.25, claim=claim) == (
+            money_round_half_up(listed * 0.25)
+        )
+        # Without its claim the tier is unknown: no C000678 uplift.
+        assert line_gazette_list_billed_try(line) == (
+            7169.60 * line.quantity if tier != "2_3_basamak_ozel" and line.procedure_code == "P603840"
+            else listed
+        )
+
+    @pytest.mark.parametrize(
+        "code, category", [("999999", "paket"), ("999999", "islem"), ("", "islem"), ("P", "")],
+    )
+    def test_a_code_without_a_list_price_cannot_be_assessed(self, code, category) -> None:
+        # Was its unit price, 1,792.40.
+        from src.bilun.domain.prose_rules.session_pricing import line_gazette_list_billed_try
+
+        line = replace(
+            s8("clean").procs[1], procedure_code=code, procedure_category=category,
+            unit_price_try=Decimal("1792.40"),
+        )
+        assert line_gazette_list_billed_try(line) is None
 
 
 def _blank_categories(ctx: PatientClaimContext) -> PatientClaimContext:

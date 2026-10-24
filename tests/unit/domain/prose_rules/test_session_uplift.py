@@ -109,8 +109,10 @@ class TestSessionUnderbilling:
         )
         assert len(hits) == 1
         assert hits[0]["procedure_code"] == "610070"
-        # Hizmet başı lines: §2.2.2.A(5) 30 % of 1,000 (was the package 25 %).
-        assert hits[0]["recoverable_uplift_try"] == pytest.approx(200.0, rel=0.01)
+        # Hizmet başı lines: §2.2.2.A(5) 30 % (was the package 25 %) of the EK-2/B
+        # list 3,603.98 on the day, 1,081.19, less the 100 billed (#300: was 30 % of
+        # the line's unit price of 1,000).
+        assert hits[0]["recoverable_uplift_try"] == pytest.approx(981.19, rel=0.01)
         assert hits[0]["savings_category"] == "sgk_uplift"
         assert hits[0]["included_in_sgk_total"] is True
         assert hits[0].get("review_kind") is None
@@ -158,7 +160,8 @@ class TestSessionUnderbilling:
                 procedure_line_id="PL1",
                 procedure_code="610070",
                 procedure_date=session_day,
-                billed_amount_try=Decimal("300"),  # §2.2.2.A(5) 30 % (hizmet başı).
+                # §2.2.2.A(5) 30 % (hizmet başı) of the EK-2/B list 3,603.98 (#300).
+                billed_amount_try=Decimal("1081.19"),
                 procedure_specialty_code="cerrahi",
             ),
             _proc(
@@ -181,7 +184,7 @@ class TestSessionUnderbilling:
             _proc(
                 procedure_line_id="PL1",
                 procedure_code="610070",
-                billed_amount_try=Decimal("1000"),
+                billed_amount_try=Decimal("3603.98"),  # Its EK-2/B list on the day (#300).
             ),
             _proc(
                 procedure_line_id="PL2",

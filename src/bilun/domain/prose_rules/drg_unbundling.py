@@ -126,8 +126,12 @@ def _session_point_rows(
         line, strict, lenient = assessment.line, assessment.factor, assessment.lenient
         # The line's own clause: in a mixed session a package secondary is
         # §2.2.2.B(3)(a)/(b), an EK-2/B one (c)/(ç).
-        strict_expected = expected_session_billed_try(line, point_factor=strict.point_factor)
-        lenient_expected = expected_session_billed_try(line, point_factor=lenient.point_factor)
+        strict_expected = expected_session_billed_try(
+            line, point_factor=strict.point_factor, claim=claim,
+        )
+        lenient_expected = expected_session_billed_try(
+            line, point_factor=lenient.point_factor, claim=claim,
+        )
         actual_billed = _line_billed(line)
         if strict_expected is None or lenient_expected is None:
             continue

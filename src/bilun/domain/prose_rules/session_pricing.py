@@ -15,8 +15,10 @@ from .catalog_membership import (
     get_ek2c_entry,
     normalize_procedure_code,
     procedure_annex_membership,
+    procedure_has_star,
 )
 from .claim_utils import group_procedure_lines_by_session
+from .facility_tier import normalize_facility_tier
 from .session_scope import (
     is_session_operation_code,
     line_billed_as_package,
@@ -504,31 +506,63 @@ def compute_session_readings(
 
 
 
-def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float | None:
-    """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math.
+# C000678: "SUT eki EK-2/C Listesinde yanında (*) işareti olan işlemler, listede
+# belirtilen puanlara %30 ilave edilerek faturalandırılır."
+STARRED_PACKAGE_UPLIFT = 1.30
 
-    The bill's unit price when it states one; otherwise the catalog list price
-    on the procedure date: EK-2/C for a line billed as a package, EK-2/B for the
-    rest. Never the billed amount, which is what the factor checks: a secondary
-    correctly billed at 30 % would read as its own 100 %. ``None`` when neither
-    is known, so the line cannot be assessed.
+
+def claim_takes_starred_uplift(claim: ClaimHeader | None) -> bool:
+    """Whether the claim's facility is one of the tiers C000678 names.
+
+    Training and research hospitals and university hospitals with a medical
+    faculty (``is_university_eah``). False without the claim: the tier is unknown.
     """
-    qty = max(int(line.quantity), 1)
-    unit = float(line.unit_price_try)
-    if unit > 0:
-        return _money(unit * qty)
+    if claim is None:
+        return False
+    return normalize_facility_tier(
+        claim.facility_tier, provider_type=claim.provider_type,
+    ).is_university_eah
 
+
+def ek2c_list_amount_try(line: ProcedureClaimLine, *, starred_uplift: bool) -> float:
+    """EK-2/C package price of the line's code on its date times its quantity.
+
+    +30 % for a starred package when ``starred_uplift`` (C000678). 0 when the
+    list has no price for the code that day.
+    """
+    entry = get_ek2c_entry(line.procedure_code, as_of_date=line.procedure_date) or {}
+    price = float(entry.get("price_try") or 0.0) * max(int(line.quantity or 1), 1)
+    if starred_uplift and procedure_has_star(line.procedure_code, as_of_date=line.procedure_date):
+        price *= STARRED_PACKAGE_UPLIFT
+    return price
+
+
+def line_gazette_list_billed_try(
+    line: ProcedureClaimLine,
+    *,
+    claim: ClaimHeader | None = None,
+) -> float | None:
+    """Gazette list-line amount (list unit price × qty) used for §2.2.2 session factor math.
+
+    The list price in force on the line's procedure date: EK-2/C for a line
+    billed as a package (+30 % for a starred package at the tiers C000678 names,
+    read from ``claim``), EK-2/B for the rest. Never the bill's unit price
+    (#300): the hospital sends no price for an operation, only its incision code,
+    and MEDULA returns each line's amount after the session reduction, so a unit
+    price may already hold the 25 % / 30 % it is checked for. Never the billed
+    amount either, which is what the factor checks. ``None`` when the list has
+    no price for the code that day, so the line cannot be assessed.
+    """
     normalized = normalize_procedure_code(line.procedure_code)
     if not normalized:
         return None
 
     if line_billed_as_package(line):
-        entry = get_ek2c_entry(line.procedure_code, as_of_date=line.procedure_date) or {}
-        price = float(entry.get("price_try") or 0)
-        return _money(price * qty) if price > 0 else None
+        amount = ek2c_list_amount_try(line, starred_uplift=claim_takes_starred_uplift(claim))
+        return _money(amount) if amount > 0 else None
 
     price = ek2b_list_unit_price_try(normalized, line.procedure_date)
-    return None if price is None else _money(price * qty)
+    return None if price is None else _money(price * max(int(line.quantity), 1))
 
 
 def ek2b_list_unit_price_try(procedure_code: str, as_of_date: Any) -> float | None:
@@ -563,12 +597,14 @@ def expected_session_billed_try(
     line: ProcedureClaimLine,
     *,
     point_factor: float,
+    claim: ClaimHeader | None = None,
 ) -> float | None:
     """Expected billed TRY at the line's §2.2.2 session point factor (list × factor).
 
-    ``None`` when the line's list price is unknown.
+    The list price is ``line_gazette_list_billed_try``'s, never the bill's unit
+    price. ``None`` when the line's list price is unknown.
     """
-    listed = line_gazette_list_billed_try(line)
+    listed = line_gazette_list_billed_try(line, claim=claim)
     return None if listed is None else _money(listed * point_factor)
 
 
