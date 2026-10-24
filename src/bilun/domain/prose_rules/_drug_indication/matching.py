@@ -155,7 +155,28 @@ def _is_indication_route_rule(rule: dict[str, Any]) -> bool:
     return rule.get("pay") is not False
 
 
+def _icd10_listed_covers(listed: str, code: str) -> bool:
+    """True when ``code`` is ``listed`` or lies under it in the ICD-10 hierarchy.
+
+    A category covers its dotted sub-codes (``M45`` covers ``M45.9``); a dotted code covers every
+    longer code that starts with it, so ``M08.0`` covers the SKRS site leaves ``M08.00``-``M08.09``
+    (#305). A code never covers its parent or a sibling: ``M08.0`` covers neither ``M08`` nor
+    ``M08.1``.
+    """
+    if code == listed:
+        return True
+    if "." in listed:
+        return code.startswith(listed)
+    return code.startswith(listed + ".")
+
+
 def _diagnosis_matches_specific_rule(codes: list[str], rule: dict[str, Any]) -> bool:
+    """True when a coded diagnosis is covered by one of the rule's ICD-10 selectors.
+
+    A listed code (``icd10_codes``) and a single range (``icd10_ranges`` without a hyphen) cover the
+    code itself and every code under it (``_icd10_listed_covers``); a hyphen range compares the
+    three-character categories (``M05-M06`` covers ``M06.01``).
+    """
     icd_codes = [str(c).strip().upper() for c in (rule.get("icd10_codes") or []) if c]
     icd_ranges = [str(r).strip().upper() for r in (rule.get("icd10_ranges") or []) if r]
 
@@ -166,14 +187,14 @@ def _diagnosis_matches_specific_rule(codes: list[str], rule: dict[str, Any]) -> 
         if code in icd_codes:
             return True
         for listed in icd_codes:
-            if code.startswith(listed + ".") or code == listed:
+            if _icd10_listed_covers(listed, code):
                 return True
         for span in icd_ranges:
             if "-" in span:
                 start, end = span.split("-", 1)
                 if _icd10_in_range(code, start, end):
                     return True
-            elif _icd10_in_range(code, span, span):
+            elif _icd10_in_range(code, span, span) or _icd10_listed_covers(span, code):
                 return True
     return False
 
