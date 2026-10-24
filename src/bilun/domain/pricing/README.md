@@ -33,6 +33,8 @@ metadata when those inputs are missing.
 ## Data Sources
 
 - EK-2B/EK-2C history: `data/gazette/curated/ek2b_catalog_history.parquet`, `ek2c_catalog_history.parquet`
+- EK-2Ç dental history (40xxxx codes in the EK-2B index): `ek2c_dental_catalog_history.parquet`, read like
+  EK-2B by each row's valid_from / valid_to, so a repealed dental code has no price after its valid_to (#293)
 - Exact synthetic claim Parquets: `data/synthetic/sut/claims/*.parquet`
 
 ## Example

@@ -66,11 +66,13 @@ def test_curated_history_parquets_have_no_inverted_validity_or_duplicate_valid_f
     from src.bilun.domain.constants import (
         EK2B_CURATED_HISTORY_PATH,
         EK2C_CURATED_HISTORY_PATH,
+        EK2C_DENTAL_CURATED_HISTORY_PATH,
     )
 
     for path, key_col in (
         (EK2B_CURATED_HISTORY_PATH, "code"),
         (EK2C_CURATED_HISTORY_PATH, "package_code"),
+        (EK2C_DENTAL_CURATED_HISTORY_PATH, "code"),
     ):
         df = pl.read_parquet(path)
         inverted = df.filter(

@@ -268,3 +268,168 @@ def test_dental_raw_fallback_still_parses_available_workbook(monkeypatch, tmp_pa
     assert set(result) == {"402010"}
     assert result["402010"]["puan"] == 10.0
     assert result["402010"]["price_try"] == 5.93
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# 4. History: a dental code's row is the one in force on the date (#293)
+# ────────────────────────────────────────────────────────────────────────────
+
+# (code, puan, effective_date, valid_from, valid_to): the shape of the RG-12/12/2024
+# amendment of the list in force since 11/05/2024 (Yürürlük 20/12/2024): 402150 amended,
+# 402251 added, 402270 repealed and absent from the list of 01/01/2026.
+_HISTORY = [
+    ("402150", 815.16, "2023-09-02", "2023-09-02", "2024-05-10"),
+    ("402150", 1222.74, "2024-05-11", "2024-05-11", "2024-12-19"),
+    ("402150", 959.04, "2024-05-11", "2024-12-20", "2025-12-31"),
+    ("402150", 1150.848, "2026-01-01", "2026-01-01", None),
+    ("402251", 73.01, "2024-05-11", "2024-12-20", "2025-12-31"),
+    ("402251", 87.612, "2026-01-01", "2026-01-01", None),
+    ("402270", 199.76, "2023-09-02", "2023-09-02", "2024-05-10"),
+    ("402270", 299.64, "2024-05-11", "2024-05-11", "2024-12-19"),
+]
+# The rows in three orders, so no answer depends on where a row sits in the file.
+_ORDERS = {
+    "built": list(range(len(_HISTORY))),
+    "reversed": list(reversed(range(len(_HISTORY)))),
+    "mixed": [5, 2, 7, 0, 4, 1, 6, 3],
+}
+
+
+@pytest.fixture(params=sorted(_ORDERS))
+def dental_history(request, monkeypatch, tmp_path):
+    """The reader of a curated dental history holding ``_HISTORY`` in one of ``_ORDERS``."""
+    import pandas as pd
+
+    from src.bilun.domain.loaders import gazette
+
+    rows = [_HISTORY[i] for i in _ORDERS[request.param]]
+    frame = pd.DataFrame(rows, columns=["code", "puan", "effective_date", "valid_from", "valid_to"])
+    frame.insert(1, "name", "fixture dental entry " + frame["code"])
+    frame["price_try"] = (frame["puan"] * 0.593).round(2)
+    frame["valid_to"] = frame["valid_to"].astype("string")
+    path = tmp_path / "dental.parquet"
+    frame.to_parquet(path, index=False)
+    monkeypatch.setattr(gazette, "EK2C_DENTAL_CURATED_HISTORY_PATH", path)
+    monkeypatch.setattr(gazette, "_EK2C_DENTAL_XLS_FALLBACK", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_by_asof_cache", {})
+    return gazette._load_curated_ek2c_dental_by_asof
+
+
+@pytest.mark.parametrize(
+    "day, expected",
+    [
+        # Before the whole history each code's first row answers, as for EK-2B and EK-2C.
+        ("2023-01-01", {"402150": 815.16, "402251": 73.01, "402270": 199.76}),
+        ("2024-05-10", {"402150": 815.16, "402270": 199.76}),
+        # The list's own date: the clean rows; the added code is not in force yet.
+        ("2024-05-11", {"402150": 1222.74, "402270": 299.64}),
+        ("2024-06-01", {"402150": 1222.74, "402270": 299.64}),
+        # valid_to is the last day a row applies.
+        ("2024-12-19", {"402150": 1222.74, "402270": 299.64}),
+        # Yürürlük 20/12/2024: the amended and the added rows start, the repealed code ends.
+        ("2024-12-20", {"402150": 959.04, "402251": 73.01}),
+        ("2025-01-15", {"402150": 959.04, "402251": 73.01}),
+        ("2025-12-31", {"402150": 959.04, "402251": 73.01}),
+        ("2026-01-01", {"402150": 1150.848, "402251": 87.612}),
+        ("2026-02-15", {"402150": 1150.848, "402251": 87.612}),
+    ],
+)
+def test_dental_reader_takes_the_row_whose_validity_covers_the_date(dental_history, day, expected):
+    by_code = dental_history(day)
+    assert {code: entry["puan"] for code, entry in by_code.items()} == expected
+    for code, entry in by_code.items():
+        assert entry["price_try"] == round(expected[code] * 0.593, 2)
+        assert entry["annex"] == "EK-2Ç"
+
+
+def test_dental_entry_carries_the_validity_of_its_row(dental_history):
+    entry = dental_history("2025-01-15")["402150"]
+    assert (entry["effective_date"], entry["valid_from"], entry["valid_to"]) == (
+        "2024-05-11", "2024-12-20", "2025-12-31",
+    )
+    assert dental_history("2026-02-15")["402150"]["valid_to"] is None
+
+
+def test_dental_snapshot_without_validity_is_in_force_from_its_list_date(monkeypatch, tmp_path):
+    """The .xls fallback carries only effective_date: each row applies from it, open-ended."""
+    import pandas as pd
+
+    from src.bilun.domain.loaders import gazette
+
+    path = tmp_path / "dental.parquet"
+    pd.DataFrame([
+        {"code": "402010", "name": "fixture dental entry", "puan": 10.0, "price_try": 5.93,
+         "effective_date": "2024-05-11"},
+        {"code": "402010", "name": "fixture dental entry", "puan": 20.0, "price_try": 11.86,
+         "effective_date": "2026-01-01"},
+    ]).to_parquet(path)
+    monkeypatch.setattr(gazette, "EK2C_DENTAL_CURATED_HISTORY_PATH", path)
+    monkeypatch.setattr(gazette, "_EK2C_DENTAL_XLS_FALLBACK", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_raw_cache", None)
+    monkeypatch.setattr(gazette, "_ek2c_dental_by_asof_cache", {})
+    assert gazette._load_curated_ek2c_dental_by_asof("2025-12-31")["402010"]["puan"] == 10.0
+    entry = gazette._load_curated_ek2c_dental_by_asof("2030-01-01")["402010"]
+    assert (entry["puan"], entry["valid_from"], entry["valid_to"]) == (20.0, "2026-01-01", None)
+
+
+# The committed catalog (#293): a fresh build of the raw lists, read on the line's date.
+# 1,688 rows of 8 lists plus the 45 marked twins that start after the clean row of their code.
+_DENTAL_ROWS = 1733
+
+
+def test_committed_dental_history_is_a_fresh_build_of_the_raw_lists() -> None:
+    import pandas as pd
+    import polars as pl
+
+    from scripts.sut import build_curated_catalogs as builder
+    from scripts.sut._common import _load_manifest
+    from scripts.sut.catalogs.price_history import extract_ek2c_dental
+    from src.bilun.domain.constants import EK2C_DENTAL_CURATED_HISTORY_PATH
+
+    root = builder.DEFAULT_PARQUET_ROOT
+    fresh = builder._build_history(root, _load_manifest(root), "EK-2Ç", extract_ek2c_dental, "code")
+    committed = pd.read_parquet(EK2C_DENTAL_CURATED_HISTORY_PATH)
+    assert list(committed.columns) == list(fresh.columns)
+    assert pl.from_pandas(committed).equals(pl.from_pandas(fresh))
+    assert len(committed) == _DENTAL_ROWS
+
+
+@pytest.mark.parametrize(
+    "day, puan",
+    [
+        ("2024-05-10", 815.16),
+        ("2024-06-01", 1222.74),
+        ("2024-12-19", 1222.74),
+        ("2024-12-20", 959.04),
+        ("2025-01-15", 959.04),
+        ("2026-02-15", 1150.848),
+    ],
+)
+def test_402150_is_priced_by_the_list_row_in_force_on_the_date(day, puan) -> None:
+    """RG-12/12/2024 amends 402150 from Yürürlük 20/12/2024; the list's clean row applies before."""
+    from src.bilun.domain.catalog import lookup_procedure_code
+    from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
+
+    result = lookup_procedure_code("402150", visit_date=day)
+    assert result["match_type"] == "exact"
+    assert result["entry"]["annex"] == "EK-2Ç"
+    assert result["entry"]["puan"] == pytest.approx(puan)
+    assert get_ek2b_price_for_date("402150", day, "puan") == pytest.approx(puan)
+
+
+@pytest.mark.parametrize("code", ["402270", "402271", "402272", "402273"])
+def test_root_canal_codes_repealed_from_2024_12_20_have_no_dental_match_after(code) -> None:
+    """Mülga: RG-12/12/2024, Yürürlük 20/12/2024; the list of 01/01/2026 has no row of them."""
+    from src.bilun.domain.catalog import lookup_procedure_code
+    from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
+
+    before = lookup_procedure_code(code, visit_date="2024-12-19")
+    assert before["match_type"] == "exact"
+    assert before["entry"]["annex"] == "EK-2Ç"
+    assert get_ek2b_price_for_date(code, "2024-12-19") == before["entry"]["price_try"]
+    for day in ("2024-12-20", "2025-06-01", "2026-02-15"):
+        assert lookup_procedure_code(code, visit_date=day) == {
+            "match_type": "none", "entry": None, "candidates": [],
+        }
+        assert get_ek2b_price_for_date(code, day) is None

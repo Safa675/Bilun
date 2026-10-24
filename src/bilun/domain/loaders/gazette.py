@@ -39,7 +39,7 @@ _ek2b_raw_cache: pd.DataFrame | None = None
 _ek2b_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
 _ek2c_raw_cache: pd.DataFrame | None = None
 _ek2c_by_asof_cache: dict[str, dict[str, Any]] = {}
-# EK-2Ç dental procedures, filtered by their list's effective_date (no marker dates).
+# EK-2Ç dental procedures, filtered by their valid_from / valid_to like EK-2B and EK-2C.
 _ek2c_dental_raw_cache: pd.DataFrame | None = None
 _ek2c_dental_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
 
@@ -271,7 +271,12 @@ def _read_ek2c_dental_frame() -> pd.DataFrame | None:
 
 
 def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
-    """Load EK-2Ç dental entries from curated history (or .xls fallback), as-of date."""
+    """Load EK-2Ç dental entries from curated history (or .xls fallback), as-of date.
+
+    Each code's row is the one whose valid_from / valid_to covers the date, as for EK-2B
+    and EK-2C: a code SGK repealed (Mülga) or left out of a later list is absent after its
+    valid_to, and a row a Değişik marker amends applies from its Yürürlük date (#293).
+    """
     cached = _ek2c_dental_by_asof_cache.get(asof_date)
     if cached is not None:
         return cached
@@ -283,27 +288,9 @@ def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any
     if df is None or df.empty:
         return {}
 
-    work = df
-    if "effective_date" in work.columns:
-        if "effective_date_parsed" not in work.columns:
-            work = work.copy()
-            work["effective_date_parsed"] = pd.to_datetime(
-                work["effective_date"], errors="coerce"
-            )
-            _ek2c_dental_raw_cache = work
-        cutoff = pd.to_datetime(asof_date)
-        parsed = work[work["effective_date_parsed"].notna()]
-        eligible = parsed[parsed["effective_date_parsed"] <= cutoff]
-        if eligible.empty:
-            eligible = parsed.sort_values(
-                ["code", "effective_date_parsed"]
-            ).drop_duplicates(subset=["code"], keep="first")
-        else:
-            eligible = eligible.sort_values(
-                ["code", "effective_date_parsed"]
-            ).drop_duplicates(subset=["code"], keep="last")
-    else:
-        eligible = work.drop_duplicates(subset=["code"], keep="last")
+    df = _parse_validity(df)
+    _ek2c_dental_raw_cache = df
+    eligible = _history_rows_as_of(df, "code", asof_date)
 
     records = eligible.to_dict(orient="records")
     by_code: dict[str, dict[str, Any]] = {}
@@ -325,6 +312,8 @@ def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any
             "puan": puan,
             "price_try": round(float(price), 2),
             "effective_date": _safe_str(row.get("effective_date")),
+            "valid_from": _safe_str(row.get("valid_from")) or _safe_str(row.get("effective_date")),
+            "valid_to": _safe_str(row.get("valid_to")) or None,
             "annex": "EK-2Ç",
         }
 

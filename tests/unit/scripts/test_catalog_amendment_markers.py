@@ -19,7 +19,7 @@ from scripts.sut._common import (
     amendment_markers,
 )
 from scripts.sut.catalogs.hierarchical_materials import extract_ek3o
-from scripts.sut.catalogs.price_history import extract_ek2b
+from scripts.sut.catalogs.price_history import extract_ek2b, extract_ek2c_dental
 
 pytestmark = pytest.mark.unit
 
@@ -265,3 +265,85 @@ def test_curated_rows_with_a_turkish_formatted_puan_are_priced() -> None:
     assert ek2b["puan"].null_count() == 0 and ek2c["puan"].null_count() == 0
     priced = ek2b.filter(pl.col("valid_from") == "2025-03-15").select("code", "puan", "valid_to").rows()
     assert priced == [("801561", 60.54, "2025-12-31")]
+
+
+# EK-2Ç (dental) keeps its markers like EK-2B (#293): RG-12/12/2024 amended, added and repealed
+# rows of the list in force since 11/05/2024, each from Yürürlük 20/12/2024.
+_DENTAL_AMENDED = "(Değişik: RG- 12/12/2024- 32750/ 15-a md. Yürürlük: 20/12/2024)"
+_DENTAL_ADDED = "(Ek: RG- 12/12/2024- 32750/ 15-b md. Yürürlük: 20/12/2024)"
+_DENTAL_REPEALED = "(Mülga: RG- 12/12/2024- 32750/ 15-ç md. Yürürlük: 20/12/2024)"
+# (list date, valid_from, rows) of the committed rows a marker starts after their list's date:
+# the 45 dated Ek/Değişik cells of the 2024-05-11 list (RG-25/09/2024, RG-12/12/2024 and
+# 403010's RG-08/03/2025) and the 3 of the 2026-01-01 list (RG-17/01/2026).
+_DENTAL_MOVED = [
+    ("2024-05-11", "2024-10-03", 7),
+    ("2024-05-11", "2024-12-20", 37),
+    ("2024-05-11", "2025-03-15", 1),
+    ("2026-01-01", "2026-01-31", 3),
+]
+
+
+def _ek2c_dental_list(*rows: tuple[str | None, str, float | None]) -> pd.DataFrame:
+    """A raw EK-2Ç partition: the title column, the header row, then (code cell, name, puan)."""
+    header = ("İŞLEM KODU", "İŞLEM ADI", "AÇIKLAMALAR", "İŞLEM PUANI")
+    body = [header, *((code, name, None, puan) for code, name, puan in rows)]
+    columns = ["DİŞ TEDAVİLERİ PUAN LİSTESİ (EK-2/Ç)", "Unnamed: 1", "Unnamed: 2", "Unnamed: 3"]
+    return pd.DataFrame(body, columns=columns).astype(object)
+
+
+_DENTAL_2024 = _ek2c_dental_list(
+    ("402150", "Kanal tedavisi, tek kanal", 1222.74),
+    (f"402150 {_DENTAL_AMENDED}", "Kanal tedavisi, tek kanal", 959.04),
+    (f"402251     {_DENTAL_ADDED}", "Gangren veya periapikal lezyon tedavisi, tek kanal", 73.01),
+    (f"402270 {_DENTAL_REPEALED}", "Gangren veya periapikal lezyon tedavisi, tek kanal", 299.64),
+    (_DENTAL_ADDED, "Kanal tedavileri", None),  # a heading row carries a marker but no code
+)
+
+
+def test_ek2c_dental_row_keeps_the_marker_of_its_code_cell() -> None:
+    out = extract_ek2c_dental(_DENTAL_2024)
+    assert out["code"].tolist() == ["402150", "402150", "402251", "402270"]
+    assert out["puan"].tolist() == [1222.74, 959.04, 73.01, 299.64]
+    day = pd.Timestamp("2024-12-20")
+    assert _rows(out, MARKER_FROM, MARKER_ADDED, MARKER_REPEALED, MARKER_UNDATED) == [
+        [None, False, None, False],
+        [day, False, None, False],
+        [day, True, None, False],
+        [None, False, day, False],
+    ]
+
+
+def test_ek2c_dental_history_dates_each_marked_row_by_its_yururluk_date() -> None:
+    lists = (
+        ("2023-09-02", _ek2c_dental_list(
+            ("402150", "Kanal tedavisi, tek kanal", 815.16),
+            ("402270", "Gangren veya periapikal lezyon tedavisi, tek kanal", 199.76),
+        )),
+        ("2024-05-11", _DENTAL_2024),
+        ("2026-01-01", _ek2c_dental_list(
+            ("402150", "Kanal tedavisi, tek kanal", 1150.848),
+            ("402251", "Gangren veya periapikal lezyon tedavisi, tek kanal", 87.612),
+        )),
+    )
+    frames = [extract_ek2c_dental(raw).assign(effective_date=day) for day, raw in lists]
+    history = _add_validity_ranges(pd.concat(frames, ignore_index=True), "code")
+    assert _rows(history, "code", "puan", "effective_date", "valid_from", "valid_to") == [
+        ["402150", 815.16, "2023-09-02", "2023-09-02", "2024-05-10"],
+        ["402150", 1222.74, "2024-05-11", "2024-05-11", "2024-12-19"],
+        ["402150", 959.04, "2024-05-11", "2024-12-20", "2025-12-31"],
+        ["402150", 1150.848, "2026-01-01", "2026-01-01", None],
+        ["402251", 73.01, "2024-05-11", "2024-12-20", "2025-12-31"],
+        ["402251", 87.612, "2026-01-01", "2026-01-01", None],
+        ["402270", 199.76, "2023-09-02", "2023-09-02", "2024-05-10"],
+        ["402270", 299.64, "2024-05-11", "2024-05-11", "2024-12-19"],
+    ]
+
+
+def test_curated_ek2c_dental_rows_carry_the_dates_of_their_markers() -> None:
+    dental = pl.read_parquet(_CURATED / "ek2c_dental_catalog_history.parquet")
+    moved = dental.filter(pl.col("valid_from") != pl.col("effective_date"))
+    assert sorted(moved.group_by("effective_date", "valid_from").len().rows()) == _DENTAL_MOVED
+    repealed = dental.filter(pl.col("code").is_in(["402270", "402271", "402272", "402273"]))
+    assert repealed.group_by("code").agg(pl.col("valid_to").max()).sort("code")["valid_to"].to_list() == [
+        "2024-12-19"
+    ] * 4
