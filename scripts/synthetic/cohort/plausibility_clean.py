@@ -541,6 +541,15 @@ def default_context() -> CleanPlausibilityContext:
 # --- small expression helpers ------------------------------------------------------------------
 
 
+def _count(quantity: pl.Expr) -> pl.Expr:
+    """A Float64 count as text: a whole count without its decimals (20, not 20.0), a decimal as it is (0.5)."""
+    return (
+        pl.when(quantity == quantity.floor())
+        .then(quantity.cast(pl.Int64).cast(pl.String))
+        .otherwise(quantity.cast(pl.String))
+    )
+
+
 def _format(template: str, *args: pl.Expr) -> pl.Expr:
     """`pl.format`, writing `(none)` for a missing value: `pl.format` makes the whole text null."""
     return pl.format(template, *[arg.cast(pl.String).fill_null("(none)") for arg in args])
@@ -1273,8 +1282,9 @@ def _name_key(name: pl.Expr) -> pl.Expr:
 def check_matches_billed_line(bill: _Clean) -> list[Problem]:
     """rx.matches_billed_line: the prescription rows and the billed drug lines pair off one to one."""
     key = ("patient", "episode", "day", "name", "quantity")
-    # a quantity is compared as a float (an integer, a float or a text count are the same count) and
-    # shown as the table has it; a join miss is read from a literal marker of each side
+    # a quantity is compared as a float (an integer, a float or a text count are the same count); the
+    # prescription's is shown as the table has it, the bill's as a count (20, not the Float64 20.0 of a
+    # decimal drug quantity, #302); a join miss is read from a literal marker of each side
     prescribed = bill.table(TABLE_RECETE).select(
         pl.col("HASTA_ID").alias("patient"),
         pl.col("RF_EPISODE").alias("episode"),
@@ -1328,7 +1338,7 @@ def check_matches_billed_line(bill: _Clean) -> list[Problem]:
             "billed drug line {} on {} (quantity {}) has no prescription row in recete_clean",
             pl.col("billed_name"),
             pl.col("day"),
-            pl.col("billed_quantity"),
+            _count(pl.col("quantity")),
         ).alias("message"),
     )
     return _problems("rx.matches_billed_line", pl.concat([unbilled, unprescribed]))

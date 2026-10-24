@@ -12,6 +12,7 @@ from src.bilun.domain.claims.models import Money
 from src.bilun.domain.claims.types import RowDict
 
 CENT = Decimal("0.01")
+_ONE = Decimal("1")
 
 
 def is_missing(value: Any) -> bool:
@@ -92,6 +93,40 @@ def parse_integer(value: Any, field: str, row_id: str, errors: list[str]) -> int
     except (TypeError, ValueError):
         errors.append(f"{row_id} invalid integer {field}: {value!r}")
         return 0
+
+
+def decimal_quantity(value: Any) -> Decimal:
+    """A drug quantity as a Decimal, whole or decimal (Safa675/Bilun#302).
+
+    Takes an int, a float, a Decimal or a text with a decimal point or comma ("0.5" and "0,5" are half a box).
+    A whole count keeps its integer form (``Decimal("4000")``, not ``"4000.0"``), so messages read as before.
+    Raises ``ValueError`` for a bool, a text that is no number or a value that is not finite.
+    """
+    if isinstance(value, bool):
+        raise ValueError(value)
+    try:
+        if isinstance(value, str):
+            quantity = Decimal(value.strip().replace(",", "."))
+        elif isinstance(value, float):
+            quantity = Decimal(repr(value))
+        else:
+            quantity = Decimal(value)
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ValueError(value) from exc
+    if not quantity.is_finite():
+        raise ValueError(value)
+    return quantity.quantize(_ONE) if quantity == quantity.to_integral_value() else quantity
+
+
+def parse_decimal_quantity(value: Any, field: str, row_id: str, errors: list[str]) -> Decimal:
+    if is_missing(value):
+        errors.append(f"{row_id} missing {field}")
+        return Decimal("0")
+    try:
+        return decimal_quantity(value)
+    except ValueError:
+        errors.append(f"{row_id} invalid decimal {field}: {value!r}")
+        return Decimal("0")
 
 
 def parse_money(row: RowDict, field: str, row_id: str, errors: list[str]) -> Money:

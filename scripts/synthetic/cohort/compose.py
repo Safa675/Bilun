@@ -269,7 +269,8 @@ def compose_claim(
         barcode = drug_row["barcode"]
         drug_date = date.fromisoformat(drug_row["date"])
         cat = catalogs.drug_row(barcode, drug_date)
-        qty = int(drug_row["qty"])
+        # a pathway bills whole units; the line holds a Quantity, a decimal count (#302)
+        qty = Decimal(int(drug_row["qty"]))
         flags = dict(drug_row.get("flags") or {})
         lid = drug_claim_line_id(ctx.claim_id, idx)
         drugs.append(

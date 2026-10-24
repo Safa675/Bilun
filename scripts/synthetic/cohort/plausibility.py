@@ -681,6 +681,13 @@ def _cents(amount: pl.Expr) -> pl.Expr:
     return (amount.cast(pl.Float64, strict=False) * 100).round(0).cast(pl.Int64, strict=False)
 
 
+def _count(quantity: pl.Expr) -> pl.Expr:
+    """A count as text: a whole count without its decimals (3, not 3.0), a decimal drug quantity as it is (0.5)."""
+    return pl.when(quantity == quantity.floor()).then(quantity.cast(pl.Int64).cast(pl.String)).otherwise(
+        quantity.cast(pl.String)
+    )
+
+
 def _tl(cents: pl.Expr) -> pl.Expr:
     """Whole cents as text with two decimals (null stays null): 539189 -> 5391.89."""
     sign = pl.when(cents < 0).then(pl.lit("-")).otherwise(pl.lit(""))
@@ -964,7 +971,8 @@ class _Bill:
                     pl.lit(line_type).alias("line_type"),
                     pl.lit(table.removesuffix(".parquet")).alias("table"),
                     pl.col(key).alias("line_id"),
-                    "quantity",
+                    # a drug quantity is a decimal count (Float64 since #302); procedures and materials count whole
+                    pl.col("quantity").cast(pl.Float64),
                     "unit_price_try",
                     "billed_amount_try",
                     "expected_payable_try",
@@ -2031,7 +2039,8 @@ def check_line_arithmetic(bill: _Bill) -> list[Problem]:
     the session line of an EK-2B procedure beside the package; in full it stays on the ladder (S50's fault).
     """
     unit, billed = _cents(pl.col("unit_price_try")), _cents(pl.col("billed_amount_try"))
-    full = unit * pl.col("quantity")
+    # whole cents: exact for a whole count, to the cent for a decimal drug quantity (half a box)
+    full = (unit * pl.col("quantity")).round(0).cast(pl.Int64)
     # read from the procedure table alone (the money checks open no catalog): a claim with a `paket` line is a package
     # claim, as the composer files an EK-2C package
     procedures = bill.table(TABLE_PROCEDURES)
@@ -2061,7 +2070,7 @@ def check_line_arithmetic(bill: _Bill) -> list[Problem]:
             "billed {} is not the unit price {} x quantity {} x 1, 0.5 or 0.25 ({}, {} or {})",
             _tl(billed),
             _tl(unit),
-            pl.col("quantity"),
+            _count(pl.col("quantity")),
             _tl((full * 4 + 2) // 4),
             _tl((full * 2 + 2) // 4),
             _tl((full + 2) // 4),

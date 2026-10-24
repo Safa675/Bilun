@@ -31,7 +31,9 @@ Required Parquet tables (see `schema.REQUIRED_CLAIM_TABLES`):
 - `claim_diagnoses.parquet`
 - `procedure_claim_lines.parquet`
 - `material_claim_lines.parquet`
-- `drug_claim_lines.parquet`
+- `drug_claim_lines.parquet` (its `quantity` is a whole or decimal count: an integer, a float or a text such as
+  "0,5" or "1.5" loads as a `Decimal`, since MEDULA keys the used part of a box, Safa675/Bilun#302; procedure and
+  material quantities stay integers)
 - `expected_rule_outputs.parquet`
 
 Optional tables (see `schema.OPTIONAL_CLAIM_TABLES`):

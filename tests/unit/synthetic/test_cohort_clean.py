@@ -444,7 +444,7 @@ def test_recete_clean_content_rules_for_all_25_billed_drug_lines(
         assert rec["ilac_adi_ham"] == exp_titck
 
         exp_unit = unit_tr_map[entry.unit]
-        assert rec["dozaj_ham"] == f"{dl['quantity']} {exp_unit}"
+        assert rec["dozaj_ham"] == f"{dl['quantity']:g} {exp_unit}"  # the bill's Float64 count, whole (#302)
         for raw_eng in ("bottle", "ampoule", "bag"):
             assert raw_eng not in rec["dozaj_ham"].lower()
         assert rec["verilis_yolu"] is not None

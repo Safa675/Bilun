@@ -737,7 +737,7 @@ class ClaimDrugLine(BaseModel):
     drug_code: str
     barkod: str
     equivalence_group: str
-    quantity: int
+    quantity: float  # a decimal count: MEDULA keys 0.5 kutu (#302)
     unit_price_try: float
     billed_amount_try: float
     expected_payable_try: float

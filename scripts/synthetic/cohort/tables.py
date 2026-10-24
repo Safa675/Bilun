@@ -79,7 +79,7 @@ def _dtype_for_field(field_name: str, type_str: str) -> pl.DataType:
         return pl.String()
     if type_str in {"int", "int | None"}:
         return pl.Int64()
-    if type_str in {"Money", "Money | None", "float", "float | None"}:
+    if type_str in {"Money", "Money | None", "Quantity", "float", "float | None"}:
         return pl.Float64()
     if type_str in {"bool", "bool | None"}:
         return pl.Boolean()
@@ -135,6 +135,8 @@ def _serialize_cell(value: Any, *, field_type: str, dtype: pl.DataType) -> Any:
         return value.date().isoformat()
     if isinstance(value, date):
         return value.isoformat()
+    if field_type == "Quantity":
+        return float(value)  # a drug quantity is a count, not money: never rounded to the cent
     if field_type in {"Money", "Money | None"} or isinstance(value, Decimal):
         return float(money(value))
     if isinstance(dtype, pl.List):

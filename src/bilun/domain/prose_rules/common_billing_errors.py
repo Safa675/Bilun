@@ -38,6 +38,7 @@ shape: ``type``, ``claim_id``, ``rule_id``, ``detail`` (Turkish),
 from __future__ import annotations
 
 from collections import defaultdict
+from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
@@ -101,8 +102,8 @@ _UNREPORTED_LAB_STATUSES: frozenset[str] = frozenset(
 
 # Error #11 — Drug quantity sanity bounds. Zero/negative is never a valid
 # dispense; >999 adet on a single drug line is almost certainly a unit
-# (kutu/şase) vs adet confusion.
-_DRUG_QUANTITY_MIN = 1
+# (kutu/şase) vs adet confusion. A positive fraction is valid: MEDULA keys the
+# used part of a box as a decimal (0.5 kutu, Safa675/Bilun#302).
 _DRUG_QUANTITY_MAX = 999
 
 # Error #16 — Valid generic material_type codes (lower-cased sentinel values
@@ -711,7 +712,8 @@ def detect_drug_quantity_error(
     Flags each drug line whose ``quantity`` is zero/negative (no real dispense)
     or exceeds a sane maximum (``>999`` adet), which almost always signals a
     unit confusion (kutu/şase vs adet). Both are data-integrity Medula
-    rejections.
+    rejections. A decimal quantity above zero (0.5 or 1.5 kutu) is valid
+    (#302); the row's ``quantity`` is a JSON number (an int for a whole count).
 
     Args:
         claims: ClaimHeaders (used only to honour the ``claim_ids_with_procs``
@@ -728,7 +730,7 @@ def detect_drug_quantity_error(
         quantity = getattr(line, "quantity", None)
         if quantity is None:
             continue
-        if _DRUG_QUANTITY_MIN <= quantity <= _DRUG_QUANTITY_MAX:
+        if 0 < quantity <= _DRUG_QUANTITY_MAX:
             continue
         if quantity <= 0:
             reason = "sıfır/negatif adet"
@@ -753,10 +755,17 @@ def detect_drug_quantity_error(
                 "drug_claim_line_id": line.drug_claim_line_id,
                 "drug_code": line.drug_code,
                 "drug_name": line.drug_name,
-                "quantity": quantity,
+                "quantity": _json_number(quantity),
             }
         )
     return violations
+
+
+def _json_number(quantity: Any) -> Any:
+    """An int for a whole count, a float for a fraction: the row stays plain JSON (the cache dumps it)."""
+    if isinstance(quantity, bool) or not isinstance(quantity, (int, float, Decimal)):
+        return quantity
+    return int(quantity) if quantity == int(quantity) else float(quantity)
 
 
 def detect_material_preauth_missing(

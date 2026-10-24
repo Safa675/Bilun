@@ -1194,7 +1194,7 @@
   "tables_digest": {
     "claim_diagnoses.parquet": "c9f6546a5e0a2cba456641f0043163db18e8727f7aeecd0cc60e839d6ccd9b0f",
     "claim_headers.parquet": "7bf660ef35d6380455dac712b77cc3aaf034ab561c71978595272a806b41a22d",
-    "drug_claim_lines.parquet": "5fde8f4bc6d100e1119ec2c290130a8da3e51e3ce28e887d8acfea3a6aa78329",
+    "drug_claim_lines.parquet": "8df3678208381df71624336d5c5b2b49dd52bc97a7267b269afdd0b884870efe",
     "expected_rule_outputs.parquet": "94922e4ef9c2e4368483e2ca2c295f9c7796460666af4ba875b67783ff6df79a",
     "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
