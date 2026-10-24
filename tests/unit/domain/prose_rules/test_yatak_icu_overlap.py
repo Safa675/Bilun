@@ -1227,3 +1227,181 @@ def test_the_reconciliation_and_the_helper_read_the_same_icu_codes() -> None:
             assert collect_icu_last_days([claim], [line]) == {_ICU_DISCHARGE}, spelled
     for code in ("510010", "510070", "510081", "510120", "530000", "552004", "552005", "5520020"):
         assert collect_icu_last_days([claim], [_make_proc_line(claim_id="C1", procedure_code=code)]) == set(), code
+
+
+# --- An ICU day package is no surgical package (WP22) --------------------------------------------------------------
+# §2.2.2.B-1.(3) (C000701-C000706) sets a package window by the package's işlem grubu (A 15, B 10, C 8, D 5, E 3 days
+# from the procedure date). The EK-2/C ICU packages P552001-3 and P552006-8 have none (the group column is empty): they
+# are billed for each ICU day between the first and the exit day (§2.4.4.H.(8)), so they open no window in the bed-day
+# logic. Their days are the ICU stay of the claim's own lines (above); the days around the stay are ward days. Read as a
+# surgical package (a one-day window of each line, from the admission) they took the ward days before the stay and
+# stretched an operation's window to the last ICU day; S11's row said "surgery 2026-06-03, window through 2026-06-05".
+
+_ICU_PACKAGES = ("P552001", "P552002", "P552003", "P552006", "P552007", "P552008")
+
+
+def _pkg(code: str, day: date, *, claim_id: str = "ICU", category: str = "paket"):
+    return _icu(code, day, category=category, claim_id=claim_id)
+
+
+def _s11_shape(package: str = "P552002", *, package_first: bool = False):
+    """S11's shape: 510090 on the first ICU day (10 July), the package on the three days between, 510090 on the exit
+    day (14 July), and the claim runs to the transfer day (15 July)."""
+    day_rates = [_icu("510090", date(2026, 7, 10)), _icu("510090", date(2026, 7, 14))]
+    packages = [_pkg(package, date(2026, 7, d)) for d in (11, 12, 13)]
+    return _icu_claim_bill(*(packages + day_rates if package_first else day_rates + packages), discharge=date(2026, 7, 15))
+
+
+@pytest.mark.parametrize("package", _ICU_PACKAGES)
+@pytest.mark.parametrize("spelling", ["as listed", "lower case", "padded", "unprefixed", "prefixed, category islem"])
+def test_an_icu_package_opens_no_bed_package_window(package: str, spelling: str) -> None:
+    """Any spelling that makes the line a package line (the ``paket`` category or a ``P`` code) opens no window."""
+    from src.bilun.domain.prose_rules.yatak_puani import claim_bed_package_window
+
+    code = {
+        "as listed": package, "lower case": package.lower(), "padded": f" {package} ", "unprefixed": package[1:],
+        "prefixed, category islem": package,
+    }[spelling]
+    category = "islem" if spelling == "prefixed, category islem" else "paket"
+    claims, procs = _icu_claim_bill(
+        _icu("510090", date(2026, 7, 10)), _pkg(code, date(2026, 7, 11), category=category),
+        _icu("510090", date(2026, 7, 12)),
+    )
+
+    assert claim_bed_package_window(claims[0], procs) is None
+
+
+def test_the_shared_package_window_still_counts_an_icu_package() -> None:
+    """Only the bed-day logic leaves the ICU packages out: the unbundling gate reads the shared window, and on an ICU claim
+    the companion and the newborn bed motors stop before any window (their own ICU gates)."""
+    from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
+
+    claims, procs = _s11_shape()
+
+    window = claim_package_window(claims[0], procs)
+    assert (window.start, window.end, window.mandated) == (date(2026, 7, 11), date(2026, 7, 13), False)
+
+
+@pytest.mark.parametrize("package_first", [False, True])
+@pytest.mark.parametrize("package", _ICU_PACKAGES)
+def test_s11s_shape_has_no_surgery_window_and_its_icu_days_explain_the_bed(package: str, package_first: bool) -> None:
+    claims, procs = _s11_shape(package, package_first=package_first)
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", opps)
+    assert (row["gross_bed_days"], row["bundled_days"], row["surgery_day_bundled"], row["bed_days"]) == (6, 0, False, 1)
+    assert "surgery" not in row["detail"] and "package window" not in row["detail"]
+    assert (
+        "5 day(s) (2026-07-10, 2026-07-11, 2026-07-12, 2026-07-13, 2026-07-14) lie inside the ICU stay" in row["detail"]
+    )
+    rec = _yatak_opp("ICU", reconciled)
+    assert (rec["bed_days"], rec["expected_yatak_try"], rec["recoverable_uplift_try"]) == (0, 0.0, 0.0)
+    assert (rec["icu_overlap_days"], rec["icu_overlap_dates"]) == (1, ["2026-07-15"])  # the transfer day
+
+
+@pytest.mark.parametrize("package_first", [False, True])
+@pytest.mark.parametrize(("ward_billed", "recoverable"), [(False, 2 * FIXTURE_BED_DAILY_TRY), (True, 0.0)])
+def test_ward_days_before_an_icu_stay_billed_with_packages_are_expected(
+    package_first: bool, ward_billed: bool, recoverable: float
+) -> None:
+    """Ward 10-11 July, ICU 12 (510090), 13-14 (package), 15 (510090), the claim runs to 16 July: 10 and 11 July are ward
+    days (the package took them as its window before); 16 July is the claim's last day."""
+    ward = [
+        _make_proc_line(
+            claim_id="ICU", procedure_line_id=f"W{d}", procedure_code="510010", procedure_name="Standart yatak",
+            procedure_date=date(2026, 7, d), billed_amount_try=f"{FIXTURE_BED_DAILY_TRY:.2f}",
+        )
+        for d in (10, 11)
+    ] if ward_billed else []
+    packages = [_pkg("P552002", date(2026, 7, 13)), _pkg("P552002", date(2026, 7, 14))]
+    day_rates = [_icu("510090", date(2026, 7, 12)), _icu("510090", date(2026, 7, 15))]
+    lines = packages + day_rates + ward if package_first else ward + day_rates + packages
+    claims, procs = _icu_claim_bill(*lines, discharge=date(2026, 7, 16))
+
+    opps, reconciled = _reconciled(claims, procs)
+
+    row = _yatak_opp("ICU", opps)
+    assert (row["gross_bed_days"], row["bundled_days"], row["bed_days"]) == (7, 0, 3)  # 10, 11 and 16 July
+    rec = _yatak_opp("ICU", reconciled)
+    assert rec["bed_days"] == 2  # 10 and 11 July
+    assert rec["expected_yatak_try"] == pytest.approx(2 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert rec["recoverable_uplift_try"] == pytest.approx(recoverable, abs=0.01)
+
+
+@pytest.mark.parametrize("icu_first", [False, True])
+def test_icu_packages_do_not_stretch_an_operations_window(icu_first: bool) -> None:
+    """Group C package on 10 July (window 10-17 July), ward 18-19 July, ICU 20 (510090), 21-22 (package), 23 (510090),
+    the claim runs to 24 July: the window is the operation's, its start is the operation's date whatever the order of
+    the lines, and 18 and 19 July are ward days (the ICU packages stretched the window over them before)."""
+    from src.bilun.domain.prose_rules.yatak_puani import claim_bed_package_window
+
+    claim = _make_claim_header(claim_id="C1", discharge=date(2026, 7, 24), department="genel_cerrahi")
+    operation = [_pkg("610130", date(2026, 7, 10), claim_id="C1")]
+    icu = [
+        _icu("510090", date(2026, 7, 20), claim_id="C1"),
+        _pkg("P552002", date(2026, 7, 21), claim_id="C1"),
+        _pkg("P552002", date(2026, 7, 22), claim_id="C1"),
+        _icu("510090", date(2026, 7, 23), claim_id="C1"),
+    ]
+    procs = icu + operation if icu_first else operation + icu
+
+    window = claim_bed_package_window(claim, procs)
+    opps, reconciled = _reconciled([claim], procs, ids=("C1",))
+
+    assert (window.start, window.end, window.mandated) == (date(2026, 7, 10), date(2026, 7, 17), False)
+    row = _yatak_opp("C1", opps)
+    assert (row["gross_bed_days"], row["bundled_days"], row["bed_days"]) == (15, 8, 3)  # 18, 19 and 24 July
+    assert "surgery 2026-07-10, window through 2026-07-17" in row["detail"]
+    assert _yatak_opp("C1", reconciled)["bed_days"] == 2  # 24 July is the claim's last day
+
+
+@pytest.mark.parametrize("icu_first", [False, True])
+def test_a_mandated_operation_beside_icu_packages_keeps_its_mandated_window(icu_first: bool) -> None:
+    """A laparoscopic appendectomy billed hizmet başı must be the group C package P610131 (§2.2.2(1)): its window
+    (10-17 July) is mandated. The ICU packages billed after it neither make the claim a billed-package claim nor move
+    the window (before: start 19 July, end 20 July, not mandated)."""
+    from src.bilun.domain.prose_rules.yatak_puani import claim_bed_package_window
+
+    claim = _make_claim_header(claim_id="C1", discharge=date(2026, 7, 24), department="genel_cerrahi")
+    operation = [
+        _make_proc_line(
+            claim_id="C1", procedure_line_id="OP", procedure_code="610131", procedure_name="Appendektomi, laparoskopik",
+            procedure_date=date(2026, 7, 10), billed_amount_try="3000.00",
+        )
+    ]
+    icu = [_pkg("P552002", date(2026, 7, 19), claim_id="C1"), _pkg("P552002", date(2026, 7, 20), claim_id="C1")]
+    procs = icu + operation if icu_first else operation + icu
+
+    window = claim_bed_package_window(claim, procs)
+
+    assert (window.start, window.end, window.mandated) == (date(2026, 7, 10), date(2026, 7, 17), True)
+
+
+def test_the_reconciliation_reads_the_bed_window_of_the_detector() -> None:
+    """A readmission: ICU claim A ends on 3 July; claim B starts that day on the ward (3-5 July), returns to the ICU on
+    6 July (510090), 7-8 July (package), 9 July (510090) and runs to 10 July. B expects 3, 4, 5 and 10 July; 3 July is
+    A's ICU exit day and 10 July B's own last day, so 4 and 5 July are left. Read through a window that the ICU packages
+    opened (through 8 July), the reconciliation would keep 3 July, which A's 510090 pays."""
+    a = _make_claim_header(
+        claim_id="A", admission=date(2026, 7, 1), discharge=date(2026, 7, 3), department="Yogun Bakim"
+    )
+    b = _make_claim_header(
+        claim_id="B", admission=date(2026, 7, 3), discharge=date(2026, 7, 10), department="Yogun Bakim"
+    )
+    procs = [
+        _icu("510090", date(2026, 7, 1), claim_id="A"),
+        _icu("510090", date(2026, 7, 3), claim_id="A"),
+        _icu("510090", date(2026, 7, 6), claim_id="B"),
+        _pkg("P552002", date(2026, 7, 7), claim_id="B"),
+        _pkg("P552002", date(2026, 7, 8), claim_id="B"),
+        _icu("510090", date(2026, 7, 9), claim_id="B"),
+    ]
+
+    opps, reconciled = _reconciled([a, b], procs, ids=("A", "B"))
+
+    assert _yatak_opp("B", opps)["bed_days"] == 4  # 3, 4, 5 and 10 July
+    rec = _yatak_opp("B", reconciled)
+    assert rec["bed_days"] == 2
+    assert (rec["icu_overlap_days"], rec["icu_overlap_dates"]) == (2, ["2026-07-03", "2026-07-10"])
+    assert rec["recoverable_uplift_try"] == pytest.approx(2 * FIXTURE_BED_DAILY_TRY, abs=0.01)

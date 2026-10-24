@@ -342,21 +342,26 @@ _ICU_CASES = {
     "10 dates, 510090 on the first date and on d3 (two lines)": (_ICU_UNIT, 0, 9, _icu_day_rate(0, 3), 5, 1111.80, 0.0),
     "10 dates, an unprefixed 552002 qty 2 from the first date (a package's quantity is days)": (
         _ICU_UNIT, 0, 9, [("552002", 0, "8119.78", 2, "islem")], 7, 1556.52, None),
-    # ward days around the ICU stay on the same claim
+    # ward days around the ICU stay on the same claim; an ICU package opens no package window (no işlem grubu,
+    # §2.2.2.B-1.(3)), so the ward days before the stay are expected whether the package is spelled with a P or not
+    # (WP22; before, the P-prefixed package's one-day window from the admission took d0-d1: 0 days, 0.00)
     "7 dates, ward d0-d1, ICU d2-d5 (510090, two packages, 510090), ward d6": (
         _ADULT, 0, 6,
         [*_icu_day_rate(2), ("P552002", 3, _PKG, 1, "paket"), ("P552002", 4, _PKG, 1, "paket"), *_icu_day_rate(5)],
-        0, 0.0, 4119.78),
+        2, 444.72, 4119.78),
     "7 dates, the same ICU lines and 510010 billed on the ward days": (
         _ADULT, 0, 6,
         [*_icu_day_rate(2), ("P552002", 3, _PKG, 1, "paket"), ("P552002", 4, _PKG, 1, "paket"), *_icu_day_rate(5),
          ("510010", 0, "444.72", 2, "islem"), ("510010", 6, "222.36", 1, "islem")],
-        0, 0.0, 4119.78),
+        2, 0.0, 4119.78),
     "7 dates, 510090 on d2 and d5 only, ward around": (_ADULT, 0, 6, _icu_day_rate(2, 5), 2, 444.72, 0.0),
     "7 dates, 510090 qty 4 from d2, ward around": (_ADULT, 0, 6, [("510090", 2, "2970.40", 4, "islem")], 2, 444.72, 0.0),
     "7 dates, 510090 qty 7": (_ADULT, 0, 6, [("510090", 0, "5198.20", 7, "islem")], 0, 0.0, 0.0),
+    # (WP22; before: 5 days, 1111.80, the window took d0-d6; the same segment with an unprefixed 552001 gave 10)
     "14 dates, a 3-day ICU segment in the middle": (
-        _ADULT, 0, 13, [*_icu_day_rate(5), ("P552001", 6, _PKG, 1, "paket"), *_icu_day_rate(7)], 5, 1111.80, 0.0),
+        _ADULT, 0, 13, [*_icu_day_rate(5), ("P552001", 6, _PKG, 1, "paket"), *_icu_day_rate(7)], 10, 2223.60, 0.0),
+    "14 dates, the same segment with an unprefixed 552001": (
+        _ADULT, 0, 13, [*_icu_day_rate(5), ("552001", 6, _PKG, 1, "islem"), *_icu_day_rate(7)], 10, 2223.60, None),
     # lines that say nothing about the stay
     "3 dates, 510090 reversed on each date": (
         _ICU_UNIT, 0, 2, [("510090", d, "-742.60", 1, "islem") for d in (0, 1, 2)], 2, 444.72, None),

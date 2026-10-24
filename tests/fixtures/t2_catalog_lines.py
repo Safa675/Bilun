@@ -7,7 +7,8 @@ update that changes the lists cannot break a test that uses this module, and eve
 the list membership it promises.
 
 - `ek2g_only_code()`: a code on EK-2G (ilave ücret prohibited) and not on EK-2C-1.
-- `ek2c1_only_code()`: `(code, mandated copay %)` of a code on EK-2C-1 and not on EK-2G.
+- `ek2c1_only_code()`: `(code, mandated copay %)` of a code on EK-2C-1 that the copay-rate check reads
+  (not an ICU day package) and not on EK-2G.
 - `unlisted_code()`: a made-up code that is on neither list.
 - `procedure_line(code, ...)`: one dated, billable `ProcedureClaimLine` for that code.
 """
@@ -45,9 +46,13 @@ def ek2g_only_code() -> str:
 
 
 def ek2c1_only_code() -> tuple[str, Decimal]:
-    """The first sorted EK-2C-1 code that is not an EK-2G code, with its mandated copay %."""
+    """The first sorted EK-2C-1 code that the copay-rate check reads and that is not an EK-2G code, with its
+    mandated copay %. The ICU day packages are on the list too, but their rate is the Sınıf-3 uplift of the ICU motor
+    and the check does not read it (`catalog_join.get_ek2c1_mandated_copay_rate_pct`)."""
     code = next(
-        code for code in sorted(get_ek2c1_copay_rates()) if not is_ek2g_surcharge_prohibited(code)
+        code
+        for code in sorted(get_ek2c1_copay_rates())
+        if catalog_copay_rate_applicable(code) and not is_ek2g_surcharge_prohibited(code)
     )
     mandated = get_ek2c1_mandated_copay_rate_pct(code)
     assert mandated is not None

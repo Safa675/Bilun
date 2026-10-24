@@ -146,11 +146,8 @@ def _catalog_totals(lines: Iterable[ProcedureClaimLine]) -> dict[str, int]:
 
 
 # The ICU day packages (EK-2/C P552001-3 and P552006-8). The EK-2C-1 list holds them at 100, but there
-# the 100 is the +100 % uplift of a 3rd-level facility (SUT 2.2.(20), `icu_puani.py::_resolve_ilave_oran`),
-# not a patient copay. The cohort's composer bills every line at payable == billed with the flag off,
-# so the copay-rate check reads each ICU day as a flag and a rate mismatch. That is how the check
-# reads a line of that list, not a planned inconsistency of the cohort: the assertion below leaves
-# the ICU days out and counts them on their own.
+# the 100 is the +100 % uplift of a 3rd-level facility (SUT 2.2.(20), C000549; `icu_puani.py::_resolve_ilave_oran`),
+# not a patient copay, and the copay-rate check does not read it (`catalog_join.get_ek2c1_mandated_copay_rate_pct`).
 _ICU_PACKAGE_CODES = frozenset({"P552001", "P552002", "P552003", "P552006", "P552007", "P552008"})
 
 
@@ -158,29 +155,56 @@ def test_synthetic_ek2c1_violations_are_demo_scoped() -> None:
     """The cohort's EK-2C-1 totals equal the catalog's, and the only planned ones are none.
 
     The planned inconsistencies of the cohort are its injected faults; none of the registry's
-    fault rules is a copay-rate rule, so the cohort carries no flag or rate mismatch, apart from the
-    ICU days (see `_ICU_PACKAGE_CODES`), which are counted separately.
+    fault rules is a copay-rate rule, so the cohort carries no flag or rate mismatch. The ICU days
+    (`_ICU_PACKAGE_CODES`, billed at payable == billed with the flag off) are on the EK-2C-1 list,
+    and they give none either: their 100 is no copay rate.
     """
     dataset = load_sut_claim_dataset()
     assert all("copay" not in fault["engine_rule"] for fault in cohort.load_registry()["faults"])
 
-    without_icu = {
-        patient_id: [line for line in lines if line.procedure_code not in _ICU_PACKAGE_CODES]
-        for patient_id, lines in dataset.procedure_lines_by_patient.items()
-    }
-    totals = _exposure_totals(without_icu)
+    totals = _exposure_totals(dataset.procedure_lines_by_patient)
 
-    assert totals == _catalog_totals(line for lines in without_icu.values() for line in lines)
+    assert totals == _catalog_totals(dataset.procedure_lines.values())
     assert totals["flag_mismatches"] == totals["rate_mismatches"] == 0
 
-    # The ICU days alone: each is listed, and each reads as one flag and one rate mismatch.
-    icu_days = sum(
-        line.procedure_code in _ICU_PACKAGE_CODES and _evaluable(line)
-        for line in dataset.procedure_lines.values()
+    # The ICU days alone: they are on the list, and none is applicable or a mismatch.
+    icu_days = {
+        patient_id: [line for line in lines if line.procedure_code in _ICU_PACKAGE_CODES and _evaluable(line)]
+        for patient_id, lines in dataset.procedure_lines_by_patient.items()
+    }
+    assert sum(map(len, icu_days.values())) > 0
+    assert {line.procedure_code for lines in icu_days.values() for line in lines} <= set(get_ek2c1_copay_rates())
+    assert _exposure_totals(icu_days) == {"applicable": 0, "flag_mismatches": 0, "rate_mismatches": 0}
+
+
+def test_no_cohort_patient_has_a_capped_copay_rate_alert() -> None:
+    """The alert rows of the app's cache: patient 10's ICU days (S11) gave "rate_capped" with the action "Apply capped
+    copay rate" (3 listed lines, 6 violations); no line of the cohort is a copay-rate finding now."""
+    from src.bilun.cache.sut_context import build_sut_patient_alerts_cache
+    from src.bilun.domain.optimization import (
+        analyze_copay_rate_exposure,
+        analyze_surcharge_exposure,
+        evaluate_copay_exemption,
     )
-    all_totals = _exposure_totals(dataset.procedure_lines_by_patient)
-    assert all_totals == _catalog_totals(dataset.procedure_lines.values())
-    assert all_totals["flag_mismatches"] == all_totals["rate_mismatches"] == icu_days > 0
+
+    dataset = load_sut_claim_dataset()
+    patient_ids = sorted(dataset.procedure_lines_by_patient)
+    payload = build_sut_patient_alerts_cache(
+        patient_ids,
+        {patient_id: [] for patient_id in patient_ids},
+        evaluate_copay_exemption_fn=evaluate_copay_exemption,
+        analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
+        analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
+        procedure_lines_by_patient=dataset.procedure_lines_by_patient,
+    )
+
+    rows = {row["patient_id"]: row for row in payload["patients"]}
+    icu_patient = rows["SENTETIK-HASTA-0010"]["copay_rate_exposure"]
+    assert (icu_patient["outcome_kind"], icu_patient["n_applicable"], icu_patient["n_violations"]) == ("none", 0, 0)
+    assert (icu_patient["action"], icu_patient["top_procedures"]) == (None, [])
+    assert {row["copay_primary_outcome"] for row in rows.values()} <= {"none", "exempt", "partial_exempt"}
+    summary = payload["summary"]
+    assert (summary["n_patients_with_copay_rate_flags"], summary["total_copay_rate_flags"]) == (0, 0)
 
 
 # (inside a package, claim flag on, share of the billed amount that SGK pays) of a control line.

@@ -41,7 +41,9 @@ and it skips every day the detector already took out (never twice).
 **Package-bundling (El Kitabı Tablo 23):** the surgery-day bed fee is
 already excluded by ``yatak_puani`` for EK-2C package claims. The reconcile
 never double-subtracts: if the ICU last day coincides with the package
-surgery day, it is already excluded and no additional day is dropped.
+surgery day, it is already excluded and no additional day is dropped. Both
+read the same window, ``yatak_puani.claim_bed_package_window``, which an ICU
+day package does not open (no işlem grubu; its days are the ICU stay).
 
 Scope note: the mirror transition ACROSS claims (service→ICU: a service claim
 that ends on the ICU claim's *first* day) is intentionally NOT in scope here —
@@ -60,7 +62,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
-from src.bilun.domain.prose_rules.yatak_puani import ICU_BED_CODES, bed_days_not_expected, claim_package_window
+from src.bilun.domain.prose_rules.yatak_puani import ICU_BED_CODES, bed_days_not_expected, claim_bed_package_window
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -286,9 +288,10 @@ def reconcile_yatak_bed_days(
 
         # Days already excluded by package-window bundling (yatak_puani
         # §2.2.2.B-1(1), (3)-(4)) — never double-subtract them. The same
-        # window as yatak_puani: a billed package, or a mandated one.
+        # window as yatak_puani: a billed package, or a mandated one; an ICU
+        # day package opens none (its days are the ICU stay, ``already_out``).
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
-        window = claim_package_window(claim, claim_procs)
+        window = claim_bed_package_window(claim, claim_procs)
         window_end = window.end if window is not None else None
         # Days the yatak detector already took out because their bed is paid by 530000 / 510100 / 510110 or the day
         # bed is forbidden (bed_days_not_expected) are not taken out a second time; the package window's days are

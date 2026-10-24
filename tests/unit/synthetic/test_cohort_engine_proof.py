@@ -922,6 +922,42 @@ def test_s33_has_no_deep_tracheal_aspiration_review_when_no_aspiration_is_billed
     assert b.f_counter[("wavea", "claim_reviews", "tablo15_11_drug_quantity_error", "", 0.0)] == 1
 
 
+def test_s11_icu_package_days_are_no_surgery_window_and_no_copay_rate(
+    story_bundles: dict[str, _StoryBundle],
+) -> None:
+    """S11 bills septic shock in the ICU: 510090 on 2 June, the second-level package P552002 on 3-5 June, 510090 on
+    6 June; the claim runs to the transfer day, 7 June. The package days are no surgical package (no EK-2/C işlem grubu,
+    §2.2.2.B-1.(3)): the bed row names no surgery window, the five days are the ICU stay and the transfer day is
+    510090's, so no standard bed is expected. Their EK-2/C-1 rate of 100 is the Sınıf-3 uplift (SUT 2.2.(20)), not a
+    copay rate: the copay-rate check finds no listed line and no mismatch. The faulty bill and its clean twin alike."""
+    from src.bilun.domain.optimization.claim_context import build_copay_rate_claim_context
+    from src.bilun.domain.optimization.exactness import build_exact_copay_rate_exposure
+
+    b = story_bundles["S11"]
+    for ctx, report in ((b.faulty_ctx, b.faulty_report), (b.clean_ctx, b.clean_report)):
+        (row,) = [o for o in report.yatak_puani.opportunities if o["claim_id"] == b.record.claim_id]
+        assert (row["gross_bed_days"], row["bundled_days"], row["surgery_day_bundled"], row["bed_days"]) == (
+            6, 0, False, 0
+        )
+        assert (row["expected_yatak_try"], row["recoverable_uplift_try"]) == (0.0, 0.0)
+        assert "surgery" not in row["detail"] and "package window" not in row["detail"]
+        assert (
+            "5 day(s) (2026-06-02, 2026-06-03, 2026-06-04, 2026-06-05, 2026-06-06) lie inside the ICU stay"
+            in row["detail"]
+        )
+        assert row["icu_overlap_dates"] == ["2026-06-07"]
+        lines = [line for line in ctx.procedure_lines if line.claim_id == b.record.claim_id]
+        assert [line.procedure_date.isoformat() for line in lines if line.procedure_code == "P552002"] == [
+            "2026-06-03", "2026-06-04", "2026-06-05"
+        ]
+        exposure = build_exact_copay_rate_exposure(build_copay_rate_claim_context(b.record.patient_id, lines))
+        assert (
+            exposure["n_applicable_procedures"],
+            exposure["n_flag_catalog_mismatches"],
+            exposure["n_rate_catalog_mismatches"],
+        ) == (0, 0, 0)
+
+
 def test_s38_finds_the_neuromonitoring_beside_an_instrumentation_that_is_not_on_the_ek2d4_list(
     story_bundles: dict[str, _StoryBundle],
 ) -> None:
