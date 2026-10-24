@@ -35,8 +35,8 @@ from tests.unit.domain.billing.test_showcase_session_and_package_gaps import (
 
 pytestmark = pytest.mark.unit
 
-_BED_DAY = 222.36  # 510010 in force in 2026 (bed rate on S1/S2 days).
-_COMPANION_NIGHT = 74.10  # 510121: 124.95 puan × 0.593.
+_BED_DAY = 222.35  # 510010 in force in 2026 (bed rate on S1/S2 days), cut at the kuruş (SUT 2.2.(15)).
+_COMPANION_NIGHT = 74.09  # 510121: 124.95 puan × 0.593 = 74.09535, cut at the kuruş.
 
 
 def _report(ctx: PatientClaimContext):
@@ -78,8 +78,8 @@ class TestMandatedPackageShownOnce:
     def test_faulty_s1_shows_the_package_gap_once(self) -> None:
         ctx = s1("faulty").ctx()
         report = _report(ctx)
-        assert _strategy_savings(ctx) == 4085.87
-        assert report.sgk_uplift_try == 4085.87  # Was 4,234.07: + 148.20 companion.
+        assert _strategy_savings(ctx) == 4085.94
+        assert report.sgk_uplift_try == 4085.94  # Was 4,234.07: + 148.20 companion.
         companion = _only(report.refakatci.opportunities)
         assert (companion["days"], companion["recoverable_uplift_try"]) == (0, 0.0)
         assert companion["included_in_sgk_total"] is False
@@ -182,6 +182,6 @@ class TestClaimsWithoutAMandatedPackage:
         for bill in (s2_faulty, s3_faulty, s4_faulty):
             ctx = bill.ctx()
             assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)) is None
-        assert _report(s2_faulty.ctx()).yatak_puani.confirmed_yatak_try == 667.08
-        assert _report(s3_faulty.ctx()).anestezi_puani.confirmed_anestezi_try == 928.09
-        assert _report(s4_faulty.ctx()).refakatci.confirmed_refakat_try == 370.50
+        assert _report(s2_faulty.ctx()).yatak_puani.confirmed_yatak_try == 667.05
+        assert _report(s3_faulty.ctx()).anestezi_puani.confirmed_anestezi_try == 928.08
+        assert _report(s4_faulty.ctx()).refakatci.confirmed_refakat_try == 370.45

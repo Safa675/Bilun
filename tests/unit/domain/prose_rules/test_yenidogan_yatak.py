@@ -200,7 +200,7 @@ def test_historical_2023_newborn_claim_uses_2023_tariff() -> None:
     )
     assert len(opps) == 1
     assert opps[0]["puan"] == pytest.approx(275.43, abs=0.01)
-    assert opps[0]["expected_try"] == pytest.approx(3 * 163.33, abs=0.02)
+    assert opps[0]["expected_try"] == pytest.approx(3 * 163.32, abs=0.02)
 
 
 
@@ -256,7 +256,7 @@ def _detect(lines, *, header=None, **kwargs):
     )
 
 
-# 3 inclusive days: Kuvöz 3 x 440.98 = 1322.94, Kot 3 x 311.30 = 933.90 (price_try of the 2026-07-07 list).
+# 3 inclusive days: Kuvöz 3 x 440.98 = 1322.94, Kot 3 x 311.29 = 933.87 (price_try of the 2026-07-07 list).
 
 
 def test_a_bed_billed_in_full_leaves_nothing_recoverable() -> None:
@@ -320,8 +320,8 @@ def test_lines_of_another_claim_do_not_net() -> None:
 def test_a_standard_bed_billed_and_no_newborn_bed_stands_down() -> None:
     """The claim has stated its bed: the standard bed (510010). The standard-bed motor owns the stay and nets
     its own lines; expecting a Kuvöz beside it would offer money the SGK pays under the other code."""
-    assert _detect([_line("510010", "667.08", quantity=3)]) == []
-    assert _detect([_line("520010", "10"), _line("510010", "222.36", line_id="STD1")]) == []
+    assert _detect([_line("510010", "667.05", quantity=3)]) == []
+    assert _detect([_line("520010", "10"), _line("510010", "222.35", line_id="STD1")]) == []
 
 
 def test_a_standard_bed_billed_beside_a_newborn_bed_line_covers_its_days_only() -> None:
@@ -329,7 +329,7 @@ def test_a_standard_bed_billed_beside_a_newborn_bed_line_covers_its_days_only() 
     motor's), and its money neither nets this motor's charge nor stands it down."""
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 12))
     [opp] = _detect(
-        [_line("510070", "440.98", line_id="K"), _line("510010", "222.36", line_id="S", procedure_date=date(2026, 7, 11))],
+        [_line("510070", "440.98", line_id="K"), _line("510010", "222.35", line_id="S", procedure_date=date(2026, 7, 11))],
         header=header,
     )
 
@@ -345,8 +345,8 @@ def test_a_credit_line_covers_no_day() -> None:
     [opp] = _detect(
         [
             _line("510070", "440.98", line_id="K"),
-            _line("510010", "-222.36", quantity=2, line_id="S"),
-            _line("510081", "-311.30", quantity=2, line_id="T"),
+            _line("510010", "-222.35", quantity=2, line_id="S"),
+            _line("510081", "-311.29", quantity=2, line_id="T"),
         ],
         header=header,
     )
@@ -360,23 +360,23 @@ def test_a_credit_line_covers_no_day() -> None:
 
 
 def test_a_billed_kot_is_priced_at_the_kot_rate_and_billed_in_full_leaves_nothing() -> None:
-    [opp] = _detect([_line("510081", "933.90", quantity=3)])
+    [opp] = _detect([_line("510081", "933.87", quantity=3)])
 
     assert opp["bed_code"] == "510081"
     assert opp["rule_id"] == "yenidogan_yatak_510081"
     assert opp["puan"] == pytest.approx(524.95, abs=0.01)
-    assert opp["expected_try"] == pytest.approx(933.90, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(933.87, abs=0.005)
     assert opp["recoverable_uplift_try"] == 0.0
 
 
 def test_a_cot_billed_for_part_of_the_stay_prices_every_owned_day_as_a_cot() -> None:
     """Only Kot is billed (one day of three): the hospital stated a cot, nothing says Kuvöz, so the two unbilled
-    days are Kot days too (311.30 each), not the 129.68 TL dearer Kuvöz default."""
-    [opp] = _detect([_line("510081", "311.30")])
+    days are Kot days too (311.29 each), not the 129.68 TL dearer Kuvöz default."""
+    [opp] = _detect([_line("510081", "311.29")])
 
     assert opp["bed_code"] == "510081"
-    assert opp["expected_try"] == pytest.approx(3 * 311.30, abs=0.005)
-    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 311.30, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(3 * 311.29, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 311.29, abs=0.005)
     assert "A Kot (510081) line is billed" in opp["detail"]
 
 
@@ -384,37 +384,37 @@ def test_a_cot_billed_for_part_of_the_stay_prices_every_owned_day_as_a_cot() -> 
 def test_where_the_billed_cot_days_lie_does_not_matter(day_offset: int) -> None:
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
     [opp] = _detect(
-        [_line("510081", "622.60", quantity=2, procedure_date=date(2026, 7, 10 + day_offset))], header=header
+        [_line("510081", "622.58", quantity=2, procedure_date=date(2026, 7, 10 + day_offset))], header=header
     )
 
-    assert opp["expected_try"] == pytest.approx(4 * 311.30, abs=0.005)
-    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 311.30, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(4 * 311.29, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(2 * 311.29, abs=0.005)
 
 
 def test_a_single_cot_line_carrying_several_days_is_priced_as_a_cot_stay() -> None:
     """Quantity 1 with a four-day amount (out of the per-day convention): no quantity is read for a cot-only
     stay, the amount nets the cot charge, so an exactly billed stay leaves nothing (review round 2, G1)."""
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
-    [opp] = _detect([_line("510081", "1245.20", quantity=1)], header=header)
+    [opp] = _detect([_line("510081", "1245.16", quantity=1)], header=header)
 
-    assert opp["expected_try"] == pytest.approx(1245.20, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(1245.16, abs=0.005)
     assert opp["recoverable_uplift_try"] == 0.0
 
 
 def test_the_per_day_split_applies_when_kuvoz_is_billed_too() -> None:
-    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.30", line_id="T")])
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.29", line_id="T")])
 
     assert opp["bed_code"] == "510070"
-    assert "3 bed-day(s) = 2 at 440.98 + 1 billed Kot day(s) at 311.30 TRY/day" in opp["detail"]
+    assert "3 bed-day(s) = 2 at 440.98 + 1 billed Kot day(s) at 311.29 TRY/day" in opp["detail"]
     assert "A Kot (510081) line is billed on this claim" not in opp["detail"]  # only for an all-Kot stay
 
 
 def test_a_claim_billing_both_codes_prices_each_billed_day_as_billed_and_the_rest_at_kuvoz() -> None:
-    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.30", line_id="T")])
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.29", line_id="T")])
 
     assert opp["bed_code"] == "510070"
-    assert opp["expected_try"] == pytest.approx(311.30 + 2 * 440.98, abs=0.005)
-    assert opp["actual_billed_try"] == pytest.approx(752.28, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(311.29 + 2 * 440.98, abs=0.005)
+    assert opp["actual_billed_try"] == pytest.approx(752.27, abs=0.005)
     assert opp["recoverable_uplift_try"] == pytest.approx(440.98, abs=0.005)  # the one unbilled day
 
 
@@ -431,7 +431,7 @@ def test_a_stay_billed_kuvoz_then_kot_exactly_leaves_nothing(days: int, kuvoz_da
         lines.append(_line("510070", f"{kuvoz_days * 440.98:.2f}", quantity=kuvoz_days, line_id="K"))
     if kot_days:
         lines.append(
-            _line("510081", f"{kot_days * 311.30:.2f}", quantity=kot_days, line_id="T", procedure_date=date(2026, 7, 10 + kuvoz_days))
+            _line("510081", f"{kot_days * 311.29:.2f}", quantity=kot_days, line_id="T", procedure_date=date(2026, 7, 10 + kuvoz_days))
         )
 
     [opp] = _detect(lines, header=header)
@@ -441,17 +441,17 @@ def test_a_stay_billed_kuvoz_then_kot_exactly_leaves_nothing(days: int, kuvoz_da
 
 
 def test_billed_kot_days_never_exceed_the_stay() -> None:
-    [opp] = _detect([_line("510081", "1556.50", quantity=5)])  # 5 units on a 3-day stay
+    [opp] = _detect([_line("510081", "1556.45", quantity=5)])  # 5 units on a 3-day stay
 
     assert opp["bed_code"] == "510081"
-    assert opp["expected_try"] == pytest.approx(933.90, abs=0.005)  # 3 Kot days, not 5
+    assert opp["expected_try"] == pytest.approx(933.87, abs=0.005)  # 3 Kot days, not 5
     assert opp["recoverable_uplift_try"] == 0.0
 
 
 def test_a_kot_line_without_a_quantity_counts_one_day() -> None:
-    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.30", quantity=0, line_id="T")])
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.29", quantity=0, line_id="T")])
 
-    assert opp["expected_try"] == pytest.approx(311.30 + 2 * 440.98, abs=0.005)  # one Kot day, two Kuvöz days
+    assert opp["expected_try"] == pytest.approx(311.29 + 2 * 440.98, abs=0.005)  # one Kot day, two Kuvöz days
 
 
 def test_a_zero_priced_kot_line_is_still_the_hospitals_bed_statement() -> None:
@@ -459,7 +459,7 @@ def test_a_zero_priced_kot_line_is_still_the_hospitals_bed_statement() -> None:
     [opp] = _detect([_line("510081", "0", quantity=3)])
 
     assert opp["bed_code"] == "510081"
-    assert opp["recoverable_uplift_try"] == pytest.approx(933.90, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(933.87, abs=0.005)
 
 
 def test_without_a_bed_line_kuvoz_is_assumed_and_the_detail_says_so() -> None:
@@ -751,11 +751,11 @@ def test_the_billed_lines_net_the_days_that_are_left_after_the_icu_day() -> None
 
 
 def test_a_stay_billed_incubator_then_standard_bed_exactly_leaves_nothing() -> None:
-    """10 days: 2 Kuvöz (881.96) then 8 standard bed (1,778.88), both exact. This motor owned all 10 days and
+    """10 days: 2 Kuvöz (881.96) then 8 standard bed (1,778.80), both exact. This motor owned all 10 days and
     left 8 x 440.98 = 3,527.84 as a row on an exactly billed stay."""
     lines = [
         _line("510070", "881.96", quantity=2, line_id="K"),
-        _line("510010", "1778.88", quantity=8, line_id="S", procedure_date=date(2026, 7, 12)),
+        _line("510010", "1778.80", quantity=8, line_id="S", procedure_date=date(2026, 7, 12)),
     ]
     [opp] = _detect(lines, header=_ten_day_header())
 
@@ -770,8 +770,8 @@ def test_a_stay_billed_incubator_then_standard_bed_exactly_leaves_nothing() -> N
 def test_a_cot_then_standard_bed_stay_billed_exactly_leaves_nothing() -> None:
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
     lines = [
-        _line("510081", "311.30", quantity=1, line_id="T"),
-        _line("510010", "667.08", quantity=3, line_id="S", procedure_date=date(2026, 7, 11)),
+        _line("510081", "311.29", quantity=1, line_id="T"),
+        _line("510010", "667.05", quantity=3, line_id="S", procedure_date=date(2026, 7, 11)),
     ]
     [opp] = _detect(lines, header=header)
 
@@ -784,7 +784,7 @@ def test_the_days_neither_bed_family_covers_stay_unbilled_kuvoz_days() -> None:
     """1 Kuvöz day and 3 standard-bed days billed of 10: the 6 unbilled days are the motor's Kuvöz default."""
     lines = [
         _line("510070", "440.98", quantity=1, line_id="K"),
-        _line("510010", "667.08", quantity=3, line_id="S", procedure_date=date(2026, 7, 11)),
+        _line("510010", "667.05", quantity=3, line_id="S", procedure_date=date(2026, 7, 11)),
     ]
     [opp] = _detect(lines, header=_ten_day_header())
 
@@ -809,7 +809,7 @@ def test_standard_bed_units_beyond_the_stay_take_only_the_days_no_newborn_line_c
 
 def test_double_covered_line_days_are_not_a_standard_bed_shortfall() -> None:
     """7 days: Kuvöz x7 billed in full and two 510010 lines billed 0 TL. The Kuvöz lines cover all 7 days, so the
-    510010 lines own no day (review round 3, H2: the standard-bed motor used to claim 444.72 for them)."""
+    510010 lines own no day (review round 3, H2: the standard-bed motor used to claim 444.70 for them)."""
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 16))
     lines = [
         _line("510070", "3086.86", quantity=7, line_id="K"),
@@ -864,8 +864,8 @@ def test_a_single_rate_stay_names_one_rate_and_no_mix() -> None:
     assert "billed Kot day" not in kuvoz["detail"]
     assert "A Kot (510081) line is billed" not in kuvoz["detail"]
 
-    [cot] = _detect([_line("510081", "933.90", quantity=3)])
-    assert "3 bed-day(s) at 311.30 TRY/day" in cot["detail"]
+    [cot] = _detect([_line("510081", "933.87", quantity=3)])
+    assert "3 bed-day(s) at 311.29 TRY/day" in cot["detail"]
     assert "billed Kot day" not in cot["detail"]
     assert "A Kot (510081) line is billed" in cot["detail"]
 
@@ -873,17 +873,17 @@ def test_a_single_rate_stay_names_one_rate_and_no_mix() -> None:
 def test_a_mixed_stay_names_both_rates_and_not_the_cot_only_sentence() -> None:
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
     [mixed] = _detect(
-        [_line("510070", "881.96", quantity=2, line_id="K"), _line("510081", "622.60", quantity=2, line_id="T")],
+        [_line("510070", "881.96", quantity=2, line_id="K"), _line("510081", "622.58", quantity=2, line_id="T")],
         header=header,
     )
 
-    assert "4 bed-day(s) = 2 at 440.98 + 2 billed Kot day(s) at 311.30 TRY/day" in mixed["detail"]
+    assert "4 bed-day(s) = 2 at 440.98 + 2 billed Kot day(s) at 311.29 TRY/day" in mixed["detail"]
     assert "A Kot (510081) line is billed" not in mixed["detail"]
     assert mixed["bed_code"] == "510070" and mixed["rule_id"] == "yenidogan_yatak_510070"
 
 
 def test_a_fully_bundled_stay_is_labelled_kuvoz_even_when_only_a_cot_is_billed() -> None:
-    lines = [_package("P600040", date(2026, 7, 11)), _line("510081", "311.30", procedure_date=date(2026, 7, 10))]
+    lines = [_package("P600040", date(2026, 7, 11)), _line("510081", "311.29", procedure_date=date(2026, 7, 10))]
     [opp] = _detect(lines, header=_ten_day_header())
 
     assert opp["days"] == 0
@@ -918,7 +918,7 @@ def test_billed_cot_lines_inside_a_mandated_window_are_the_bed_statement_but_net
     assert (cot_only["days"], cot_only["bundled_days"]) == (4, 8)
     assert cot_only["bed_code"] == "510081"  # the cot statement carries to the days after the window
     assert cot_only["actual_billed_try"] == 0.0
-    assert cot_only["recoverable_uplift_try"] == pytest.approx(4 * 311.30, abs=0.01)
+    assert cot_only["recoverable_uplift_try"] == pytest.approx(4 * 311.29, abs=0.01)
 
     # With a Kuvöz line after the window the Kot lines inside it count as no Kot day: all four days are Kuvöz.
     [mixed] = detect(newborn_ctx([("510070", _d("2026-07-22"), 1), ("510081", _d("2026-07-14"), 8)]))
@@ -935,7 +935,7 @@ def test_a_missing_cot_rate_falls_back_to_the_kuvoz_default(monkeypatch: pytest.
     real = yenidogan_yatak._daily_rate
     monkeypatch.setattr(yenidogan_yatak, "_daily_rate", lambda code, visit_date=None: 0.0 if code == "510081" else real(code, visit_date))
 
-    [opp] = _detect([_line("510081", "933.90", quantity=3)])
+    [opp] = _detect([_line("510081", "933.87", quantity=3)])
 
     assert opp["bed_code"] == "510070"
     assert opp["expected_try"] == pytest.approx(3 * 440.98, abs=0.005)
@@ -947,8 +947,8 @@ def test_a_missing_kuvoz_rate_still_prices_an_all_cot_stay_and_skips_a_kuvoz_sta
     real = yenidogan_yatak._daily_rate
     monkeypatch.setattr(yenidogan_yatak, "_daily_rate", lambda code, visit_date=None: 0.0 if code == "510070" else real(code, visit_date))
 
-    [cot] = _detect([_line("510081", "933.90", quantity=3)])
-    assert cot["bed_code"] == "510081" and cot["expected_try"] == pytest.approx(933.90, abs=0.005)
+    [cot] = _detect([_line("510081", "933.87", quantity=3)])
+    assert cot["bed_code"] == "510081" and cot["expected_try"] == pytest.approx(933.87, abs=0.005)
     assert _detect([_line("520010", "10")]) == []  # nothing billed: the Kuvöz default cannot be priced
 
 
@@ -957,7 +957,7 @@ def test_a_missing_kuvoz_rate_still_prices_an_all_cot_stay_and_skips_a_kuvoz_sta
 
 @pytest.mark.parametrize("code", ["510010", " 510.010 ", "P510010", "510 010"])
 def test_the_standard_bed_stand_down_reads_the_code_like_the_rest_of_the_engine(code: str) -> None:
-    assert _detect([_line(code, "667.08", quantity=3)]) == []
+    assert _detect([_line(code, "667.05", quantity=3)]) == []
 
 
 def test_icu_last_days_are_listed_in_date_order() -> None:
@@ -994,15 +994,15 @@ def test_hyphens_dots_digits_and_spacing_do_not_hide_an_icu_department(departmen
 def test_a_reversed_standard_bed_line_alone_still_states_the_standard_bed() -> None:
     """The only bed line is a reversal of 510010: the bed that was billed is the standard bed, so the standard-bed
     motor keeps the stay. Reading it as 'no bed' would offer a 4,409.80 Kuvöz row on a 10-day stay (round 3, H3)."""
-    assert _detect([_line("510010", "-667.08", quantity=3)]) == []
+    assert _detect([_line("510010", "-667.05", quantity=3)]) == []
 
 
 def test_a_credit_cot_line_states_the_cot_but_covers_no_day() -> None:
-    [opp] = _detect([_line("510081", "-933.90", quantity=3)])
+    [opp] = _detect([_line("510081", "-933.87", quantity=3)])
 
     assert opp["bed_code"] == "510081"  # a cot was billed (and reversed)
-    assert opp["expected_try"] == pytest.approx(933.90, abs=0.005)
-    assert opp["recoverable_uplift_try"] == pytest.approx(933.90, abs=0.005)  # capped: the reversal recovers no more
+    assert opp["expected_try"] == pytest.approx(933.87, abs=0.005)
+    assert opp["recoverable_uplift_try"] == pytest.approx(933.87, abs=0.005)  # capped: the reversal recovers no more
     assert "is assumed" not in opp["detail"]  # the bed type is stated
 
 
@@ -1014,29 +1014,29 @@ def test_a_credit_kuvoz_line_states_the_bed_so_nothing_is_assumed() -> None:
 
 
 def test_a_credit_cot_line_beside_a_kuvoz_line_is_no_cot_day() -> None:
-    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "-311.30", quantity=2, line_id="T")])
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "-311.29", quantity=2, line_id="T")])
 
     assert opp["bed_code"] == "510070"
     assert opp["expected_try"] == pytest.approx(3 * 440.98, abs=0.005)
 
 
 def test_a_negative_quantity_covers_one_day_at_most() -> None:
-    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.30", quantity=-3, line_id="T")])
+    [opp] = _detect([_line("510070", "440.98", line_id="K"), _line("510081", "311.29", quantity=-3, line_id="T")])
 
-    assert opp["expected_try"] == pytest.approx(311.30 + 2 * 440.98, abs=0.005)  # one Kot day, not minus three
+    assert opp["expected_try"] == pytest.approx(311.29 + 2 * 440.98, abs=0.005)  # one Kot day, not minus three
 
 
 def test_an_inflated_cot_quantity_beside_kuvoz_prices_the_stay_as_a_cot_stay() -> None:
     """Kot quantity 10 on a 4-day stay is capped at the 4 days (and then every day is a billed Kot day)."""
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
     [opp] = _detect(
-        [_line("510070", "881.96", quantity=2, line_id="K"), _line("510081", "3113.00", quantity=10, line_id="T")],
+        [_line("510070", "881.96", quantity=2, line_id="K"), _line("510081", "3112.90", quantity=10, line_id="T")],
         header=header,
     )
 
     assert opp["days"] == 4
     assert opp["bed_code"] == "510081"
-    assert opp["expected_try"] == pytest.approx(4 * 311.30, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(4 * 311.29, abs=0.005)
 
 
 # --- An ICU-named unit that bills a newborn bed is netted, not silenced (review round 3, H4) -----------------
@@ -1059,7 +1059,7 @@ def test_an_icu_named_department_that_bills_the_standard_bed_stays_with_the_stan
         admission=date(2026, 7, 10), discharge=date(2026, 7, 12), primary_icd10="P22.0", department="NICU"
     )
 
-    assert _detect([_line("510010", "667.08", quantity=3)], header=header) == []
+    assert _detect([_line("510010", "667.05", quantity=3)], header=header) == []
 
 
 # --- Pins for the survivors of the confirmation round (BU1, N13, N17, N19) --------------------------------
@@ -1090,7 +1090,7 @@ def test_billed_cot_days_cover_days_first_beside_standard_bed_lines() -> None:
     510010 lines own none (the newborn priority counts Kot units as well as Kuvöz units)."""
     header = _make_claim_header(admission=date(2026, 7, 10), discharge=date(2026, 7, 13))
     [opp] = _detect(
-        [_line("510081", "1245.20", quantity=4, line_id="T"), _line("510010", "0", quantity=2, line_id="S")], header=header
+        [_line("510081", "1245.16", quantity=4, line_id="T"), _line("510010", "0", quantity=2, line_id="S")], header=header
     )
 
     assert opp["days"] == 4 and "standard_bed_days" not in opp
@@ -1124,7 +1124,7 @@ def test_newborn_lines_inside_a_mandated_window_do_not_take_days_from_the_standa
 # --- SUT §2.2.2.(3): a stay under 24 hours is billed at the day bed 510120 -------------------------------
 # A stay whose admission date equals its discharge date is certainly under 24 hours (the claim has dates, no
 # times). The day bed (74.96 puan = 44.45 TRY on the 2026-07-07 list) is the bed of such a stay whoever the patient
-# is, so the newborn motor prices its one day at 510120, not as a Kuvöz (440.98) or Kot (311.30) day.
+# is, so the newborn motor prices its one day at 510120, not as a Kuvöz (440.98) or Kot (311.29) day.
 
 
 def _one_date_header(**kwargs):
@@ -1137,7 +1137,7 @@ def _one_date_header(**kwargs):
         ([], 0.0, 44.45),
         ([("520010", "10")], 0.0, 44.45),
         ([("510070", "440.98")], 440.98, 0.0),  # an incubator billed for a stay under 24 hours: above the day bed
-        ([("510081", "311.30")], 311.30, 0.0),
+        ([("510081", "311.29")], 311.29, 0.0),
         ([("510070", "20.00")], 20.0, 24.45),
         ([("510081", "20.00")], 20.0, 24.45),
         ([("510070", "-100.00")], -100.0, 44.45),  # a credit line: capped at the charge
@@ -1230,7 +1230,7 @@ def test_the_day_bed_price_is_the_one_of_the_admission_date_for_a_newborn_too() 
     [opp] = _detect([_line("520010", "10")], header=header)
 
     assert opp["puan"] == pytest.approx(27.77, abs=0.005)  # 510120 on the 2023 list
-    assert opp["expected_try"] == pytest.approx(16.47, abs=0.005)
+    assert opp["expected_try"] == pytest.approx(16.46, abs=0.005)
 
 
 def test_a_stay_of_two_dates_keeps_the_kuvoz_default_and_its_sentences() -> None:
@@ -1273,7 +1273,7 @@ def test_a_day_bed_line_beside_a_reversed_newborn_bed_line_takes_the_day() -> No
     """An incubator billed, reversed (a credit line covers no day) and re-billed as the day bed: the 510120 line
     covers the only day, which is the standard-bed motor's (it showed 44.45 beside the billed day bed)."""
     header = _one_date_header()
-    for standard_line in (_line("510120", "44.45", line_id="D"), _line("510010", "222.36", line_id="S")):
+    for standard_line in (_line("510120", "44.45", line_id="D"), _line("510010", "222.35", line_id="S")):
         [opp] = _detect([_line("510070", "-440.98", line_id="K"), standard_line], header=header)
 
         assert (opp["days"], opp["standard_bed_days"]) == (0, 1)
@@ -1393,7 +1393,7 @@ def test_a_newborn_named_department_that_names_an_icu_is_still_left_to_the_icu_m
 # Evidence is quoted in test_bed_days_not_expected.py. Both bed motors read the same helper (`bed_days_not_expected`):
 # 530000 / 510100 / 510110 cover the bed of the days they are billed on; the day bed of a stay of one date is not
 # billed beside 530000, inside a hemodialysis price (704210 / 704230) or for the EK-2/C procedures of a day case.
-# The default stay is 10-12 July 2026 (Kuvöz 440.98, Kot 311.30, day bed 44.45).
+# The default stay is 10-12 July 2026 (Kuvöz 440.98, Kot 311.29, day bed 44.45).
 
 
 def _er(day: int = 0, *, quantity: int = 1, billed: str = "577.45", code: str = "530000", line_id: str | None = None):
@@ -1527,10 +1527,10 @@ def test_billed_newborn_lines_net_the_days_that_are_left() -> None:
 
 
 def test_a_cot_stay_keeps_its_cot_rate_on_the_days_that_are_left() -> None:
-    [opp] = _detect([_er(0), _line("510081", "622.60", quantity=2, procedure_date=date(2026, 7, 11), line_id="C")])
+    [opp] = _detect([_er(0), _line("510081", "622.58", quantity=2, procedure_date=date(2026, 7, 11), line_id="C")])
 
     assert (opp["days"], opp["bed_code"]) == (2, "510081")
-    assert opp["expected_try"] == pytest.approx(622.60, abs=0.01)
+    assert opp["expected_try"] == pytest.approx(622.58, abs=0.01)
     assert opp["recoverable_uplift_try"] == 0.0
 
 
@@ -1538,12 +1538,12 @@ def test_the_kuvoz_and_cot_split_works_on_the_days_that_are_left() -> None:
     lines = [
         _er(0),
         _line("510070", "440.98", procedure_date=date(2026, 7, 11), line_id="K"),
-        _line("510081", "311.30", procedure_date=date(2026, 7, 12), line_id="C"),
+        _line("510081", "311.29", procedure_date=date(2026, 7, 12), line_id="C"),
     ]
     [opp] = _detect(lines)
 
     assert opp["days"] == 2
-    assert opp["expected_try"] == pytest.approx(440.98 + 311.30, abs=0.01)
+    assert opp["expected_try"] == pytest.approx(440.98 + 311.29, abs=0.01)
     assert opp["recoverable_uplift_try"] == 0.0
 
 
@@ -1554,7 +1554,7 @@ def test_standard_bed_days_are_counted_on_the_days_that_are_left() -> None:
     lines = [
         _er(0),
         _line("510070", "440.98", procedure_date=date(2026, 7, 11), line_id="K"),
-        _line("510010", "444.72", quantity=2, procedure_date=date(2026, 7, 12), line_id="S"),
+        _line("510010", "444.70", quantity=2, procedure_date=date(2026, 7, 12), line_id="S"),
     ]
     [opp] = _detect(lines, header=header)
 
@@ -1571,7 +1571,7 @@ def test_standard_bed_units_beyond_the_days_left_take_only_the_free_days() -> No
     lines = [
         _er(0),
         _line("510070", "440.98", procedure_date=date(2026, 7, 11), line_id="K"),
-        _line("510010", "667.08", quantity=3, procedure_date=date(2026, 7, 11), line_id="S"),
+        _line("510010", "667.05", quantity=3, procedure_date=date(2026, 7, 11), line_id="S"),
     ]
     [opp] = _detect(lines, header=header)
 
@@ -1582,7 +1582,7 @@ def test_standard_bed_units_beyond_the_days_left_take_only_the_free_days() -> No
 
 def test_a_standard_bed_billed_beside_530000_and_no_newborn_bed_stands_down() -> None:
     """The claim has stated its bed (510010): the standard-bed motor owns the stay (and nets it on the days left)."""
-    assert _detect([_er(0), _line("510010", "444.72", quantity=2, procedure_date=date(2026, 7, 11), line_id="S")]) == []
+    assert _detect([_er(0), _line("510010", "444.70", quantity=2, procedure_date=date(2026, 7, 11), line_id="S")]) == []
 
 
 # --- interplay: the ICU transfer day and the package window ------------------------------------------------------

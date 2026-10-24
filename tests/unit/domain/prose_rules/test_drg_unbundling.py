@@ -165,7 +165,7 @@ class TestProseDrgUnbundling:
         # incision or a branch: money only above A(5)(b) 50 % + 25 points (75 %);
         # the 30 % of one incision in one branch is a 0-TL review (was: skipped).
         # Both billed in full at their EK-2/B list on the day (#300: the list, not
-        # the unit price, is the base): 610070 3,603.98 against 75 % = 2,702.99.
+        # the unit price, is the base): 610070 3,603.97 against 75 % = 2,702.98.
         claim = _claim()
         session_day = date(2026, 1, 10)
         lines = [
@@ -173,8 +173,8 @@ class TestProseDrgUnbundling:
                 procedure_line_id="PL1",
                 procedure_code="610070",
                 procedure_date=session_day,
-                unit_price_try=Decimal("3603.98"),
-                billed_amount_try=Decimal("3603.98"),
+                unit_price_try=Decimal("3603.97"),
+                billed_amount_try=Decimal("3603.97"),
             ),
             _proc(
                 procedure_line_id="PL2",
@@ -190,7 +190,7 @@ class TestProseDrgUnbundling:
             (r["procedure_code"], r["expected_point_factor"], r["risk_amount_try"],
              r["review_risk_try"], r["missing_facts"])
             for r in finding.session_violations
-        ] == [("610070", 0.75, 900.99, 1621.80, ["kesi", "branş"])]
+        ] == [("610070", 0.75, 900.99, 1621.79, ["kesi", "branş"])]
         assert finding.session_reviews == []
         assert finding.sourced_savings_try == 900.99
 
@@ -198,8 +198,8 @@ class TestProseDrgUnbundling:
         "category, rule_id, lists, risk",
         [
             # Hizmet başı: §2.2.2.A(5) 30 %; both codes are also EK-2/C packages.
-            # 70 % of 610070's EK-2/B list 3,603.98 (was 70 % of a unit price of 1,000).
-            ("islem", "2.2.2.A.(5)", ("3603.98", "5468.68"), 2522.79),
+            # 70 % of 610070's EK-2/B list 3,603.97 (was 70 % of a unit price of 1,000).
+            ("islem", "2.2.2.A.(5)", ("3603.97", "5468.68"), 2522.78),
             # Billed as packages: §2.2.2.B(3)(a) 25 %, 75 % of the EK-2/C 12,562.36.
             ("paket", "2.2.2.B.a", ("12562.36", "30300.79"), 9421.77),
         ],
@@ -287,8 +287,8 @@ class TestProseDrgUnbundling:
                 procedure_line_id="PL1",
                 procedure_code="610070",
                 procedure_date=date(2026, 1, 10),
-                unit_price_try=Decimal("3603.98"),
-                billed_amount_try=Decimal("3603.98"),
+                unit_price_try=Decimal("3603.97"),
+                billed_amount_try=Decimal("3603.97"),
             ),
             _proc(
                 procedure_line_id="PL2",

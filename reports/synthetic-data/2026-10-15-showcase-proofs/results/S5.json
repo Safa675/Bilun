@@ -1,15 +1,15 @@
 {
  "story": "S5",
  "clean": {
-  "total_billed": "31233.66",
+  "total_billed": "31233.65",
   "rows": [
    {
     "date": "2026-09-04",
     "code": "P612320",
     "name": "Büyük eklem parsiyel protezleri, primer",
     "qty": 1,
-    "unit": "18390.80",
-    "billed": "18390.80",
+    "unit": "18390.79",
+    "billed": "18390.79",
     "source": "EK-2C valid_from 2026-07-07"
    },
    {
@@ -69,15 +69,15 @@
   }
  },
  "faulty": {
-  "total_billed": "31233.66",
+  "total_billed": "31233.65",
   "rows": [
    {
     "date": "2026-09-04",
     "code": "P612320",
     "name": "Büyük eklem parsiyel protezleri, primer",
     "qty": 1,
-    "unit": "18390.80",
-    "billed": "18390.80",
+    "unit": "18390.79",
+    "billed": "18390.79",
     "source": "EK-2C valid_from 2026-07-07"
    },
    {

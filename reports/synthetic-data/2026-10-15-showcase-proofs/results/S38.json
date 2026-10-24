@@ -1,15 +1,15 @@
 {
  "story": "S38",
  "clean": {
-  "total_billed": "16765.09",
+  "total_billed": "16765.08",
   "rows": [
    {
     "date": "2026-09-15",
     "code": "P614040",
     "name": "Posteriyor segmental enstrümantasyon; 6 veya daha az vertebra segmenti",
     "qty": 1,
-    "unit": "16765.09",
-    "billed": "16765.09",
+    "unit": "16765.08",
+    "billed": "16765.08",
     "source": "EK-2C valid_from 2026-07-07"
    }
   ],
@@ -38,15 +38,15 @@
   }
  },
  "faulty": {
-  "total_billed": "28426.92",
+  "total_billed": "28426.91",
   "rows": [
    {
     "date": "2026-09-15",
     "code": "P614040",
     "name": "Posteriyor segmental enstrümantasyon; 6 veya daha az vertebra segmenti",
     "qty": 1,
-    "unit": "16765.09",
-    "billed": "16765.09",
+    "unit": "16765.08",
+    "billed": "16765.08",
     "source": "EK-2C valid_from 2026-07-07"
    },
    {

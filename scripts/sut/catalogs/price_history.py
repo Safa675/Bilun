@@ -8,6 +8,8 @@ valid_to ranges.
 EK-2B, EK-2C and EK-2Ç rows also carry the amendment marker of their code cell, so
 a row SGK added or amended inside a version applies from its own Yürürlük date
 (scripts/sut/_common.py::_add_validity_ranges).
+A row's price_try is puan × 0.593 cut at the kuruş, never rounded: SUT 2.2.(15) (C000544,
+"yuvarlama işlemi yapılmaksızın virgülden sonra iki basamak"; src/bilun/domain/money.py::puan_price_try).
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import unicodedata
 import pandas as pd
 
 from scripts.sut._common import MARKER_COLUMNS, amendment_markers, strip_amendment_marker
+from src.bilun.domain.money import puan_price_try
 
 RE_EK2B_CODE = re.compile(r"^(L\d{6}|R\d{6}|G\d{6}|[5-9]\d{5})$")
 RE_EK2C_CODE = re.compile(r"^P\d{6}$")
@@ -29,6 +32,13 @@ RE_EK2C_DENTAL_CODE = re.compile(r"^(P?40\d{4})$")
 # SUT point-to-TRY conversion coefficient (puan x coefficient = price in TRY).
 # Updated annually per Official Gazette; current value is for 2024 gazette year.
 SUT_PUAN_COEFFICIENT = 0.593
+
+
+def _price_try(puan: pd.Series) -> pd.Series:
+    """Price of each puan: puan × SUT_PUAN_COEFFICIENT cut at the kuruş (SUT 2.2.(15)); no puan, no price."""
+    return puan.map(
+        lambda value: puan_price_try(value, SUT_PUAN_COEFFICIENT) if pd.notna(value) else float("nan")
+    ).astype("float64")
 
 
 def _normalize_header_label(val: object) -> str:
@@ -114,7 +124,7 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     out = out.join(amendment_markers(code_cells))
 
     out = out[out["code"].str.match(RE_EK2B_CODE, na=False)]
-    out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
+    out["price_try"] = _price_try(out["puan"])
     out = out.reset_index(drop=True)
     return out[["code", "name", "puan", "price_try", *MARKER_COLUMNS]]
 
@@ -150,7 +160,7 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     out = out.join(amendment_markers(code_cells))
 
     out = out[out["package_code"].str.match(RE_EK2C_CODE, na=False)]
-    out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
+    out["price_try"] = _price_try(out["puan"])
     out["prose_drg_locked"] = False
     try:
         from src.bilun.domain.prose_rules.ek2c_prose_drg_locked import (
@@ -228,7 +238,7 @@ def extract_ek2c_dental(df: pd.DataFrame) -> pd.DataFrame:
     # Drop section-header rows (no numeric puan) and validate the code shape.
     out = out.dropna(subset=["puan"])
     out = out[out["code"].str.match(RE_EK2C_DENTAL_CODE, na=False)]
-    out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
+    out["price_try"] = _price_try(out["puan"])
     out = out.reset_index(drop=True)
     return out[["code", "name", "description", "puan", "price_try", *MARKER_COLUMNS]]
 

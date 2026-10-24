@@ -22,6 +22,7 @@ from ..constants import (
     _EK2C_DENTAL_XLS_FALLBACK,
     _OLD_TO_NEW_CODE,
 )
+from ..money import puan_price_try
 from ..utils import _safe_float, _safe_str
 from .validity import rows_in_force
 
@@ -259,8 +260,8 @@ def _read_ek2c_dental_frame() -> pd.DataFrame | None:
         out["puan"] = _pd.to_numeric(body.iloc[:, puan_col], errors="coerce")
         out = out.dropna(subset=["puan"])
         out = out[out["code"].str.match(r"^P?40\d{4}$", na=False)]
-        # SUT puan→TRY coefficient (kept in sync with price_history.py).
-        out["price_try"] = (out["puan"] * 0.593).round(2)
+        # SUT puan→TRY coefficient (kept in sync with price_history.py), cut at the kuruş: SUT 2.2.(15).
+        out["price_try"] = out["puan"].map(lambda puan: puan_price_try(puan, 0.593))
         out["effective_date"] = "2026-01-01"  # filename: Yür.01.01.2026
         return out.reset_index(drop=True)[
             ["code", "name", "puan", "price_try", "effective_date"]
@@ -301,7 +302,7 @@ def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any
         puan = _safe_float(row.get("puan"))
         price = _safe_float(row.get("price_try"))
         if price is None and puan is not None:
-            price = round(float(puan) * 0.593, 2)
+            price = puan_price_try(puan, 0.593)
         name = _safe_str(row.get("name"))
         if not name or price is None:
             continue

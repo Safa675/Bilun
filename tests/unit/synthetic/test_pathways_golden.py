@@ -363,12 +363,12 @@ def test_the_s14_story_bill_reads_the_faulty_icu_bill_as_history_and_the_rule_fi
     done = subprocess.run([sys.executable, "-c", code], cwd=REPO, capture_output=True, text=True, check=True)
     out = json.loads(done.stdout.strip().splitlines()[-1])
     for variant in ("clean", "faulty"):
-        assert out[variant]["icu_billed"] == "8072.73"  # the history is S11's faulty bill, the one the cohort holds
+        assert out[variant]["icu_billed"] == "8072.66"  # the history is S11's faulty bill, the one the cohort holds
         assert out[variant]["active"] == ["C-SH14"]
         assert out[variant]["history"] == ["C-SH11", "C-SH14"]
         assert out[variant]["patients"] == ["SH-11"]  # the ward bill is the patient of S11
     assert out["clean"]["rows"] == []
-    assert out["faulty"]["rows"] == [["C-SH14", "2026-06-07", 222.36]]
+    assert out["faulty"]["rows"] == [["C-SH14", "2026-06-07", 222.35]]
 
 
 # --- S39 and S40: the story bills of patient 4's follow-ups; the second visit has the stay and the control as history ----
@@ -497,7 +497,7 @@ def test_the_proof_script_reads_the_rows_of_s49_s50_s15_and_s21_that_their_resul
             assert out[story][variant] == committed[variant]["direct"], (story, variant)
     assert [r["rule_id"] for r in out["S50"]["faulty"]] == ["2.2.2.B.c", "2.2.2.B.c"] and out["S50"]["clean"] == []
     assert [r["procedure_code"] for r in out["S49"]["faulty"]] == ["803602", "L101850"] and out["S49"]["clean"] == []
-    assert [(r["rule_id"], r["risk_amount_try"]) for r in out["S15"]["faulty"]] == [("yatak_newborn_overlap_510010", 222.36)]
+    assert [(r["rule_id"], r["risk_amount_try"]) for r in out["S15"]["faulty"]] == [("yatak_newborn_overlap_510010", 222.35)]
     assert out["S15"]["clean"] == []
     assert sorted({r["rule_id"].rsplit(".", 1)[-1] for r in out["S21"]["faulty"]}) == [
         "afterloading", "brachytherapy_design", "brachytherapy_dose", "linac_application", "rt_planning"

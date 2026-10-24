@@ -1,7 +1,7 @@
 {
  "story": "S10",
  "clean": {
-  "total_billed": "105.46",
+  "total_billed": "105.45",
   "rows": [
    {
     "date": "2026-05-09",
@@ -17,8 +17,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    }
   ],
@@ -39,7 +39,7 @@
   }
  },
  "faulty": {
-  "total_billed": "111.34",
+  "total_billed": "111.33",
   "rows": [
    {
     "date": "2026-05-09",
@@ -55,8 +55,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -81,7 +81,7 @@
     "fn": "optimize_lab_billing",
     "flag_type": "hemogram_unbundling",
     "sut_code": "L107020",
-    "gazette_price": 19.73,
+    "gazette_price": 19.72,
     "savings_try": 5.88
    },
    {

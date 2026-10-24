@@ -18,7 +18,8 @@ date. Each table starts on the Yürürlük date of the amendment marker on its
 rows in the raw EK-2/B lists (2018-02-15, 2022-08-04, 2024-08-07, 2026-04-16),
 not on the date of the list that later consolidated it.
 
-**Formula:** ``anestezi_charge_try = group_puan × katsayi``.
+**Formula:** ``anestezi_charge_try = group_puan × katsayi``, cut at the kuruş like
+every list price (SUT 2.2.(15), ``money.puan_price_try``).
 Already-billed surgical anesthesia lines (550130-550346) on the claim are
 subtracted to compute ``recoverable_uplift_try``.
 """
@@ -29,7 +30,7 @@ from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
-from src.bilun.domain.money import money_round_half_up as _money
+from src.bilun.domain.money import money_round_half_up as _money, puan_price_try
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
@@ -313,7 +314,7 @@ def detect_anestezi_puani_opportunities(
             anestezi_code, fallback_anestezi_puan, visit_date=visit_date
         )
 
-        expected = _money(anestezi_puan * katsayi)
+        expected = puan_price_try(anestezi_puan, katsayi)
         claim_billed = remaining_billed_by_claim.get(claim_id, 0.0)
         recoverable = _money(max(0.0, expected - claim_billed))
         remaining_billed_by_claim[claim_id] = _money(max(0.0, claim_billed - expected))

@@ -266,7 +266,7 @@ def test_canonicalize_text_replaces_s1_ids_and_preserves_id_free_strings(
     proof_faulty = s1.proof["faulty"]["direct"][2]["detail"]
     expected_faulty = (
         "SUT §2.2 mandates package billing for claim <claim> (EK-2/C procedure present). "
-        "Package total 8636.51 TRY vs itemized 4514.45 TRY."
+        "Package total 8636.50 TRY vs itemized 4514.38 TRY."
     )
     assert "F-SENTETIK-HASTA-0001-001" in raw_faulty
     assert "C-SH01" in proof_faulty
@@ -276,7 +276,7 @@ def test_canonicalize_text_replaces_s1_ids_and_preserves_id_free_strings(
     raw_clean = direct_rows("S1", s1.clean_ctx)[1]["detail"]
     proof_clean = s1.proof["clean"]["direct"][1]["detail"]
     expected_clean = (
-        "Claim <claim> is billed correctly as package per SUT §2.2.2(1). Package total 8636.51 TRY."
+        "Claim <claim> is billed correctly as package per SUT §2.2.2(1). Package total 8636.50 TRY."
     )
     assert "F-SENTETIK-HASTA-0001-001" in raw_clean
     assert "C-SH01" in proof_clean
@@ -366,11 +366,11 @@ def test_fault_found_with_expected_amount_in_signal_diff(
         # carries the whole gap to the clean bill, which bills the separate-incision rate (50 %).
         div = KNOWN_REPORT_DIVERGENCES["S9"]
         assert isinstance(div, ReportDivergence)
-        assert (div.report_amount_try, div.record_amount_try) == ("151.60", "758.01")
+        assert (div.report_amount_try, div.record_amount_try) == ("151.60", "758.00")
         assert b.record.amount_try == div.record_amount_try
         assert ("action", "session_uplift", "session_underbilling", "615995", 151.6) in diff_tuples
         assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
-        assert "151.60" in b.story_proof.note and "758.01" in b.story_proof.note
+        assert "151.60" in b.story_proof.note and "758.00" in b.story_proof.note
         assert "Safa675/Bilun#311 item 6" in b.story_proof.note
         assert target_signal_found("S9", b.record.amount_try, diff_tuples) is True
         return
@@ -380,11 +380,11 @@ def test_fault_found_with_expected_amount_in_signal_diff(
         # carries the whole gap to the clean bill, which bills it at 50 % (silent there; at 30 % a session review).
         div = KNOWN_REPORT_DIVERGENCES["S22"]
         assert isinstance(div, ReportDivergence)
-        assert (div.report_amount_try, div.record_amount_try) == ("263.92", "439.86")
+        assert (div.report_amount_try, div.record_amount_try) == ("263.91", "439.86")
         assert b.record.amount_try == div.record_amount_try
-        assert ("action", "procedure_addon_uplift", "missing_add_on_procedure", "701450", 263.92) in diff_tuples
+        assert ("action", "procedure_addon_uplift", "missing_add_on_procedure", "701450", 263.91) in diff_tuples
         assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
-        assert "263.92" in b.story_proof.note and "439.86" in b.story_proof.note
+        assert "263.91" in b.story_proof.note and "439.86" in b.story_proof.note
         assert "Safa675/Bilun#311 item 6" in b.story_proof.note
         assert target_signal_found("S22", b.record.amount_try, diff_tuples) is True
         return
@@ -394,14 +394,14 @@ def test_fault_found_with_expected_amount_in_signal_diff(
         # (50 %, C000673); the record carries the gap to the clean bill, which bills the same-incision 30 % (C000672).
         div = KNOWN_REPORT_DIVERGENCES["S50"]
         assert isinstance(div, ReportDivergence)
-        assert (div.report_amount_try, div.record_amount_try) == ("962.82", "1347.95")
+        assert (div.report_amount_try, div.record_amount_try) == ("962.81", "1347.94")
         assert b.record.amount_try == div.record_amount_try
         rows = [(r["procedure_code"], r["expected_point_factor"], r["risk_amount_try"]) for r in b.direct_faulty]
-        assert rows == [("701370", 0.3, 755.55), ("701440", 0.3, 592.4)]  # the strict reading: 1347.95 together
-        assert ("scalar", "audit_exposure_try", "", "", 962.82) in diff_tuples
+        assert rows == [("701370", 0.3, 755.55), ("701440", 0.3, 592.39)]  # the strict reading: 1347.94 together
+        assert ("scalar", "audit_exposure_try", "", "", 962.81) in diff_tuples
         assert ("action", "audit_exposure", "session_point_violation", "701370", 539.68) in diff_tuples
         assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
-        assert "962.82" in b.story_proof.note and "1347.95" in b.story_proof.note
+        assert "962.81" in b.story_proof.note and "1347.94" in b.story_proof.note
         assert "Safa675/Bilun#311 item 6" in b.story_proof.note
         assert target_signal_found("S50", b.record.amount_try, diff_tuples) is True
         return
@@ -444,7 +444,7 @@ def test_the_s9_session_uplift_rows_are_the_strict_and_the_lenient_reading(
     )
     assert (row["strict_point_factor"], row["lenient_point_factor"]) == (0.3, 0.5)
     assert (row["actual_billed_try"], row["strict_expected_billed_try"]) == (758.0, 909.6)
-    assert row["lenient_expected_billed_try"] == 1516.01
+    assert row["lenient_expected_billed_try"] == 1516.00
     assert (row["recoverable_uplift_try"], row["review_uplift_try"]) == (151.6, 0.0)
     assert row["missing_facts"] == ["kesi"]
     # the clean bill pays the lenient reading, which the engine accepts without a row
@@ -674,15 +674,15 @@ def test_the_ward_bill_is_found_through_the_icu_bill_that_is_its_history(
     # the rule reads the history: the bed line of the active bill, on the day the other bill ends
     assert len(b.direct_faulty) == 1
     row = b.direct_faulty[0]
-    assert (row["rule_id"], row["overlap_date"], row["risk_amount_try"]) == ("yatak_icu_overlap_510010", "2026-06-07", 222.36)
+    assert (row["rule_id"], row["overlap_date"], row["risk_amount_try"]) == ("yatak_icu_overlap_510010", "2026-06-07", 222.35)
     assert (row["claim_id"], row["icu_claim_id"]) == ("<claim>", "<claim>")  # both ids canonicalized, not only the active bill's
     assert b.direct_clean == []
     financial = b.faulty_report.financial_findings.rows
     assert [(r["rule_id"], r["claim_id"], r["observed_billed_amount_try"]) for r in financial] == [
-        ("yatak_icu_overlap_510010", b.record.claim_id, 222.36)
+        ("yatak_icu_overlap_510010", b.record.claim_id, 222.35)
     ]
     assert not (b.clean_report.financial_findings.rows or [])
-    assert ("wavea", "financial_findings", "yatak_icu_overlap_510010", "", 222.36) in b.f_counter  # the amount the signal carries
+    assert ("wavea", "financial_findings", "yatak_icu_overlap_510010", "", 222.35) in b.f_counter  # the amount the signal carries
     assert target_signal_found("S14", b.record.amount_try, (b.f_counter - b.c_counter).elements())
 
 
@@ -787,9 +787,9 @@ def _fake_report(*, reviews=(), advisories=(), financial=()) -> SimpleNamespace:
 
 def test_a_financial_row_without_money_of_its_own_carries_the_amount_it_observed() -> None:
     """The Wave A financial row of S14 has no `amount_try`: the signal reads what the bill had billed on the line."""
-    row = {"rule_id": "yatak_icu_overlap_510010", "observed_billed_amount_try": 222.36}
+    row = {"rule_id": "yatak_icu_overlap_510010", "observed_billed_amount_try": 222.35}
     assert ui_signals(_fake_report(financial=[row]), []) == [
-        ("wavea", "financial_findings", "yatak_icu_overlap_510010", "", 222.36)
+        ("wavea", "financial_findings", "yatak_icu_overlap_510010", "", 222.35)
     ]
     # a row with money of its own keeps it; a review or an advisory never takes the observed amount
     own = {"rule_id": "r", "amount_try": 5.0, "observed_billed_amount_try": 9.0}
@@ -808,7 +808,7 @@ def test_the_proof_harness_reads_the_rows_of_a_report_like_the_engine_proof() ->
     Run in a subprocess like the golden export: importing the harness changes the working directory."""
     reviews = [{"rule_id": "ORTAK-1", "observed_billed_amount_try": 9.0}]
     financial = [
-        {"rule_id": "yatak_icu_overlap_510010", "observed_billed_amount_try": 222.36},
+        {"rule_id": "yatak_icu_overlap_510010", "observed_billed_amount_try": 222.35},
         {"rule_id": "r", "amount_try": 5.0, "observed_billed_amount_try": 9.0},
         {"rule_id": "q", "risk_amount_try": 7.0, "observed_billed_amount_try": 9.0},
     ]
@@ -829,7 +829,7 @@ def test_the_proof_harness_reads_the_rows_of_a_report_like_the_engine_proof() ->
     done = subprocess.run([sys.executable, "-c", code], cwd=repo, capture_output=True, text=True, check=True)
     harness = [tuple(signal) for signal in json.loads(done.stdout.strip().splitlines()[-1])]
     assert harness == ui_signals(_fake_report(reviews=reviews, advisories=reviews, financial=financial), [])
-    assert [signal[-1] for signal in harness] == [0.0, 0.0, 222.36, 5.0, 7.0]
+    assert [signal[-1] for signal in harness] == [0.0, 0.0, 222.35, 5.0, 7.0]
 
 
 # --- 10. S10 and S22: the lab unbundling with its MEDULA rejection, the add-on of a colonoscopy ------------------
@@ -842,7 +842,7 @@ def test_s10_direct_rows_are_the_unbundled_hemogram_and_the_playbook_entry_of_it
     assert [row["fn"] for row in b.direct_faulty] == ["optimize_lab_billing", "detect_medula_rejection_playbook_entries"]
     lab, playbook = b.direct_faulty
     assert (lab["flag_type"], lab["sut_code"], lab["gazette_price"], lab["savings_try"]) == (
-        "hemogram_unbundling", "L107020", 19.73, 5.88
+        "hemogram_unbundling", "L107020", 19.72, 5.88
     )  # fmt: skip
     assert (playbook["playbook_id"], playbook["sonuc_kodu"], playbook["medula_stage"]) == (
         "0901_duplicate_procedure", "0901", "fatura_kayit"
@@ -868,7 +868,7 @@ def test_s22_direct_row_asks_for_30_percent_of_the_omitted_polypectomy_and_the_b
     assert (row["rule_id"], row["trigger_procedure_code"], row["expected_addon_procedure_code"]) == (
         "pairing.701450_701460", "701450", "701460"
     )  # fmt: skip
-    assert (row["addon_factor"], row["list_price_try"], row["recoverable_uplift_try"]) == (0.3, 879.72, 263.92)
+    assert (row["addon_factor"], row["list_price_try"], row["recoverable_uplift_try"]) == (0.3, 879.71, 263.91)
     assert b.direct_clean == []
     # the ER bill (S10) is the history of the admission: its blood count repeats two days later on both bills
     review = ("wavea", "claim_reviews", "tablo15_12_duplicate_test", "", 0.0)
@@ -879,18 +879,18 @@ def test_s22_direct_row_asks_for_30_percent_of_the_omitted_polypectomy_and_the_b
 def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_is_silent(
     story_bundles: dict[str, _StoryBundle],
 ) -> None:
-    """Two red-cell units inside the removal package: the faulty bill bills them in full (4462.65 each), the clean one
-    at 36 % (1606.55, C000694). The rule's ceiling is 36 % of 705371's EK-2/B list price on the bill date (4462.65 x
+    """Two red-cell units inside the removal package: the faulty bill bills them in full (4462.64 each), the clean one
+    at 36 % (1606.55, C000694). The rule's ceiling is 36 % of 705371's EK-2/B list price on the bill date (4462.64 x
     0.36 = 1606.55), never the line's own payable, which the bill sets equal to the billed amount (Safa675/Bilun#336):
-    the faulty bill is at risk for 2856.10 a unit, the clean bill for nothing, and the record carries the difference
-    of the totals, 5712.20."""
+    the faulty bill is at risk for 2856.09 a unit, the clean bill for nothing, and the record carries the difference
+    of the totals, 5712.18."""
     b = story_bundles["S42"]
-    assert b.record.amount_try == "5712.20" and b.record.engine_rule == "blood_component_partial_bill"
+    assert b.record.amount_try == "5712.18" and b.record.engine_rule == "blood_component_partial_bill"
     assert [(r["actual_billed_try"], r["max_billable_try"], r["risk_amount_try"]) for r in b.direct_faulty] == [
-        (4462.65, 1606.55, 2856.1)
+        (4462.64, 1606.55, 2856.09)
     ] * 2
     assert b.direct_clean == []
-    assert (b.faulty_report.audit_exposure_try, b.clean_report.audit_exposure_try) == (5712.2, 0.0)
+    assert (b.faulty_report.audit_exposure_try, b.clean_report.audit_exposure_try) == (5712.18, 0.0)
     assert (b.faulty_report.sgk_uplift_try, b.clean_report.sgk_uplift_try) == (0.0, 0.0)  # no unit under its share
     assert not any("blood_component_partial_bill" in str(s) for s in b.c_counter)
     # the units carry their ISBT 128 numbers on both bills: the ISBT rule is silent, the bill has one planted fault
@@ -1005,7 +1005,7 @@ def test_s15_proof_rows_read_the_newborn_bed_of_the_patients_other_bills(story_b
     b = story_bundles["S15"]
     (row,) = direct_rows("S15", b.faulty_ctx)
     assert (row["procedure_code"], row["overlap_date"], row["newborn_bed_codes"]) == ("510010", "2026-07-16", ["510081"])
-    assert row["newborn_claim_id"] == b.record.claim_id and row["risk_amount_try"] == 222.36
+    assert row["newborn_claim_id"] == b.record.claim_id and row["risk_amount_try"] == 222.35
     ward = next(line for line in b.faulty_ctx.procedure_lines if line.procedure_code == "510010")
     kept = b.faulty_ctx.patient_history
     assert kept is not None

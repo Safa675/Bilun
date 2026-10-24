@@ -37,11 +37,11 @@ def _context(lines=(), materials=(), claims=None):
 def _historical_lines():
     return [
         _proc(procedure_line_id="primary", procedure_code="P610070", procedure_date=_DAY,
-              procedure_specialty_code="general_surgery", unit_price_try=Decimal("9663.36"),
-              expected_payable_try=Decimal("9663.36"), billed_amount_try=Decimal("9663.36")),
+              procedure_specialty_code="general_surgery", unit_price_try=Decimal("9663.35"),
+              expected_payable_try=Decimal("9663.35"), billed_amount_try=Decimal("9663.35")),
         _proc(procedure_line_id="secondary", procedure_code="P609830", procedure_date=_DAY,
-              procedure_specialty_code="general_surgery", unit_price_try=Decimal("8006.39"),
-              expected_payable_try=Decimal("8006.39"), billed_amount_try=Decimal("2001.60")),
+              procedure_specialty_code="general_surgery", unit_price_try=Decimal("8006.38"),
+              expected_payable_try=Decimal("8006.38"), billed_amount_try=Decimal("2001.60")),
     ]
 
 
@@ -54,7 +54,7 @@ def test_historical_primary_is_preserved_at_audit_uplift_and_strategy_boundaries
     assert [
         (r["procedure_line_id"], r["recoverable_uplift_try"], r["review_uplift_try"], r["missing_facts"])
         for r in rows
-    ] == [("secondary", 0.0, 2001.60, ["kesi"])]
+    ] == [("secondary", 0.0, 2001.59, ["kesi"])]  # 50 % of 8,006.38 = 4,003.19 less the 2,001.60 billed
     # P codes are billed as packages (line_billed_as_package, review item 4), so a
     # hypothetical itemized total holds neither line (was 11,664.96 at B(3)(a)).
     total, meta = compute_session_adjusted_itemized_total(lines, cross_specialty=False)
@@ -64,7 +64,8 @@ def test_historical_primary_is_preserved_at_audit_uplift_and_strategy_boundaries
 @pytest.mark.parametrize(
     "day, package_total",
     [
-        (_DAY, round(9663.36 + 0.25 * 8006.39, 2)),  # 610070 leads by its 2024 puan.
+        # 610070 leads by its 2024 puan: 9663.35 + 0.25 x 8006.38 = 11,664.945, half up (a float round() takes it down).
+        (_DAY, 11664.95),
         (date(2026, 10, 1), round(16028.79 + 0.25 * 12562.36, 2)),  # 609830 after the change.
     ],
 )
@@ -96,15 +97,15 @@ def test_real_catalog_ranking_reverses_only_after_tariff_change():
 
 @pytest.mark.parametrize("candidate", [False, True])
 def test_itemized_blood_does_not_create_package_fraction_audit_exposure(candidate):
-    line = _proc(procedure_code="705430", billed_amount_try=Decimal("1134.71"),
-                 expected_payable_try=Decimal("1134.71"), unit_price_try=Decimal("1134.71"))
+    line = _proc(procedure_code="705430", billed_amount_try=Decimal("1134.70"),
+                 expected_payable_try=Decimal("1134.70"), unit_price_try=Decimal("1134.70"))
     ctx = _context([line], claims=[_claim(package_candidate=candidate)])
     assert detect_blood_component_violations([line]) == []
     assert compute_audit_exposure_from_claims(ctx) == 0
 
 
 def test_blood_package_audit_requires_matching_claim_and_episode():
-    blood = _proc(billed_amount_try=Decimal("4462.65"))  # 705371 in full, above its 36 % share
+    blood = _proc(billed_amount_try=Decimal("4462.64"))  # 705371 in full, above its 36 % share
     package = _proc(procedure_line_id="package", procedure_category="paket", procedure_code="P610070")
     assert len(detect_blood_component_violations([package, blood])) == 1
     for foreign in (replace(package, claim_id="OTHER"), replace(package, episode_id="OTHER")):

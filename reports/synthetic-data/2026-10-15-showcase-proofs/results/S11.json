@@ -1,15 +1,15 @@
 {
  "story": "S11",
  "clean": {
-  "total_billed": "14162.55",
+  "total_billed": "14162.48",
   "rows": [
    {
     "date": "2026-06-02",
     "code": "510090",
     "name": "Yoğun bakım",
     "qty": 1,
-    "unit": "742.60",
-    "billed": "742.60",
+    "unit": "742.59",
+    "billed": "742.59",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -17,8 +17,8 @@
     "code": "P552002",
     "name": "İkinci basamak yoğun bakım hastası",
     "qty": 1,
-    "unit": "4059.89",
-    "billed": "4059.89",
+    "unit": "4059.88",
+    "billed": "4059.88",
     "source": "EK-2C valid_from 2026-01-31"
    },
    {
@@ -26,8 +26,8 @@
     "code": "P552002",
     "name": "İkinci basamak yoğun bakım hastası",
     "qty": 1,
-    "unit": "4059.89",
-    "billed": "4059.89",
+    "unit": "4059.88",
+    "billed": "4059.88",
     "source": "EK-2C valid_from 2026-01-31"
    },
    {
@@ -35,8 +35,8 @@
     "code": "P552002",
     "name": "İkinci basamak yoğun bakım hastası",
     "qty": 1,
-    "unit": "4059.89",
-    "billed": "4059.89",
+    "unit": "4059.88",
+    "billed": "4059.88",
     "source": "EK-2C valid_from 2026-01-31"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510090",
     "name": "Yoğun bakım",
     "qty": 1,
-    "unit": "742.60",
-    "billed": "742.60",
+    "unit": "742.59",
+    "billed": "742.59",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -53,8 +53,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -80,8 +80,8 @@
     "code": "L104890",
     "name": "Laktat (Serum/Plazma)",
     "qty": 1,
-    "unit": "44.75",
-    "billed": "44.75",
+    "unit": "44.74",
+    "billed": "44.74",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -138,8 +138,8 @@
     "ilave_oran_pct": 0.0,
     "ilave_oran_reason": "not_sinif_3",
     "total_puan": 23043.59,
-    "total_try": 13664.87,
-    "actual_billed_try": 13664.87,
+    "total_try": 13664.82,
+    "actual_billed_try": 13664.82,
     "recoverable_uplift_try": 0.0,
     "rule_id": "icu_puani_510090_p55200x",
     "sut_section_id": "2.4.4.H"
@@ -154,15 +154,15 @@
   }
  },
  "faulty": {
-  "total_billed": "8072.73",
+  "total_billed": "8072.66",
   "rows": [
    {
     "date": "2026-06-02",
     "code": "510090",
     "name": "Yoğun bakım",
     "qty": 1,
-    "unit": "742.60",
-    "billed": "742.60",
+    "unit": "742.59",
+    "billed": "742.59",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -170,8 +170,8 @@
     "code": "P552002",
     "name": "İkinci basamak yoğun bakım hastası",
     "qty": 1,
-    "unit": "4059.89",
-    "billed": "2029.95",
+    "unit": "4059.88",
+    "billed": "2029.94",
     "source": "EK-2C valid_from 2026-01-31"
    },
    {
@@ -179,8 +179,8 @@
     "code": "P552002",
     "name": "İkinci basamak yoğun bakım hastası",
     "qty": 1,
-    "unit": "4059.89",
-    "billed": "2029.95",
+    "unit": "4059.88",
+    "billed": "2029.94",
     "source": "EK-2C valid_from 2026-01-31"
    },
    {
@@ -188,8 +188,8 @@
     "code": "P552002",
     "name": "İkinci basamak yoğun bakım hastası",
     "qty": 1,
-    "unit": "4059.89",
-    "billed": "2029.95",
+    "unit": "4059.88",
+    "billed": "2029.94",
     "source": "EK-2C valid_from 2026-01-31"
    },
    {
@@ -197,8 +197,8 @@
     "code": "510090",
     "name": "Yoğun bakım",
     "qty": 1,
-    "unit": "742.60",
-    "billed": "742.60",
+    "unit": "742.59",
+    "billed": "742.59",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -206,8 +206,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -233,8 +233,8 @@
     "code": "L104890",
     "name": "Laktat (Serum/Plazma)",
     "qty": 1,
-    "unit": "44.75",
-    "billed": "44.75",
+    "unit": "44.74",
+    "billed": "44.74",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -291,8 +291,8 @@
     "ilave_oran_pct": 0.0,
     "ilave_oran_reason": "not_sinif_3",
     "total_puan": 23043.59,
-    "total_try": 13664.87,
-    "actual_billed_try": 7575.05,
+    "total_try": 13664.82,
+    "actual_billed_try": 7575.0,
     "recoverable_uplift_try": 6089.82,
     "rule_id": "icu_puani_510090_p55200x",
     "sut_section_id": "2.4.4.H"

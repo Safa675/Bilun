@@ -1,15 +1,15 @@
 {
  "story": "S4",
  "clean": {
-  "total_billed": "2108.52",
+  "total_billed": "2108.38",
   "rows": [
    {
     "date": "2026-05-11",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -17,8 +17,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -26,8 +26,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -53,8 +53,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -62,8 +62,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -71,8 +71,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -80,8 +80,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -89,8 +89,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -98,8 +98,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -107,8 +107,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -188,8 +188,8 @@
     "code": "L107010",
     "name": "Tam idrar analizi (Strip+Mikroskopi)",
     "qty": 1,
-    "unit": "26.31",
-    "billed": "26.31",
+    "unit": "26.30",
+    "billed": "26.30",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -224,8 +224,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -304,10 +304,10 @@
     "rule_id": "refakatci_510121",
     "days": 5,
     "puan": 124.95,
-    "expected_try": 370.5,
-    "actual_billed_try": 370.5,
+    "expected_try": 370.45,
+    "actual_billed_try": 370.45,
     "recoverable_uplift_try": 0.0,
-    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.10 TRY/day → 370.50 TRY (admission IN, discharge OUT)."
+    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.09 TRY/day → 370.45 TRY (admission IN, discharge OUT)."
    }
   ],
   "report": {
@@ -319,15 +319,15 @@
   }
  },
  "faulty": {
-  "total_billed": "1738.02",
+  "total_billed": "1737.93",
   "rows": [
    {
     "date": "2026-05-11",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -335,8 +335,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -344,8 +344,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -353,8 +353,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -362,8 +362,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -371,8 +371,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -380,8 +380,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -461,8 +461,8 @@
     "code": "L107010",
     "name": "Tam idrar analizi (Strip+Mikroskopi)",
     "qty": 1,
-    "unit": "26.31",
-    "billed": "26.31",
+    "unit": "26.30",
+    "billed": "26.30",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -497,8 +497,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -577,14 +577,14 @@
     "rule_id": "refakatci_510121",
     "days": 5,
     "puan": 124.95,
-    "expected_try": 370.5,
+    "expected_try": 370.45,
     "actual_billed_try": 0.0,
-    "recoverable_uplift_try": 370.5,
-    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.10 TRY/day → 370.50 TRY (admission IN, discharge OUT)."
+    "recoverable_uplift_try": 370.45,
+    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.09 TRY/day → 370.45 TRY (admission IN, discharge OUT)."
    }
   ],
   "report": {
-   "sgk_uplift_try": 370.5,
+   "sgk_uplift_try": 370.45,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
@@ -597,14 +597,14 @@
    "refakatci",
    "refakatci_companion_bed",
    "",
-   370.5
+   370.45
   ],
   [
    "block",
    "refakatci",
    "refakatci_510121",
    "",
-   370.5
+   370.45
   ]
  ],
  "only_in_clean": [],

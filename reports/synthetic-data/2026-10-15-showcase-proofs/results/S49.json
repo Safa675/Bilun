@@ -1,15 +1,15 @@
 {
  "story": "S49",
  "clean": {
-  "total_billed": "108.26",
+  "total_billed": "108.25",
   "rows": [
    {
     "date": "2026-08-25",
     "code": "520021",
     "name": "Yeşil alan muayenesi",
     "qty": 1,
-    "unit": "108.26",
-    "billed": "108.26",
+    "unit": "108.25",
+    "billed": "108.25",
     "source": "EK-2B valid_from 2026-07-07"
    }
   ],
@@ -30,15 +30,15 @@
   }
  },
  "faulty": {
-  "total_billed": "180.68",
+  "total_billed": "180.66",
   "rows": [
    {
     "date": "2026-08-25",
     "code": "520021",
     "name": "Yeşil alan muayenesi",
     "qty": 1,
-    "unit": "108.26",
-    "billed": "108.26",
+    "unit": "108.25",
+    "billed": "108.25",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -46,8 +46,8 @@
     "code": "803602",
     "name": "Ultrason, genel",
     "qty": 1,
-    "unit": "55.96",
-    "billed": "55.96",
+    "unit": "55.95",
+    "billed": "55.95",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {

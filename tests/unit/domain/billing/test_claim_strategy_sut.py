@@ -579,7 +579,7 @@ class TestClaimStrategySut:
             and rec.get("recommendation_kind") == "optional_override"
         )
         assert claim_rec["itemized_price_methodology"] == "ek2b_catalog"
-        assert claim_rec["itemized_total_try"] == pytest.approx(3038.16)
+        assert claim_rec["itemized_total_try"] == pytest.approx(3038.15)
         assert claim_rec["package_total_try"] == pytest.approx(2000.00)
         assert claim_rec["recommendation"] == "itemized"
-        assert claim_rec["savings_try"] == pytest.approx(1038.16)
+        assert claim_rec["savings_try"] == pytest.approx(1038.15)
