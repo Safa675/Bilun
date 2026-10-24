@@ -50,7 +50,7 @@ def test_price_material_lines_does_not_fuzzy_match_by_name(monkeypatch) -> None:
 
     monkeypatch.setattr(
         "src.bilun.domain.materials.catalog_lookup.lookup_ek3_list_price_try",
-        lambda code: 999.0 if code == "REALCODE" else None,
+        lambda code, as_of=None: 999.0 if code == "REALCODE" else None,
     )
 
     lines = price_material_lines(

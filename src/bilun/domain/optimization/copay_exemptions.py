@@ -34,13 +34,18 @@ def _exempts_every_claim(source: dict[str, Any]) -> bool:
 
 
 def evaluate_copay_exemption(inp: CopayExemptionInput) -> dict[str, Any]:
-    """Evaluate all applicable copay exemption grounds for one patient."""
+    """Evaluate all applicable copay exemption grounds for one patient.
+
+    EK-1/A is read on ``inp.service_date`` (the latest evaluated claim's date; today
+    only when the input has no claim, #292).
+    """
     sources: list[dict[str, Any]] = []
     not_evaluated: list[dict[str, Any]] = []
 
     ek1a = evaluate_ek1a_exemption(
         inp.diagnoses,
         has_health_report=inp.has_chronic_health_report,
+        as_of=inp.service_date,
     )
     if ek1a is not None:
         sources.append(ek1a)

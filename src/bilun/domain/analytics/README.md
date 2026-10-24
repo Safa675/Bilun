@@ -13,7 +13,7 @@ consumer should return unavailable metadata instead of a guessed number.
 
 | Function | Description |
 |----------|-------------|
-| `price_material_lines(...)` | Compatibility material rule helpers; active billing values must come from exact claim lines |
+| `price_material_lines(...)` | Compatibility material rule helpers; active billing values must come from exact claim lines; the EK-3 list price is read on the line's `material_date`, else on `as_of` (today when the request has no date, #292) |
 
 ## Modules
 

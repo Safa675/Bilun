@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from src.bilun.domain.claims.models import ClaimHeader, PatientCopayProfile
+from src.bilun.domain.loaders.validity import service_date_of
 from src.bilun.domain.optimization.copay_exemption_types import CopayExemptionInput
 
 
@@ -20,6 +22,7 @@ def build_copay_exemption_input(
     visit_types: list[str] = []
     occupational: list[str] = []
     latest_year: int | None = None
+    claim_dates: list[date] = []
 
     for claim in patient_claims:
         if claim.claim_type:
@@ -31,6 +34,9 @@ def build_copay_exemption_input(
             year = claim.claim_end_date.year
             if latest_year is None or year > latest_year:
                 latest_year = year
+        claim_date = service_date_of(None, claim)
+        if claim_date is not None:
+            claim_dates.append(claim_date)
 
     resolved_age = age_at_latest_claim
     if (
@@ -53,6 +59,8 @@ def build_copay_exemption_input(
         occupational_contexts=tuple(occupational),
         age_at_latest_claim=resolved_age,
         has_chronic_health_report=has_chronic_health_report,
+        # EK-1/A as of the latest claim, as the age is (one bill: its own date, #292).
+        service_date=max(claim_dates, default=None),
     )
 
 

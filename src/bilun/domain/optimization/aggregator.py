@@ -15,6 +15,7 @@ import polars as pl
 
 from src.bilun.domain.claims.patient_context import build_cohort_claim_context
 from src.bilun.domain.claims.loader import SUTClaimDataset
+from src.bilun.domain.loaders.validity import service_date_of
 
 from .shared import _extract_diagnoses_bulk_pl, _extract_patient_icd10_chapters
 from .copay_exemption_context import (
@@ -321,6 +322,25 @@ def _aggregate_copay_exemptions_by_bill(
     }
 
 
+def _warm_ek1a_indexes(
+    patient_ids: list[str],
+    copay_inputs: dict[str, CopayExemptionInput],
+    claims_by_patient: dict[str, Any],
+) -> None:
+    """Build the EK-1/A index of every date the summary reads it on (#292).
+
+    The patient counts read it on each patient's latest claim, the bill counts on
+    each bill's own date; a patient without claims on today.
+    """
+    days = {copay_inputs[pid].service_date for pid in patient_ids}
+    for pid in patient_ids:
+        for claim in claims_by_patient.get(pid, ()):
+            if getattr(claim, "claim_id", None):
+                days.add(service_date_of(None, claim))
+    for day in sorted(days, key=lambda value: (value is not None, value)):
+        _get_ek1a_by_letter(day)
+
+
 def compute_optimization_summary(
     ana_df: pl.DataFrame,
     patient_ids: list[str],
@@ -334,8 +354,6 @@ def compute_optimization_summary(
 
     if diagnoses_by_pid is None:
         diagnoses_by_pid = _extract_diagnoses_bulk_pl(ana_df, patient_ids)
-
-    _get_ek1a_by_letter()
 
     claims_by_patient = (
         getattr(claim_dataset, "claims_by_patient", {}) if claim_dataset is not None else {}
@@ -357,6 +375,7 @@ def compute_optimization_summary(
         copay_profiles_by_patient=profiles_by_patient,
         procedure_lines_by_patient=procedure_lines_by_patient,
     )
+    _warm_ek1a_indexes(patient_ids, copay_inputs, claims_by_patient)
 
     n_exempt = 0
     n_exempt_ek1a = 0

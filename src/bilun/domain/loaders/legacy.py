@@ -12,7 +12,7 @@ import pandas as pd
 
 from ..constants import EK1A_CURATED_PATH, EK2C1_CURATED_PATH, EK2G_CURATED_PATH
 from ..labels import normalize_sut_display_text
-from .validity import rows_in_force
+from .validity import change_days, rows_in_force, version_day
 
 logger = logging.getLogger("ilay.sut_catalog")
 
@@ -28,6 +28,17 @@ def _load_ek1a_exemptions(as_of: date | str | None = None) -> pd.DataFrame:
     in force on every date.
     """
     return rows_in_force(_load_ek1a_list(), as_of)
+
+
+def ek1a_version_day(as_of: date | str | None = None) -> str:
+    """The first day of the EK-1A version in force on ``as_of`` (default today, #292).
+
+    Every service date from one change (a row's valid_from, the day after its valid_to)
+    to the next reads the same ranges, so an index cached by this day is built once per
+    version, not once per claim date.
+    """
+    frame = _load_ek1a_list()
+    return version_day(change_days(frame.get("valid_from", ()), frame.get("valid_to", ())), as_of)
 
 
 def _load_ek1a_list() -> pd.DataFrame:

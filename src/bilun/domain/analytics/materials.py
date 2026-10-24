@@ -29,11 +29,15 @@ class MaterialLinePricing:
     notes: str = ""
 
 
-def price_material_lines(materials: list[dict[str, Any]]) -> list[MaterialLinePricing]:
+def price_material_lines(
+    materials: list[dict[str, Any]], *, as_of: Any = None
+) -> list[MaterialLinePricing]:
     """Price material lines from billed amounts or exact EK-3 code lookup.
 
     No fuzzy name matching. Lines without a SUT material code are marked
-    ``missing_exact_inputs`` and excluded from exact totals.
+    ``missing_exact_inputs`` and excluded from exact totals. The EK-3 list price
+    is the one in force on the line's ``material_date``, else on ``as_of`` (the
+    claim's date; today when the request carries none, #292).
     """
     from src.bilun.domain.materials import is_consumable_bundled, is_material_reimbursable
     from src.bilun.domain.materials.catalog_lookup import (
@@ -84,7 +88,7 @@ def price_material_lines(materials: list[dict[str, Any]]) -> list[MaterialLinePr
             continue
 
         canonical_name = resolve_material_name_by_code(code) or name
-        catalog_unit = lookup_ek3_list_price_try(code)
+        catalog_unit = lookup_ek3_list_price_try(code, item.get("material_date") or as_of)
 
         if billed_unit > 0:
             unit_price = billed_unit

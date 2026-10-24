@@ -16,7 +16,7 @@ recovery amounts.
 | 1 | Lab Billing Optimizer | EK-2B | Hemogram (CBC) bundling — L107020 |
 | 2 | Copay Savings Calculator | EK-1A, EK-4/D | Exemption savings + rate corrections on claim lines; a report over some bills is exempt on the emergency ground (SUT 1.8.5.(5)) only when every bill is an emergency bill |
 | 3 | Package vs Itemized Recommender | EK-2C | Exact package vs itemized comparison when claim totals are supplied |
-| 4 | Material Reimbursability Pre-Check | EK-3C-1/3C-2 | Pre-auth flags + MIAT warnings |
+| 4 | Material Reimbursability Pre-Check | EK-3C-1/3C-2 | Pre-auth flags + MIAT warnings; KDV price reviews and the §3.1 material rules read each EK-3 row (list price, catalog membership, separate-billing marker) on the line's material date, its claim's date when it has none (#292) |
 
 ## Public Surface
 

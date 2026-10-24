@@ -67,7 +67,7 @@ def test_compute_optimization_summary_keeps_exact_exemptions_but_gates_non_exact
             "primary_exemption_category": None,
         }
 
-    monkeypatch.setattr(agg_mod, "_get_ek1a_by_letter", lambda: {})
+    monkeypatch.setattr(agg_mod, "_get_ek1a_by_letter", lambda _day=None: {})
     monkeypatch.setattr(agg_mod, "evaluate_copay_exemption", _fake_evaluate)
     monkeypatch.setattr(
         agg_mod,

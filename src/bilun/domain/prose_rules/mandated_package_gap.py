@@ -60,6 +60,7 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from ..constants import _PROJECT_ROOT
+from ..loaders.validity import service_date_of
 from ..money import money_round_half_up as _money
 from .catalog_membership import (
     get_ek2c_description,
@@ -433,6 +434,7 @@ def mandated_package_gap(
             and not material_paid_next_to_package(
                 code=line.material_code, name=line.material_name,
                 package_descriptions=packages, procedure_codes=codes - {""},
+                as_of=service_date_of(line.material_date, claim),
             )
         )
 

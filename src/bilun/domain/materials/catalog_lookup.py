@@ -16,7 +16,7 @@ from ..constants import (
     EK3H_PARQUET_PATH,
     EK3I_PARQUET_PATH,
 )
-from ..loaders.validity import as_of_iso
+from ..loaders.validity import as_of_iso, change_days, version_day
 from ..utils import turkish_lower
 
 logger = logging.getLogger("bilun.domain.materials.catalog_lookup")
@@ -201,6 +201,38 @@ def _all_ek3_catalog_paths() -> tuple[Path, ...]:
     return tuple(paths)
 
 
+@lru_cache(maxsize=1)
+def _ek3_change_days() -> tuple[str, ...]:
+    """The days a dated EK-3 row starts (valid_from) or ends (the day after valid_to), sorted."""
+    valid_from: list[object] = []
+    valid_to: list[object] = []
+    for path in _all_ek3_catalog_paths():
+        try:
+            schema = pl.read_parquet_schema(path)
+            columns = [c for c in ("valid_from", "valid_to") if c in schema]
+            frame = pl.read_parquet(path, columns=columns) if columns else None
+        except Exception as exc:
+            logger.warning("Failed to read material catalog %s: %s", path, exc)
+            continue
+        if frame is None:
+            continue
+        if "valid_from" in columns:
+            valid_from += frame["valid_from"].drop_nulls().to_list()
+        if "valid_to" in columns:
+            valid_to += frame["valid_to"].drop_nulls().to_list()
+    return change_days(valid_from, valid_to)
+
+
+def _ek3_version_day(as_of: date | str | None) -> str:
+    """The first day of the EK-3 list version in force on ``as_of`` (default today).
+
+    Every day of a version reads the same rows, so the indexes below hold one entry
+    per version (EK-3O: before 2026-09-05, to 2026-10-07, from 2026-10-08), not one
+    per service date of the bills.
+    """
+    return version_day(_ek3_change_days(), as_of)
+
+
 @lru_cache(maxsize=16)
 def _build_ek3_price_index(day: str) -> dict[str, float]:
     index: dict[str, float] = {}
@@ -230,7 +262,7 @@ def ek3_separate_billing_allowed_codes(as_of: date | str | None = None) -> froze
        only in a group note are wrongly flagged as not-separately-billable.
     Rows are read as in force on ``as_of`` (default today).
     """
-    return _separate_billing_codes(as_of_iso(as_of))
+    return _separate_billing_codes(_ek3_version_day(as_of))
 
 
 @lru_cache(maxsize=16)
@@ -255,7 +287,7 @@ def lookup_ek3_list_price_try(material_code: str, as_of: date | str | None = Non
     code = str(material_code or "").strip().upper()
     if not code:
         return None
-    return _build_ek3_price_index(as_of_iso(as_of)).get(code)
+    return _build_ek3_price_index(_ek3_version_day(as_of)).get(code)
 
 
 def is_separate_billing_allowed(material_code: str, as_of: date | str | None = None) -> bool:
@@ -269,12 +301,13 @@ def _normalized_code(material_code: object) -> str:
     return str(material_code or "").strip().upper()
 
 
-@lru_cache(maxsize=1)
-def _ek3_definition_frame() -> pl.DataFrame:
-    """Every EK-3 row in force today as (annex, sut_code, text, definition).
+@lru_cache(maxsize=16)
+def _ek3_definition_frame(day: str) -> pl.DataFrame:
+    """Every EK-3 row in force on ``day`` (YYYY-MM-DD) as (annex, sut_code, text, definition).
 
     ``text`` is the row's name and description; ``definition`` is the same text
-    with the "(1) ..." payment notes cut, i.e. what the material is.
+    with the "(1) ..." payment notes cut, i.e. what the material is. Only dated
+    lists (EK-3O) depend on the day: HO1034 is listed from 2026-09-05 (#292).
     """
     sources = [("EK-3H", EK3H_PARQUET_PATH), ("EK-3I", EK3I_PARQUET_PATH)]
     sources += [
@@ -287,7 +320,7 @@ def _ek3_definition_frame() -> pl.DataFrame:
         if not path.exists():
             continue
         try:
-            df = _in_force(pl.read_parquet(path), as_of_iso(None))
+            df = _in_force(pl.read_parquet(path), day)
         except Exception as exc:
             logger.warning("Failed to read material catalog %s: %s", path, exc)
             continue
@@ -313,13 +346,18 @@ def _ek3_definition_frame() -> pl.DataFrame:
     )
 
 
-@lru_cache(maxsize=1)
-def sut_3_1_4_item_codes() -> dict[str, str]:
-    """EK-3 code -> the SUT §3.1.4(2) item letter that bills it separately.
+def sut_3_1_4_item_codes(as_of: date | str | None = None) -> dict[str, str]:
+    """EK-3 code -> the SUT §3.1.4(2) item letter that bills it separately, on ``as_of``.
 
-    EK-3/C lists are out of scope (their own pairing rules apply).
+    EK-3/C lists are out of scope (their own pairing rules apply). ``as_of`` is
+    the material line's service date (default today).
     """
-    frame = _ek3_definition_frame().filter(
+    return _sut_3_1_4_item_codes(_ek3_version_day(as_of))
+
+
+@lru_cache(maxsize=16)
+def _sut_3_1_4_item_codes(day: str) -> dict[str, str]:
+    frame = _ek3_definition_frame(day).filter(
         ~pl.col("annex").str.starts_with("EK-3C")
         & ~pl.col("sut_code").is_in(list(ek3c_material_code_set()))
         & ~((pl.col("annex") == "EK-3F-1") & pl.col("definition").str.contains(_EK3F1_INSTRUMENTS))
@@ -336,15 +374,15 @@ def sut_3_1_4_item_codes() -> dict[str, str]:
     return items
 
 
-def sut_3_1_4_item(material_code: str) -> str | None:
-    """The SUT §3.1.4(2) item (e.g. "ç", "k") covering an EK-3 code, if any."""
-    return sut_3_1_4_item_codes().get(_normalized_code(material_code))
+def sut_3_1_4_item(material_code: str, as_of: date | str | None = None) -> str | None:
+    """The SUT §3.1.4(2) item (e.g. "ç", "k") covering an EK-3 code on ``as_of``, if any."""
+    return sut_3_1_4_item_codes(as_of).get(_normalized_code(material_code))
 
 
-@lru_cache(maxsize=1)
-def _ek3_procedure_conditions() -> dict[str, frozenset[str]]:
+@lru_cache(maxsize=16)
+def _ek3_procedure_conditions(day: str) -> dict[str, frozenset[str]]:
     conditions: dict[str, frozenset[str]] = {}
-    frame = _ek3_definition_frame().filter(
+    frame = _ek3_definition_frame(day).filter(
         pl.col("text").str.contains(_PROCEDURE_CONDITION_TEXT, literal=True)
     )
     for code, text in frame.select("sut_code", "text").iter_rows():
@@ -358,14 +396,18 @@ def _ek3_procedure_conditions() -> dict[str, frozenset[str]]:
     return conditions
 
 
-def ek3_procedure_condition_codes(material_code: str) -> frozenset[str]:
-    """Procedure codes (no "P", e.g. "613180") the material's EK-3 row pays it with."""
-    return _ek3_procedure_conditions().get(_normalized_code(material_code), frozenset())
+def ek3_procedure_condition_codes(
+    material_code: str, as_of: date | str | None = None
+) -> frozenset[str]:
+    """Procedure codes (no "P", e.g. "613180") the material's EK-3 row on ``as_of`` pays it with."""
+    return _ek3_procedure_conditions(_ek3_version_day(as_of)).get(
+        _normalized_code(material_code), frozenset()
+    )
 
 
-@lru_cache(maxsize=1)
-def _ek3_definitions() -> dict[str, str]:
-    frame = _ek3_definition_frame().unique("sut_code", keep="first", maintain_order=True)
+@lru_cache(maxsize=16)
+def _ek3_definitions(day: str) -> dict[str, str]:
+    frame = _ek3_definition_frame(day).unique("sut_code", keep="first", maintain_order=True)
     return dict(zip(frame["sut_code"].to_list(), frame["definition"].to_list(), strict=True))
 
 
@@ -379,8 +421,8 @@ def _noun_forms(word: str) -> frozenset[str]:
 
 
 @lru_cache(maxsize=4096)
-def _ek3_noun_forms(material_code: str) -> frozenset[str]:
-    words = _WORD.findall(_fold_tr(_ek3_definitions().get(material_code, "")))
+def _ek3_noun_forms(material_code: str, day: str) -> frozenset[str]:
+    words = _WORD.findall(_fold_tr(_ek3_definitions(day).get(material_code, "")))
     return frozenset(form for word in words for form in _noun_forms(word))
 
 
@@ -419,7 +461,9 @@ def _ek2c_clauses(description: str) -> tuple[tuple[str, tuple[tuple[str, ...], .
 
 
 def ek2c_aciklama_verdict(
-    material_code: str, descriptions: tuple[str, ...] | list[str]
+    material_code: str,
+    descriptions: tuple[str, ...] | list[str],
+    as_of: date | str | None = None,
 ) -> str | None:
     """What the EK-2/C açıklamas of the packages billed with a material say about it.
 
@@ -433,14 +477,15 @@ def ek2c_aciklama_verdict(
     ("Penil protez dahildir" keeps any prosthesis in). Precedence, across all
     the açıklamas: a fully named inclusion, a fully named multi-word grant, a
     last-word or one-word inclusion, a one-word grant, then "Tüm malzemeler
-    dahildir" when every package says so.
+    dahildir" when every package says so. The EK-3 row is the one in force on
+    ``as_of``, the material line's service date (default today).
     """
     code = _normalized_code(material_code)
     texts = [str(text or "") for text in descriptions]
     if not code or not texts:
         return None
     folded_code = _fold_tr(code)
-    forms = _ek3_noun_forms(code)
+    forms = _ek3_noun_forms(code, _ek3_version_day(as_of))
     signals: set[str] = set()
     all_included = True
     for text in texts:
@@ -482,7 +527,7 @@ def ek3_all_material_code_set(as_of: date | str | None = None) -> frozenset[str]
 
     ``as_of`` defaults to today; only dated lists (EK-3O) depend on it.
     """
-    return _ek3_all_codes(as_of_iso(as_of))
+    return _ek3_all_codes(_ek3_version_day(as_of))
 
 
 @lru_cache(maxsize=16)

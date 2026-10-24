@@ -93,11 +93,11 @@ def test_dictionary_adapter_never_uses_its_invented_care_setting_as_evidence():
 def test_unknown_exclusion_or_bundling_never_creates_uplift(monkeypatch, reimbursable, bundled):
     from src.bilun.domain.prose_rules import material_uplift as module
 
-    monkeypatch.setattr(module, "is_material_in_ek3_catalog", lambda _: True)
+    monkeypatch.setattr(module, "is_material_in_ek3_catalog", lambda *_: True)
     monkeypatch.setattr(module, "is_material_reimbursable", lambda *_, **__: reimbursable)
     monkeypatch.setattr(module, "resolve_material_name_by_code", lambda _: "material")
     monkeypatch.setattr(module, "is_consumable_bundled", lambda *_, **__: bundled)
-    monkeypatch.setattr(module, "is_separate_billing_allowed", lambda _: True)
+    monkeypatch.setattr(module, "is_separate_billing_allowed", lambda *_: True)
     assert module._material_eligible_for_uplift("CODE", pairing_mode="separate_billing")[0] is False
 
 
