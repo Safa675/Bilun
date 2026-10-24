@@ -2040,7 +2040,7 @@
     "src/bilun/domain/prose_rules/_drug_indication/gh_runtime.py": "16848d9a2e1f29509c3ec637039145c0818fc448d7d3c0e17916777ed5685fd7",
     "src/bilun/domain/prose_rules/_drug_indication/growth_hormone.py": "5e995be6dd57c32478228b1d928105ebde19c2d4b573d4ca61ba78a9ed524643",
     "src/bilun/domain/prose_rules/_drug_indication/ingredient_names.py": "85db167db3befd31d4da9648a55d4085df4015cc2e0d371dd37a52f8d2485f45",
-    "src/bilun/domain/prose_rules/_drug_indication/matching.py": "072ea8c970b6d53cb77a89093465d31d81ac51b7fe919b07fc8bf6b43bfb3dc9",
+    "src/bilun/domain/prose_rules/_drug_indication/matching.py": "4905aceb7e81bb68e11fd9221fbcf4b9c9c07deded46ba09e40b3645751866d0",
     "src/bilun/domain/prose_rules/_drug_indication/mecasermin.py": "25d89688e90d580cbf63cd4a4921ad0c6f6b3ff2263db56329465fd2ae07bcdf",
     "src/bilun/domain/prose_rules/_drug_indication/pediatric_gh_initiation.py": "27b2b78936e1e7b289f1ec21bd70a47379314eb5a2d049e502194af6a6de426c",
     "src/bilun/domain/prose_rules/_drug_indication/prader_willi.py": "ebddeda67d2839283df1e89ef162d551bd114afca96804236502a7e9e3ba91c0",
