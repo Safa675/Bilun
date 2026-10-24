@@ -37,6 +37,17 @@ export function fmtNum(value: number): string {
   return fmtNumber(Math.round(value), { maximumFractionDigits: 0 });
 }
 
+/**
+ * A bill line's quantity. A drug quantity is a decimal box count (#302: MEDULA
+ * keys 0.5 kutu), so it keeps its decimals (0,5 in Turkish, 0.5 in English);
+ * an integer shows as `fmtNum` shows it. 15 significant digits are every
+ * decimal a double carries exactly: 0.0625 is not cut to three decimals and a
+ * sum's binary noise never shows (0.1 + 0.2 is 0.3, not 0.30000000000000004).
+ */
+export function fmtQuantity(value: number): string {
+  return fmtNumber(value, { maximumSignificantDigits: 15 });
+}
+
 /** Locale-aware short date (claim dates, service dates). */
 export function fmtDate(
   iso: string | null | undefined,
