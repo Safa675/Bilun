@@ -12,7 +12,7 @@ import {
   Section,
   Surface,
 } from "@/components/primitives";
-import { fmtNum, fmtTRY2 } from "@/components/tabs/sut/shared";
+import { fmtTRY2 } from "@/components/tabs/sut/shared";
 import { useT } from "@/lib/i18n/useTranslations";
 import type {
   ClaimDrugLine,
@@ -21,7 +21,7 @@ import type {
   PatientClaimDetail,
 } from "@/lib/domains/sut";
 
-import { fmtDate } from "@/lib/i18n/formatters";
+import { fmtDate, fmtQuantity } from "@/lib/i18n/formatters";
 import { cn } from "@/lib/cn";
 
 export type HighlightCodeSet = {
@@ -190,7 +190,7 @@ function InvoiceLineTable({
               <DataTableCell>{fmtDate(line.date)}</DataTableCell>
               <DataTableCell className="font-mono text-xs">{line.code}</DataTableCell>
               <DataTableCell>{line.name}</DataTableCell>
-              <DataTableCell numeric>{fmtNum(line.quantity)}</DataTableCell>
+              <DataTableCell numeric>{fmtQuantity(line.quantity)}</DataTableCell>
               <DataTableCell numeric className="whitespace-nowrap">{line.priceMissing ? noPrice : fmtTRY2(line.billedAmountTry)}</DataTableCell>
               <DataTableCell numeric className="whitespace-nowrap">{line.priceMissing ? noPrice : fmtTRY2(line.expectedPayableTry)}</DataTableCell>
             </DataTableRow>

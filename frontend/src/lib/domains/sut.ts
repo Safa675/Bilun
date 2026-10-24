@@ -1328,6 +1328,7 @@ export interface ClaimDrugLine {
   drug_code: string;
   barkod: string;
   equivalence_group: string;
+  /** Box count; a decimal for a split box (0.5, #302). */
   quantity: number;
   unit_price_try: number;
   billed_amount_try: number;
