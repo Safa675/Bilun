@@ -312,16 +312,18 @@ def test_a_day_case_with_an_ek2c_procedure_takes_the_day_bed() -> None:
     assert "day case" in reason and "702580" in reason and "2.2.2.(4)" in reason and "510120" in reason
 
 
-@pytest.mark.parametrize("claim_type", ["day_case", "Day_Case", "gunubirlik yatis", "gunubirlik"])
+@pytest.mark.parametrize(
+    "claim_type", ["day_case", "Day_Case", "gunubirlik yatis", "Günübirlik Yatış", "gunubirlik", "Günübirlik"]
+)
 def test_every_day_case_spelling_the_engine_knows_counts(claim_type: str) -> None:
-    """`claim_is_day_case`: "gunubirlik" or "day_case" in the claim type (the motors skip a plain "gunubirlik" claim
-    as outpatient; the helper does not decide that)."""
+    """`claim_is_day_case`: every spelling of the day-case type in the one vocabulary (claims/claim_type.py, #335);
+    "Günübirlik" with ü was not read before #335."""
     assert bed_days_not_expected(_claim(days=1, claim_type=claim_type), [_line("702580")]).dates == _dates(0)
 
 
-@pytest.mark.parametrize("claim_type", ["yatis", "acil", "poliklinik", "inpatient", "", "Günübirlik"])
+@pytest.mark.parametrize("claim_type", ["yatis", "acil", "poliklinik", "inpatient", "", "koruyucu"])
 def test_a_claim_that_is_not_a_day_case_keeps_its_day_bed(claim_type: str) -> None:
-    """A same-date admission and discharge is no day case (C000492); "Günübirlik" with ü is not read by the engine."""
+    """A same-date admission and discharge is no day case (C000492)."""
     assert bed_days_not_expected(_claim(days=1, claim_type=claim_type), [_line("702580")]) == BedNotExpected()
 
 

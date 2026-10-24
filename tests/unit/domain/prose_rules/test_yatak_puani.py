@@ -745,7 +745,8 @@ def test_a_package_over_the_only_day_leaves_the_package_to_explain_it() -> None:
 
 def test_a_day_case_with_an_ek2c_procedure_expects_no_day_bed() -> None:
     """702580 (hyperbaric oxygen) is on the EK-2/C list with no işlem grubu, so it opens no package window: the case
-    the window logic misses. The claim type `day_case` is read as inpatient by `infer_care_setting`."""
+    the window logic misses. A day case is read as outpatient by `infer_care_setting` and the motor takes it in by
+    `claim_is_day_case` (#335; before, `day_case` fell to the inpatient default)."""
     [opp] = _stay(1, [_line("702580", "545.76")], claim_type="day_case")
 
     assert (opp["bed_code"], opp["same_day_stay"], opp["bed_days"]) == ("510120", True, 0)
@@ -763,8 +764,20 @@ def test_the_same_bill_on_an_inpatient_claim_keeps_its_day_bed() -> None:
     assert "day case" not in opp["detail"]
 
 
-def test_a_gunubirlik_claim_is_outpatient_and_has_no_bed_row_at_all() -> None:
-    assert _stay(1, [_line("702580", "545.76")], claim_type="gunubirlik") == []
+@pytest.mark.parametrize("claim_type", ["gunubirlik", "günübirlik", "Günübirlik Yatış", "Day-Case"])
+@pytest.mark.parametrize(("days", "code"), [(1, "702580"), (1, "520010"), (2, "702580"), (2, "520010")])
+def test_every_spelling_of_a_day_case_takes_the_day_case_bed_rules(claim_type: str, days: int, code: str) -> None:
+    """#335: one day-case type. A `gunubirlik` claim with its dates had no bed row at all (read as outpatient) while
+    the same bill spelled `day_case` had the day-case rules above; every spelling now gives the `day_case` row."""
+    [twin] = _stay(days, [_line(code, "545.76")], claim_type="day_case")
+    [opp] = _stay(days, [_line(code, "545.76")], claim_type=claim_type)
+
+    assert opp == twin
+
+
+def test_an_er_claim_has_no_bed_row() -> None:
+    """An ER visit is outpatient (#335), and no day case: the motor takes no bed day from it."""
+    assert _stay(1, [_line("702580", "545.76")], claim_type="acil") == []
 
 
 def test_a_day_case_without_an_ek2c_procedure_keeps_its_day_bed() -> None:

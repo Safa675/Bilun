@@ -70,6 +70,7 @@ from src.bilun.domain.prose_rules.catalog_membership import (
 )
 from src.bilun.domain.prose_rules.claim_utils import (
     claim_is_day_case,
+    claim_is_emergency,
     group_procedure_lines_by_session,
     infer_care_setting,
 )
@@ -219,6 +220,7 @@ def must_be_billed_as_package(claim: ClaimHeader, line: ProcedureClaimLine) -> b
         provider_type=claim.provider_type,
         as_of_date=line.procedure_date or claim.admission_date or claim.claim_start_date,
         day_case=claim_is_day_case(claim),
+        emergency=claim_is_emergency(claim),
     )
     return not compliance.is_compliant and compliance.mandated_method == "package"
 
@@ -576,7 +578,9 @@ def detect_yatak_puani_opportunities(
     """Detect expected bed-day charges for inpatient claims.
 
     For each inpatient claim with non-null admission + discharge dates,
-    computes inclusive LOS × daily_rate and returns an opportunity dict.
+    computes inclusive LOS × daily_rate and returns an opportunity dict. A day case
+    (``claim_is_day_case``, any spelling of günübirlik) with both dates counts too:
+    its bed rules are in ``bed_days_not_expected``.
 
     **Stays under 24 hours (SUT §2.2.2.(3)):** a stay whose admission date equals
     its discharge date is priced at the day bed 510120, not a full 510010 day; its
@@ -605,8 +609,11 @@ def detect_yatak_puani_opportunities(
     opportunities: list[dict[str, Any]] = []
 
     for claim in claims:
-        # Gate on inpatient.
-        if infer_care_setting(claim) != "inpatient":
+        # Gate on inpatient, or a day case: ``infer_care_setting`` reads a day case as
+        # outpatient, but it is yatarak tedavi (§2.1.2.B, C000492) and
+        # ``bed_days_not_expected`` holds its bed rules, for every spelling of the type
+        # (gunubirlik, günübirlik, day_case: #335).
+        if infer_care_setting(claim) != "inpatient" and not claim_is_day_case(claim):
             continue
 
         # Gate on procedure lines present (if filter provided).

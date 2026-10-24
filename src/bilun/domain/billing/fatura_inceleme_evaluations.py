@@ -167,12 +167,8 @@ def _metadata_gate(
     predicate_decision: str,
 ) -> tuple[str, list[str], str] | None:
     condition = rule["condition"]
-    # This legacy bridge has not received gap_closing's yatarak correction.
-    # Do not certify a raw Turkish setting as an evaluated inpatient decision.
-    if set(condition) & {"care_setting", "payment_method", "payment_method_path"}:
-        raw_type = str(claim_ctx.claims[0].claim_type or "").strip().lower()
-        if "yatarak" in raw_type and flat.get("care_setting") != "inpatient":
-            return "unavailable", [], "care_setting_normalization_unavailable"
+    # The bridge reads the care setting from the one claim-type vocabulary, as
+    # gap_closing does (#335): yatarak is inpatient here too.
     gate = _claim_input_gate(condition, claim_ctx, flat)
     if gate is not None:
         return gate

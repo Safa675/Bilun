@@ -5,6 +5,7 @@ from datetime import date
 from typing import Any, Literal
 from urllib.parse import quote
 
+from src.bilun.domain.claims.claim_type import care_setting_gap
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_material_identity_errors,
@@ -32,9 +33,6 @@ _RULE_ORDER = (
     LAB_RULE_ID,
     DRUG_BARCODE_RULE_ID,
     MATERIAL_IDENTITY_RULE_ID,
-)
-_RECOGNIZED_CLAIM_TYPES = frozenset(
-    {"yatis", "yatarak", "inpatient", "poliklinik", "ayakta", "outpatient", "gunubirlik"}
 )
 _REQUIRED_INPUTS = {
     ICU_RULE_ID: [
@@ -309,7 +307,8 @@ def evaluate_rule_findings(
     for claim in sorted(ctx.claims, key=lambda row: row.claim_id):
         lines = procedures_by_claim.get(claim.claim_id, [])
         icu_missing: list[str] = []
-        if claim.claim_type.strip().casefold() not in _RECOGNIZED_CLAIM_TYPES:
+        # The care setting comes from the one claim-type vocabulary (#335).
+        if care_setting_gap(claim.claim_type) is not None:
             icu_missing.append("claim_type")
         if not lines:
             icu_missing.append("procedure_lines")

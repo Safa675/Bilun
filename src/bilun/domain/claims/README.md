@@ -22,12 +22,17 @@ registry: `data/synthetic/README.md`).
 | `types.py` | `RowDict` alias for raw Parquet rows |
 | `config.py` | `BILUN_DATA_MODE`, path guards, provenance |
 | `models.py` | Typed row and aggregate dataclasses |
+| `claim_type.py` | The one `claim_type` vocabulary every rule reader uses (#335): spellings folded once, the SUT care setting of each type |
 
 ## Inputs
 
 Required Parquet tables (see `schema.REQUIRED_CLAIM_TABLES`):
 
-- `claim_headers.parquet`
+- `claim_headers.parquet` (its `claim_type` is read through `claim_type.py`, whatever its case, Turkish letters or
+  spaces: `yatis`/`yatan`/`yatarak` inpatient, `poliklinik`/`ayakta`, `gunubirlik`/`günübirlik`/`day_case` (a day
+  case) and `acil` outpatient, `acil` billed fee for service (SUT 2.2.1.B-2(2)(a)); `koruyucu` and
+  `meslek_hastaligi` are provision grounds with no care setting, so the rules that need one leave such a claim
+  unavailable, Safa675/Bilun#335)
 - `claim_diagnoses.parquet`
 - `procedure_claim_lines.parquet`
 - `material_claim_lines.parquet`

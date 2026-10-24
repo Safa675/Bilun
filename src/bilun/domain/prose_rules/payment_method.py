@@ -186,6 +186,7 @@ def resolve_payment_method(
     provider_type: str | None = None,
     as_of_date: date | None = None,
     day_case: bool = False,
+    emergency: bool = False,
 ) -> PaymentMethodResult:
     """Determine mandated payment method for one procedure (SUT §2.2).
 
@@ -193,11 +194,14 @@ def resolve_payment_method(
     plus facility tier and EK-2C star markers for §2.2.2(2) third-tier override.
     An outpatient EK-2/C procedure is a package only when it is on EK-2/A-2 on that
     date (§2.2.1.B-1(10)(a)); ``day_case`` (``claim_is_day_case``) keeps a günübirlik
-    claim read as outpatient under §2.2.2(1), as yatarak tedavi.
+    claim read as outpatient under §2.2.2(1), as yatarak tedavi. ``emergency``
+    (``claim_is_emergency``, an outpatient ER claim) changes only the citation of an
+    EK-2/B line: emergency services are billed fee for service without the EK-2/A
+    amount (§2.2.1.B-2(2)(a), C000607, C000617), not on the §2.2.1.B-1 visit fee.
 
     Memoized via the inner cached function — the same ``(procedure_code,
-    care_setting, facility_tier, provider_type, as_of_date, day_case)`` tuple returns the
-    same ``PaymentMethodResult`` across a report run (5N–9N redundant calls per
+    care_setting, facility_tier, provider_type, as_of_date, day_case, emergency)`` tuple
+    returns the same ``PaymentMethodResult`` across a report run (5N–9N redundant calls per
     claim collapse to N). ``as_of_date=None`` is resolved to ``date.today()``
     here so the cache key is always a concrete date.
     """
@@ -210,6 +214,7 @@ def resolve_payment_method(
         provider_type,
         as_of_date,
         day_case,
+        emergency,
     )
 
 
@@ -221,6 +226,7 @@ def _resolve_payment_method_cached(
     provider_type: str | None,
     as_of_date: date,
     day_case: bool = False,
+    emergency: bool = False,
 ) -> PaymentMethodResult:
     normalized = normalize_procedure_code(procedure_code)
     in_ek2b, in_ek2c = procedure_annex_membership(normalized, as_of_date=as_of_date)
@@ -310,10 +316,27 @@ def _resolve_payment_method_cached(
         )
 
     if kind == "ITEMIZED":
-        rule_id = (
-            "2.2.1.B-1.b" if care_setting == "outpatient" else "2.2.2.(1).itemized"
-        )
-        sut_section = "2.2.1.B-1.b" if care_setting == "outpatient" else "2.2.2.(1)"
+        if emergency and care_setting == "outpatient":
+            # §2.2.1.B-2(2)(a) (C000607, C000617): "Acil sağlık hizmetleri" are billed
+            # "hizmet başına ödeme yöntemi ile"; "SUT eki EK-2/A Listesinde yer alan
+            # tutarlar faturalandırılamaz".
+            rule_id = "2.2.1.B-2.(2).a"
+            sut_section = "2.2.1.B-2"
+            visit_fee_annex = None
+            detail = (
+                f"Procedure {normalized} is only in EK-2/B; an emergency service is "
+                "billed itemized, without an EK-2/A amount, plus related drugs/materials."
+            )
+        else:
+            rule_id = (
+                "2.2.1.B-1.b" if care_setting == "outpatient" else "2.2.2.(1).itemized"
+            )
+            sut_section = "2.2.1.B-1.b" if care_setting == "outpatient" else "2.2.2.(1)"
+            visit_fee_annex = "EK-2/A"
+            detail = (
+                f"Procedure {normalized} is only in EK-2/B; bill itemized "
+                "with EK-2/A visit fee plus related drugs/materials."
+            )
         return PaymentMethodResult(
             procedure_code=normalized,
             payment_method="itemized",
@@ -323,17 +346,14 @@ def _resolve_payment_method_cached(
             has_star=False,
             bill_materials_separately=True,
             bill_drugs_separately=True,
-            visit_fee_annex="EK-2/A",
+            visit_fee_annex=visit_fee_annex,
             payment_method_tr="hizmet başına ödeme",
             allowed_methods=("itemized",),
             trace=ProseRuleTrace(
                 rule_id=rule_id,
                 sut_section=sut_section,
                 rule_set_id=_RULE_SET_ID,
-                detail=(
-                    f"Procedure {normalized} is only in EK-2/B; bill itemized "
-                    "with EK-2/A visit fee plus related drugs/materials."
-                ),
+                detail=detail,
             ),
         )
 
@@ -400,6 +420,7 @@ def check_payment_method_compliance(
     provider_type: str | None = None,
     as_of_date: date | None = None,
     day_case: bool = False,
+    emergency: bool = False,
 ) -> PaymentMethodCompliance:
     """Check whether a billed line matches the SUT-mandated payment method."""
     mandated = resolve_payment_method(
@@ -409,6 +430,7 @@ def check_payment_method_compliance(
         provider_type=provider_type,
         as_of_date=as_of_date,
         day_case=day_case,
+        emergency=emergency,
     )
     method: PaymentMethod = mandated.payment_method
     kind = mandated.kind

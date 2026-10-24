@@ -1055,6 +1055,9 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
         cohort.scenario("S20").patient_id,
         cohort.scenario("S17").patient_id,  # the month of haemodialysis, a day-case claim of EK-2C sessions
         cohort.scenario("S21").patient_id,  # the radiotherapy course, a day-case claim of EK-2B lines
+        # patient 12's ER visit (S10): an ER bill is outpatient since #335 (SUT 2.2.1.B-2(2)(a)); the other ER bills'
+        # patients (1, 5, 7, 8) are in the set through their other visits already
+        cohort.scenario("S10").patient_id,
     }
     assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # 2, 6, 7, 11, 12
     assert ortak20 in entry["wavea"]["review_ids"] and duplicate not in entry["wavea"]["review_ids"]  # no row for the duplicate

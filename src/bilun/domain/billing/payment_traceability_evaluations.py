@@ -16,6 +16,7 @@ from typing import Any, Literal
 
 from src.bilun.domain.billing.broad_rule_catalog import load_broad_rule_catalog
 from src.bilun.domain.billing.rule_findings import RuleEvaluation
+from src.bilun.domain.claims.claim_type import care_setting_gap, claim_type_kind
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.payment_method import (
     _build_payment_method_traceability_context,
@@ -114,22 +115,21 @@ def _raw_header_gate(condition: dict[str, Any], header: Any) -> tuple[str, list[
             missing.append("provider_type")
 
     if "care_setting" in condition:
-        claim_type = str(getattr(header, "claim_type", "") or "").strip().lower()
-        if not claim_type:
+        # One claim-type vocabulary (claims/claim_type.py, #335): an ER claim is an
+        # outpatient one; a provision ground without a care setting stays unavailable.
+        raw_type = getattr(header, "claim_type", "")
+        gap = care_setting_gap(raw_type)
+        if gap == "missing":
             missing.append("claim_type")
-        elif not any(
-            token in claim_type
-            for token in (
-                "yatis",
-                "yatarak",
-                "inpatient",
-                "ayakta",
-                "outpatient",
-                "poliklinik",
-                "gunubirlik",
-            )
-        ):
+        elif gap == "unrecognized":
+            claim_type = str(raw_type or "").strip().lower()
             return "unavailable", missing, f"unrecognized claim_type: {claim_type}"
+        elif gap == "not_settled":
+            return (
+                "unavailable",
+                missing,
+                f"claim_type has no care setting: {claim_type_kind(raw_type)}",
+            )
 
     if missing:
         return "missing_inputs", missing, "raw claim header inputs are absent"

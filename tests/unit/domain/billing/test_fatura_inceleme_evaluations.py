@@ -275,14 +275,22 @@ def test_infusion_code_alone_cannot_establish_absence_of_iv_drug_use() -> None:
     _assert_raw_parity(batch, ctx)
 
 
-def test_yatarak_is_gated_without_changing_legacy_builder_semantics() -> None:
+@pytest.mark.parametrize("claim_type", ["yatarak", "YATARAK", "yatan", "yatış"])
+def test_yatarak_reads_as_inpatient_in_the_legacy_builder_and_the_typed_rows(claim_type: str) -> None:
+    """#335: the builder reads the one claim-type vocabulary, as gap_closing does; the stop-gap that kept a raw
+    `yatarak` setting unavailable (`care_setting_normalization_unavailable`) is gone."""
     ctx = _single()
-    ctx = replace(ctx, claims=(replace(ctx.claims[0], claim_type="yatarak"),))
-    assert legacy._build_fatura_inceleme_context(ctx)["care_setting"] == "yatarak"
+    ctx = replace(ctx, claims=(replace(ctx.claims[0], claim_type=claim_type),))
+    assert legacy._build_fatura_inceleme_context(ctx)["care_setting"] == "inpatient"
     batch = adapter.evaluate_fatura_inceleme("P1", ctx)
     row = _row(batch, "ORTAK-25.yatis_oncesi_hazirlik_paket")
-    assert row.evaluation_status == "unavailable"
-    assert row.reason == "care_setting_normalization_unavailable"
+    assert row.reason != "care_setting_normalization_unavailable"
+    yatis = adapter.evaluate_fatura_inceleme("P1", replace(ctx, claims=(replace(ctx.claims[0], claim_type="yatis"),)))
+    assert (row.evaluation_status, row.decision, row.reason) == (
+        (twin := _row(yatis, "ORTAK-25.yatis_oncesi_hazirlik_paket")).evaluation_status,
+        twin.decision,
+        twin.reason,
+    )
     _assert_raw_parity(batch, ctx)
 
 

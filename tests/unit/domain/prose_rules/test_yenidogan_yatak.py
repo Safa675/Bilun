@@ -1664,8 +1664,18 @@ def test_the_same_bill_on_an_inpatient_claim_keeps_the_day_bed() -> None:
     assert "day case" not in opp["detail"]
 
 
-def test_a_gunubirlik_claim_is_outpatient_and_gets_no_newborn_row() -> None:
-    assert _detect([_line("702580", "545.76")], header=_one_date_header(claim_type="gunubirlik")) == []
+@pytest.mark.parametrize("claim_type", ["gunubirlik", "günübirlik", "Günübirlik Yatış", "Day-Case"])
+@pytest.mark.parametrize("code", ["702580", "520010"])
+def test_every_spelling_of_a_day_case_takes_the_newborn_day_case_rules(claim_type: str, code: str) -> None:
+    """#335: one day-case type. A `gunubirlik` claim had no newborn row at all (read as outpatient) while the same
+    bill spelled `day_case` had the day-case rules above; every spelling now gives the `day_case` row."""
+    [twin] = _detect([_line(code, "545.76")], header=_one_date_header(claim_type="day_case"))
+    assert _detect([_line(code, "545.76")], header=_one_date_header(claim_type=claim_type)) == [twin]
+
+
+def test_an_er_claim_gets_no_newborn_row() -> None:
+    """An ER visit is outpatient (#335), and no day case."""
+    assert _detect([_line("702580", "545.76")], header=_one_date_header(claim_type="acil")) == []
 
 
 @pytest.mark.parametrize("last_day", [11, 12])

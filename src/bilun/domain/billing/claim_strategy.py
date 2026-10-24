@@ -23,7 +23,11 @@ from src.bilun.domain.prose_rules.catalog_membership import (
     normalize_procedure_code,
 )
 from src.bilun.domain.prose_rules.care_setting_review import _pick_claim_kind
-from src.bilun.domain.prose_rules.claim_utils import claim_is_day_case, infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    claim_is_day_case,
+    claim_is_emergency,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.session_pricing import (
     _line_itemized_payable,
     compute_session_adjusted_itemized_total,
@@ -91,6 +95,7 @@ def _resolve_line_payment_method(
         provider_type=provider_type,
         as_of_date=_line_as_of_date(line, claim),
         day_case=claim_is_day_case(claim),
+        emergency=claim_is_emergency(claim),
     )
 
 
@@ -213,6 +218,7 @@ def resolve_catalog_itemized_alternative(
             provider_type=claim.provider_type,
             as_of_date=as_of,
             day_case=claim_is_day_case(claim),
+            emergency=claim_is_emergency(claim),
         )
         if not compliance.is_compliant:
             continue
@@ -261,6 +267,7 @@ def resolve_catalog_itemized_alternative(
             provider_type=claim.provider_type,
             as_of_date=as_of,
             day_case=claim_is_day_case(claim),
+            emergency=claim_is_emergency(claim),
         )
         if not compliance.is_compliant:
             continue
@@ -324,6 +331,7 @@ def lines_for_legal_itemized_alternative(
             provider_type=claim.provider_type,
             as_of_date=_line_as_of_date(line, claim),
             day_case=claim_is_day_case(claim),
+            emergency=claim_is_emergency(claim),
         )
         if not compliance.is_compliant:
             continue
@@ -612,6 +620,7 @@ def recommend_billing_strategy_from_claims(
             provider_type=claim.provider_type if claim is not None else None,
             as_of_date=as_of,
             day_case=claim_is_day_case(claim),
+            emergency=claim_is_emergency(claim),
         )
         mandated = _resolve_line_payment_method(
             line,

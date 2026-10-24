@@ -15,6 +15,7 @@ from typing import Any
 
 import pandas as pd
 
+from ..claims.claim_type import claim_type_care_setting
 from ..constants import EK3B1_BUNDLED_PATH, EK3B2_NON_REIMBURSABLE_PATH
 from ..utils import _safe_str, turkish_lower, fuzzy_match_name, token_bound_substring_match
 
@@ -237,15 +238,14 @@ def _fold(text: str) -> str:
 
 
 def care_setting_from_header(header: ClaimHeader | None) -> str | None:
-    """Only actual header setting; the legacy dict adapter invents outpatient."""
+    """Only actual header setting; the legacy dict adapter invents outpatient.
+
+    The setting of the claim type in the one vocabulary (claims/claim_type.py, #335);
+    None for a type without one (koruyucu, meslek_hastaligi) or an unknown type.
+    """
     if header is None or header.scenario_tag == "validate_claim_adapter":
         return None
-    value = _fold(str(header.claim_type or "").strip())
-    if value in {"yatis", "yatarak", "inpatient"}:
-        return "inpatient"
-    if value in {"ayakta", "poliklinik", "outpatient", "gunubirlik"}:
-        return "outpatient"
-    return None
+    return claim_type_care_setting(header.claim_type)
 
 
 def assess_bundled_material(
