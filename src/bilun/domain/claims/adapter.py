@@ -49,6 +49,7 @@ from src.bilun.domain.claims.models import (
     DrugClaimLine,
     MaterialClaimLine,
 )
+from src.bilun.domain.claims.parsing.primitives import decimal_quantity
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 # Material-name keyword → §2.4.1 specialty_category. The dental evaluator's
@@ -234,7 +235,7 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
                     drug_code=str(mat.get("code", "") or ""),
                     barkod="",
                     equivalence_group="",
-                    quantity=int(mat.get("quantity", 1) or 1),
+                    quantity=decimal_quantity(mat.get("quantity", 1) or 1),
                     unit_price_try=Decimal(str(mat.get("unit_price", 0) or 0)),
                     billed_amount_try=Decimal(str(mat.get("billed_amount", 0) or 0)),
                     expected_payable_try=Decimal("0"),

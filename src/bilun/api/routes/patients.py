@@ -377,7 +377,7 @@ def get_patient_claim_detail(patient_id: str, claim_id: str):
                     "drug_code": d.drug_code,
                     "barkod": d.barkod,
                     "equivalence_group": d.equivalence_group,
-                    "quantity": d.quantity,
+                    "quantity": float(d.quantity),
                     "unit_price_try": _money(d.unit_price_try),
                     "billed_amount_try": _money(d.billed_amount_try),
                     "expected_payable_try": _money(d.expected_payable_try),

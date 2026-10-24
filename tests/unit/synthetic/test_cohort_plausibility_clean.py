@@ -1410,7 +1410,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
         expected_drugs[line["drug_claim_line_id"]] = (
             where,
             f"prescription row {line['drug_name']} on {line['drug_claim_date']} (miktar "
-            f"{line['quantity']}) has no billed drug line of the same patient, episode, date, name "
+            f"{line['quantity']:g}) has no billed drug line of the same patient, episode, date, name "
             "and quantity",
         )
     twin_lines = drugs_only_in(twins, built.tables)
@@ -1418,7 +1418,7 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
         where = f"{line['patient_id']} drug_claim_lines[{line['drug_claim_line_id']}]"
         expected_drugs["twin " + line["drug_claim_line_id"]] = (
             where,
-            f"billed drug line {line['drug_name']} on {line['drug_claim_date']} (quantity {line['quantity']}) has no "
+            f"billed drug line {line['drug_name']} on {line['drug_claim_date']} (quantity {line['quantity']:g}) has no "
             "prescription row in recete_clean",
         )
     assert sorted(expected_drugs) == [
@@ -1919,7 +1919,8 @@ DTYPE_VARIANTS: dict[str, tuple[str, str, pl.Expr]] = {
     "EPISODE_TARIH as String": (TABLE_ANADATA, "EPISODE_TARIH", _C("EPISODE_TARIH").dt.strftime("%Y-%m-%d")),
     "EPISODE_TARIH as Date": (TABLE_ANADATA, "EPISODE_TARIH", _C("EPISODE_TARIH").dt.date()),
     # quantities: the join key of the prescription and the bill
-    "quantity of the bill as Float64 (crashed)": (TABLE_DRUGS, "quantity", _C("quantity").cast(pl.Float64)),
+    # the bill's quantity is Float64 since #302 (a decimal drug quantity); Int64 was its type before
+    "quantity of the bill as Int64": (TABLE_DRUGS, "quantity", _C("quantity").cast(pl.Int64)),
     "quantity of the bill as String (crashed)": (TABLE_DRUGS, "quantity", _C("quantity").cast(pl.String)),
     "quantity of the bill as Int32": (TABLE_DRUGS, "quantity", _C("quantity").cast(pl.Int32)),
     "miktar as Float64 (crashed)": (TABLE_RECETE, "miktar", _C("miktar").cast(pl.Float64)),

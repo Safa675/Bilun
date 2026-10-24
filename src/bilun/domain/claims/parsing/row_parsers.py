@@ -37,6 +37,7 @@ from src.bilun.domain.claims.parsing.primitives import (
     optional_money,
     optional_string_records,
     parse_bool,
+    parse_decimal_quantity,
     parse_integer,
     parse_money,
     parse_text,
@@ -382,10 +383,11 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             if is_missing(row.get("discount_tier_expected"))
             else parse_money(row, "discount_tier_expected", line_id, errors)
         )
+        # A drug quantity may be a decimal (0.5 kutu, #302); procedures and materials stay integers.
         quantity = (
-            1
+            Decimal("1")
             if is_missing(row.get("quantity"))
-            else parse_integer(row.get("quantity"), "quantity", line_id, errors)
+            else parse_decimal_quantity(row.get("quantity"), "quantity", line_id, errors)
         )
         return DrugClaimLine(
             drug_claim_line_id=line_id,

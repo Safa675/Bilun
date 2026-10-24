@@ -14,6 +14,9 @@ from .mesothelioma_evidence import MesotheliomaEvidence
 
 
 Money = Decimal
+# A drug quantity: a whole or decimal count. MEDULA keys the used part of a box as a decimal (0.5 kutu; one box
+# can be split 0.3 + 0.7 across lines, Safa675/Bilun#302). Procedure and material quantities stay `int`.
+Quantity = Decimal
 
 
 @dataclass(frozen=True)
@@ -265,7 +268,7 @@ class DrugClaimLine:
     drug_code: str
     barkod: str
     equivalence_group: str
-    quantity: int
+    quantity: Quantity
     unit_price_try: Money
     billed_amount_try: Money
     expected_payable_try: Money

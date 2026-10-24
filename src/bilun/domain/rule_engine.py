@@ -105,6 +105,7 @@ def _run_drug_indication_checks(
     from decimal import Decimal
 
     from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+    from src.bilun.domain.claims.parsing.primitives import decimal_quantity
     from src.bilun.domain.claims.clinical_evidence import (
         EnteralEvidence, RavulizumabEvidence, parse_clinical_evidence,
     )
@@ -161,7 +162,7 @@ def _run_drug_indication_checks(
             drug_code=str(mat.get("code", "")),
             barkod="",
             equivalence_group="",
-            quantity=int(mat.get("quantity", 1) or 1),
+            quantity=decimal_quantity(mat.get("quantity", 1) or 1),
             unit_price_try=Decimal(str(mat.get("unit_price", 0) or 0)),
             billed_amount_try=Decimal(str(mat.get("billed_amount", 0) or 0)),
             expected_payable_try=Decimal("0"),

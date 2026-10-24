@@ -11,6 +11,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal
 from typing import Any, Literal
 
 from src.bilun.domain.billing.admission_billing_window import (
@@ -428,9 +429,9 @@ def _disposition(
 ) -> tuple[Literal["unpriced_compliance", "review", "financial_review"], str]:
     if spec.disposition == "drug_quantity":
         quantity = row.get("quantity")
-        if source_line is None or quantity != getattr(source_line, "quantity", None):
+        if source_line is None or not _same_quantity(quantity, getattr(source_line, "quantity", None)):
             return "review", "quantity_evidence_mismatch"
-        if type(quantity) is int and quantity <= 0:
+        if _is_number(quantity) and quantity <= 0:
             disposition: Literal["unpriced_compliance", "review", "financial_review"] = (
                 "unpriced_compliance"
             )
@@ -445,6 +446,17 @@ def _disposition(
             return "review", "unexpected_money_on_unpriced_rule"
         return "unpriced_compliance", ""
     return disposition, spec.review_reason
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float, Decimal)) and not isinstance(value, bool)
+
+
+def _same_quantity(row_quantity: Any, line_quantity: Any) -> bool:
+    """The row's JSON number names the line's (Decimal) quantity: 999.3 as a float is the line's 999.3."""
+    if not (_is_number(row_quantity) and _is_number(line_quantity)):
+        return False
+    return Decimal(str(row_quantity)) == Decimal(str(line_quantity))
 
 
 def _real_date(value: Any) -> bool:

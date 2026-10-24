@@ -217,10 +217,11 @@ class Bill:
              line_id: str | None = None, **clinical: Any) -> str:
         """An EK-4A line; the name comes from the EK-4A row in force on ``on``.
 
-        ``qty`` counts what was used. ``DrugClaimLine.quantity`` is an int
-        (models.py), so a part box is billed as whole units (``unit``, ``per_box``
-        to a box) at box price / ``per_box``; MEDULA itself records the decimal box
-        fraction (Kılavuz v3.1.1 p.21-22). Prices are TBD (Q4) and enter at 0 TL.
+        ``qty`` counts what was used. The showcase bills a part box as whole units
+        (``unit``, ``per_box`` to a box) at box price / ``per_box``; MEDULA itself
+        records the decimal box fraction (Kılavuz v3.1.1 p.21-22), which
+        ``DrugClaimLine.quantity`` holds as a Decimal since #302. Prices are TBD
+        (Q4) and enter at 0 TL.
         """
         row = drug_row(barkod, on)
         lid = line_id or f"{self.cid}-D{len(self.drugs) + 1:02d}"

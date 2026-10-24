@@ -200,7 +200,17 @@ def _format_decimal_comma(val: float | Decimal) -> str:
     return f"{dec:.1f}".replace(".", ",")
 
 
-def format_dozaj_ham(quantity: int, unit: str | None) -> str:
+def whole_units(quantity: Decimal | int) -> int:
+    """`miktar` of the clean recete table is a whole count (Int64): the cohort bills whole units (a pathway's qty,
+    per_night and per_day are integers), so a fraction here is a builder error, never truncated."""
+    if quantity != int(quantity):
+        raise CleanTableError(
+            f"a drug line holds {quantity} units; the recete table counts whole units"
+        )
+    return int(quantity)
+
+
+def format_dozaj_ham(quantity: Decimal | int, unit: str | None) -> str:
     """Format `dozaj_ham` as `{quantity} {unit_tr}` (or `{quantity}` if unit is unknown)."""
     if not unit:
         return str(quantity)
@@ -544,7 +554,7 @@ def build_clean_tables(
                 siblings_by_story,
             )
             unit = entry.unit if entry is not None else None
-            dozaj_ham = format_dozaj_ham(drug_line.quantity, unit)
+            dozaj_ham = format_dozaj_ham(whole_units(drug_line.quantity), unit)
             verilis_yolu = resolve_drug_route(ilac_adi_ham, drug_line.barkod, routes_by_barcode)
 
             gun: int | None = None
@@ -569,7 +579,7 @@ def build_clean_tables(
                     "doz_mg": None,
                     "doz_birimi": None,
                     "siklik": siklik,
-                    "miktar": drug_line.quantity,
+                    "miktar": whole_units(drug_line.quantity),
                     "kohort": "showcase",
                     "donem": str(rec_dt.year),
                 }
@@ -819,14 +829,14 @@ def validate_clean_tables(
         pl.col("RF_EPISODE").alias("episode_id"),
         pl.col("RECETE_TARIH").dt.strftime("%Y-%m-%d").alias("drug_claim_date"),
         pl.col("ilac_adi").alias("drug_name"),
-        pl.col("miktar").alias("quantity"),
+        pl.col("miktar").cast(pl.Float64).alias("quantity"),
     )
     billed_projected = drugs_df.select(
         "patient_id",
         "episode_id",
         "drug_claim_date",
         "drug_name",
-        "quantity",
+        pl.col("quantity").cast(pl.Float64),
     )
     unbilled = rec_projected.join(
         billed_projected,
