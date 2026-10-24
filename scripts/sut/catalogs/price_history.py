@@ -5,8 +5,8 @@ These and EK-2/A-2 (outpatient_procedures.py) are built with
 source='raw_all_versions' — each gazette version contributes one slice of the
 timeline, which the orchestrator concatenates and decorates with valid_from /
 valid_to ranges.
-EK-2B and EK-2C rows also carry the amendment marker of their code cell, so a
-row SGK added or amended inside a version applies from its own Yürürlük date
+EK-2B, EK-2C and EK-2Ç rows also carry the amendment marker of their code cell, so
+a row SGK added or amended inside a version applies from its own Yürürlük date
 (scripts/sut/_common.py::_add_validity_ranges).
 """
 
@@ -208,16 +208,11 @@ def extract_ek2c_dental(df: pd.DataFrame) -> pd.DataFrame:
     pos = _build_pos_map(header)
     body = df.iloc[h_idx + 1 :]
 
-    raw_codes = body.iloc[:, pos["ISLEM KODU"]].apply(
-        lambda x: str(x).strip() if pd.notna(x) else ""
-    )
-    # Some dental cells carry trailing gazette-change annotations, e.g.
-    # "403020  (Değişik: RG-17/01/2026-33140/...)". Keep the leading token
-    # (the actual code) before the parenthesised changelog.
-    codes = raw_codes.str.replace(r"\s*\(.*$", "", regex=True).str.strip()
-
+    code_cells = body.iloc[:, pos["ISLEM KODU"]]
     out = pd.DataFrame()
-    out["code"] = codes
+    # Some dental cells carry an amendment marker, e.g. "403020  (Değişik: RG-17/01/2026-
+    # 33140/... Yürürlük: 31/01/2026)": keep the code before it, and the marker for the history.
+    out["code"] = strip_amendment_marker(code_cells)
     out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
         lambda x: str(x).strip() if pd.notna(x) else ""
     )
@@ -228,13 +223,14 @@ def extract_ek2c_dental(df: pd.DataFrame) -> pd.DataFrame:
         out["description"] = _cell_text(body.iloc[:, pos["ACIKLAMA"]])
     else:
         out["description"] = ""
+    out = out.join(amendment_markers(code_cells))
 
     # Drop section-header rows (no numeric puan) and validate the code shape.
     out = out.dropna(subset=["puan"])
     out = out[out["code"].str.match(RE_EK2C_DENTAL_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
     out = out.reset_index(drop=True)
-    return out[["code", "name", "description", "puan", "price_try"]]
+    return out[["code", "name", "description", "puan", "price_try", *MARKER_COLUMNS]]
 
 
 SPECS: list[dict] = [
