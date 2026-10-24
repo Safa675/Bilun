@@ -60,16 +60,17 @@ def _blood(**overrides):
 
 
 def _operation(**overrides):
-    """An EK-2/B §6 secondary operation in the primary's session (list 1000).
+    """An EK-2/B §6 secondary operation in the primary's session (list 3,032.01).
 
     615995 is EK-2/B only. 610080 was used before, but its EK-2/C package makes
     it a must-package line at this tier, which has no hizmet başı session
-    uplift (review item 9).
+    uplift (review item 9). Its EK-2/B list on 2026-01-10 is the session base,
+    never the line's unit price (#300; was a unit price of 1,000).
     """
     values = dict(
         procedure_line_id="second-operation", procedure_code="615995",
-        procedure_specialty_code="surgery", unit_price_try=Decimal("1000"),
-        expected_payable_try=Decimal("1000"), billed_amount_try=Decimal("100"),
+        procedure_specialty_code="surgery", unit_price_try=Decimal("3032.01"),
+        expected_payable_try=Decimal("3032.01"), billed_amount_try=Decimal("100"),
     )
     values.update(overrides)
     return _proc(**values)
@@ -242,8 +243,8 @@ def test_operation_secondary_gap_remains_independent_of_blood():
     lines = [_primary(billed_amount_try=Decimal("1000")), _blood(), _operation()]
     session, blood = _blocks(lines)
     assert [r["procedure_line_id"] for r in session.opportunities] == ["second-operation"]
-    assert session.opportunities[0]["expected_billed_try"] == 300
-    assert session.confirmed_uplift_try == 200
+    assert session.opportunities[0]["expected_billed_try"] == 909.60  # 30 % of 3,032.01.
+    assert session.confirmed_uplift_try == 809.60
     assert blood.confirmed_uplift_try == 208.5
 
 
@@ -256,7 +257,7 @@ def test_a_missing_payable_leaves_the_list_price_ceiling_unchanged():
 
 @pytest.mark.parametrize(
     "cross_specialty,same_incision,expected",
-    [(True, True, 550), (False, False, 500)],  # §2.2.2.B.c/ç: 30 %+25 or 50 %.
+    [(True, True, 1667.61), (False, False, 1516.01)],  # §2.2.2.B.c/ç: 30 %+25 or 50 % of 3,032.01.
 )
 def test_direct_detectors_share_nondefault_session_options(
     cross_specialty, same_incision, expected,
@@ -268,7 +269,7 @@ def test_direct_detectors_share_nondefault_session_options(
     blood = detect_blood_component_underbilling_opportunities(lines, **options)
     assert [r["procedure_line_id"] for r in session] == ["second-operation"]
     assert session[0]["expected_billed_try"] == expected
-    assert session[0]["recoverable_uplift_try"] == expected - 100
+    assert session[0]["recoverable_uplift_try"] == round(expected - 100, 2)
     assert [r["recoverable_uplift_try"] for r in blood] == [208.5]
 
 
@@ -288,7 +289,7 @@ def test_claim_context_reaches_both_detectors(monkeypatch):
         [_primary(billed_amount_try=Decimal("1000")), _operation(), _blood()],
         [_claim(department="cross-specialty")],
     )
-    assert session.confirmed_uplift_try == 450  # 55 % of 1000 − 100.
+    assert session.confirmed_uplift_try == 1567.61  # 55 % of 3,032.01 − 100.
     assert blood.confirmed_uplift_try == 208.5
     assert seen == ["CLM-BLOOD", "CLM-BLOOD"]
 
@@ -308,15 +309,14 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
     from src.bilun.domain.billing.types import BloodComponentUplift, SessionPricingUplift
 
     # #261: the session row comes from an operation secondary (was the plasma
-    # line, composed with its blood ceiling); 30 % of list 1134.71 = 340.41.
-    lines = [_primary(), _operation(
-        unit_price_try=Decimal("1134.71"), expected_payable_try=Decimal("1134.71"),
-        billed_amount_try=Decimal("200"),
-    )]
-    expected_total = 140.41
+    # line, composed with its blood ceiling); 30 % of its list 3,032.01 = 909.60
+    # (#300: was 30 % of a unit price of 1,134.71, 340.41, billed 200). Billed at
+    # 700 it is no chart-review case (5.6 % of the primary).
+    lines = [_primary(), _operation(billed_amount_try=Decimal("700"))]
+    expected_total = 209.60
     if review_only:
         lines[1] = _operation(billed_amount_try=Decimal("50"))
-        expected_total = 250.0
+        expected_total = 859.60
     expected_confirmed = 0 if review_only else expected_total
     seen = []
 
@@ -329,7 +329,7 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
             rows = kwargs["session_opportunities"]
             assert len(rows) == 1
             assert rows[0]["recoverable_uplift_try"] == expected_confirmed
-            assert rows[0]["expected_billed_try"] == (300 if review_only else 340.41)
+            assert rows[0]["expected_billed_try"] == 909.60
             seen.append(_name)
             return _original(ctx, **kwargs)
 

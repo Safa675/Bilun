@@ -64,19 +64,18 @@ from ..loaders.validity import service_date_of
 from ..money import money_round_half_up as _money
 from .catalog_membership import (
     get_ek2c_description,
-    get_ek2c_entry,
     normalize_procedure_code,
-    procedure_has_star,
 )
 from .claim_utils import claim_is_day_case, group_procedure_lines_by_session, infer_care_setting
-from .facility_tier import normalize_facility_tier
 from .material_bundling import material_paid_next_to_package
 from .payment_method import check_payment_method_compliance
 from .session_pricing import (
     MISSING_BRANCH,
     MISSING_INCISION,
     blood_component_billable_fraction,
+    claim_takes_starred_uplift,
     compute_session_readings,
+    ek2c_list_amount_try,
     line_gazette_list_billed_try,
 )
 from .session_scope import (
@@ -99,10 +98,6 @@ if TYPE_CHECKING:
         MaterialClaimLine,
         ProcedureClaimLine,
     )
-
-# C000678: "SUT eki EK-2/C Listesinde yanında (*) işareti olan işlemler, listede
-# belirtilen puanlara %30 ilave edilerek faturalandırılır."
-_STARRED_PACKAGE_UPLIFT = 1.30
 
 # TİTCK barcode -> ATC (the EK-4/A crosswalk, data/synthetic/reference/sources.yaml).
 _DRUG_CROSSWALK_PATH = _PROJECT_ROOT / "data" / "synthetic" / "reference" / "drug_crosswalk.parquet"
@@ -210,15 +205,9 @@ def _on_or_before(day: date | None, end: date) -> bool:
     return day is None or day <= end
 
 
-def _package_price_try(line: ProcedureClaimLine, *, starred_uplift: bool) -> float:
-    entry = get_ek2c_entry(line.procedure_code, as_of_date=line.procedure_date) or {}
-    price = float(entry.get("price_try") or 0.0) * max(int(line.quantity or 1), 1)
-    if starred_uplift and procedure_has_star(line.procedure_code, as_of_date=line.procedure_date):
-        price *= _STARRED_PACKAGE_UPLIFT
-    return price
-
-
 def _hizmet_basi_price_try(line: ProcedureClaimLine) -> float:
+    """A hizmet başı line's EK-2/B list amount on its date, never its unit price
+    (#300); its billed amount when the list has no price for the code that day."""
     listed = line_gazette_list_billed_try(line)
     return float(line.billed_amount_try) if listed is None else listed
 
@@ -237,9 +226,7 @@ def _package_side_try(
     (C001389, C001413). Every other covered line is inside the package
     (operations, tests and stay; C000685–C000699).
     """
-    starred_uplift = normalize_facility_tier(
-        claim.facility_tier, provider_type=claim.provider_type,
-    ).is_university_eah
+    starred_uplift = claim_takes_starred_uplift(claim)
     mandated = {id(line) for line in mandated_lines}
     hizmet_basi = {id(line) for line in c000672_hizmet_basi_lines(claim, list(lines))}
     strict_total = lenient_total = 0.0
@@ -249,7 +236,7 @@ def _package_side_try(
         for line in session_lines:
             if billed_without_session_rules(line.procedure_code):
                 amount = (
-                    _package_price_try(line, starred_uplift=starred_uplift)
+                    ek2c_list_amount_try(line, starred_uplift=starred_uplift)
                     if must_be_billed_as_package(claim, line)
                     else _hizmet_basi_price_try(line)
                 )
@@ -278,7 +265,7 @@ def _package_side_try(
             itemized_session = readings.strict.rule_id == "2.2.2.A.(5)"
         for line, strict, lenient in zip(operations, strict_factors, lenient_factors, strict=True):
             if id(line) in mandated and not itemized_session:
-                price = _package_price_try(line, starred_uplift=starred_uplift)
+                price = ek2c_list_amount_try(line, starred_uplift=starred_uplift)
                 priced_a_package = True
             else:
                 price = _hizmet_basi_price_try(line)
@@ -288,7 +275,7 @@ def _package_side_try(
         operation_ids = {id(line) for line in operations}
         for line in session_lines:
             if id(line) in mandated and id(line) not in operation_ids:
-                price = _package_price_try(line, starred_uplift=starred_uplift)
+                price = ek2c_list_amount_try(line, starred_uplift=starred_uplift)
                 strict_total += price
                 lenient_total += price
                 priced_a_package = True
@@ -354,11 +341,9 @@ def _add_on_scope(
     )
     if not add_ons:
         return None
-    starred_uplift = normalize_facility_tier(
-        claim.facility_tier, provider_type=claim.provider_type,
-    ).is_university_eah
+    starred_uplift = claim_takes_starred_uplift(claim)
     package_total = _money(sum(
-        _package_price_try(line, starred_uplift=starred_uplift) for line in add_ons
+        ek2c_list_amount_try(line, starred_uplift=starred_uplift) for line in add_ons
     ))
     if package_total <= 0:
         return None

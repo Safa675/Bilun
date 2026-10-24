@@ -164,6 +164,8 @@ class TestProseDrgUnbundling:
         # Safa 2026-10-16: unknown incision → lenient reading. No line shows the
         # incision or a branch: money only above A(5)(b) 50 % + 25 points (75 %);
         # the 30 % of one incision in one branch is a 0-TL review (was: skipped).
+        # Both billed in full at their EK-2/B list on the day (#300: the list, not
+        # the unit price, is the base): 610070 3,603.98 against 75 % = 2,702.99.
         claim = _claim()
         session_day = date(2026, 1, 10)
         lines = [
@@ -171,13 +173,15 @@ class TestProseDrgUnbundling:
                 procedure_line_id="PL1",
                 procedure_code="610070",
                 procedure_date=session_day,
-                billed_amount_try=Decimal("1000"),
+                unit_price_try=Decimal("3603.98"),
+                billed_amount_try=Decimal("3603.98"),
             ),
             _proc(
                 procedure_line_id="PL2",
                 procedure_code="609270",
                 procedure_date=session_day,
-                billed_amount_try=Decimal("1000"),
+                unit_price_try=Decimal("5468.68"),
+                billed_amount_try=Decimal("5468.68"),
             ),
         ]
         finding = analyze_claim_unbundling(claim, lines)
@@ -186,20 +190,21 @@ class TestProseDrgUnbundling:
             (r["procedure_code"], r["expected_point_factor"], r["risk_amount_try"],
              r["review_risk_try"], r["missing_facts"])
             for r in finding.session_violations
-        ] == [("610070", 0.75, 250.0, 450.0, ["kesi", "branş"])]
+        ] == [("610070", 0.75, 900.99, 1621.80, ["kesi", "branş"])]
         assert finding.session_reviews == []
-        assert finding.sourced_savings_try == 250.0
+        assert finding.sourced_savings_try == 900.99
 
     @pytest.mark.parametrize(
-        "category, rule_id, risk",
+        "category, rule_id, lists, risk",
         [
             # Hizmet başı: §2.2.2.A(5) 30 %; both codes are also EK-2/C packages.
-            ("islem", "2.2.2.A.(5)", 700.0),
-            # Billed as packages: §2.2.2.B(3)(a) 25 %.
-            ("paket", "2.2.2.B.a", 750.0),
+            # 70 % of 610070's EK-2/B list 3,603.98 (was 70 % of a unit price of 1,000).
+            ("islem", "2.2.2.A.(5)", ("3603.98", "5468.68"), 2522.79),
+            # Billed as packages: §2.2.2.B(3)(a) 25 %, 75 % of the EK-2/C 12,562.36.
+            ("paket", "2.2.2.B.a", ("12562.36", "30300.79"), 9421.77),
         ],
     )
-    def test_detects_session_point_overbilling(self, category, rule_id, risk) -> None:
+    def test_detects_session_point_overbilling(self, category, rule_id, lists, risk) -> None:
         claim = _claim()
         session_day = date(2026, 1, 10)
         lines = [
@@ -208,7 +213,8 @@ class TestProseDrgUnbundling:
                 procedure_code="610070",
                 procedure_category=category,
                 procedure_date=session_day,
-                billed_amount_try=Decimal("1000"),
+                unit_price_try=Decimal(lists[0]),
+                billed_amount_try=Decimal(lists[0]),
                 procedure_specialty_code="cerrahi",
             ),
             _proc(
@@ -216,7 +222,8 @@ class TestProseDrgUnbundling:
                 procedure_code="609270",
                 procedure_category=category,
                 procedure_date=session_day,
-                billed_amount_try=Decimal("1000"),
+                unit_price_try=Decimal(lists[1]),
+                billed_amount_try=Decimal(lists[1]),
                 procedure_specialty_code="cerrahi",
             ),
         ]
@@ -273,20 +280,23 @@ class TestProseDrgUnbundling:
         # A package claim by its codes: P609270 billed as the package, 610070
         # hizmet başı next to it (§2.2.2.B(3)(c), 30 %). Two hizmet başı lines a
         # third-tier hospital may bill that way are no package claim (review
-        # item 3: the package_candidate flag is no longer read).
+        # item 3: the package_candidate flag is no longer read). Each is billed in
+        # full at its list on the day (#300: the list, not the unit price).
         lines = [
             _proc(
                 procedure_line_id="PL1",
                 procedure_code="610070",
                 procedure_date=date(2026, 1, 10),
-                billed_amount_try=Decimal("1000"),
+                unit_price_try=Decimal("3603.98"),
+                billed_amount_try=Decimal("3603.98"),
             ),
             _proc(
                 procedure_line_id="PL2",
                 procedure_code="P609270",
                 procedure_category="paket",
                 procedure_date=date(2026, 1, 10),
-                billed_amount_try=Decimal("1000"),
+                unit_price_try=Decimal("30300.79"),
+                billed_amount_try=Decimal("30300.79"),
             ),
         ]
         ctx = PatientClaimContext(
