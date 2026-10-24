@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.loaders.validity import service_date_of
 from src.bilun.domain.materials.catalog_lookup import lookup_ek3_list_price_try
 from src.bilun.domain.pricing.material_kdv import (
     DEFAULT_MATERIAL_KDV_RATE,
@@ -118,12 +119,19 @@ def _append_kdv_price_reviews(
     result: MaterialPreCheck,
     ctx: PatientClaimContext,
 ) -> None:
-    """Flag billed amounts above EK-3 ex-VAT list price + applicable KDV (§3.1.1(10))."""
+    """Flag billed amounts above EK-3 ex-VAT list price + applicable KDV (§3.1.1(10)).
+
+    The list price is the one in force on the line's material_date, its claim's
+    date when the line has none (#292): a set billed at its then-valid price is
+    no review after SGK reprices it.
+    """
+    claims = {claim.claim_id: claim for claim in ctx.claims}
     for line in ctx.material_lines:
         code = line.material_code.strip()
         if not code:
             continue
-        ex_vat = lookup_ek3_list_price_try(code)
+        day = service_date_of(line.material_date, claims.get(line.claim_id))
+        ex_vat = lookup_ek3_list_price_try(code, day)
         if ex_vat is None:
             continue
         apply_kdv = should_apply_kdv_to_material(foreign_facility=line.foreign_facility)

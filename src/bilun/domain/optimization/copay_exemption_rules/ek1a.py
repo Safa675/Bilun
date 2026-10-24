@@ -8,18 +8,19 @@ from typing import Any
 
 from ...catalog import get_ek1a_exemptions
 from ...labels import normalize_sut_display_text
-from ...loaders.validity import as_of_iso
+from ...loaders.legacy import ek1a_version_day
 from ..shared import _icd10_in_range
 
 logger = logging.getLogger("bilun.domain.optimization")
 
-# EK-1A index per service date (YYYY-MM-DD): a range applies from its valid_from.
+# EK-1A index per list version (its first day, YYYY-MM-DD): a range applies from its
+# valid_from, so every service date of one version shares one index (#292).
 _ek1a_by_letter: dict[str, dict[str, list[tuple[str, str, str]]]] = {}
 
 
 def _get_ek1a_by_letter(as_of: date | str | None = None) -> dict[str, list[tuple[str, str, str]]]:
     """EK-1A ranges in force on ``as_of`` (default today), grouped by ICD-10 chapter letter."""
-    day = as_of_iso(as_of)
+    day = ek1a_version_day(as_of)
     cached = _ek1a_by_letter.get(day)
     if cached is not None:
         return cached

@@ -20,6 +20,7 @@ from .catalog_membership import get_ek2c_description, get_ek2c_entry, normalize_
 from .clause_linking import clause_ref_for_rule_id
 
 from ..constants import _PROSE_RULES_DIR
+from ..loaders.validity import service_date_of
 
 _RULES_PATH = _PROSE_RULES_DIR / "material_bundling_prose.json"
 _GENERIC_PROCEDURE_CODES = frozenset({"", "GENERIC"})
@@ -180,6 +181,10 @@ def _procedure_pairing_satisfied(
 _PACKAGES_KEY = "ek2c_package_descriptions"
 _PROCEDURES_KEY = "procedure_context_codes"
 _VERDICT_KEY = "ek2c_aciklama_verdict"
+# The service date every EK-3 lookup of the line reads its list on (#292): the
+# line's material_date, else its claim's date; absent (validator input without
+# a date) = today.
+_DATE_KEY = "material_date"
 
 
 def _separate_billing_permitted(code: str, mat: dict[str, Any]) -> bool:
@@ -189,14 +194,16 @@ def _separate_billing_permitted(code: str, mat: dict[str, Any]) -> bool:
     procedure it is billed with (EK-3/F-2 sets); the açıklama of its EK-2/C
     package (§3.1.4(2)(n)), whose "dahildir" also overrides the last step; a
     §3.1.4(2) item, which covers materials outside an EK-2/C package score only.
+    Each EK-3 row is the one in force on the line's date.
     """
-    if is_separate_billing_allowed(code):
+    day = mat.get(_DATE_KEY)
+    if is_separate_billing_allowed(code, day):
         return True
-    if ek3_procedure_condition_codes(code) & mat[_PROCEDURES_KEY]:
+    if ek3_procedure_condition_codes(code, day) & mat[_PROCEDURES_KEY]:
         return True
     if mat[_VERDICT_KEY] is not None:
         return mat[_VERDICT_KEY] == "separate"
-    return bool(mat[_PACKAGES_KEY]) and sut_3_1_4_item(code) is not None
+    return bool(mat[_PACKAGES_KEY]) and sut_3_1_4_item(code, day) is not None
 
 
 def material_paid_next_to_package(
@@ -205,6 +212,7 @@ def material_paid_next_to_package(
     name: str,
     package_descriptions: tuple[str, ...],
     procedure_codes: frozenset[str],
+    as_of: Any = None,
 ) -> bool:
     """SUT §3.1.4 (C000582, C002857–C002875): the material is paid on top of its package.
 
@@ -213,11 +221,12 @@ def material_paid_next_to_package(
     (``package_descriptions``, "" for a package without one), a §3.1.4(2) item.
     An uncoded one by the §3.1.4(2) name rules ("plak", "vida", "stent", ...).
     Everything else, consumables included (C000695 "Sarf malzemesi"), is inside
-    the package; the ``is_bundled`` input flag is never read.
+    the package; the ``is_bundled`` input flag is never read. The EK-3 rows are
+    read on ``as_of``, the material line's service date (default today).
     """
     normalized = str(code or "").strip().upper()
     mat = _with_package_context(
-        {_PACKAGES_KEY: package_descriptions, _PROCEDURES_KEY: procedure_codes},
+        {_PACKAGES_KEY: package_descriptions, _PROCEDURES_KEY: procedure_codes, _DATE_KEY: as_of},
         normalized,
         ((), frozenset()),
     )
@@ -252,7 +261,7 @@ def _with_package_context(
         **mat,
         _PACKAGES_KEY: packages,
         _PROCEDURES_KEY: procedures,
-        _VERDICT_KEY: ek2c_aciklama_verdict(code, packages),
+        _VERDICT_KEY: ek2c_aciklama_verdict(code, packages, mat.get(_DATE_KEY)),
     }
 
 
@@ -279,6 +288,7 @@ def _condition_matches(
 ) -> bool:
     if unit_price <= 0:
         return False
+    day = mat.get(_DATE_KEY)
 
     if (
         condition.get("requires_material_code")
@@ -300,7 +310,7 @@ def _condition_matches(
         return False
 
     if condition.get("separate_billing_not_authorized"):
-        if not code or not is_material_in_ek3_catalog(code):
+        if not code or not is_material_in_ek3_catalog(code, day):
             return False
         if mat.get("is_bundled"):
             return False
@@ -384,12 +394,12 @@ def _condition_matches(
         return _material_name_matches(name, keywords)
 
     if condition.get("material_not_in_ek3c") and code:
-        if is_material_in_ek3_catalog(code) and not is_material_in_ek3c_catalog(code):
+        if is_material_in_ek3_catalog(code, day) and not is_material_in_ek3c_catalog(code):
             return False
         return not is_material_in_ek3c_catalog(code)
 
     if condition.get("material_not_in_ek3") and code:
-        return not is_material_in_ek3_catalog(code)
+        return not is_material_in_ek3_catalog(code, day)
 
     if condition.get("material_in_ek3c") and code:
         if not is_material_in_ek3c_catalog(code):
@@ -547,6 +557,7 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
     claim_care = {
         str(c.claim_id): infer_care_setting(c) for c in ctx.claims
     }
+    claim_by_id = {str(c.claim_id): c for c in ctx.claims}
     procedure_codes = frozenset(
         normalize_procedure_code(line.procedure_code)
         for line in ctx.procedure_lines
@@ -611,6 +622,10 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
             ),
             _PACKAGES_KEY: packages,
             _PROCEDURES_KEY: frozenset(procedures) - {""},
+            _DATE_KEY: service_date_of(
+                getattr(line, "material_date", None),
+                claim_by_id.get(str(getattr(line, "claim_id", ""))),
+            ),
         }
         for flag in (
             "titubb_registered",

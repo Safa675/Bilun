@@ -116,7 +116,7 @@ def test_blood_package_audit_requires_matching_claim_and_episode():
 def test_material_quantity_kdv_at_precheck_boundary(monkeypatch, quantity, foreign, unit_ceiling):
     from src.bilun.domain.billing import claim_materials
 
-    monkeypatch.setattr(claim_materials, "lookup_ek3_list_price_try", lambda code: 100)
+    monkeypatch.setattr(claim_materials, "lookup_ek3_list_price_try", lambda code, as_of=None: 100)
     line = replace(_material_line(), quantity=quantity, foreign_facility=foreign,
                    billed_amount_try=Decimal(unit_ceiling * quantity))
     assert precheck_materials_from_claims(_context(materials=[line])).kdv_price_reviews == []
@@ -245,7 +245,7 @@ def test_material_quantity_preserves_unit_rounding_and_one_cent_tolerance(monkey
     from src.bilun.domain.billing import claim_materials
     from src.bilun.domain.pricing.material_kdv import ek3_payable_ceiling_try
 
-    monkeypatch.setattr(claim_materials, "lookup_ek3_list_price_try", lambda code: 100.01)
+    monkeypatch.setattr(claim_materials, "lookup_ek3_list_price_try", lambda code, as_of=None: 100.01)
     unit_ceiling = Decimal(str(ek3_payable_ceiling_try(100.01)))
     line = replace(_material_line(), quantity=3,
                    billed_amount_try=unit_ceiling * 3 + Decimal("0.01"))

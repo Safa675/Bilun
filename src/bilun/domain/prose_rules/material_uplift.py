@@ -19,6 +19,7 @@ from src.bilun.domain.materials.exclusions import (
     is_material_reimbursable,
     care_setting_from_header,
 )
+from src.bilun.domain.loaders.validity import service_date_of
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.pricing.material_kdv import ek3_payable_ceiling_try
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
@@ -96,11 +97,12 @@ def _material_eligible_for_uplift(
     *,
     pairing_mode: str,
     care_setting: str | None = None,
+    as_of: Any = None,
 ) -> tuple[bool, str | None]:
     code = str(material_code or "").strip().upper()
     if not code:
         return False, "missing_material_code"
-    if not is_material_in_ek3_catalog(code):
+    if not is_material_in_ek3_catalog(code, as_of):
         return False, "not_in_ek3"
     reimbursable = is_material_reimbursable("", material_code=code)
     if reimbursable is not True:
@@ -110,7 +112,7 @@ def _material_eligible_for_uplift(
     if bundled is not False:
         return False, "bundling_applicability_unavailable" if bundled is None else "ek3b1_bundled_consumable"
     if pairing_mode == "separate_billing":
-        if not is_separate_billing_allowed(code) and not is_material_in_ek3c_catalog(code):
+        if not is_separate_billing_allowed(code, as_of) and not is_material_in_ek3c_catalog(code):
             return False, "separate_billing_not_allowed"
     return True, None
 
@@ -119,8 +121,9 @@ def _price_material_uplift(
     material_code: str,
     *,
     foreign_facility: bool,
+    as_of: Any = None,
 ) -> tuple[float | None, str]:
-    ex_vat = lookup_ek3_list_price_try(material_code)
+    ex_vat = lookup_ek3_list_price_try(material_code, as_of)
     if ex_vat is None or float(ex_vat) <= 0:
         return None, "catalog_price_missing"
     ceiling = ek3_payable_ceiling_try(
@@ -137,7 +140,11 @@ def detect_missing_billable_material_opportunities(
     procedure_lines: list[ProcedureClaimLine],
     material_lines: list[MaterialClaimLine],
 ) -> list[dict[str, Any]]:
-    """Flag performed procedures with expected separately billable materials absent."""
+    """Flag performed procedures with expected separately billable materials absent.
+
+    The material's EK-3 membership, separate-billing marker and list price are read
+    on the procedure line's date, the claim's date when the line has none (#292).
+    """
     rules_index = _rules_by_procedure()
     if not rules_index:
         return []
@@ -154,6 +161,7 @@ def detect_missing_billable_material_opportunities(
             continue
 
         proc_code = normalize_procedure_code(proc.procedure_code)
+        day = service_date_of(proc.procedure_date, claim)
         for rule in rules_index.get(proc_code, []):
             pairing_mode = _rule_pairing_mode(rule)
             for material_code in rule.get("expected_material_codes", []):
@@ -172,6 +180,7 @@ def detect_missing_billable_material_opportunities(
                     code,
                     pairing_mode=pairing_mode,
                     care_setting=care_setting_from_header(claim),
+                    as_of=day,
                 )
                 if not eligible:
                     continue
@@ -179,6 +188,7 @@ def detect_missing_billable_material_opportunities(
                 ceiling, price_methodology = _price_material_uplift(
                     code,
                     foreign_facility=foreign_facility,
+                    as_of=day,
                 )
                 if ceiling is None or ceiling <= 0:
                     continue
@@ -217,7 +227,7 @@ def detect_missing_billable_material_opportunities(
                         "actual_billed_try": _money(billed),
                         "recoverable_uplift_try": recoverable,
                         "ceiling_try": ceiling,
-                        "list_price_try": lookup_ek3_list_price_try(code),
+                        "list_price_try": lookup_ek3_list_price_try(code, day),
                         "price_methodology": price_methodology,
                         "included_in_sgk_total": True,
                         "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
