@@ -20,9 +20,9 @@ def dataset():
 
 
 def _pick_patient_with_claims(dataset) -> tuple[str, str]:
-    """The first patient whose bills give no copay ground of their own: no emergency bill (the emergency exemption is
-    the patient's, on every bill) and no chronic health report on file (the report test sets it). Since WP18 patient 1
-    has an ER visit (S30), so this is patient 3."""
+    """The first patient whose bills give no copay ground of their own: no emergency bill (the emergency ground of SUT
+    1.8.5.(5)) and no chronic health report on file (the report test sets it). Since WP18 patient 1 has an ER visit
+    (S30), so this is patient 3."""
     pid = next(
         p
         for p, claims in dataset.claims_by_patient.items()

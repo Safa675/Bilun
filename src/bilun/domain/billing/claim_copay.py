@@ -133,6 +133,32 @@ def _emergency_claim_ids(
     )
 
 
+def _scoped_exemption(
+    copay_exemption: dict,
+    sources: list[dict],
+    claims: tuple[ClaimHeader, ...],
+    emergency_claim_ids: frozenset[str],
+) -> tuple[bool, str | None]:
+    """Exempt verdict and primary ground of a report over `claims` (the patient's bills, or one bill).
+
+    The patient-level verdict holds, except for a claim-scoped ground: the emergency ground (SUT 1.8.5.(5))
+    waives the share of the emergency bills only, so it exempts the report when every bill of the report
+    is an emergency bill. The patient's other bills keep their own state (EK-1/A partial, none).
+    """
+    exempt = bool(copay_exemption.get("exempt"))
+    primary = copay_exemption.get("primary_exemption_category")
+    scoped = [
+        source
+        for source in sources
+        if source.get("claim_scoped") and source.get("counts_toward_exempt", True)
+    ]
+    if exempt or not scoped:
+        return exempt, primary
+    if claims and all(claim.claim_id in emergency_claim_ids for claim in claims):
+        return True, scoped[0].get("category") or primary
+    return False, primary
+
+
 def _annotate_cancer_exempt(
     row: dict,
     *,
@@ -214,15 +240,17 @@ def optimize_copay_from_claims(
     """Compute copay savings from exact procedure and drug claim lines."""
 
     result = CopayOptimization()
-    is_exempt = bool(copay_exemption.get("exempt"))
-    partial_exempt = bool(copay_exemption.get("partial_exempt"))
     has_health_report = copay_exemption.get("has_chronic_health_report")
-    result.is_exempt = is_exempt
 
     exemption_sources = _resolve_exemption_sources(copay_exemption)
     ek1a_source = find_ek1a_source(exemption_sources)
     cancer_exempt = _has_malignant_qualifying_diagnosis(exemption_sources)
     emergency_claim_ids = _emergency_claim_ids(ctx.claims, exemption_sources)
+    is_exempt, primary_category = _scoped_exemption(
+        copay_exemption, exemption_sources, ctx.claims, emergency_claim_ids
+    )
+    partial_exempt = bool(copay_exemption.get("partial_exempt"))
+    result.is_exempt = is_exempt
 
     if is_exempt:
         qualifying = copay_exemption.get("qualifying_diagnoses", [])
@@ -364,8 +392,14 @@ def optimize_copay_from_claims(
     result.rx_copay_savings_by_ground = {
         ground: round(float(amount), 2) for ground, amount in rx_by_ground.items() if amount > 0
     }
-    result.exemption_sources = exemption_sources
-    result.primary_exemption_category = copay_exemption.get("primary_exemption_category")
+    # A claim-scoped ground that none of the report's bills carries (a stay of a patient with an ER
+    # visit elsewhere) is no ground of this report.
+    result.exemption_sources = [
+        source
+        for source in exemption_sources
+        if not source.get("claim_scoped") or emergency_claim_ids
+    ]
+    result.primary_exemption_category = primary_category
     result.categories_not_evaluated = list(
         copay_exemption.get("categories_not_evaluated") or []
     )

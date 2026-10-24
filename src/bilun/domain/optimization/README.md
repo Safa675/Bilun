@@ -13,7 +13,7 @@ those inputs should surface missing-input metadata rather than guessed values.
 
 | # | Feature | Gazette Annex | Active status |
 |---|---------|---------------|---------------|
-| 1 | Copayment Exemptions | EK-1A | Gazette rule check from explicit diagnosis input |
+| 1 | Copayment Exemptions | EK-1A | Gazette rule check from explicit diagnosis input; the emergency visit ground (SUT 1.8.5.(5)) is claim-scoped: it exempts the emergency bill, and the patient only when every bill is an emergency bill |
 | 2 | Surcharge Eligibility | EK-2G | Gazette rule check; billed exposure requires exact procedure claim lines |
 | 3 | Copay Rate Eligibility | EK-2C-1 | Gazette rule check; billed exposure requires exact procedure claim lines; the ICU day packages (P552001-3, P552006-8) are not read: their EK-2C-1 rate is the Sınıf-3 uplift of SUT 2.2.(20), applied by the ICU motor |
 | 4 | Temporal Price Validation | EK-2B/2C history | Exact only when procedure code and date are supplied |

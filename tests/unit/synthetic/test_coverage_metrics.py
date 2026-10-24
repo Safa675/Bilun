@@ -1103,10 +1103,10 @@ def measured_app_path() -> dict[str, dict[str, Any]]:
 
 
 def _partial_patients() -> set[str]:
-    """S3, S4 and S6 (the plan's table, 7.4), S9 (M48.06 with I10), S17 (N18.0), S18 (K74.6) and S21 (C53.9, a cancer):
-    an EK-1/A match and no report on file. S5 was one until its ER visit (S41, WP15): the emergency visit makes the
-    patient exempt."""
-    stories = ("showcase_S3", "showcase_S4", "showcase_S6")
+    """S3, S4, S5 and S6 (the plan's table, 7.4), S9 (M48.06 with I10), S17 (N18.0), S18 (K74.6) and S21 (C53.9, a
+    cancer): an EK-1/A match and no report on file. S5's ER visit (S41, WP15) exempts that bill only, not the patient
+    (WP23, SUT 1.8.5.(5))."""
+    stories = ("showcase_S3", "showcase_S4", "showcase_S5", "showcase_S6")
     return {cohort.role(story).patient_id for story in stories} | {
         cohort.scenario("S9").patient_id,
         cohort.scenario("S17").patient_id,
@@ -1125,16 +1125,14 @@ def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state
         second: True
     }
     assert {pid for pid, item in copay.items() if item["outcome"] == "partial_exempt"} == _partial_patients()
-    # S2 is exempt on EK-1/A; the five emergency visits (S7, S10 of patient 12, S41 of patient 5, S49 of patient 8 and
-    # S30 of patient 1) on the visit type, which the copay check reads at patient level: patient 5's EK-1/A match no
-    # longer shows (WP15), patient 8, without a ground before, is exempt over all four of its bills (WP17), patient 1 over
-    # its three (WP18). Patient 8's is an engine error: S49 is a green-area visit, which SUT 1.8.5.(5) (C000370) leaves
-    # out of the exemption, and the check leaves 520021 out only when it is the patient's only code
-    # (`copay_exemption_rules/visit_type.py`)
-    fifth, eighth = cohort.role("showcase_S5").patient_id, cohort.role("showcase_S8").patient_id
+    # S2 is exempt on EK-1/A and nobody else: the five emergency visits (S7, S10 of patient 12, S41 of patient 5, S49 of
+    # patient 8 and S30 of patient 1) exempt their own bills, and each of these patients has other bills (SUT 1.8.5.(5),
+    # C000370, waives the share of the emergency service, WP23; before, one ER bill made the patient exempt). S49 is a
+    # green-area visit, which the clause leaves out of the exemption; the check leaves 520021 out only when it is the
+    # bill's only code (`copay_exemption_rules/visit_type.py`), so S49's own bill stays exempt (WP17, not fixed here)
+    fifth, seventh = cohort.role("showcase_S5").patient_id, cohort.role("showcase_S7").patient_id
     first = cohort.role("showcase_S1").patient_id
-    exempt = {second, cohort.role("showcase_S7").patient_id, cohort.scenario("S10").patient_id, fifth, eighth, first}
-    assert {pid for pid, item in copay.items() if item["outcome"] == "exempt"} == exempt
+    assert {pid for pid, item in copay.items() if item["outcome"] == "exempt"} == {second}
     for pid in _partial_patients():
         assert "ek1a_report_unknown" in copay[pid]["rate_correction_codes"]
     # S2's copay block holds the money waiver of its control's examination and nothing else: the partial row is gone and
@@ -1145,20 +1143,25 @@ def test_the_app_path_shows_s2_exempt_with_its_report_and_the_partial_ek1a_state
     # same two rows of patient 15), 17 with S45 (the SUT 1.8.3.(2) material copay reference row of patient 6's walker,
     # which patient 5's implants already show), 16 with S41 (patient 5 exempt: its partial EK-1/A row leaves, the
     # material copay reference row of its implants and walker stays), 15 with S30 (patient 1 exempt: its generic 1.8.2
-    # drug-copay row leaves, EI-25), 16 with S21 (the partial EK-1/A row of patient 16; no drug line, so no 1.8.2 row)
+    # drug-copay row leaves, EI-25), 16 with S21 (the partial EK-1/A row of patient 16; no drug line, so no 1.8.2 row),
+    # 20 with WP23 (the ER visit no longer exempts the patient: patient 5's partial EK-1/A row comes back and so does
+    # the generic 1.8.2 drug-copay row of patients 1, 5 and 7, EI-25: S1's inpatient drugs, S44's EVENITY and S7's
+    # infusion on its ER bill, whose own bill view stays exempt and shows no 1.8.2 row)
     eight = cohort.patient_ids()[:8]
-    assert [copay[pid]["rate_corrections"] for pid in eight] == [0, 1, 2, 2, 1, 3, 0, 0]
-    assert copay[fifth]["rate_correction_codes"] == ["material_copay_rate"]
+    assert [copay[pid]["rate_corrections"] for pid in eight] == [1, 1, 2, 2, 3, 3, 1, 0]
+    assert copay[fifth]["rate_correction_codes"] == ["ek1a_report_unknown", "material_copay_rate", "sut:1.8.2.(1)"]
+    assert copay[first]["rate_correction_codes"] == copay[seventh]["rate_correction_codes"] == ["sut:1.8.2.(1)"]
     assert copay[cohort.role("showcase_S6").patient_id]["rate_correction_codes"] == [
         "ek1a_report_unknown", "material_copay_rate", "sut:1.8.2.(1)"
     ]  # fmt: skip
     assert copay[cohort.scenario("S17").patient_id]["rate_correction_codes"] == ["ek1a_report_unknown", "sut:1.8.2.(1)"]
     assert copay[cohort.scenario("S18").patient_id]["rate_correction_codes"] == ["ek1a_report_unknown", "sut:1.8.2.(1)"]
     assert copay[cohort.scenario("S21").patient_id]["rate_correction_codes"] == ["ek1a_report_unknown"]
-    assert sum(item["rate_corrections"] for item in copay.values()) == 16
+    assert sum(item["rate_corrections"] for item in copay.values()) == 20
     assert cm.summarize(measured_app_path)["copay"] == {
-        "rate_corrections": 16,
-        "outcomes": {"exempt": 6, "none": 3, "partial_exempt": 7},  # patient 13 (S20, K42.9): no exemption ground
+        "rate_corrections": 20,
+        # none: patients 10, 11 and 13 (S20, K42.9) with no exemption ground, and the ER patients 1, 7, 8 and 12
+        "outcomes": {"exempt": 1, "none": 7, "partial_exempt": 8},
     }
 
 
@@ -1168,7 +1171,7 @@ def test_the_app_path_moves_no_block_and_no_wave_a_rule_of_the_claims_only_measu
     plain, app = cm.summarize(measured), cm.summarize(measured_app_path)
     assert app["blocks"] == plain["blocks"]
     assert app["wavea"] == plain["wavea"]
-    # the copay exemption adds one kind: the exemption review of the exempt patients (S2 on EK-1/A, the five emergency visits)
+    # the copay exemption adds one kind: the exemption review of the exempt patient (S2 on EK-1/A)
     assert set(app["finding_kinds"]["kinds"]) - set(plain["finding_kinds"]["kinds"]) == {"action:copay:exemption_review"}
     assert set(plain["finding_kinds"]["kinds"]) <= set(app["finding_kinds"]["kinds"])
 
