@@ -292,7 +292,7 @@ class TestSessionScope261:
         [
             (("P700910", "P700810"), "2.2.2.B.a", 0.25, 3060.48),  # PTCA + angio (C000993).
             (("P700660", "P700732"), "2.2.2.B.a", 0.25, 1400.59),  # Pacemaker + pocket.
-            (("701450", "701540"), "2.2.2.A.(5)", 0.30, 338.79),  # SGK GENEL CERRAHİ-2.
+            (("701450", "701540"), "2.2.2.A.(5)", 0.30, 338.78),  # SGK GENEL CERRAHİ-2.
             (("802830", "802780"), "2.2.2.A.(5)", 0.30, 1524.82),  # SGK RADYOLOJİ-3.
         ],
         ids=["angio-ptca", "pacemaker-pocket", "colonoscopy-ogd", "stent-pta"],
@@ -361,7 +361,7 @@ class TestSessionScope261:
             (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"],
              r["expected_point_factor"], r["missing_facts"])
             for r in rows
-        ] == [("615995", 0.0, 606.41, 0.50, ["kesi"])]
+        ] == [("615995", 0.0, 606.40, 0.50, ["kesi"])]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_hizmet_basi_operations_rank_by_their_ek2b_puan(self) -> None:
@@ -463,7 +463,7 @@ class TestMissingUnitPrice:
     @pytest.mark.parametrize(
         "build, code, risk",
         [
-            (lambda: s3(second_operation=True), "615995", 2122.41),  # EK-2/B list 3,032.01.
+            (lambda: s3(second_operation=True), "615995", 2122.40),  # EK-2/B list 3,032.00.
             (lambda: s8("faulty"), "P603840", 5377.20),  # EK-2/C list 7,169.60.
         ],
         ids=["hizmet-basi", "package"],
@@ -578,10 +578,10 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
 
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
     def test_an_under_billed_secondary_keeps_its_uplift(self, unit_price) -> None:
-        # 615995 at 10 % of 3,032.01: 30 % (909.60) is owed, 606.40 more. A unit price
+        # 615995 at 10 % of 3,032.00: 30 % (909.60) is owed, 606.40 more. A unit price
         # of its billed 303.20 hid the uplift and showed 151.60 TL of exposure.
         ctx = _with_unit_prices(s3(second_operation=True, second_factor="0.1").ctx(), unit_price)
-        assert _uplift_rows(ctx) == [("615995", 606.40, 0.0, 909.60, 1516.01, ["kesi"])]
+        assert _uplift_rows(ctx) == [("615995", 606.40, 0.0, 909.60, 1516.00, ["kesi"])]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert _exposure_rows(ctx) == []
 
@@ -590,7 +590,7 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
         self, unit_price,
     ) -> None:
         # 615931 billed 6,000.00 next to the must-package 610131: the package side is
-        # 8,636.51 + 0.55 × 3,837.32 = 10,747.04 (C000672, C000674). Was 11,936.51
+        # 8,636.50 + 0.55 × 3,837.32 = 10,747.03 (C000672, C000674). Was 11,936.51
         # (``billed``: 0.55 × 6,000.00), 9,356.01 and 1,194.63 TL exposure
         # (``quarter``), 14,968.09 (``triple``).
         bill = s1("faulty")
@@ -600,7 +600,7 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
         ctx = _with_unit_prices(bill.ctx(), unit_price)
         row = _claim_row(ctx)
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            10747.04, 10550.64, 196.40,
+            10747.03, 10550.56, 196.47,
         )
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
@@ -653,10 +653,10 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
             ({"code": "P603840"}, "egitim_arastirma", 9320.48),  # Starred: + 30 %.
             ({"code": "P603840", "qty": 2}, "universite_devlet", 18640.96),
             ({"code": "P600720"}, "egitim_arastirma", 5532.44),  # No star.
-            ({"code": "603840"}, "egitim_arastirma", 1914.43),  # EK-2/B: no C000678.
+            ({"code": "603840"}, "egitim_arastirma", 1914.42),  # EK-2/B: no C000678.
             ({"code": "601200", "qty": 2}, "2_3_basamak_ozel", 20145.94),
-            ({"code": "P603840", "day": "2025-06-01"}, "2_3_basamak_ozel", 5515.08),
-            ({"code": "601200", "day": "2025-06-01"}, "2_3_basamak_ozel", 8394.15),
+            ({"code": "P603840", "day": "2025-06-01"}, "2_3_basamak_ozel", 5515.07),
+            ({"code": "601200", "day": "2025-06-01"}, "2_3_basamak_ozel", 8394.14),
         ],
     )
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
@@ -714,7 +714,7 @@ class TestBilledAsPackage:
         ids=["S8-clean", "S1-clean"],
     )
     def test_correct_packages_without_a_category_have_no_exposure(self, build) -> None:
-        # Review item 4: S8 13,858.13 and P610131 alone 8,636.51 read as
+        # Review item 4: S8 13,858.13 and P610131 alone 8,636.50 read as
         # must-package lines billed hizmet başı.
         ctx = _blank_categories(build().ctx())
         assert _finding(ctx).payment_method_violations == []
@@ -734,7 +734,7 @@ class TestRepeatedCodes:
         "code, risk, exposure",
         [
             ("P603840", 5377.20, 3584.80),  # Was 0: the repeated code lost its primary.
-            ("P621510", 3589.97, 2393.31),  # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
+            ("P621510", 3589.96, 2393.31),  # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
         ],
     )
     def test_a_repeated_package_pays_the_second_occurrence_at_25_percent(
@@ -916,10 +916,10 @@ class TestMandatedPackageGap269:
         row = _claim_row(ctx)
         assert row["payment_method_kind"] == "DRG_MANDATORY"
         assert row["current_billing"] == "itemized"
-        assert row["package_total_try"] == 8636.51
-        assert row["itemized_total_try"] == 4550.64  # Was 1,231.00 (610131 dropped).
+        assert row["package_total_try"] == 8636.50
+        assert row["itemized_total_try"] == 4550.56  # Was 1,231.00 (610131 dropped).
         assert row["itemized_price_methodology"] == "billed_lines"
-        assert row["savings_try"] == 4085.87  # Was 0.00.
+        assert row["savings_try"] == 4085.94  # Was 0.00.
         assert row["savings_category"] == "sgk_uplift"
         assert row["included_in_sgk_total"] is True
         assert row["message_code"] == "claim_mandate_package"
@@ -937,42 +937,42 @@ class TestMandatedPackageGap269:
         bill = s1("faulty")
         bill.drug(bill.start, "100.00")
         row = _claim_row(bill.ctx())
-        assert row["itemized_total_try"] == 4650.64
-        assert row["savings_try"] == 3985.87
+        assert row["itemized_total_try"] == 4650.56
+        assert row["savings_try"] == 3985.94
 
     def test_clean_s1_is_unchanged(self) -> None:
         row = _claim_row(s1("clean").ctx())
         assert row["current_billing"] == "package"
         assert row["message_code"] == "claim_package_ok"
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            8636.51, 0.0, 0.0,
+            8636.50, 0.0, 0.0,
         )
 
     def test_an_ek2b_operation_next_to_the_package_is_on_its_side(self) -> None:
         # Review item 11: 615931 (EK-2/B only) next to the package is paid at 30 %
         # + 25 points across specialties (C000672 / C000674), so the package side
-        # is 8,636.51 + 0.55 × 3,837.32 = 10,747.04, above the 10,550.64 bill (was
-        # a 1,914.13 compliance saving with 3,022.31 at risk).
+        # is 8,636.50 + 0.55 × 3,837.32 = 10,747.03, above the 10,550.56 bill (was
+        # a 1,914.06 compliance saving with 3,022.30 at risk).
         bill = s1("faulty")
         extra = bill.proc("615931", bill.start, specialty=BEYIN)
         bill.procs[-1] = replace(extra, billed_amount_try=Decimal("6000.00"),
                                  expected_payable_try=Decimal("6000.00"))
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["package_total_try"], row["itemized_total_try"]) == (10747.04, 10550.64)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (10747.03, 10550.56)
         assert (row["savings_try"], row["savings_category"], row["included_in_sgk_total"]) == (
-            196.40, "sgk_uplift", True,
+            196.47, "sgk_uplift", True,
         )
         assert _payment_risk(ctx) == [("610131", 0.0)]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_package_equal_to_the_bill_clears_the_risk_without_savings(self) -> None:
         bill = s1("faulty")
-        bill.drug(bill.start, "4085.87")  # Brings the bill to the package's 8,636.51.
+        bill.drug(bill.start, "4085.94")  # Brings the bill to the package's 8,636.50.
         ctx = bill.ctx()
         row = _claim_row(ctx)
         assert (row["itemized_total_try"], row["savings_try"], row["savings_category"]) == (
-            8636.51, 0.0, None,
+            8636.50, 0.0, None,
         )
         assert _payment_risk(ctx) == [("610131", 0.0)]
 
@@ -982,12 +982,12 @@ class TestMandatedPackageGap269:
     ) -> None:
         # Review item 3: package_candidate is set by the synthetic generator only;
         # a parsed export without the column reads False (was: no strategy row,
-        # 3,022.31 at risk).
+        # 3,022.30 at risk).
         ctx = s1("faulty").ctx()
         ctx = replace(ctx, claims=(replace(ctx.claims[0], package_candidate=package_candidate),))
         row = _claim_row(ctx)
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            8636.51, 4550.64, 4085.87,
+            8636.50, 4550.56, 4085.94,
         )
         assert (row["savings_category"], row["included_in_sgk_total"]) == ("sgk_uplift", True)
         assert _payment_risk(ctx) == [("610131", 0.0)]
@@ -1009,8 +1009,8 @@ class TestMandatedPackageGap269:
     def test_several_mandated_operations_are_priced_by_b3(self) -> None:
         # Review item 11: two must-package operations billed hizmet başı at 100 %.
         # The package side prices them by §2.2.2.B(3)(a) (C000670): P610131 in
-        # full and P603840 at 25 %, 8,636.51 + 1,792.40 = 10,428.91 (was the
-        # single highest package, 8,636.51, and a 2,171.44 gap).
+        # full and P603840 at 25 %, 8,636.50 + 1,792.40 = 10,428.90 (was the
+        # single highest package, 8,636.50, and a 2,171.44 gap).
         bill = s1("faulty")
         bill.proc("603840", bill.start, specialty=GENCER)
         ctx = bill.ctx()
@@ -1020,16 +1020,16 @@ class TestMandatedPackageGap269:
         ]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         row = _claim_row(ctx)
-        assert (row["package_total_try"], row["itemized_total_try"]) == (10428.91, 6465.07)
-        assert (row["savings_try"], row["savings_category"]) == (3963.84, "sgk_uplift")
+        assert (row["package_total_try"], row["itemized_total_try"]) == (10428.90, 6464.98)
+        assert (row["savings_try"], row["savings_category"]) == (3963.92, "sgk_uplift")
 
     @pytest.mark.parametrize(
         "drug, exposure, review, package, savings, category",
         [
-            # Between B(3)(a) 25 % (10,428.91) and B(3)(b) 50 % (12,221.31): no money.
-            ("5000.00", 0.0, 1036.16, 10428.91, 0.0, None),
+            # Between B(3)(a) 25 % (10,428.90) and B(3)(b) 50 % (12,221.30): no money.
+            ("5000.00", 0.0, 1036.08, 10428.90, 0.0, None),
             # Above the lenient side: over-billed in every reading (was 6,036.16).
-            ("10000.00", 4243.76, 1792.40, 12221.31, 4243.76, "compliance_adjustment"),
+            ("10000.00", 4243.68, 1792.40, 12221.30, 4243.68, "compliance_adjustment"),
         ],
         ids=["review-band", "above-lenient"],
     )
@@ -1045,7 +1045,7 @@ class TestMandatedPackageGap269:
         assert compute_audit_exposure_from_claims(ctx) == exposure
         first = _finding(ctx).payment_method_violations[0]
         assert (first["procedure_code"], first["review_risk_try"]) == ("610131", review)
-        assert first["package_total_lenient_try"] == 12221.31
+        assert first["package_total_lenient_try"] == 12221.30
         row = _claim_row(ctx)
         assert (row["package_total_try"], row["savings_try"], row["savings_category"]) == (
             package, savings, category,
@@ -1055,14 +1055,14 @@ class TestMandatedPackageGap269:
 
     @pytest.mark.parametrize(
         "drug, risk",
-        [("4085.87", 0.0), ("4085.88", 0.01), ("5000.00", 914.13)],
+        [("4085.94", 0.0), ("4085.95", 0.01), ("5000.00", 914.06)],
         ids=["tie", "one-kurus-above", "drug-5000"],
     )
     def test_the_risk_is_what_the_bill_overstates_in_both_exposure_surfaces(
         self, drug, risk,
     ) -> None:
         # Review item 7: the replaced lines above the package put the excess at
-        # risk, not the whole 610131 line (was 3,022.31 for any excess).
+        # risk, not the whole 610131 line (was 3,022.30 for any excess).
         bill = s1("faulty")
         bill.drug(bill.start, drug)
         ctx = bill.ctx()
@@ -1079,12 +1079,12 @@ class TestMandatedPackageGap269:
 
     def test_an_excess_above_the_mandated_lines_stays_at_risk_in_full(self) -> None:
         # The replaced lines have no row of their own; the must-package row
-        # carries the whole excess (20,000 + 4,550.64 − 8,636.51).
+        # carries the whole excess (20,000 + 4,550.64 − 8,636.50).
         bill = s1("faulty")
         bill.drug(bill.start, "20000.00")
         ctx = bill.ctx()
-        assert _payment_risk(ctx) == [("610131", 15914.13)]
-        assert compute_audit_exposure_from_claims(ctx) == 15914.13
+        assert _payment_risk(ctx) == [("610131", 15914.06)]
+        assert compute_audit_exposure_from_claims(ctx) == 15914.06
 
     def test_lines_of_another_claim_are_ignored(self) -> None:
         bill = s1("faulty")
@@ -1092,44 +1092,44 @@ class TestMandatedPackageGap269:
         bill.material(bill.start, "SARF SETİ", "5000.00", bundled=True, claim_id="C-OTHER")
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["itemized_total_try"], row["savings_try"]) == (4550.64, 4085.87)
+        assert (row["itemized_total_try"], row["savings_try"]) == (4550.56, 4085.94)
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 0.0
 
     @pytest.mark.parametrize("bundled", [False, True])
     def test_a_material_paid_next_to_the_package_leaves_the_gap(self, bundled) -> None:
         # SUT §3.1.4(a): a plate is paid on top of the package, so it is on
-        # neither side of the comparison (review: it flipped the row to 914.13),
+        # neither side of the comparison (review: it flipped the row to 914.06),
         # whatever the is_bundled input flag says (review item 6).
         bill = s1("faulty")
         bill.material(bill.start, "KİLİTLİ PLAK", "5000.00", bundled=bundled)
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["itemized_raw_try"], row["itemized_total_try"]) == (9550.64, 4550.64)
-        assert (row["savings_try"], row["savings_category"]) == (4085.87, "sgk_uplift")
+        assert (row["itemized_raw_try"], row["itemized_total_try"]) == (9550.56, 4550.56)
+        assert (row["savings_try"], row["savings_category"]) == (4085.94, "sgk_uplift")
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_package_included_material_counts_in_the_bill(self) -> None:
         bill = s1("faulty")
         bill.material(bill.start, "SARF SETİ", "100.00", bundled=True)
         row = _claim_row(bill.ctx())
-        assert (row["itemized_total_try"], row["savings_try"]) == (4650.64, 3985.87)
+        assert (row["itemized_total_try"], row["savings_try"]) == (4650.56, 3985.94)
 
     def test_the_blood_share_billed_next_to_the_package_drops_out(self) -> None:
         bill = s1("faulty")
         blood = bill.proc("705430", bill.start, specialty=GENCER)
         row = _claim_row(bill.ctx())
         # C000694: 36 % of 705430 is billed next to the package either way.
-        replaced = 4550.64 + float(blood.billed_amount_try) * (1 - 0.36)
+        replaced = 4550.56 + float(blood.billed_amount_try) * (1 - 0.36)
         assert row["itemized_total_try"] == pytest.approx(replaced, abs=0.01)
         assert row["itemized_raw_try"] == pytest.approx(
-            4550.64 + float(blood.billed_amount_try), abs=0.01,
+            4550.56 + float(blood.billed_amount_try), abs=0.01,
         )
 
     def test_package_billed_claim_keeps_risk_on_an_itemized_mandated_line(self) -> None:
         bill = s1("clean")
         bill.proc("610131", bill.start, specialty=GENCER)
-        assert compute_audit_exposure_from_claims(bill.ctx()) == 3022.31
+        assert compute_audit_exposure_from_claims(bill.ctx()) == 3022.30
 
 
 class TestWhatThePackageReplaces:
@@ -1140,9 +1140,9 @@ class TestWhatThePackageReplaces:
         "name, amount, replaced, gap, category",
         [
             # C000695: consumables are inside (was 4,085.87 with is_bundled False).
-            ("STERİL CERRAHİ ÖRTÜ SETİ (sarf)", "2000.00", 6550.64, 2085.87, "sgk_uplift"),
+            ("STERİL CERRAHİ ÖRTÜ SETİ (sarf)", "2000.00", 6550.56, 2085.94, "sgk_uplift"),
             # Not a §3.1.4 item: inside, so the bill overstates the package.
-            ("SARF SETİ", "5000.00", 9550.64, 914.13, "compliance_adjustment"),
+            ("SARF SETİ", "5000.00", 9550.56, 914.06, "compliance_adjustment"),
         ],
         ids=["consumable-2000", "sarf-seti-5000"],
     )
@@ -1171,7 +1171,7 @@ class TestWhatThePackageReplaces:
         bill = s1("faulty")
         bill.material(bill.start, name, "1000.00", bundled=False, code=code)
         row = _claim_row(bill.ctx())
-        assert row["itemized_total_try"] == (5550.64 if inside else 4550.64)
+        assert row["itemized_total_try"] == (5550.56 if inside else 4550.56)
 
     @pytest.mark.parametrize(
         "name, barkod",
@@ -1191,17 +1191,17 @@ class TestWhatThePackageReplaces:
         bill.drug(bill.start, "1000.00", name=name, barkod=barkod)
         row = _claim_row(bill.ctx())
         assert (row["itemized_raw_try"], row["itemized_total_try"], row["savings_try"]) == (
-            5550.64, 4550.64, 4085.87,
+            5550.56, 4550.56, 4085.94,
         )
 
     def test_an_ordinary_drug_is_inside_the_package(self) -> None:
         bill = s1("faulty")
         bill.drug(bill.start, "1000.00")  # IESEF (cefazolin), C000690 "yatış dönemindeki ilaçlar".
-        assert _claim_row(bill.ctx())["itemized_total_try"] == 5550.64
+        assert _claim_row(bill.ctx())["itemized_total_try"] == 5550.56
 
     def test_lines_after_the_package_window_are_billed_next_to_it(self) -> None:
         # Review item 12 / C000707: a 12-day stay billed hizmet başı; P610131
-        # (group C) covers 14–21 July, so the four bed days after it (889.44) are
+        # (group C) covers 14–21 July, so the four bed days after it (889.40) are
         # paid either way and no longer sit in the replaced total.
         a = _d("2026-07-14")
         bill = _Bill("C-SH01", "yatis", a, _d("2026-07-25"))
@@ -1213,8 +1213,8 @@ class TestWhatThePackageReplaces:
         row = _claim_row(ctx)
         billed = sum(float(line.billed_amount_try) for line in bill.procs) + 300.00
         assert row["itemized_raw_try"] == round(billed, 2)
-        assert row["itemized_total_try"] == round(billed - 4 * 222.36 - 300.00, 2)
-        assert row["savings_try"] == round(8636.51 - row["itemized_total_try"], 2)
+        assert row["itemized_total_try"] == round(billed - 4 * 222.35 - 300.00, 2)
+        assert row["savings_try"] == round(8636.50 - row["itemized_total_try"], 2)
 
 
 class TestPackageSide:
@@ -1279,7 +1279,7 @@ class TestPackageSide:
         for code in ("615350", "703365", "614981"):
             bill.proc(code, day, specialty=BEYIN)
         row = _claim_row(bill.ctx())
-        assert row["package_total_try"] == round(154376.12 + 11661.83 + 42087.29, 2)
+        assert row["package_total_try"] == round(154376.12 + 11661.83 + 42087.28, 2)
 
     def test_a_zero_billed_mandated_line_opens_no_package(self) -> None:
         # Review: an unbilled 609235 (group B) stretched the 610131 window (group
@@ -1295,7 +1295,7 @@ class TestPackageSide:
                                  expected_payable_try=Decimal("0"))
         ctx = bill.ctx()
         gap = mandated_package_gap(ctx.claims[0], list(ctx.procedure_lines))
-        assert (gap.window_end, gap.package_total_try) == (_d("2026-07-21"), 8636.51)
+        assert (gap.window_end, gap.package_total_try) == (_d("2026-07-21"), 8636.50)
         assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)).end == _d("2026-07-21")
 
 
@@ -1323,12 +1323,12 @@ class TestOutpatientPackageMandateEk2a2:
 
     def test_an_outpatient_procedure_on_ek2a2_is_mandated(self) -> None:
         # 608310 (bronchoscopy) is on EK-2/A-2 and in EK-2/C: package P608310
-        # (3,235.82) against the 636.69 billed hizmet başı.
+        # (3,235.82) against the 636.68 billed hizmet başı.
         ctx = self._bill("608310", "poliklinik")
         row = _claim_row(ctx)
         assert (row["payment_method_kind"], row["sut_section_id"]) == ("DRG_MANDATORY", "2.2.1.B-1.a")
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            3235.82, 636.69, 2599.13,
+            3235.82, 636.68, 2599.14,
         )
         assert row["savings_category"] == "sgk_uplift"
         assert _payment_risk(ctx) == [("608310", 0.0)]
@@ -1417,7 +1417,7 @@ class TestNoUpliftOnPackageLines:
         ctx = bill.ctx()
         assert recommend_session_uplift_from_claims(ctx).opportunities == []
         row = _claim_row(ctx)  # The package gap: P610131 + 615931 at 55 %.
-        assert (row["package_total_try"], row["itemized_total_try"]) == (10747.04, 4139.55)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (10747.03, 4139.55)
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_stray_must_package_line_next_to_a_billed_package_has_no_uplift(self) -> None:

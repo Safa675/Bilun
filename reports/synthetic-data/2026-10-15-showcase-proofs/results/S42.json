@@ -17,7 +17,7 @@
     "code": "705371",
     "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
     "qty": 1,
-    "unit": "4462.65",
+    "unit": "4462.64",
     "billed": "1606.55",
     "source": "EK-2B valid_from 2026-07-07"
    },
@@ -26,7 +26,7 @@
     "code": "705371",
     "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
     "qty": 1,
-    "unit": "4462.65",
+    "unit": "4462.64",
     "billed": "1606.55",
     "source": "EK-2B valid_from 2026-07-07"
    }
@@ -56,7 +56,7 @@
   }
  },
  "faulty": {
-  "total_billed": "16456.89",
+  "total_billed": "16456.87",
   "rows": [
    {
     "date": "2026-09-17",
@@ -72,8 +72,8 @@
     "code": "705371",
     "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
     "qty": 1,
-    "unit": "4462.65",
-    "billed": "4462.65",
+    "unit": "4462.64",
+    "billed": "4462.64",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -81,8 +81,8 @@
     "code": "705371",
     "name": "Eritrosit Süspansiyonu, Kızılay'dan temin edilen",
     "qty": 1,
-    "unit": "4462.65",
-    "billed": "4462.65",
+    "unit": "4462.64",
+    "billed": "4462.64",
     "source": "EK-2B valid_from 2026-07-07"
    }
   ],
@@ -107,8 +107,8 @@
     "procedure_code": "705371",
     "allowed_fraction": 0.36,
     "max_billable_try": 1606.55,
-    "actual_billed_try": 4462.65,
-    "risk_amount_try": 2856.1,
+    "actual_billed_try": 4462.64,
+    "risk_amount_try": 2856.09,
     "sut_section": "2.2.2.B-1.e",
     "detail": "Blood component 705371 may only be billed at 36% of points in package context."
    },
@@ -117,15 +117,15 @@
     "procedure_code": "705371",
     "allowed_fraction": 0.36,
     "max_billable_try": 1606.55,
-    "actual_billed_try": 4462.65,
-    "risk_amount_try": 2856.1,
+    "actual_billed_try": 4462.64,
+    "risk_amount_try": 2856.09,
     "sut_section": "2.2.2.B-1.e",
     "detail": "Blood component 705371 may only be billed at 36% of points in package context."
    }
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 5712.2,
+   "audit_exposure_try": 5712.18,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 6
@@ -137,21 +137,21 @@
    "audit_exposure",
    "blood_component_partial_bill",
    "705371",
-   2856.1
+   2856.09
   ],
   [
    "action",
    "audit_exposure",
    "blood_component_partial_bill",
    "705371",
-   2856.1
+   2856.09
   ],
   [
    "scalar",
    "audit_exposure_try",
    "",
    "",
-   5712.2
+   5712.18
   ]
  ],
  "only_in_clean": [],

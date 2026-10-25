@@ -1,7 +1,7 @@
 {
  "story": "S47",
  "clean": {
-  "total_billed": "299.04",
+  "total_billed": "299.03",
   "rows": [
    {
     "date": "2026-02-25",
@@ -26,8 +26,8 @@
     "code": "530100",
     "name": "Elektrokardiyogram",
     "qty": 1,
-    "unit": "16.66",
-    "billed": "16.66",
+    "unit": "16.65",
+    "billed": "16.65",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -81,7 +81,7 @@
   }
  },
  "faulty": {
-  "total_billed": "254.59",
+  "total_billed": "254.58",
   "rows": [
    {
     "date": "2026-02-25",
@@ -97,8 +97,8 @@
     "code": "530100",
     "name": "Elektrokardiyogram",
     "qty": 1,
-    "unit": "16.66",
-    "billed": "16.66",
+    "unit": "16.65",
+    "billed": "16.65",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {

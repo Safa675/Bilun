@@ -1735,18 +1735,18 @@ CASES: list[Case] = [
     ),
     Case(
         "price.procedure_in_force",
-        # 1034.75 is the price of the list that ended on 2025-12-31; the 2026 list bills 1138.22
-        lambda d: reprice(d, TABLE_PROCEDURES, line(7, "R101450"), 1034.75),
+        # 1034.74 is the price of the list that ended on 2025-12-31; the 2026 list bills 1138.22
+        lambda d: reprice(d, TABLE_PROCEDURES, line(7, "R101450"), 1034.74),
         label="price_of_the_list_before_the_2026_update",
         at=f"{CLAIM[7]} procedure_claim_lines[",
-        says="procedure R101450 dated 2026-02-19: unit price 1034.75 but the price in force is 1138.22",
+        says="procedure R101450 dated 2026-02-19: unit price 1034.74 but the price in force is 1138.22",
     ),
     Case(
         "price.procedure_in_force",
         lambda d: reprice(d, TABLE_PROCEDURES, line(5, "P612320"), 18000.0),
         label="package_price",
         at=f"{CLAIM[5]} procedure_claim_lines[",
-        says="procedure P612320 dated 2026-09-04: unit price 18000.00 but the price in force is 18390.80",
+        says="procedure P612320 dated 2026-09-04: unit price 18000.00 but the price in force is 18390.79",
     ),
     Case(
         "price.procedure_in_force",
@@ -1865,7 +1865,7 @@ CASES: list[Case] = [
         ),
         label="blood_share_on_an_itemized_bill",
         at=f"{claim_id(PATIENT[15], 2)} procedure_claim_lines[",
-        says="billed 1606.55 is not the unit price 4462.65 x quantity 1 x 1, 0.5 or 0.25",
+        says="billed 1606.55 is not the unit price 4462.64 x quantity 1 x 1, 0.5 or 0.25",
         n=2,
     ),
     Case(
@@ -1943,7 +1943,7 @@ CASES: list[Case] = [
         says="expected_payable_try is 68.58 but billed_amount_try is 85.73; a line pays what it bills",
         n=2,  # the payable of an unflagged line, and a rate without its flag
     ),
-    # --- money.totals (S3's clean twin bills 5607.62)
+    # --- money.totals (S3's clean twin bills 5607.55)
     Case(
         "money.totals",
         lambda d: edit(
@@ -1954,7 +1954,7 @@ CASES: list[Case] = [
         ),
         label="billed_total_one_lira_off",
         at=CLAIM[3],
-        says="expected_total_billed_try is 5608.62 but the billed amounts of the claim's lines add up to 5607.62",
+        says="expected_total_billed_try is 5608.55 but the billed amounts of the claim's lines add up to 5607.55",
     ),
     Case(
         "money.totals",
@@ -1966,7 +1966,7 @@ CASES: list[Case] = [
         ),
         label="payable_total_one_cent_off",
         at=CLAIM[3],
-        says="expected_total_payable_try is 5607.61 but the payable amounts of the claim's lines add up to 5607.62",
+        says="expected_total_payable_try is 5607.54 but the payable amounts of the claim's lines add up to 5607.55",
     ),
     Case(
         "money.totals",
@@ -2039,12 +2039,12 @@ CASES: list[Case] = [
     Case(
         AMOUNTS,
         # revenue_uplift S2: the amount follows the wrong total, so only the total is wrong
-        lambda d: edit_fault(d, 2, billed_faulty_try="2596.36", amount_try="667.07"),
+        lambda d: edit_fault(d, 2, billed_faulty_try="2596.14", amount_try="667.04"),
         label="wrong_faulty_total",
         n=2,  # the wrong total differs from the header total and from the sum of the lines
         on_faulty=True,
         at=f"{CLAIM[2]} registry faults[F_S2_BED_DAYS_UNDERBILLED]",
-        says="billed_faulty_try is 2596.36 but expected_total_billed_try of the claim is 2596.35",
+        says="billed_faulty_try is 2596.14 but expected_total_billed_try of the claim is 2596.13",
     ),
     Case(
         AMOUNTS,
@@ -2065,14 +2065,14 @@ CASES: list[Case] = [
     ),
     Case(
         AMOUNTS,
-        lambda d: edit_fault(d, 3, relabel=False, amount_try="928.10"),
+        lambda d: edit_fault(d, 3, relabel=False, amount_try="928.09"),
         # the record no longer validates (revenue_uplift = clean - faulty), so no record explains S3's row
         also=(ANSWER_ROWS,),
         label="revenue_uplift_amount",
         also_n=2,  # the answer table: the entry that no longer validates, and the row it leaves unexplained
         on_faulty=True,
         at=f"{CLAIM[3]} registry faults[F_S3_ANAESTHESIA_LINE_MISSING]",
-        says="revenue_uplift amount_try is 928.10 but must be 928.09 (billed_clean_try - billed_faulty_try)",
+        says="revenue_uplift amount_try is 928.09 but must be 928.08 (billed_clean_try - billed_faulty_try)",
     ),
     Case(
         AMOUNTS,
@@ -4403,7 +4403,7 @@ def test_the_engine_is_asked_once_for_each_code_and_day_and_p_codes_go_to_ek2c(
 def test_the_price_of_a_list_is_the_price_of_the_day_it_is_in_force(
     twins, anadata, context
 ) -> None:
-    """The CT angiography R101450 cost 1034.75 until 2025-12-31 and 1138.22 from 2026-01-01."""
+    """The CT angiography R101450 cost 1034.74 until 2025-12-31 and 1138.22 from 2026-01-01."""
     history = pl.read_parquet(
         _REPO / "data/gazette/curated/ek2b_catalog_history.parquet",
         columns=["code", "valid_from", "valid_to", "price_try"],
@@ -4415,12 +4415,12 @@ def test_the_price_of_a_list_is_the_price_of_the_day_it_is_in_force(
         )
         return history.filter(in_force)["price_try"].unique().to_list()
 
-    assert price_on("2025-12-31") == [1034.75]
+    assert price_on("2025-12-31") == [1034.74]
     assert price_on("2026-01-01") == [1138.22]
     for day, trips in {"2025-12-31": False, "2026-01-01": True}.items():
         data = Data(dict(twins), anadata)
         edit(data, TABLE_PROCEDURES, line(7, "R101450"), procedure_date=day)
-        reprice(data, TABLE_PROCEDURES, line(7, "R101450"), 1034.75)
+        reprice(data, TABLE_PROCEDURES, line(7, "R101450"), 1034.74)
         assert bool(data.problems(context, only="price.procedure_in_force")) is trips, day
 
 
@@ -4622,17 +4622,17 @@ def test_a_line_bills_the_full_price_or_a_rung_of_the_ladder(
     assert (data.problems(context, only="money.line_arithmetic") == []) is fits
 
 
-# S42's two red-cell units on the removal package of patient 5 (slice G14): the clean twin bills them at 36 % of 4462.65
+# S42's two red-cell units on the removal package of patient 5 (slice G14): the clean twin bills them at 36 % of 4462.64
 S42_PACKAGE_BLOOD = (pl.col("claim_id") == claim_id(PATIENT[5], 3)) & (pl.col("procedure_code") == "705371")
 
 
 @pytest.mark.parametrize(
     ("billed", "fits"),
     [
-        (1606.55, True),  # 36 % of 4462.65 = 1606.554: the share, to the cent
+        (1606.55, True),  # 36 % of 4462.64 = 1606.5504: the share, to the cent
         (1606.56, False),  # more than half a cent off the share
-        (4462.65, True),  # the full price stays on the ladder: billing it in full is S42's fault, the engine's to find
-        (2231.33, True),  # a half (the ladder)
+        (4462.64, True),  # the full price stays on the ladder: billing it in full is S42's fault, the engine's to find
+        (2231.32, True),  # a half (the ladder)
         (1071.04, False),  # 24 %, the share of another component
     ],
 )
@@ -4696,9 +4696,9 @@ def test_only_a_procedure_line_on_a_package_claim_may_bill_30_percent(twins, ana
     # bill uses the same-incision 30 % of C000660; the 30 % rung is a package claim's)
     data = Data(dict(twins), anadata)
     second = (pl.col("claim_id") == claim_id(PATIENT[9], 1)) & (pl.col("procedure_code") == "615995")
-    edit(data, TABLE_PROCEDURES, second, billed_amount_try=909.60, expected_payable_try=909.60)  # 30 % of 3032.01
+    edit(data, TABLE_PROCEDURES, second, billed_amount_try=909.60, expected_payable_try=909.60)  # 30 % of 3032.00
     (problem,) = data.problems(context, only="money.line_arithmetic")
-    assert problem.claim_id == claim_id(PATIENT[9], 1) and "billed 909.60 is not the unit price 3032.01" in problem.message
+    assert problem.claim_id == claim_id(PATIENT[9], 1) and "billed 909.60 is not the unit price 3032.00" in problem.message
 
 
 def test_the_one_line_with_a_patient_share_pays_billed_less_it_and_the_header_follows(built, anadata, context) -> None:
@@ -4844,12 +4844,12 @@ def test_an_entry_that_is_no_valid_record_is_reported_with_its_reason_not_raised
     built, anadata, context
 ) -> None:
     data = faulty_data(built, anadata)
-    edit_fault(data, 3, relabel=False, amount_try="928.10")
+    edit_fault(data, 3, relabel=False, amount_try="928.09")
     row_problem, entry_problem = _answer_rows_of(data, context)  # sorted by where: rows, registry
     assert entry_problem.where == f"{CLAIM[3]} registry faults[4]"  # after S1, S2 and the two faulty later bills of S2's patient
     assert entry_problem.message == (
-        "the entry is no valid fault record: revenue_uplift amount_try '928.10' must equal "
-        "billed_clean_try - billed_faulty_try (928.09)"
+        "the entry is no valid fault record: revenue_uplift amount_try '928.09' must equal "
+        "billed_clean_try - billed_faulty_try (928.08)"
     )
     assert row_problem.message == (
         "the claim's fault entry is no valid record, so nothing explains this answer row"
@@ -4915,8 +4915,8 @@ def test_answer_money_is_compared_in_cents(built, anadata, context) -> None:
     assert _answer_rows_of(data, context) == []
     edit(data, TABLE_ANSWERS, of(1), expected_savings_try=pl.col("expected_savings_try") + 0.01)
     (problem,) = _answer_rows_of(data, context)
-    assert "expected_savings_try is 4122.07" in problem.message
-    assert "the fault record gives 4122.06" in problem.message
+    assert "expected_savings_try is 4122.13" in problem.message
+    assert "the fault record gives 4122.12" in problem.message
 
 
 def test_every_answer_row_names_the_fault_of_its_record_and_none_is_payable(built) -> None:

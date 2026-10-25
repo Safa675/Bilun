@@ -1,15 +1,15 @@
 {
  "story": "S15",
  "clean": {
-  "total_billed": "1467.50",
+  "total_billed": "1467.43",
   "rows": [
    {
     "date": "2026-07-16",
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -17,8 +17,8 @@
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -26,8 +26,8 @@
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -53,8 +53,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -62,8 +62,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    }
   ],
@@ -88,15 +88,15 @@
   }
  },
  "faulty": {
-  "total_billed": "1689.86",
+  "total_billed": "1689.78",
   "rows": [
    {
     "date": "2026-07-16",
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -104,8 +104,8 @@
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -113,8 +113,8 @@
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -122,8 +122,8 @@
     "code": "510081",
     "name": "Kot (beşik)",
     "qty": 1,
-    "unit": "311.30",
-    "billed": "311.30",
+    "unit": "311.29",
+    "billed": "311.29",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -131,8 +131,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -140,8 +140,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -149,8 +149,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -158,8 +158,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    }
   ],
@@ -186,14 +186,14 @@
      "510081"
     ],
     "newborn_claim_id": "C-SH15",
-    "risk_amount_try": 222.36,
+    "risk_amount_try": 222.35,
     "sut_section_id": "2.2.2",
     "severity": "warning"
    }
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 222.36,
+   "audit_exposure_try": 222.35,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 3
@@ -205,14 +205,14 @@
    "audit_exposure",
    "yatak_newborn_overlap_double_billing",
    "510010",
-   222.36
+   222.35
   ],
   [
    "scalar",
    "audit_exposure_try",
    "",
    "",
-   222.36
+   222.35
   ],
   [
    "validate",

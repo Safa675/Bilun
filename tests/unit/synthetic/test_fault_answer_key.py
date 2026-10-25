@@ -41,10 +41,10 @@ _RESULTS_DIR = (
 # (`clean.total_billed` and `faulty.total_billed`).
 # For the 5 `revenue_uplift` stories (S1, S2, S3, S4, S7), `amount_try` is `clean - faulty`:
 _EXPECTED_UPLIFT_DIFFS: dict[str, str] = {
-    "S1": "4122.06",
-    "S2": "667.08",
-    "S3": "928.09",
-    "S4": "370.50",
+    "S1": "4122.12",
+    "S2": "667.05",
+    "S3": "928.08",
+    "S4": "370.45",
     "S7": "1138.22",
 }
 # For the 3 line-level deduction/compliance stories, `amount_try` is the line's risk/billed amount
@@ -303,22 +303,22 @@ def test_answer_rows_exact_format_and_claim_fault_ordering(
         patient_id="P-2",
         claim_id="C-02",
         line_id="",
-        amount_try="4122.06",
-        billed_clean_try="8636.51",
-        billed_faulty_try="4514.45",
+        amount_try="4122.12",
+        billed_clean_try="8636.50",
+        billed_faulty_try="4514.38",
     )
     rec_b = make_record(
         s2,
         patient_id="P-1",
         claim_id="C-01",
         line_id="",
-        amount_try="667.08",
-        billed_clean_try="3263.43",
-        billed_faulty_try="2596.35",
+        amount_try="667.05",
+        billed_clean_try="3263.18",
+        billed_faulty_try="2596.13",
     )
     rows = build_expected_rule_outputs([rec_a, rec_b])
     assert [r["claim_id"] for r in rows] == ["C-01", "C-02"]
-    assert rows[1]["assertion_notes"] == "clean=8636.51 faulty=4514.45"
+    assert rows[1]["assertion_notes"] == "clean=8636.50 faulty=4514.38"
     assert rows[1]["expected_denial_reason"] == "revenue_uplift:F_S1_PACKAGE_BILLED_ITEMIZED"
 
 
@@ -441,8 +441,8 @@ def test_make_record_copies_finding_fields_and_populates_line_ids_tuple(
         line_id="",
         evidence_line_ids=["PERF-C-7-04"],
         amount_try="1138.22",
-        billed_clean_try="1633.02",
-        billed_faulty_try="494.80",
+        billed_clean_try="1632.99",
+        billed_faulty_try="494.77",
     )
     assert s7_rec.line_ids == ("PERF-C-7-04",)
 
@@ -460,9 +460,9 @@ def test_make_record_and_model_validation(
             patient_id="P-01",
             claim_id="C-01",
             line_id="L-01",
-            amount_try="4122.06",
-            billed_clean_try="8636.51",
-            billed_faulty_try="4514.45",
+            amount_try="4122.12",
+            billed_clean_try="8636.50",
+            billed_faulty_try="4514.38",
         )
 
     # Line-level fault (`line_type != "fatura"`) with empty or whitespace `line_id` must fail.
@@ -473,8 +473,8 @@ def test_make_record_and_model_validation(
             claim_id="C-05",
             line_id="",
             amount_try="6465.27",
-            billed_clean_try="31233.66",
-            billed_faulty_try="31233.66",
+            billed_clean_try="31233.65",
+            billed_faulty_try="31233.65",
         )
     with pytest.raises(ValidationError, match="line_id must be non-empty"):
         make_record(
@@ -483,8 +483,8 @@ def test_make_record_and_model_validation(
             claim_id="C-05",
             line_id="  ",
             amount_try="6465.27",
-            billed_clean_try="31233.66",
-            billed_faulty_try="31233.66",
+            billed_clean_try="31233.65",
+            billed_faulty_try="31233.65",
         )
 
     # Amounts must have exactly two decimals (neither 1 nor 3).
@@ -495,8 +495,8 @@ def test_make_record_and_model_validation(
             claim_id="C-01",
             line_id="",
             amount_try="4122.1",
-            billed_clean_try="8636.51",
-            billed_faulty_try="4514.45",
+            billed_clean_try="8636.50",
+            billed_faulty_try="4514.38",
         )
     with pytest.raises(ValidationError):
         make_record(
@@ -517,8 +517,8 @@ def test_make_record_and_model_validation(
             claim_id="C-01",
             line_id="",
             amount_try="4000.00",
-            billed_clean_try="8636.51",
-            billed_faulty_try="4514.45",
+            billed_clean_try="8636.50",
+            billed_faulty_try="4514.38",
         )
 
     # Wrong injection_id or extra field on FaultInjectionRecord is rejected.
@@ -528,9 +528,9 @@ def test_make_record_and_model_validation(
         claim_id="C-01",
         line_id="",
         line_ids=["EV-01"],
-        amount_try="4122.06",
-        billed_clean_try="8636.51",
-        billed_faulty_try="4514.45",
+        amount_try="4122.12",
+        billed_clean_try="8636.50",
+        billed_faulty_try="4514.38",
     )
     assert rec.line_ids == ("EV-01",)
     with pytest.raises(ValidationError, match="injection_id"):

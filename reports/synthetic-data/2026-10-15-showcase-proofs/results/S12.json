@@ -1,7 +1,7 @@
 {
  "story": "S12",
  "clean": {
-  "total_billed": "3049.55",
+  "total_billed": "3049.50",
   "rows": [
    {
     "date": "2026-07-10",
@@ -62,8 +62,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -71,8 +71,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -80,8 +80,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -89,8 +89,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -98,8 +98,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -152,7 +152,7 @@
   }
  },
  "faulty": {
-  "total_billed": "1726.61",
+  "total_billed": "1726.56",
   "rows": [
    {
     "date": "2026-07-13",
@@ -186,8 +186,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -195,8 +195,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -204,8 +204,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -213,8 +213,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -222,8 +222,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {

@@ -403,9 +403,9 @@
   ],
   "faults": [
     {
-      "amount_try": "4122.06",
-      "billed_clean_try": "8636.51",
-      "billed_faulty_try": "4514.45",
+      "amount_try": "4122.12",
+      "billed_clean_try": "8636.50",
+      "billed_faulty_try": "4514.38",
       "claim_id": "F-SENTETIK-HASTA-0001-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "billing_strategy",
@@ -421,9 +421,9 @@
       "sut_section": "2.2.2(1)"
     },
     {
-      "amount_try": "667.08",
-      "billed_clean_try": "3263.43",
-      "billed_faulty_try": "2596.35",
+      "amount_try": "667.05",
+      "billed_clean_try": "3263.18",
+      "billed_faulty_try": "2596.13",
       "claim_id": "F-SENTETIK-HASTA-0002-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "yatak_puani",
@@ -440,8 +440,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "1487.34",
-      "billed_faulty_try": "1487.34",
+      "billed_clean_try": "1487.27",
+      "billed_faulty_try": "1487.27",
       "claim_id": "F-SENTETIK-HASTA-0002-003",
       "effect_kind": "compliance_error",
       "engine_rule": "tablo15_11_drug_quantity_error",
@@ -475,9 +475,9 @@
       "sut_section": "2.2.1.B-1"
     },
     {
-      "amount_try": "928.09",
-      "billed_clean_try": "5607.62",
-      "billed_faulty_try": "4679.53",
+      "amount_try": "928.08",
+      "billed_clean_try": "5607.55",
+      "billed_faulty_try": "4679.47",
       "claim_id": "F-SENTETIK-HASTA-0003-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "anestezi_puani",
@@ -494,8 +494,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "16765.09",
-      "billed_faulty_try": "28426.92",
+      "billed_clean_try": "16765.08",
+      "billed_faulty_try": "28426.91",
       "claim_id": "F-SENTETIK-HASTA-0003-004",
       "effect_kind": "compliance_error",
       "engine_rule": "conditional_addon_ek2d_neuromonitoring",
@@ -511,9 +511,9 @@
       "sut_section": "2.4.4.M"
     },
     {
-      "amount_try": "370.50",
-      "billed_clean_try": "2108.52",
-      "billed_faulty_try": "1738.02",
+      "amount_try": "370.45",
+      "billed_clean_try": "2108.38",
+      "billed_faulty_try": "1737.93",
       "claim_id": "F-SENTETIK-HASTA-0004-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "refakatci",
@@ -548,8 +548,8 @@
     },
     {
       "amount_try": "6465.27",
-      "billed_clean_try": "31233.66",
-      "billed_faulty_try": "31233.66",
+      "billed_clean_try": "31233.65",
+      "billed_faulty_try": "31233.65",
       "claim_id": "F-SENTETIK-HASTA-0005-001",
       "effect_kind": "deduction_risk",
       "engine_rule": "material_bundling",
@@ -565,9 +565,9 @@
       "sut_section": "3.1.1(2)"
     },
     {
-      "amount_try": "5712.20",
+      "amount_try": "5712.18",
       "billed_clean_try": "10744.69",
-      "billed_faulty_try": "16456.89",
+      "billed_faulty_try": "16456.87",
       "claim_id": "F-SENTETIK-HASTA-0005-003",
       "effect_kind": "deduction_risk",
       "engine_rule": "blood_component_partial_bill",
@@ -602,8 +602,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "2416.40",
-      "billed_faulty_try": "2416.40",
+      "billed_clean_try": "2416.22",
+      "billed_faulty_try": "2416.22",
       "claim_id": "F-SENTETIK-HASTA-0006-001",
       "effect_kind": "compliance_error",
       "engine_rule": "drug_indication",
@@ -638,8 +638,8 @@
     },
     {
       "amount_try": "1138.22",
-      "billed_clean_try": "1633.02",
-      "billed_faulty_try": "494.80",
+      "billed_clean_try": "1632.99",
+      "billed_faulty_try": "494.77",
       "claim_id": "F-SENTETIK-HASTA-0007-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "procedure_capture_gap",
@@ -658,8 +658,8 @@
     },
     {
       "amount_try": "44.45",
-      "billed_clean_try": "299.04",
-      "billed_faulty_try": "254.59",
+      "billed_clean_try": "299.03",
+      "billed_faulty_try": "254.58",
       "claim_id": "F-SENTETIK-HASTA-0007-002",
       "effect_kind": "revenue_uplift",
       "engine_rule": "yatak_puani",
@@ -694,8 +694,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "108.26",
-      "billed_faulty_try": "180.68",
+      "billed_clean_try": "108.25",
+      "billed_faulty_try": "180.66",
       "claim_id": "F-SENTETIK-HASTA-0008-002",
       "effect_kind": "compliance_error",
       "engine_rule": "tablo15_7_green_area_bundled_extra",
@@ -711,9 +711,9 @@
       "sut_section": "1.8.5"
     },
     {
-      "amount_try": "1347.95",
-      "billed_clean_try": "10357.30",
-      "billed_faulty_try": "11705.25",
+      "amount_try": "1347.94",
+      "billed_clean_try": "10357.29",
+      "billed_faulty_try": "11705.23",
       "claim_id": "F-SENTETIK-HASTA-0008-003",
       "effect_kind": "deduction_risk",
       "engine_rule": "drg_unbundling",
@@ -729,9 +729,9 @@
       "sut_section": "2.2.2.B(3)(c)"
     },
     {
-      "amount_try": "758.01",
-      "billed_clean_try": "8574.85",
-      "billed_faulty_try": "7816.84",
+      "amount_try": "758.00",
+      "billed_clean_try": "8574.78",
+      "billed_faulty_try": "7816.78",
       "claim_id": "F-SENTETIK-HASTA-0009-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "session_uplift",
@@ -748,8 +748,8 @@
     },
     {
       "amount_try": "6089.82",
-      "billed_clean_try": "14162.55",
-      "billed_faulty_try": "8072.73",
+      "billed_clean_try": "14162.48",
+      "billed_faulty_try": "8072.66",
       "claim_id": "F-SENTETIK-HASTA-0010-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "icu_puani",
@@ -765,9 +765,9 @@
       "sut_section": "2.4.4.H"
     },
     {
-      "amount_try": "222.36",
-      "billed_clean_try": "889.38",
-      "billed_faulty_try": "1111.74",
+      "amount_try": "222.35",
+      "billed_clean_try": "889.32",
+      "billed_faulty_try": "1111.67",
       "claim_id": "F-SENTETIK-HASTA-0010-002",
       "effect_kind": "deduction_risk",
       "engine_rule": "yatak_icu_overlap_510010",
@@ -784,8 +784,8 @@
     },
     {
       "amount_try": "1322.94",
-      "billed_clean_try": "3049.55",
-      "billed_faulty_try": "1726.61",
+      "billed_clean_try": "3049.50",
+      "billed_faulty_try": "1726.56",
       "claim_id": "F-SENTETIK-HASTA-0011-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "yenidogan_yatak",
@@ -801,9 +801,9 @@
       "sut_section": "2.2.2.A(1)"
     },
     {
-      "amount_try": "222.36",
-      "billed_clean_try": "1467.50",
-      "billed_faulty_try": "1689.86",
+      "amount_try": "222.35",
+      "billed_clean_try": "1467.43",
+      "billed_faulty_try": "1689.78",
       "claim_id": "F-SENTETIK-HASTA-0011-002",
       "effect_kind": "deduction_risk",
       "engine_rule": "yatak_newborn_overlap_510010",
@@ -820,8 +820,8 @@
     },
     {
       "amount_try": "5.88",
-      "billed_clean_try": "105.46",
-      "billed_faulty_try": "111.34",
+      "billed_clean_try": "105.45",
+      "billed_faulty_try": "111.33",
       "claim_id": "F-SENTETIK-HASTA-0012-001",
       "effect_kind": "deduction_risk",
       "engine_rule": "hemogram_unbundling",
@@ -838,8 +838,8 @@
     },
     {
       "amount_try": "439.86",
-      "billed_clean_try": "2154.59",
-      "billed_faulty_try": "1714.73",
+      "billed_clean_try": "2154.52",
+      "billed_faulty_try": "1714.66",
       "claim_id": "F-SENTETIK-HASTA-0012-002",
       "effect_kind": "revenue_uplift",
       "engine_rule": "procedure_addon_uplift",
@@ -855,9 +855,9 @@
       "sut_section": "2.2.2.A(5)"
     },
     {
-      "amount_try": "4724.84",
+      "amount_try": "4724.86",
       "billed_clean_try": "7169.60",
-      "billed_faulty_try": "2444.76",
+      "billed_faulty_try": "2444.74",
       "claim_id": "F-SENTETIK-HASTA-0013-001",
       "effect_kind": "revenue_uplift",
       "engine_rule": "billing_strategy",
@@ -892,8 +892,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "1434.50",
-      "billed_faulty_try": "1434.50",
+      "billed_clean_try": "1434.40",
+      "billed_faulty_try": "1434.40",
       "claim_id": "F-SENTETIK-HASTA-0015-001",
       "effect_kind": "compliance_error",
       "engine_rule": "drug_indication",
@@ -910,8 +910,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "10076.50",
-      "billed_faulty_try": "10076.50",
+      "billed_clean_try": "10076.39",
+      "billed_faulty_try": "10076.39",
       "claim_id": "F-SENTETIK-HASTA-0015-002",
       "effect_kind": "compliance_error",
       "engine_rule": "blood_component_isbt128_barcode",
@@ -928,8 +928,8 @@
     },
     {
       "amount_try": "0.00",
-      "billed_clean_try": "83786.23",
-      "billed_faulty_try": "103497.28",
+      "billed_clean_try": "83786.21",
+      "billed_faulty_try": "103497.19",
       "claim_id": "F-SENTETIK-HASTA-0016-001",
       "effect_kind": "compliance_error",
       "engine_rule": "radiation_oncology",
@@ -1193,13 +1193,13 @@
   "seed": null,
   "tables_digest": {
     "claim_diagnoses.parquet": "c9f6546a5e0a2cba456641f0043163db18e8727f7aeecd0cc60e839d6ccd9b0f",
-    "claim_headers.parquet": "7bf660ef35d6380455dac712b77cc3aaf034ab561c71978595272a806b41a22d",
+    "claim_headers.parquet": "537fc3e393f4c970e728fdd41286fad0ef0b94361de99a1694d12aaa5d3c7e9a",
     "drug_claim_lines.parquet": "8df3678208381df71624336d5c5b2b49dd52bc97a7267b269afdd0b884870efe",
-    "expected_rule_outputs.parquet": "94922e4ef9c2e4368483e2ca2c295f9c7796460666af4ba875b67783ff6df79a",
+    "expected_rule_outputs.parquet": "3c00d2b8782bdc24b0b6094950b1fadb11af2baacab2b1d95c7c40a00bdc84ef",
     "material_claim_lines.parquet": "eca8df5fa6627046f8129fe68b1b60daee19ffa39c716d8c8c8ab1ec1c53f997",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "b30ce0fa844fbabeab9e1a1541b1c0859f1aed6278bcc86a296741b31749c5e4",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "86969b0b7a327f410df9a49ac743395f7d3cef82e5cefd712cd2abe34acaacbf"
+    "procedure_claim_lines.parquet": "53adb042999566f559a69e6aa5b5ef155aa10a98eedc8a35afb144e51011c59f"
   }
 }

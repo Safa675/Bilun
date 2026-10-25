@@ -72,23 +72,23 @@ _REGISTRY_JSON_PATH = _OUT_DIR / "cohort_registry.json"
 _RESULTS_DIR = _REPO / "reports/synthetic-data/2026-10-15-showcase-proofs/results"
 
 _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
-    "S1": "4122.06",
-    "S2": "667.08",
-    "S3": "928.09",
-    "S4": "370.50",
+    "S1": "4122.12",
+    "S2": "667.05",
+    "S3": "928.08",
+    "S4": "370.45",
     "S5": "6465.27",
     "S6": "0.00",
     "S7": "1138.22",
     "S8": "5377.20",
-    "S9": "758.01",
+    "S9": "758.00",
     "S10": "5.88",
     "S11": "6089.82",
     "S12": "1322.94",
-    "S14": "222.36",
-    "S15": "222.36",  # the ward bed beside the cot on the admission day: the 510010 line at risk (deduction_risk)
+    "S14": "222.35",
+    "S15": "222.35",  # the ward bed beside the cot on the admission day: the 510010 line at risk (deduction_risk)
     "S17": "0.00",  # the ESA prescribed by the wrong branch: a drug line, and drugs enter at 0 TL
     "S18": "0.00",  # the albumin without the specialist report: a drug line, and drugs enter at 0 TL
-    "S20": "4724.84",
+    "S20": "4724.86",
     "S21": "0.00",  # the radiotherapy course keyed as totals: reviews of the course and day limits without an amount (EI-19)
     "S22": "439.86",
     "S24": "0.00",  # the red-cell units without their ISBT 128 numbers: a flag of the lines, no amount (a compliance error)
@@ -96,12 +96,12 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
     "S34": "0.00",  # the examination flagged as a package component: a flag without money
     "S38": "0.00",  # the neuromonitoring beside an instrumentation not on EK-2/D-4: a review without money (compliance_error)
     "S40": "0.00",
-    "S42": "5712.20",  # two red-cell units billed in full inside a package instead of 36 %: the difference of the totals
+    "S42": "5712.18",  # two red-cell units billed in full inside a package instead of 36 %: the difference of the totals
     "S44": "0.00",  # romosozumab on a report of 12 months: a drug line, and drugs enter at 0 TL
     "S46": "252.00",  # the second walker inside the MIAT of the first: the walker line is at risk (deduction_risk)
     "S47": "44.45",
     "S49": "0.00",  # the CRP and the ultrasound beside the flat-fee green-area visit: a review without money (compliance_error)
-    "S50": "1347.95",  # the sphincterotomy and the stone extraction billed in full beside the ERCP package instead of 30 %
+    "S50": "1347.94",  # the sphincterotomy and the stone extraction billed in full beside the ERCP package instead of 30 %
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
@@ -555,8 +555,8 @@ def test_in_memory_defects_are_caught(built_showcase: BuildResult) -> None:
             claim_id="F-SENTETIK-HASTA-0001-001",
             line_id="",
             amount_try="9999.99",
-            billed_clean_try="8636.51",
-            billed_faulty_try="4514.45",
+            billed_clean_try="8636.50",
+            billed_faulty_try="4514.38",
         )
 
     # 2) On a deduction_risk or compliance_error fault in registry["faults"], validate_cohort_registry
@@ -731,7 +731,7 @@ def test_the_fault_record_of_the_ward_bill_is_the_one_bed_line(built_showcase: B
     record = next(r for r in built_showcase.records if r.claim_id == _WARD_CLAIM)
     assert (record.story, record.line_id, record.effect_kind, record.expected_status) == ("S14", "", "deduction_risk", "kismi_red")
     assert record.engine_rule == "yatak_icu_overlap_510010"
-    assert record.amount_try == "222.36"
+    assert record.amount_try == "222.35"
     assert Decimal(record.billed_faulty_try) - Decimal(record.billed_clean_try) == Decimal(record.amount_try)  # the bed line
     clean = next(c for c in built_showcase.clean_claims if c.header.claim_id == _WARD_CLAIM)
     assert f"{clean.header.expected_total_billed_try:.2f}" == record.billed_clean_try

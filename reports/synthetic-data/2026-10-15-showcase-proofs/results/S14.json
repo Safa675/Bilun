@@ -1,15 +1,15 @@
 {
  "story": "S14",
  "clean": {
-  "total_billed": "889.38",
+  "total_billed": "889.32",
   "rows": [
    {
     "date": "2026-06-08",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -17,8 +17,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -26,8 +26,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -53,8 +53,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    }
   ],
@@ -79,15 +79,15 @@
   }
  },
  "faulty": {
-  "total_billed": "1111.74",
+  "total_billed": "1111.67",
   "rows": [
    {
     "date": "2026-06-07",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -95,8 +95,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -104,8 +104,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -113,8 +113,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -122,8 +122,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -131,8 +131,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -140,8 +140,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    }
   ],
@@ -164,7 +164,7 @@
     "procedure_code": "510010",
     "overlap_date": "2026-06-07",
     "icu_claim_id": "C-SH11",
-    "risk_amount_try": 222.36,
+    "risk_amount_try": 222.35,
     "sut_section_id": "2.4.4.H"
    }
   ],
@@ -182,7 +182,7 @@
    "financial_findings",
    "yatak_icu_overlap_510010",
    "",
-   222.36
+   222.35
   ],
   [
    "validate",

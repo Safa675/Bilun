@@ -23,7 +23,7 @@ from datetime import date, timedelta
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
-from src.bilun.domain.money import money_round_half_up as _money
+from src.bilun.domain.money import money_round_half_up as _money, puan_price_try
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.types import (
@@ -82,14 +82,15 @@ def _refakatci_tariff_for_date(
     fallback_puan: float,
     katsayi: float,
 ) -> tuple[float, float]:
-    """Return (puan, daily_rate_try) for 510121 as of ``admission_date``."""
+    """Return (puan, daily_rate_try) for 510121 as of ``admission_date``: the dated EK-2B price, else
+    puan × katsayı cut at the kuruş (SUT 2.2.(15), ``puan_price_try``)."""
     dated_puan = get_ek2b_price_for_date(_REFAKATCI_CODE, admission_date, "puan")
     dated_price = get_ek2b_price_for_date(_REFAKATCI_CODE, admission_date, "price_try")
     puan = float(dated_puan) if dated_puan is not None and dated_puan > 0 else fallback_puan
     if dated_price is not None and dated_price > 0:
         daily_rate = _money(float(dated_price))
     else:
-        daily_rate = _money(puan * katsayi)
+        daily_rate = puan_price_try(puan, katsayi)
     return puan, daily_rate
 
 

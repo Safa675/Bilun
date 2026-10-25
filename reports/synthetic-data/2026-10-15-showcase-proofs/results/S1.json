@@ -1,15 +1,15 @@
 {
  "story": "S1",
  "clean": {
-  "total_billed": "8636.51",
+  "total_billed": "8636.50",
   "rows": [
    {
     "date": "2026-07-14",
     "code": "P610131",
     "name": "Appendektomi, laparoskopik",
     "qty": 1,
-    "unit": "8636.51",
-    "billed": "8636.51",
+    "unit": "8636.50",
+    "billed": "8636.50",
     "source": "EK-2C valid_from 2026-07-07"
    }
   ],
@@ -35,11 +35,11 @@
     "recommendation": "package",
     "payment_method_kind": "DRG_MANDATORY",
     "current_billing": "package",
-    "package_total_try": 8636.51,
+    "package_total_try": 8636.5,
     "itemized_total_try": 0.0,
     "savings_try": 0.0,
     "sut_section_id": "2.2.2.(1)",
-    "detail": "Claim C-SH01 is billed correctly as package per SUT §2.2.2(1). Package total 8636.51 TRY."
+    "detail": "Claim C-SH01 is billed correctly as package per SUT §2.2.2(1). Package total 8636.50 TRY."
    }
   ],
   "report": {
@@ -51,15 +51,15 @@
   }
  },
  "faulty": {
-  "total_billed": "4514.45",
+  "total_billed": "4514.38",
   "rows": [
    {
     "date": "2026-07-14",
     "code": "610131",
     "name": "Appendektomi, laparoskopik",
     "qty": 1,
-    "unit": "3022.31",
-    "billed": "3022.31",
+    "unit": "3022.30",
+    "billed": "3022.30",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -67,8 +67,8 @@
     "code": "550170",
     "name": "Anestezi C grubu",
     "qty": 1,
-    "unit": "530.33",
-    "billed": "530.33",
+    "unit": "530.32",
+    "billed": "530.32",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -76,8 +76,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -85,8 +85,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -94,8 +94,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -103,8 +103,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -121,8 +121,8 @@
     "code": "910230",
     "name": "Apendiks, insidental dışında",
     "qty": 1,
-    "unit": "258.54",
-    "billed": "258.54",
+    "unit": "258.53",
+    "billed": "258.53",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -189,15 +189,15 @@
     "recommendation": "package",
     "payment_method_kind": "DRG_MANDATORY",
     "current_billing": "itemized",
-    "package_total_try": 8636.51,
-    "itemized_total_try": 4514.45,
-    "savings_try": 4122.06,
+    "package_total_try": 8636.5,
+    "itemized_total_try": 4514.38,
+    "savings_try": 4122.12,
     "sut_section_id": "2.2.2.(1)",
-    "detail": "SUT §2.2 mandates package billing for claim C-SH01 (EK-2/C procedure present). Package total 8636.51 TRY vs itemized 4514.45 TRY."
+    "detail": "SUT §2.2 mandates package billing for claim C-SH01 (EK-2/C procedure present). Package total 8636.50 TRY vs itemized 4514.38 TRY."
    }
   ],
   "report": {
-   "sgk_uplift_try": 4122.06,
+   "sgk_uplift_try": 4122.12,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
@@ -217,7 +217,7 @@
    "billing_strategy",
    "mandatory_compliance",
    "P610131",
-   4122.06
+   4122.12
   ],
   [
    "action",

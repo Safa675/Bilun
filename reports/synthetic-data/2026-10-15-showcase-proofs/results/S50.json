@@ -1,15 +1,15 @@
 {
  "story": "S50",
  "clean": {
-  "total_billed": "10357.30",
+  "total_billed": "10357.29",
   "rows": [
    {
     "date": "2026-09-28",
     "code": "P701360",
     "name": "Endoskopik retrograd kolanjiyopankreotografi",
     "qty": 1,
-    "unit": "9779.61",
-    "billed": "9779.61",
+    "unit": "9779.60",
+    "billed": "9779.60",
     "source": "EK-2C valid_from 2026-07-07"
    },
    {
@@ -26,7 +26,7 @@
     "code": "701440",
     "name": "Koledokdan balon veya basketle taş çıkarılması",
     "qty": 1,
-    "unit": "846.28",
+    "unit": "846.27",
     "billed": "253.88",
     "source": "EK-2B valid_from 2026-07-07"
    }
@@ -52,15 +52,15 @@
   }
  },
  "faulty": {
-  "total_billed": "11705.25",
+  "total_billed": "11705.23",
   "rows": [
    {
     "date": "2026-09-28",
     "code": "P701360",
     "name": "Endoskopik retrograd kolanjiyopankreotografi",
     "qty": 1,
-    "unit": "9779.61",
-    "billed": "9779.61",
+    "unit": "9779.60",
+    "billed": "9779.60",
     "source": "EK-2C valid_from 2026-07-07"
    },
    {
@@ -77,8 +77,8 @@
     "code": "701440",
     "name": "Koledokdan balon veya basketle taş çıkarılması",
     "qty": 1,
-    "unit": "846.28",
-    "billed": "846.28",
+    "unit": "846.27",
+    "billed": "846.27",
     "source": "EK-2B valid_from 2026-07-07"
    }
   ],
@@ -111,15 +111,15 @@
     "primary_procedure_code": "P701360",
     "expected_point_factor": 0.3,
     "expected_billed_try": 253.88,
-    "actual_billed_try": 846.28,
-    "risk_amount_try": 592.4,
+    "actual_billed_try": 846.27,
+    "risk_amount_try": 592.39,
     "sut_section": "2.2.2.B.c",
     "detail": "Secondary procedure billed at full rate; SUT §2.2.2.B.c requires 30% point factor in same session."
    }
   ],
   "report": {
    "sgk_uplift_try": 0.0,
-   "audit_exposure_try": 962.82,
+   "audit_exposure_try": 962.81,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
    "action_count": 5
@@ -138,14 +138,14 @@
    "audit_exposure",
    "session_point_violation",
    "701440",
-   423.14
+   423.13
   ],
   [
    "scalar",
    "audit_exposure_try",
    "",
    "",
-   962.82
+   962.81
   ]
  ],
  "only_in_clean": [

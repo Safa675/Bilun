@@ -1,15 +1,15 @@
 {
  "story": "S22",
  "clean": {
-  "total_billed": "2154.59",
+  "total_billed": "2154.52",
   "rows": [
    {
     "date": "2026-05-11",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -17,8 +17,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -26,8 +26,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -53,8 +53,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -62,8 +62,8 @@
     "code": "701450",
     "name": "Kolonoskopi, total",
     "qty": 1,
-    "unit": "879.72",
-    "billed": "879.72",
+    "unit": "879.71",
+    "billed": "879.71",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -71,7 +71,7 @@
     "code": "701460",
     "name": "Kolonoskopik polipektomi",
     "qty": 1,
-    "unit": "879.72",
+    "unit": "879.71",
     "billed": "439.86",
     "source": "EK-2B valid_from 2026-01-31"
    }
@@ -101,15 +101,15 @@
   }
  },
  "faulty": {
-  "total_billed": "1714.73",
+  "total_billed": "1714.66",
   "rows": [
    {
     "date": "2026-05-11",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -117,8 +117,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -126,8 +126,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -135,8 +135,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -144,8 +144,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -153,8 +153,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -162,8 +162,8 @@
     "code": "701450",
     "name": "Kolonoskopi, total",
     "qty": 1,
-    "unit": "879.72",
-    "billed": "879.72",
+    "unit": "879.71",
+    "billed": "879.71",
     "source": "EK-2B valid_from 2026-01-31"
    }
   ],
@@ -189,10 +189,10 @@
     "expected_addon_procedure_code": "701460",
     "session_date": "2026-05-12",
     "addon_factor": 0.3,
-    "trigger_billed_try": 879.72,
-    "list_price_try": 879.72,
+    "trigger_billed_try": 879.71,
+    "list_price_try": 879.71,
     "actual_billed_try": 0.0,
-    "recoverable_uplift_try": 263.92,
+    "recoverable_uplift_try": 263.91,
     "price_methodology": "addon_list_price_x_session_factor",
     "same_incision": true,
     "sut_section_id": "2.2.2.A.(5)",
@@ -200,7 +200,7 @@
    }
   ],
   "report": {
-   "sgk_uplift_try": 263.92,
+   "sgk_uplift_try": 263.91,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
@@ -213,14 +213,14 @@
    "procedure_addon_uplift",
    "missing_add_on_procedure",
    "701450",
-   263.92
+   263.91
   ],
   [
    "validate",
    "procedure_pairing",
    "pairing.701450_701460",
    "",
-   263.92
+   263.91
   ]
  ],
  "only_in_clean": [],

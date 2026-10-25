@@ -1,7 +1,7 @@
 {
  "story": "S3",
  "clean": {
-  "total_billed": "5607.62",
+  "total_billed": "5607.55",
   "rows": [
    {
     "date": "2026-08-18",
@@ -17,8 +17,8 @@
     "code": "550160",
     "name": "Anestezi B grubu",
     "qty": 1,
-    "unit": "928.09",
-    "billed": "928.09",
+    "unit": "928.08",
+    "billed": "928.08",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -26,8 +26,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -53,8 +53,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -62,8 +62,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -71,8 +71,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -127,10 +127,10 @@
     "anestezi_code": "550160",
     "anestezi_puan": 1565.07,
     "katsayi": 0.593,
-    "expected_try": 928.09,
-    "actual_billed_try": 928.09,
+    "expected_try": 928.08,
+    "actual_billed_try": 928.08,
     "recoverable_uplift_try": 0.0,
-    "detail": "Anestezi B grubu (550160): surgical procedure 615931 (puan 6471.03) → anestezi puan 1565.07 × katsayı 0.593 = 928.09 TRY (SUT §2.2.2.A, EK-2/B §4)."
+    "detail": "Anestezi B grubu (550160): surgical procedure 615931 (puan 6471.03) → anestezi puan 1565.07 × katsayı 0.593 = 928.08 TRY (SUT §2.2.2.A, EK-2/B §4)."
    }
   ],
   "report": {
@@ -142,7 +142,7 @@
   }
  },
  "faulty": {
-  "total_billed": "4679.53",
+  "total_billed": "4679.47",
   "rows": [
    {
     "date": "2026-08-18",
@@ -158,8 +158,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -167,8 +167,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -176,8 +176,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -185,8 +185,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -194,8 +194,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -203,8 +203,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -259,14 +259,14 @@
     "anestezi_code": "550160",
     "anestezi_puan": 1565.07,
     "katsayi": 0.593,
-    "expected_try": 928.09,
+    "expected_try": 928.08,
     "actual_billed_try": 0.0,
-    "recoverable_uplift_try": 928.09,
-    "detail": "Anestezi B grubu (550160): surgical procedure 615931 (puan 6471.03) → anestezi puan 1565.07 × katsayı 0.593 = 928.09 TRY (SUT §2.2.2.A, EK-2/B §4)."
+    "recoverable_uplift_try": 928.08,
+    "detail": "Anestezi B grubu (550160): surgical procedure 615931 (puan 6471.03) → anestezi puan 1565.07 × katsayı 0.593 = 928.08 TRY (SUT §2.2.2.A, EK-2/B §4)."
    }
   ],
   "report": {
-   "sgk_uplift_try": 928.09,
+   "sgk_uplift_try": 928.08,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
@@ -279,14 +279,14 @@
    "anestezi_puani",
    "anestezi_puani_group",
    "615931",
-   928.09
+   928.08
   ],
   [
    "block",
    "anestezi_puani",
    "anestezi_puani_group_lookup",
    "615931",
-   928.09
+   928.08
   ]
  ],
  "only_in_clean": [],

@@ -52,15 +52,15 @@ def _primary(**overrides):
 def _blood(**overrides):
     values = dict(
         procedure_line_id="plasma", procedure_code="705430",
-        procedure_specialty_code="surgery", unit_price_try=Decimal("1134.71"),
-        expected_payable_try=Decimal("1134.71"), billed_amount_try=Decimal("200"),
+        procedure_specialty_code="surgery", unit_price_try=Decimal("1134.70"),
+        expected_payable_try=Decimal("1134.70"), billed_amount_try=Decimal("200"),
     )
     values.update(overrides)
     return _proc(**values)
 
 
 def _operation(**overrides):
-    """An EK-2/B §6 secondary operation in the primary's session (list 3,032.01).
+    """An EK-2/B §6 secondary operation in the primary's session (list 3,032.00).
 
     615995 is EK-2/B only. 610080 was used before, but its EK-2/C package makes
     it a must-package line at this tier, which has no hizmet başı session
@@ -69,8 +69,8 @@ def _operation(**overrides):
     """
     values = dict(
         procedure_line_id="second-operation", procedure_code="615995",
-        procedure_specialty_code="surgery", unit_price_try=Decimal("3032.01"),
-        expected_payable_try=Decimal("3032.01"), billed_amount_try=Decimal("100"),
+        procedure_specialty_code="surgery", unit_price_try=Decimal("3032.00"),
+        expected_payable_try=Decimal("3032.00"), billed_amount_try=Decimal("100"),
     )
     values.update(overrides)
     return _proc(**values)
@@ -96,27 +96,27 @@ def test_original_plasma_gap_counts_once_in_direct_detectors_and_blocks(reverse)
     session = detect_session_underbilling_opportunities(lines, claim=_claim())
     blood = detect_blood_component_underbilling_opportunities(lines)
     # #261: the plasma line is not a session secondary (was 30 % = 340.41);
-    # its 36 % package ceiling (408.50) is the one gap, counted by the blood detector.
+    # its 36 % package ceiling (408.49) is the one gap, counted by the blood detector.
     assert session == []
     assert len(blood) == 1
-    assert blood[0]["max_billable_try"] == 408.5
-    assert blood[0]["recoverable_uplift_try"] == 208.5
+    assert blood[0]["max_billable_try"] == 408.49
+    assert blood[0]["recoverable_uplift_try"] == 208.49
     session_block, blood_block = _blocks(lines)
     assert session_block.confirmed_uplift_try == 0
-    assert blood_block.confirmed_uplift_try == 208.5
+    assert blood_block.confirmed_uplift_try == 208.49
 
 
 @pytest.mark.parametrize(
     "code,unit,payable,billed,expected",
     [
-        # #336: the base is the EK-2/B list price on the date (705430 1134.71, 705441
+        # #336: the base is the EK-2/B list price on the date (705430 1134.70, 705441
         # 2564.26), never the line's unit price or payable (was 36 % of payable 1000).
-        ("705430", "1000", "1000", "310", "98.50"),  # 36 % of 1134.71 = 408.4956.
+        ("705430", "1000", "1000", "310", "98.49"),  # 36 % of 1134.70 = 408.492.
         ("705441", "1000", "1000", "600", None),  # Above the 20 % ceiling 512.85.
         ("705441", "1000", "1000", "100", "412.85"),
-        ("705430", "2000", "1000", "100", "308.50"),  # The list, not the unit price, is the base.
-        ("705430", "1000", "2000", "100", "308.50"),  # Nor the payable.
-        ("705430", "1000", "1000", "295", "113.50"),
+        ("705430", "2000", "1000", "100", "308.49"),  # The list, not the unit price, is the base.
+        ("705430", "1000", "2000", "100", "308.49"),  # Nor the payable.
+        ("705430", "1000", "1000", "295", "113.49"),
         ("705441", "1000", "1000", "503", None),  # Within the 2 % tolerance (502.59).
     ],
 )
@@ -161,7 +161,7 @@ def test_partial_overlap_preserves_same_code_on_other_lines_dates_and_claims():
         )], claims)
         # #261: the same-date plasma is the blood detector's too (was session 140.41).
         assert session.confirmed_uplift_try == 0
-        assert blood.confirmed_uplift_try == 625.5
+        assert blood.confirmed_uplift_try == 625.47
         assert {(r["claim_id"], r["procedure_line_id"]) for r in blood.opportunities} == {
             ("CLM-BLOOD", "plasma"), ("CLM-BLOOD", "next-day"), ("OTHER", "plasma"),
         }
@@ -171,9 +171,9 @@ def test_two_same_code_blood_lines_keep_distinct_amounts():
     lines = [_primary(), _blood(), _blood(procedure_line_id="plasma-2", billed_amount_try=Decimal("250"))]
     for order in permutations(lines):
         session, blood = _blocks(order)
-        # #261: both are blood-detector gaps against 408.50 (were session 140.41 / 90.41).
+        # #261: both are blood-detector gaps against 408.49 (were session 140.41 / 90.41).
         assert {r["procedure_line_id"]: r["recoverable_uplift_try"] for r in blood.opportunities} == {
-            "plasma": 208.5, "plasma-2": 158.5,
+            "plasma": 208.49, "plasma-2": 158.49,
         }
         assert session.opportunities == []
 
@@ -189,7 +189,7 @@ def test_same_normalized_blood_codes_never_form_a_session(reverse):
     assert [r["procedure_line_id"] for r in blood.opportunities] == [
         line.procedure_line_id for line in lines
     ]
-    assert blood.confirmed_uplift_try == 417
+    assert blood.confirmed_uplift_try == 416.98
 
 
 def test_zero_billed_and_package_included_lines_keep_existing_eligibility():
@@ -199,13 +199,13 @@ def test_zero_billed_and_package_included_lines_keep_existing_eligibility():
     ])
     assert session.opportunities == []
     assert len(blood.opportunities) == 1
-    assert blood.confirmed_uplift_try == 408.5
+    assert blood.confirmed_uplift_try == 408.49
 
 
 def test_standalone_blood_line_in_actual_package_treatment():
     session, blood = _blocks([_blood(), _primary(procedure_date=date(2026, 1, 12))])
     assert session.opportunities == []
-    assert blood.confirmed_uplift_try == 208.5
+    assert blood.confirmed_uplift_try == 208.49
 
 
 def test_quantity_and_fractional_cent_rounding_use_whole_line_bases():
@@ -215,10 +215,10 @@ def test_quantity_and_fractional_cent_rounding_use_whole_line_bases():
                expected_payable_try=Decimal("1000.05"), billed_amount_try=Decimal("100")),
     ])
     # #261: not a 30 % session secondary. #336: 36 % of the list price times the
-    # whole quantity, 2 x 1134.71 x 0.36 = 816.9912, whatever the line's payable says.
+    # whole quantity, 2 x 1134.70 x 0.36 = 816.984, whatever the line's payable says.
     assert session.opportunities == []
-    assert blood.opportunities[0]["max_billable_try"] == 816.99
-    assert blood.confirmed_uplift_try == 716.99
+    assert blood.opportunities[0]["max_billable_try"] == 816.98
+    assert blood.confirmed_uplift_try == 716.98
 
 
 def test_direct_detector_never_borrows_another_claims_session():
@@ -234,7 +234,7 @@ def test_blank_line_ids_do_not_collapse_distinct_occurrences():
     # #261: both occurrences are blood gaps (were one session row and one blood row).
     assert session.opportunities == []
     assert len(blood.opportunities) == 2
-    assert blood.confirmed_uplift_try == 417
+    assert blood.confirmed_uplift_try == 416.98
 
 
 def test_operation_secondary_gap_remains_independent_of_blood():
@@ -243,21 +243,21 @@ def test_operation_secondary_gap_remains_independent_of_blood():
     lines = [_primary(billed_amount_try=Decimal("1000")), _blood(), _operation()]
     session, blood = _blocks(lines)
     assert [r["procedure_line_id"] for r in session.opportunities] == ["second-operation"]
-    assert session.opportunities[0]["expected_billed_try"] == 909.60  # 30 % of 3,032.01.
+    assert session.opportunities[0]["expected_billed_try"] == 909.60  # 30 % of 3,032.00.
     assert session.confirmed_uplift_try == 809.60
-    assert blood.confirmed_uplift_try == 208.5
+    assert blood.confirmed_uplift_try == 208.49
 
 
 def test_a_missing_payable_leaves_the_list_price_ceiling_unchanged():
     # #336: the ceiling never read the payable's billed fallback (200 x 36 % = 72).
     session, blood = _blocks([_primary(), _blood(expected_payable_try=Decimal("0"))])
     assert session.opportunities == []
-    assert [r["recoverable_uplift_try"] for r in blood.opportunities] == [208.5]
+    assert [r["recoverable_uplift_try"] for r in blood.opportunities] == [208.49]
 
 
 @pytest.mark.parametrize(
     "cross_specialty,same_incision,expected",
-    [(True, True, 1667.61), (False, False, 1516.01)],  # §2.2.2.B.c/ç: 30 %+25 or 50 % of 3,032.01.
+    [(True, True, 1667.60), (False, False, 1516.00)],  # §2.2.2.B.c/ç: 30 %+25 or 50 % of 3,032.00.
 )
 def test_direct_detectors_share_nondefault_session_options(
     cross_specialty, same_incision, expected,
@@ -270,7 +270,7 @@ def test_direct_detectors_share_nondefault_session_options(
     assert [r["procedure_line_id"] for r in session] == ["second-operation"]
     assert session[0]["expected_billed_try"] == expected
     assert session[0]["recoverable_uplift_try"] == round(expected - 100, 2)
-    assert [r["recoverable_uplift_try"] for r in blood] == [208.5]
+    assert [r["recoverable_uplift_try"] for r in blood] == [208.49]
 
 
 def test_claim_context_reaches_both_detectors(monkeypatch):
@@ -289,8 +289,8 @@ def test_claim_context_reaches_both_detectors(monkeypatch):
         [_primary(billed_amount_try=Decimal("1000")), _operation(), _blood()],
         [_claim(department="cross-specialty")],
     )
-    assert session.confirmed_uplift_try == 1567.61  # 55 % of 3,032.01 − 100.
-    assert blood.confirmed_uplift_try == 208.5
+    assert session.confirmed_uplift_try == 1567.60  # 55 % of 3,032.00 − 100.
+    assert blood.confirmed_uplift_try == 208.49
     assert seen == ["CLM-BLOOD", "CLM-BLOOD"]
 
 
@@ -309,7 +309,7 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
     from src.bilun.domain.billing.types import BloodComponentUplift, SessionPricingUplift
 
     # #261: the session row comes from an operation secondary (was the plasma
-    # line, composed with its blood ceiling); 30 % of its list 3,032.01 = 909.60
+    # line, composed with its blood ceiling); 30 % of its list 3,032.00 = 909.60
     # (#300: was 30 % of a unit price of 1,134.71, 340.41, billed 200). Billed at
     # 700 it is no chart-review case (5.6 % of the primary).
     lines = [_primary(), _operation(billed_amount_try=Decimal("700"))]

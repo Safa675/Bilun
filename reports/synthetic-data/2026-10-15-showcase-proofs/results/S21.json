@@ -1,7 +1,7 @@
 {
  "story": "S21",
  "clean": {
-  "total_billed": "83786.23",
+  "total_billed": "83786.21",
   "rows": [
    {
     "date": "2026-07-20",
@@ -35,8 +35,8 @@
     "code": "800110",
     "name": "e) IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamalarında eksternal radyoterapi tasarımı",
     "qty": 1,
-    "unit": "5487.12",
-    "billed": "5487.12",
+    "unit": "5487.11",
+    "billed": "5487.11",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -287,8 +287,8 @@
     "code": "800260",
     "name": "d) Kompleks brakiterapi doz hesapları",
     "qty": 1,
-    "unit": "1402.85",
-    "billed": "1402.85",
+    "unit": "1402.84",
+    "billed": "1402.84",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -349,7 +349,7 @@
   }
  },
  "faulty": {
-  "total_billed": "103497.28",
+  "total_billed": "103497.19",
   "rows": [
    {
     "date": "2026-07-20",
@@ -383,8 +383,8 @@
     "code": "800110",
     "name": "e) IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamalarında eksternal radyoterapi tasarımı",
     "qty": 1,
-    "unit": "5487.12",
-    "billed": "5487.12",
+    "unit": "5487.11",
+    "billed": "5487.11",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -419,8 +419,8 @@
     "code": "800140",
     "name": "c) Kompleks radyoterapi planlama",
     "qty": 4,
-    "unit": "2503.59",
-    "billed": "10014.36",
+    "unit": "2503.58",
+    "billed": "10014.32",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -428,8 +428,8 @@
     "code": "800260",
     "name": "d) Kompleks brakiterapi doz hesapları",
     "qty": 4,
-    "unit": "1402.85",
-    "billed": "5611.40",
+    "unit": "1402.84",
+    "billed": "5611.36",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -482,7 +482,7 @@
      "treatment_course_id"
     ],
     "evaluation_status": "unavailable",
-    "billed_amount_try": 5611.4,
+    "billed_amount_try": 5611.36,
     "risk_amount_try": null,
     "sut_section": "EK-2/B 8.1.4.B"
    },
@@ -514,7 +514,7 @@
      "treatment_course_id"
     ],
     "evaluation_status": "unavailable",
-    "billed_amount_try": 10014.36,
+    "billed_amount_try": 10014.32,
     "risk_amount_try": null,
     "sut_section": "EK-2/B 8.1.3"
    },
@@ -575,7 +575,7 @@
    "financial_findings",
    "radiation_oncology.course_cap.brachytherapy_dose",
    "",
-   5611.4
+   5611.36
   ],
   [
    "wavea",
@@ -589,7 +589,7 @@
    "financial_findings",
    "radiation_oncology.course_cap.rt_planning",
    "",
-   10014.36
+   10014.32
   ],
   [
    "wavea",

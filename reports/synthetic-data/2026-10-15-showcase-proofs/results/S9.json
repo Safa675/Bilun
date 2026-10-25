@@ -1,7 +1,7 @@
 {
  "story": "S9",
  "clean": {
-  "total_billed": "8574.85",
+  "total_billed": "8574.78",
   "rows": [
    {
     "date": "2026-09-21",
@@ -17,8 +17,8 @@
     "code": "615995",
     "name": "Minimal invaziv foraminoplasti tek taraflı/çift taraflı",
     "qty": 1,
-    "unit": "3032.01",
-    "billed": "1516.01",
+    "unit": "3032.00",
+    "billed": "1516.00",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -53,8 +53,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -62,8 +62,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -71,8 +71,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -80,8 +80,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -128,7 +128,7 @@
   }
  },
  "faulty": {
-  "total_billed": "7816.84",
+  "total_billed": "7816.78",
   "rows": [
    {
     "date": "2026-09-21",
@@ -144,7 +144,7 @@
     "code": "615995",
     "name": "Minimal invaziv foraminoplasti tek taraflı/çift taraflı",
     "qty": 1,
-    "unit": "3032.01",
+    "unit": "3032.00",
     "billed": "758.00",
     "source": "EK-2B valid_from 2026-07-07"
    },
@@ -162,8 +162,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -171,8 +171,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -180,8 +180,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -189,8 +189,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -198,8 +198,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -207,8 +207,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -256,7 +256,7 @@
     "lenient_point_factor": 0.5,
     "expected_billed_try": 909.6,
     "strict_expected_billed_try": 909.6,
-    "lenient_expected_billed_try": 1516.01,
+    "lenient_expected_billed_try": 1516.0,
     "actual_billed_try": 758.0,
     "recoverable_uplift_try": 151.6,
     "review_uplift_try": 0.0,

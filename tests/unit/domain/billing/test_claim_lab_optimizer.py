@@ -19,7 +19,7 @@ import pytest
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[4]
-# EK-2B prices in force on this day: L107020 19.73, L102820 26.34, L103120 5.88 TL.
+# EK-2B prices in force on this day: L107020 19.72, L102820 26.33, L103120 5.88 TL.
 _DAY = "2026-03-01"
 
 
@@ -150,16 +150,16 @@ def test_no_hemogram_bundling_for_single_cbc_line() -> None:
     ctx = _MockPatientClaimContext(
         patient_id="P1",
         claims=(_MockClaimHeader("C1", "P1", "V1"),),
-        procedure_lines=(_lab_line(code="L107020", name="Tam Kan Sayımı (Hemogram)", billed="19.73"),),
+        procedure_lines=(_lab_line(code="L107020", name="Tam Kan Sayımı (Hemogram)", billed="19.72"),),
     )
     result = _optimize_lab_billing_from_claims(ctx)
     assert result.hemogram_bundling_savings == 0.0
     assert not result.flagged_tests
 
 
-_HEMOGRAM = {"code": "L107020", "name": "Tam Kan Sayımı (Hemogram)", "billed": "19.73"}
+_HEMOGRAM = {"code": "L107020", "name": "Tam Kan Sayımı (Hemogram)", "billed": "19.72"}
 _MANUAL_HCT = {"code": "L103120", "name": "Hematokrit (Manuel)", "billed": "5.88"}
-_HBA1C = {"code": "L102820", "name": "Glike hemoglobin (Hb A1c)", "billed": "26.34"}
+_HBA1C = {"code": "L102820", "name": "Glike hemoglobin (Hb A1c)", "billed": "26.33"}
 
 
 def _one_date(*lines: dict[str, str]) -> _MockPatientClaimContext:
@@ -181,7 +181,7 @@ def test_hemogram_with_hba1c_on_one_date_is_not_unbundling() -> None:
 
 @pytest.mark.parametrize(
     ("second", "savings"),
-    [(_HEMOGRAM, 19.73), (_MANUAL_HCT, 5.88)],
+    [(_HEMOGRAM, 19.72), (_MANUAL_HCT, 5.88)],
     ids=["two_hemograms", "hemogram_and_manual_hematocrit"],
 )
 def test_coded_cbc_lines_on_one_date_are_unbundling(second: dict[str, str], savings: float) -> None:
@@ -191,7 +191,7 @@ def test_coded_cbc_lines_on_one_date_are_unbundling(second: dict[str, str], savi
     result = _optimize_lab_billing_from_claims(_one_date(_HEMOGRAM, second))
     assert result.hemogram_bundling_savings == savings
     flags = [(f["flag_type"], f["gazette_price"], f["savings_try"]) for f in result.flagged_tests]
-    assert flags == [("hemogram_unbundling", 19.73, savings)]
+    assert flags == [("hemogram_unbundling", 19.72, savings)]
 
 
 @pytest.mark.parametrize(

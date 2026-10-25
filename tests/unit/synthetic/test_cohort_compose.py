@@ -500,7 +500,7 @@ def test_a_newborn_story_composes_incubator_lines_as_bed_lines(
     assert len(beds) == 6 and {p.procedure_category for p in beds} == {"yatak"}
     assert {p.quantity for p in beds} == {1} and {str(p.billed_amount_try) for p in beds} == {"440.98"}
     assert claim.header.department == "Yenidoğan" and claim.header.admission_date == date(2026, 7, 10)
-    assert claim.header.expected_total_billed_try == Decimal("3049.55")
+    assert claim.header.expected_total_billed_try == Decimal("3049.50")
 
 
 def test_a_claim_carries_the_pins_it_was_composed_with_and_its_ids_follow_its_sequence(
@@ -552,7 +552,7 @@ def test_catalogs_lazy_loading_and_in_memory_mutations() -> None:
     row_2b = cats.procedure_row("510010", date(2026, 7, 14))
     assert "ek2b" in cats.__dict__
     assert row_2b.name == "Standart yatak tarifesi"
-    assert money(row_2b.price) == Decimal("222.36")
+    assert money(row_2b.price) == Decimal("222.35")
 
     # (a) A date outside every row raises CatalogError (EK-2B, EK-2C, EK-4A).
     with pytest.raises(CatalogError, match="EK-2B '510010' on 1999-01-01"):
@@ -779,7 +779,7 @@ def test_the_red_cell_units_of_s24_carry_their_isbt128_numbers_and_the_fault_bla
     units = [p for p in clean.procedures if p.procedure_code == "705371"]
     assert [p.isbt128_barcode for p in units] == ["=X99992610001100", "=X99992610001200"]
     assert {(p.quantity, p.billed_amount_try, p.expected_payable_try) for p in units} == {
-        (1, Decimal("4462.65"), Decimal("4462.65"))
+        (1, Decimal("4462.64"), Decimal("4462.64"))
     }
     assert {p.isbt128_barcode for p in clean.procedures if p.procedure_code != "705371"} == {""}
     faulty_bill = apply_fault(faults_by_story["S24"], pathway, annotate=True)

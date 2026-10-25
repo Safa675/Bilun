@@ -1,15 +1,15 @@
 {
  "story": "S6",
  "clean": {
-  "total_billed": "2416.40",
+  "total_billed": "2416.22",
   "rows": [
    {
     "date": "2026-06-08",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -17,8 +17,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -26,8 +26,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -35,8 +35,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -44,8 +44,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -53,8 +53,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -62,8 +62,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -71,8 +71,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -80,8 +80,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -89,8 +89,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -98,8 +98,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -107,8 +107,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -116,8 +116,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -125,8 +125,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -215,8 +215,8 @@
     "code": "801720",
     "name": "Akciğer grafisi P.A. (Tek yön)",
     "qty": 1,
-    "unit": "44.75",
-    "billed": "44.75",
+    "unit": "44.74",
+    "billed": "44.74",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -224,8 +224,8 @@
     "code": "530100",
     "name": "Elektrokardiyogram",
     "qty": 1,
-    "unit": "16.66",
-    "billed": "16.66",
+    "unit": "16.65",
+    "billed": "16.65",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -251,8 +251,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -269,8 +269,8 @@
     "code": "801720",
     "name": "Akciğer grafisi P.A. (Tek yön)",
     "qty": 1,
-    "unit": "44.75",
-    "billed": "44.75",
+    "unit": "44.74",
+    "billed": "44.74",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -379,15 +379,15 @@
   }
  },
  "faulty": {
-  "total_billed": "2416.40",
+  "total_billed": "2416.22",
   "rows": [
    {
     "date": "2026-06-08",
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -395,8 +395,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -404,8 +404,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -413,8 +413,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -422,8 +422,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -431,8 +431,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -440,8 +440,8 @@
     "code": "510010",
     "name": "Standart yatak tarifesi",
     "qty": 1,
-    "unit": "222.36",
-    "billed": "222.36",
+    "unit": "222.35",
+    "billed": "222.35",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -449,8 +449,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -458,8 +458,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -467,8 +467,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -476,8 +476,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -485,8 +485,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -494,8 +494,8 @@
     "code": "510121",
     "name": "Refakat",
     "qty": 1,
-    "unit": "74.10",
-    "billed": "74.10",
+    "unit": "74.09",
+    "billed": "74.09",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -503,8 +503,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -593,8 +593,8 @@
     "code": "801720",
     "name": "Akciğer grafisi P.A. (Tek yön)",
     "qty": 1,
-    "unit": "44.75",
-    "billed": "44.75",
+    "unit": "44.74",
+    "billed": "44.74",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -602,8 +602,8 @@
     "code": "530100",
     "name": "Elektrokardiyogram",
     "qty": 1,
-    "unit": "16.66",
-    "billed": "16.66",
+    "unit": "16.65",
+    "billed": "16.65",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -629,8 +629,8 @@
     "code": "L107020",
     "name": "Tam Kan Sayımı (Hemogram)",
     "qty": 1,
-    "unit": "19.73",
-    "billed": "19.73",
+    "unit": "19.72",
+    "billed": "19.72",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -647,8 +647,8 @@
     "code": "801720",
     "name": "Akciğer grafisi P.A. (Tek yön)",
     "qty": 1,
-    "unit": "44.75",
-    "billed": "44.75",
+    "unit": "44.74",
+    "billed": "44.74",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {

@@ -125,7 +125,7 @@ KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
     ),
     "S9": ReportDivergence(
         report_amount_try="151.60",
-        record_amount_try="758.01",
+        record_amount_try="758.00",
         reason=(
             "No claim line carries the incision, so the report prices the uplift at the strictest "
             "reading (same incision, 30%) and the record carries the whole gap to the clean bill, "
@@ -134,8 +134,8 @@ KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
         issue="Safa675/Bilun#311 item 6",
     ),
     "S50": ReportDivergence(
-        report_amount_try="962.82",
-        record_amount_try="1347.95",
+        report_amount_try="962.81",
+        record_amount_try="1347.94",
         reason=(
             "No claim line carries the incision, so the report shows the lenient separate-incision reading "
             "(50 %, C000673) of the two EK-2B procedures beside the ERCP package and the record carries the "
@@ -144,7 +144,7 @@ KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
         issue="Safa675/Bilun#311 item 6",
     ),
     "S22": ReportDivergence(
-        report_amount_try="263.92",
+        report_amount_try="263.91",
         record_amount_try="439.86",
         reason=(
             "The add-on rule prices the polypectomy at the strict same-incision reading (30 % of its list "

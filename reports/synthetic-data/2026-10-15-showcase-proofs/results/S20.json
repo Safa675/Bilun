@@ -51,15 +51,15 @@
   }
  },
  "faulty": {
-  "total_billed": "2444.76",
+  "total_billed": "2444.74",
   "rows": [
    {
     "date": "2026-06-17",
     "code": "603840",
     "name": "Greftsiz umblikal herni onarımı",
     "qty": 1,
-    "unit": "1914.43",
-    "billed": "1914.43",
+    "unit": "1914.42",
+    "billed": "1914.42",
     "source": "EK-2B valid_from 2026-01-31"
    },
    {
@@ -67,8 +67,8 @@
     "code": "550170",
     "name": "Anestezi C grubu",
     "qty": 1,
-    "unit": "530.33",
-    "billed": "530.33",
+    "unit": "530.32",
+    "billed": "530.32",
     "source": "EK-2B valid_from 2026-01-31"
    }
   ],
@@ -103,14 +103,14 @@
     "payment_method_kind": "DRG_MANDATORY",
     "current_billing": "itemized",
     "package_total_try": 7169.6,
-    "itemized_total_try": 2444.76,
-    "savings_try": 4724.84,
+    "itemized_total_try": 2444.74,
+    "savings_try": 4724.86,
     "sut_section_id": "2.2.1.B-1.a",
-    "detail": "SUT §2.2 mandates package billing for claim C-SH20 (EK-2/C procedure present). Package total 7169.60 TRY vs itemized 2444.76 TRY."
+    "detail": "SUT §2.2 mandates package billing for claim C-SH20 (EK-2/C procedure present). Package total 7169.60 TRY vs itemized 2444.74 TRY."
    }
   ],
   "report": {
-   "sgk_uplift_try": 4724.84,
+   "sgk_uplift_try": 4724.86,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
@@ -130,7 +130,7 @@
    "billing_strategy",
    "mandatory_compliance",
    "P603840",
-   4724.84
+   4724.86
   ]
  ],
  "only_in_clean": [],

@@ -3,7 +3,7 @@
 EK-2/B gives 510010, 510070, 510081 and 510090 the same text, "Yemek, yatak, hasta vizit hizmetlerini kapsar":
 they are alternatives for one patient-day, which the project already holds for 510090 against 510010
 (`prose_rules/yatak_icu_overlap.py`). Before this step a newborn stay was counted twice: 3 days of Kuvöz
-(1,322.94 TL) and the same 3 days of standard bed (667.08 TL) both entered `sgk_uplift_try`.
+(1,322.94 TL) and the same 3 days of standard bed (667.05 TL) both entered `sgk_uplift_try`.
 
 The bills are built in memory; amounts are read from the engine's own opportunities, never typed here.
 """
@@ -117,7 +117,7 @@ class TestPipeline:
     @pytest.mark.parametrize("bed_code", ["510070", "510081"])
     def test_a_newborn_bed_billed_in_full_does_not_make_the_standard_bed_look_unbilled(self, bed_code: str) -> None:
         """The reverse bill: the stay is paid by the newborn bed lines, so no standard-bed day is missing."""
-        expected = {"510070": "1322.94", "510081": "933.90"}[bed_code]
+        expected = {"510070": "1322.94", "510081": "933.87"}[bed_code]
         report = _report(newborn=True, bed_code=bed_code, bed_billed=expected)
 
         assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
@@ -133,28 +133,28 @@ class TestPipeline:
         assert report.yenidogan_yatak.opportunities == []
         [standard] = report.yatak_puani.opportunities
         assert standard["bed_days"] == 3
-        assert standard["expected_yatak_try"] == pytest.approx(667.08, abs=0.005)
-        assert standard["recoverable_uplift_try"] == pytest.approx(667.08, abs=0.005)
+        assert standard["expected_yatak_try"] == pytest.approx(667.05, abs=0.005)
+        assert standard["recoverable_uplift_try"] == pytest.approx(667.05, abs=0.005)
         assert "newborn_overlap_days" not in standard
-        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(667.08, abs=0.005)
+        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(667.05, abs=0.005)
 
     def test_a_stay_billed_on_the_standard_bed_is_the_standard_bed_motors_alone(self) -> None:
         """The claim has stated its bed (510010): the newborn motor stands down, the standard-bed motor nets
         its own lines. Before, a correctly billed stay still got a full Kuvöz row (1,322.94 on 3 days)."""
-        report = _report(newborn=True, standard_bed_billed="667.08")
+        report = _report(newborn=True, standard_bed_billed="667.05")
 
         assert report.yenidogan_yatak.opportunities == []
         [standard] = report.yatak_puani.opportunities
-        assert (standard["bed_days"], standard["actual_billed_try"]) == (3, pytest.approx(667.08, abs=0.005))
+        assert (standard["bed_days"], standard["actual_billed_try"]) == (3, pytest.approx(667.05, abs=0.005))
         assert standard["recoverable_uplift_try"] == 0.0
         assert "newborn_overlap_days" not in standard
         assert not [a for a in report.recommended_actions if a["surface"] in ("yenidogan_yatak", "yatak_puani")]
 
     def test_a_partly_billed_standard_bed_leaves_the_unbilled_standard_bed_days(self) -> None:
-        report = _report(newborn=True, standard_bed_billed="222.36", standard_bed_units=1)
+        report = _report(newborn=True, standard_bed_billed="222.35", standard_bed_units=1)
 
         assert report.yenidogan_yatak.opportunities == []
-        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(2 * 222.36, abs=0.005)
+        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(2 * 222.35, abs=0.005)
 
     def test_a_stay_billed_incubator_then_standard_bed_exactly_leaves_nothing_on_both_motors(self) -> None:
         """The reviewer's cliff: 2 Kuvöz days then 8 standard-bed days, billed exactly. The newborn motor owns the
@@ -162,7 +162,7 @@ class TestPipeline:
         version of the stand-down expected 8 x 440.98 = 3,527.84 Kuvöz beside the billed 510010)."""
         report = _report(
             newborn=True, days=10, bed_code="510070", bed_billed="881.96", bed_units=2,
-            standard_bed_billed="1778.88", standard_bed_units=8, standard_bed_start_day=2,
+            standard_bed_billed="1778.80", standard_bed_units=8, standard_bed_start_day=2,
         )
 
         [newborn] = report.yenidogan_yatak.opportunities
@@ -171,7 +171,7 @@ class TestPipeline:
         assert newborn["recoverable_uplift_try"] == 0.0
         # The standard bed keeps the 8 days it was billed for and nets them: nothing left.
         assert (standard["gross_bed_days"], standard["bed_days"], standard["newborn_overlap_days"]) == (10, 8, 2)
-        assert standard["actual_billed_try"] == pytest.approx(1778.88, abs=0.005)
+        assert standard["actual_billed_try"] == pytest.approx(1778.80, abs=0.005)
         assert standard["recoverable_uplift_try"] == 0.0
         assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == 0.0
         assert report.yatak_puani.confirmed_yatak_try == 0.0
@@ -181,7 +181,7 @@ class TestPipeline:
         """Kuvöz for 1 day and standard bed for 3 of 10 days: 6 days are unbilled and expected once, as Kuvöz."""
         report = _report(
             newborn=True, days=10, bed_code="510070", bed_billed="440.98", bed_units=1,
-            standard_bed_billed="667.08", standard_bed_units=3, standard_bed_start_day=1,
+            standard_bed_billed="667.05", standard_bed_units=3, standard_bed_start_day=1,
         )
 
         assert report.yenidogan_yatak.confirmed_yenidogan_yatak_try == pytest.approx(6 * 440.98, abs=0.01)
@@ -220,7 +220,7 @@ class TestPipeline:
         """Review F1, kept: billed on the standard bed, as a pediatric stay is, it shows no Kuvöz row. (A pediatric
         ward is no newborn signal since the detection was narrowed; the stand-down on a billed standard bed is
         pinned for a real newborn signal by `test_a_stay_billed_on_the_standard_bed_is_the_standard_bed_motors_alone`.)"""
-        report = _report(newborn=False, department=department, icd10="J18.9", standard_bed_billed="667.08")
+        report = _report(newborn=False, department=department, icd10="J18.9", standard_bed_billed="667.05")
 
         assert report.yenidogan_yatak.opportunities == []
         assert report.yatak_puani.confirmed_yatak_try == 0.0
@@ -239,8 +239,8 @@ class TestPipeline:
         [standard] = report.yatak_puani.opportunities
         assert (standard["gross_bed_days"], standard["bed_days"]) == (3, 3)
         assert "newborn_overlap_days" not in standard
-        assert standard["recoverable_uplift_try"] == pytest.approx(667.08, abs=0.005)
-        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(667.08, abs=0.005)
+        assert standard["recoverable_uplift_try"] == pytest.approx(667.05, abs=0.005)
+        assert report.yatak_puani.confirmed_yatak_try == pytest.approx(667.05, abs=0.005)
         assert not [a for a in report.recommended_actions if a["surface"] == "yenidogan_yatak"]
 
     @pytest.mark.parametrize("department", ["YENİDOĞAN", "YENIDOGAN", "Yenidogan", "Neonatoloji", "NEONATOLOJİ"])
@@ -269,7 +269,7 @@ class TestPipeline:
         assert not [a for a in report.recommended_actions if a["surface"] == "yatak_puani"]
 
 
-def _yatak_opportunity(claim_id: str, *, bed_days: int = 5, billed: float = 0.0, rate: float = 222.36) -> dict[str, Any]:
+def _yatak_opportunity(claim_id: str, *, bed_days: int = 5, billed: float = 0.0, rate: float = 222.35) -> dict[str, Any]:
     expected = round(bed_days * rate, 2)
     return {
         "type": "yatak_puani_standard_bed",
@@ -307,20 +307,20 @@ class TestReconcile:
 
         first, second = result.opportunities
         assert first["bed_days"] == 2 and first["newborn_overlap_days"] == 3
-        assert first["expected_yatak_try"] == pytest.approx(444.72, abs=0.005)
-        assert first["recoverable_uplift_try"] == pytest.approx(444.72, abs=0.005)
+        assert first["expected_yatak_try"] == pytest.approx(444.70, abs=0.005)
+        assert first["recoverable_uplift_try"] == pytest.approx(444.70, abs=0.005)
         assert second is other  # untouched, same object
 
     def test_the_recoverable_amount_is_recomputed_net_of_the_billed_standard_bed(self) -> None:
-        opp = _yatak_opportunity("C1", bed_days=5, billed=222.36)
+        opp = _yatak_opportunity("C1", bed_days=5, billed=222.35)
 
         [adjusted] = reconcile_yatak_newborn_overlap(
             _yatak_review(opp), _newborn_review({"claim_id": "C1", "days": 3})
         ).opportunities
 
-        assert adjusted["expected_yatak_try"] == pytest.approx(444.72, abs=0.005)
-        assert adjusted["actual_billed_try"] == pytest.approx(222.36, abs=0.005)
-        assert adjusted["recoverable_uplift_try"] == pytest.approx(222.36, abs=0.005)
+        assert adjusted["expected_yatak_try"] == pytest.approx(444.70, abs=0.005)
+        assert adjusted["actual_billed_try"] == pytest.approx(222.35, abs=0.005)
+        assert adjusted["recoverable_uplift_try"] == pytest.approx(222.35, abs=0.005)
 
     def test_more_newborn_days_than_bed_days_floors_at_zero_and_reports_the_days_removed(self) -> None:
         [adjusted] = reconcile_yatak_newborn_overlap(
@@ -347,8 +347,8 @@ class TestReconcile:
             _newborn_review({"claim_id": "C1", "days": 3}),
         ).opportunities
 
-        assert adjusted["expected_yatak_try"] == pytest.approx(222.36, abs=0.005)
-        assert adjusted["recoverable_uplift_try"] == pytest.approx(222.36, abs=0.005)  # was 266.83
+        assert adjusted["expected_yatak_try"] == pytest.approx(222.35, abs=0.005)
+        assert adjusted["recoverable_uplift_try"] == pytest.approx(222.35, abs=0.005)  # was 266.83
 
     @pytest.mark.parametrize(
         "yatak,newborn",
@@ -453,7 +453,7 @@ class TestIcuTransferDay:
 
 # --- SUT §2.2.2.(3): a stay under 24 hours is billed at the day bed 510120 (44.45 TRY) ----------------------
 # A stay of one date (admission date == discharge date) is certainly under 24 hours. Both bed motors price its one
-# day at the day bed, not as a full 510010 (222.36) or Kuvöz (440.98) day, and no day is counted twice.
+# day at the day bed, not as a full 510010 (222.35) or Kuvöz (440.98) day, and no day is counted twice.
 
 
 def _one_date_context(
@@ -548,7 +548,7 @@ class TestStayUnder24Hours:
         assert report.sgk_uplift_try == pytest.approx(24.45, abs=0.005)
 
     def test_a_stay_billed_as_a_full_standard_day_leaves_nothing(self) -> None:
-        report = _one_date_report((("510010", "222.36"),))
+        report = _one_date_report((("510010", "222.35"),))
 
         assert report.yenidogan_yatak.opportunities == []
         [standard] = report.yatak_puani.opportunities
@@ -558,7 +558,7 @@ class TestStayUnder24Hours:
 
     @pytest.mark.parametrize(
         ("code", "billed", "recoverable"),
-        [("510070", "440.98", 0.0), ("510081", "311.30", 0.0), ("510070", "20.00", 24.45)],
+        [("510070", "440.98", 0.0), ("510081", "311.29", 0.0), ("510070", "20.00", 24.45)],
     )
     def test_a_newborn_bed_billed_for_a_stay_of_one_date_is_netted_against_the_day_bed(
         self, code: str, billed: str, recoverable: float
@@ -595,7 +595,7 @@ class TestStayUnder24Hours:
 
     def test_a_unit_named_as_an_icu_with_nothing_billed_keeps_its_day_on_the_standard_bed_at_the_day_bed(self) -> None:
         """The stated limit of the ICU department gate (the standard-bed motor reads no department): the newborn
-        motor stands down and the standard bed still counts the day, now at the day bed (was 222.36)."""
+        motor stands down and the standard bed still counts the day, now at the day bed (was 222.35)."""
         report = _one_date_report(department="Yenidoğan Yoğun Bakım", icd10="P22.0")
 
         assert report.yenidogan_yatak.opportunities == []
@@ -605,7 +605,7 @@ class TestStayUnder24Hours:
 
     @pytest.mark.parametrize(
         ("lines", "recoverable"),
-        [((), 44.45), ((("510120", "44.45"),), 0.0), ((("510120", "20.00"),), 24.45), ((("510010", "222.36"),), 0.0)],
+        [((), 44.45), ((("510120", "44.45"),), 0.0), ((("510120", "20.00"),), 24.45), ((("510010", "222.35"),), 0.0)],
         ids=["nothing", "day-bed-in-full", "day-bed-in-part", "standard-in-full"],
     )
     def test_an_adult_stay_of_one_date_is_the_standard_bed_motors_at_the_day_bed(
@@ -622,7 +622,7 @@ class TestStayUnder24Hours:
 
     @pytest.mark.parametrize("newborn", [True, False])
     def test_a_stay_of_two_dates_is_untouched(self, newborn: bool) -> None:
-        """Control: 2 days, nothing billed (Kuvöz 2 x 440.98 for a newborn, 2 x 222.36 standard for an adult)."""
+        """Control: 2 days, nothing billed (Kuvöz 2 x 440.98 for a newborn, 2 x 222.35 standard for an adult)."""
         report = _report(newborn=newborn, days=2)
 
         if newborn:
@@ -632,7 +632,7 @@ class TestStayUnder24Hours:
         else:
             [row] = report.yatak_puani.opportunities
             assert (row["bed_code"], row["bed_days"], row["same_day_stay"]) == ("510010", 2, False)
-            assert row["expected_yatak_try"] == pytest.approx(444.72, abs=0.005)
+            assert row["expected_yatak_try"] == pytest.approx(444.70, abs=0.005)
 
     @pytest.mark.parametrize("scope", ["patient", "bill"])
     @pytest.mark.parametrize("newborn", [True, False])

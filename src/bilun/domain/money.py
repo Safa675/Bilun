@@ -7,9 +7,15 @@ with that pattern:
 1. **DRY violation** — the same 3-line helper was copy-pasted into 15
    modules, drifting in signature (some ``float``, some ``float | None``).
 2. **Banker's rounding** — Python's built-in ``round()`` uses round-half-
-   to-even (banker's rounding), which has no SUT citation. SGK money math
-   should use round-half-up (ROUND_HALF_UP), matching the canonical parser
-   idiom in ``claims/parsing/primitives.py`` (``CENT`` / ``ROUND_HALF_UP``).
+   to-even (banker's rounding), which has no SUT citation. The other money
+   math here uses round-half-up (ROUND_HALF_UP), matching the canonical parser
+   idiom in ``claims/parsing/primitives.py`` (``CENT`` / ``ROUND_HALF_UP``);
+   no SUT clause names that rounding either.
+
+A list price is different: SUT 2.2.(15) (C000544) takes the EK-2/B, EK-2/C and
+EK-2/Ç price as puan × katsayı "yuvarlama işlemi yapılmaksızın virgülden sonra
+iki basamak olacak şekilde", i.e. cut at the kuruş, never rounded (#299):
+:func:`puan_price_try` (510010: 374.97 × 0.593 = 222.35721 is 222.35).
 
 The helper returns ``Decimal`` (the domain ``Money`` type) rather than
 ``float`` to avoid float representation error on the shaped value. Callers
@@ -19,10 +25,15 @@ that need JSON serialization cast to float at the serialization boundary
 
 from __future__ import annotations
 
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_DOWN, ROUND_HALF_EVEN, ROUND_HALF_UP
 from typing import Union
 
 CENT = Decimal("0.01")
+# A puan × katsayı product is exact at nine decimals for every puan written with up to six. The 2020
+# and 2021 EK-2/B, EK-2/C and EK-2/Ç lists hold the puan as the float of TL ÷ 0.593 (55.6492411467116
+# for 33.00 TL), whose product misses its TL amount by the float's error (below 1e-10 TL): the
+# product is taken to nine decimals before the cut, so that error never costs a kuruş.
+_PUAN_PRODUCT_PLACES = Decimal("1e-9")
 
 # Accept anything that represents a money value; int/float come from
 # upstream parquet/JSON loads, Decimal/str from domain math.
@@ -81,3 +92,19 @@ def money_round_half_up_opt(value: MoneyInput | None) -> float | None:
     """
     result = quantize_money(value)
     return float(result) if result is not None else None
+
+
+def puan_price_try(puan: MoneyInput, katsayi: MoneyInput) -> float:
+    """TL price of a puan: puan × katsayı cut at the kuruş, SUT 2.2.(15) (C000544).
+
+    "İşlem puanının belirtilen katsayı ile çarpılması sonucu bulunacak tutar yuvarlama işlemi
+    yapılmaksızın virgülden sonra iki basamak olacak şekilde alınır": 374.97 × 0.593 =
+    222.35721 is 222.35 and 11,325 × 0.593 = 6,715.725 is 6,715.72 (a rounding gives 222.36 and
+    6,715.73). The product is computed on the decimal values as written (a float by its shortest
+    repr), so no binary error moves a cut; see ``_PUAN_PRODUCT_PLACES`` for the old lists' floats.
+    Use it for every puan × katsayı product (the EK-2/B, EK-2/C and EK-2/Ç builders, the engine's
+    own copies); a share or a sum of such prices is other money (:func:`money_round_half_up`).
+    """
+    product = Decimal(str(puan)) * Decimal(str(katsayi))
+    product = product.quantize(_PUAN_PRODUCT_PLACES, rounding=ROUND_HALF_EVEN)
+    return float(product.quantize(CENT, rounding=ROUND_DOWN))
