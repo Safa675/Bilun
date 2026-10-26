@@ -21,7 +21,11 @@ from src.bilun.domain.materials.exclusions import (
 )
 from src.bilun.domain.loaders.validity import service_date_of
 from src.bilun.domain.money import money_round_half_up as _money
-from src.bilun.domain.pricing.material_kdv import ek3_payable_ceiling_try
+from src.bilun.domain.pricing.material_kdv import (
+    DEFAULT_MATERIAL_KDV_RATE,
+    ek3_payable_ceiling_try,
+    material_line_kdv_rate,
+)
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
 
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
@@ -55,12 +59,13 @@ def _line_billed(line: ProcedureClaimLine) -> bool:
     return float(line.billed_amount_try) > 0
 
 
-def _material_billed_amount(
+def _linked_material_line(
     material_lines: list[MaterialClaimLine],
     *,
     procedure_line_id: str,
     material_code: str,
-) -> float:
+) -> MaterialClaimLine | None:
+    """The line billed most for ``material_code`` on the procedure line, the lower KDV rate on a tie (#298)."""
     code = str(material_code or "").strip().upper()
     linked = [
         line
@@ -69,8 +74,8 @@ def _material_billed_amount(
         and str(line.material_code or "").strip().upper() == code
     ]
     if not linked:
-        return 0.0
-    return max(float(line.billed_amount_try) for line in linked)
+        return None
+    return max(linked, key=lambda line: (float(line.billed_amount_try), -material_line_kdv_rate(line)[0]))
 
 
 def _claim_foreign_facility(
@@ -122,6 +127,7 @@ def _price_material_uplift(
     *,
     foreign_facility: bool,
     as_of: Any = None,
+    kdv_rate: float = DEFAULT_MATERIAL_KDV_RATE,
 ) -> tuple[float | None, str]:
     ex_vat = lookup_ek3_list_price_try(material_code, as_of)
     if ex_vat is None or float(ex_vat) <= 0:
@@ -129,6 +135,7 @@ def _price_material_uplift(
     ceiling = ek3_payable_ceiling_try(
         float(ex_vat),
         foreign_facility=foreign_facility,
+        kdv_rate=kdv_rate,
     )
     if ceiling is None or ceiling <= 0:
         return None, "catalog_price_missing"
@@ -144,6 +151,9 @@ def detect_missing_billable_material_opportunities(
 
     The material's EK-3 membership, separate-billing marker and list price are read
     on the procedure line's date, the claim's date when the line has none (#292).
+    The ceiling adds the KDV rate the linked line billed most declares (MEDULA
+    ``kdv``, SUT 3.2.1.C(1)); a material not billed, or a line that declares no
+    rate, keeps the 20 % default and the row says so (``kdv_rate_declared``, #298).
     """
     rules_index = _rules_by_procedure()
     if not rules_index:
@@ -170,10 +180,16 @@ def detect_missing_billable_material_opportunities(
                 if dedupe_key in seen:
                     continue
 
-                billed = _material_billed_amount(
+                linked = _linked_material_line(
                     claim_materials,
                     procedure_line_id=proc.procedure_line_id,
                     material_code=code,
+                )
+                billed = float(linked.billed_amount_try) if linked is not None else 0.0
+                kdv_rate, kdv_declared = (
+                    material_line_kdv_rate(linked)
+                    if linked is not None
+                    else (DEFAULT_MATERIAL_KDV_RATE, False)
                 )
 
                 eligible, _skip_reason = _material_eligible_for_uplift(
@@ -189,6 +205,7 @@ def detect_missing_billable_material_opportunities(
                     code,
                     foreign_facility=foreign_facility,
                     as_of=day,
+                    kdv_rate=kdv_rate,
                 )
                 if ceiling is None or ceiling <= 0:
                     continue
@@ -228,6 +245,8 @@ def detect_missing_billable_material_opportunities(
                         "recoverable_uplift_try": recoverable,
                         "ceiling_try": ceiling,
                         "list_price_try": lookup_ek3_list_price_try(code, day),
+                        "kdv_rate": 0.0 if foreign_facility else kdv_rate,
+                        "kdv_rate_declared": kdv_declared,
                         "price_methodology": price_methodology,
                         "included_in_sgk_total": True,
                         "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,

@@ -23,7 +23,10 @@ metadata when those inputs are missing.
 ## Modules
 
 - `temporal.py` — dated EK-2B/EK-2C catalog lookups and history helpers
-- `material_kdv.py` — EK-3 payable ceiling helpers
+- `material_kdv.py` — EK-3 payable ceiling helpers: the ex-KDV list price plus the KDV rate the line declares
+  (MEDULA `kdv`, `MaterialClaimLine.kdv_percent`; SGK adds the rate entered in its system, SUT 3.2.1.C(1), C002886),
+  20 % when the line declares none, and the KDV review and missing-material uplift rows then carry
+  `kdv_rate_declared: false` (#298)
 
 ## Dependencies
 

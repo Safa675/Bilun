@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from math import isnan
+from numbers import Integral
 from typing import Any
 
 from src.bilun.domain.claims.models import Money
@@ -127,6 +128,39 @@ def parse_decimal_quantity(value: Any, field: str, row_id: str, errors: list[str
     except ValueError:
         errors.append(f"{row_id} invalid decimal {field}: {value!r}")
         return Decimal("0")
+
+
+def kdv_percent(value: Any) -> int | None:
+    """A declared material KDV rate as MEDULA keys it (``MalzemeBilgisiDVO.kdv``): a whole percent, 0 to 100 (#298).
+
+    None, NaN and a blank text declare no rate (None). An integer, a whole float or Decimal, or a text holding one is
+    the percent (10 = 10 %). Raises ``ValueError`` for a bool, a fraction (0.1, 10.5), a text that is no number, or a
+    value outside 0-100.
+    """
+    if is_missing(value) or (isinstance(value, str) and not value.strip()):
+        return None
+    if isinstance(value, bool):
+        raise ValueError(value)
+    try:
+        if isinstance(value, Integral):
+            number = Decimal(int(value))
+        elif isinstance(value, float):
+            number = Decimal(repr(float(value)))
+        else:  # a Decimal, or a text: Decimal ignores the spaces around it
+            number = Decimal(value)
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ValueError(value) from exc
+    if not number.is_finite() or number != number.to_integral_value() or not 0 <= number <= 100:
+        raise ValueError(value)
+    return int(number)
+
+
+def optional_kdv_percent(value: Any, row_id: str, errors: list[str], field: str = "kdv_percent") -> int | None:
+    try:
+        return kdv_percent(value)
+    except ValueError:
+        errors.append(f"{row_id} invalid {field}: {value!r}")
+        return None
 
 
 def parse_money(row: RowDict, field: str, row_id: str, errors: list[str]) -> Money:

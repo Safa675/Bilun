@@ -773,6 +773,8 @@ export interface MaterialPreCheck extends ExactnessState {
     gazette_ceiling_try?: number;
     kdv_applied?: boolean;
     kdv_rate?: number;
+    /** False: the line declares no KDV rate (MEDULA `kdv`) and is priced at the 20 % default (#298). */
+    kdv_rate_declared?: boolean;
     note?: string;
   }>;
   gazette_ceiling_by_specialty: Record<string, number>;
@@ -840,6 +842,9 @@ export interface MaterialUplift extends ExactnessState {
     actual_billed_try?: number;
     recoverable_uplift_try?: number;
     list_price_try?: number;
+    /** The KDV rate of the ceiling: the linked line's declared rate, else the 20 % default (#298). */
+    kdv_rate?: number;
+    kdv_rate_declared?: boolean;
     price_methodology?: string;
     savings_basis?: string;
     savings_category?: string;

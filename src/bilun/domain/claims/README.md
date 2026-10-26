@@ -35,7 +35,10 @@ Required Parquet tables (see `schema.REQUIRED_CLAIM_TABLES`):
   unavailable, Safa675/Bilun#335)
 - `claim_diagnoses.parquet`
 - `procedure_claim_lines.parquet`
-- `material_claim_lines.parquet`
+- `material_claim_lines.parquet` (its optional column `kdv_percent` is the KDV rate the facility declares on the
+  line, MEDULA `MalzemeBilgisiDVO.kdv`: a whole percent from 0 to 100, 10 for an implant; null or absent declares
+  none and the engine prices the line at the 20 % default; a fraction such as 0.1, a text that is no number or a
+  value outside 0-100 refuses the dataset, Safa675/Bilun#298)
 - `drug_claim_lines.parquet` (its `quantity` is a whole or decimal count: an integer, a float or a text such as
   "0,5" or "1.5" loads as a `Decimal`, since MEDULA keys the used part of a box, Safa675/Bilun#302; procedure and
   material quantities stay integers)

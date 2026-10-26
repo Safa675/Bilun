@@ -34,6 +34,7 @@ from src.bilun.domain.claims.parsing.primitives import (
     optional_bool,
     optional_date,
     optional_integer,
+    optional_kdv_percent,
     optional_money,
     optional_string_records,
     parse_bool,
@@ -70,6 +71,7 @@ _MATERIAL_EXPLICIT_FIELDS = frozenset(
         "medical_necessity_board_report",
         "treating_physician_different_from_board_signatory",
         "patient_in_first_degree_relative_of_physician",
+        "kdv_percent",
     }
 )
 
@@ -356,6 +358,7 @@ def parse_material_line(row: RowDict, errors: list[str]) -> MaterialClaimLine | 
             patient_in_first_degree_relative_of_physician=optional_bool(
                 row.get("patient_in_first_degree_relative_of_physician")
             ),
+            kdv_percent=optional_kdv_percent(row.get("kdv_percent"), line_id, errors),
             **_material_prose_bool_kwargs(row),
         )
     except KeyError as exc:
