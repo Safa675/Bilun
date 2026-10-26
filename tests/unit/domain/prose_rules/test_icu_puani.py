@@ -17,7 +17,15 @@ from decimal import Decimal
 
 import pytest
 
+from tests.unit._helpers.catalog_prices import list_puan, list_text
+
 pytestmark = pytest.mark.unit
+
+# The ICU puans of the list in force on 10 July 2026 (curated catalog histories): the day rate 510090 and the
+# intermediate-day packages P552001 (1st basamak) and P552003 (3rd basamak).
+_DAY_RATE_PUAN = list_puan("510090", "2026-07-10")
+_P552001_PUAN = list_puan("P552001", "2026-07-10")
+_P552003_PUAN = list_puan("P552003", "2026-07-10")
 
 
 def _make_claim_header(
@@ -115,9 +123,9 @@ def test_3day_icu_stay_dual_charge() -> None:
     assert opp["sut_section_id"] == "2.4.4.H"
     assert opp["included_in_sgk_total"] is True
 
-    # Puan: 2 × 1252.27 (first+last) + 1 × 12896.186 (intermediate) × 2.0
-    # (EK-2/C-1 ilave oran +100% for Sınıf-3 facility) = 28296.902
-    assert opp["total_puan"] == pytest.approx(28296.90, abs=0.01)
+    # Puan: 2 × 510090 (first+last) + 1 × P552003 (intermediate) × 2.0
+    # (EK-2/C-1 ilave oran +100% for Sınıf-3 facility)
+    assert opp["total_puan"] == pytest.approx(2 * _DAY_RATE_PUAN + 2.0 * _P552003_PUAN, abs=0.01)
     # recoverable uplift = total TRY minus actual billed ICU amounts.
     # The fixture bills 510090 (742.60) + P552003 (742.60) = 1485.20 already.
     assert opp["actual_billed_try"] == pytest.approx(1485.20, abs=0.01)
@@ -145,7 +153,7 @@ def test_1day_icu_stay_single_day_rate() -> None:
     assert opp["intermediate_days"] == 0
     assert opp["same_day_stay"] is True
     # Only one 510090 day (first=last).
-    assert opp["total_puan"] == pytest.approx(1252.27, abs=0.01)
+    assert opp["total_puan"] == pytest.approx(_DAY_RATE_PUAN, abs=0.01)
 
 
 def test_2day_icu_stay_two_day_rates_no_intermediate() -> None:
@@ -167,8 +175,7 @@ def test_2day_icu_stay_two_day_rates_no_intermediate() -> None:
     opp = opps[0]
     assert opp["icu_days"] == 2
     assert opp["intermediate_days"] == 0
-    # 2 × 1252.27 = 2504.54
-    assert opp["total_puan"] == pytest.approx(2504.54, abs=0.01)
+    assert opp["total_puan"] == pytest.approx(2 * _DAY_RATE_PUAN, abs=0.01)
 
 
 def test_outpatient_claim_skipped() -> None:
@@ -260,8 +267,8 @@ def test_basamak_inferred_from_submitted_package() -> None:
     assert opp["icu_days"] == 4
     assert opp["intermediate_days"] == 2
     assert opp["intermediate_package"] == "P552001"
-    # 2 × 1252.27 + 2 × 3221.799 × 2.0 (ilave oran +100% Sınıf-3) = 15391.738
-    assert opp["total_puan"] == pytest.approx(15391.74, abs=0.01)
+    # 2 × 510090 + 2 × P552001 × 2.0 (ilave oran +100% Sınıf-3)
+    assert opp["total_puan"] == pytest.approx(2 * _DAY_RATE_PUAN + 2 * _P552001_PUAN * 2.0, abs=0.01)
 
 
 # ── EK-2/C-1 ilave oran tests ──────────────────────────────────────────────
@@ -296,8 +303,8 @@ def test_ilave_oran_applied_sinif_3() -> None:
         opp["intermediate_puan_base"] * 2.0
     )
     # Base puan is the raw EK-2C value; uplifted is doubled.
-    assert opp["intermediate_puan_base"] == pytest.approx(12896.186, abs=0.01)
-    assert opp["intermediate_puan_uplifted"] == pytest.approx(25792.372, abs=0.01)
+    assert opp["intermediate_puan_base"] == pytest.approx(_P552003_PUAN, abs=0.01)
+    assert opp["intermediate_puan_uplifted"] == pytest.approx(2 * _P552003_PUAN, abs=0.01)
 
 
 def test_no_uplift_2nd_basamak() -> None:
@@ -328,8 +335,8 @@ def test_no_uplift_2nd_basamak() -> None:
     assert opp["intermediate_puan_uplifted"] == pytest.approx(
         opp["intermediate_puan_base"]
     )
-    # Puan at base (no ×2.0): 2 × 1252.27 + 1 × 12896.186 = 15400.726
-    assert opp["total_puan"] == pytest.approx(15400.73, abs=0.01)
+    # Puan at base (no ×2.0): 2 × 510090 + 1 × P552003
+    assert opp["total_puan"] == pytest.approx(2 * _DAY_RATE_PUAN + _P552003_PUAN, abs=0.01)
 
 
 def test_no_uplift_unresolved_tier() -> None:
@@ -360,7 +367,7 @@ def test_no_uplift_unresolved_tier() -> None:
         opp["intermediate_puan_base"]
     )
     # Puan at base (no uplift).
-    assert opp["total_puan"] == pytest.approx(15400.73, abs=0.01)
+    assert opp["total_puan"] == pytest.approx(2 * _DAY_RATE_PUAN + _P552003_PUAN, abs=0.01)
 
 
 # ── Wrapper test ───────────────────────────────────────────────────────────
@@ -437,14 +444,21 @@ def test_ward_stay_with_3day_icu_segment_does_not_count_14_hospital_days() -> No
         facility_tier="2_basamak_kamu",
     )
     procs = [
-        _make_proc_line(procedure_line_id="ISL-1", procedure_code="510090", billed_amount_try=Decimal("742.59")),
+        # Each ICU line billed at its list price on the admission day.
+        _make_proc_line(
+            procedure_line_id="ISL-1", procedure_code="510090",
+            billed_amount_try=Decimal(list_text("510090", "2026-07-01")),
+        ),
         _make_proc_line(
             procedure_line_id="ISL-2",
             procedure_code="P552001",
             procedure_name="Birinci basamak yogun bakim",
-            billed_amount_try=Decimal("1910.55"),
+            billed_amount_try=Decimal(list_text("P552001", "2026-07-01")),
         ),
-        _make_proc_line(procedure_line_id="ISL-3", procedure_code="510090", billed_amount_try=Decimal("742.59")),
+        _make_proc_line(
+            procedure_line_id="ISL-3", procedure_code="510090",
+            billed_amount_try=Decimal(list_text("510090", "2026-07-01")),
+        ),
     ]
     opps = detect_icu_puani_opportunities(
         [header], procs, claim_ids_with_procs={"C1"}

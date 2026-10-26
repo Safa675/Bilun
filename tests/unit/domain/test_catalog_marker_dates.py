@@ -23,6 +23,7 @@ from src.bilun.domain.prose_rules.catalog_membership import (
     get_ek2c_entry,
     procedure_annex_membership,
 )
+from tests.unit._helpers.catalog_prices import list_price, list_puan
 
 pytestmark = pytest.mark.unit
 
@@ -37,8 +38,8 @@ def test_p609541_does_not_match_a_claim_dated_before_2026_10_10(day: str) -> Non
 
 def test_p609541_matches_from_2026_10_10() -> None:
     assert procedure_annex_membership("P609541", as_of_date="2026-10-10") == (True, True)
-    assert get_ek2c_price_for_date("P609541", "2026-10-10") == pytest.approx(127499.25)
-    assert get_ek2b_price_for_date("609541", "2026-10-10", "puan") == pytest.approx(25278.02)
+    assert get_ek2c_price_for_date("P609541", "2026-10-10") == pytest.approx(list_price("P609541", "2026-10-10"))
+    assert get_ek2b_price_for_date("609541", "2026-10-10", "puan") == pytest.approx(list_puan("609541", "2026-10-10"))
 
 
 def test_row_marked_05_09_2026_in_the_2026_07_07_list_applies_from_that_date() -> None:

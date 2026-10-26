@@ -10,38 +10,24 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from tests.unit._helpers.catalog_prices import list_puan
+
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
 _LINES = _REPO / "data/synthetic/sut/claims/procedure_claim_lines.parquet"
-_CURATED = _REPO / "data/gazette/curated"
 
 
 def _cut(puan: float) -> float:
     return math.floor((Fraction(str(puan)) * Fraction(593, 1000) + Fraction(1, 10**9)) * 100) / 100
 
 
-def _puan_on(lists: dict[str, pl.DataFrame], code: str, day: str) -> float:
-    frame, key = (lists["EK-2C"], "package_code") if code.startswith("P") else (lists["EK-2B"], "code")
-    rows = frame.filter(
-        (pl.col(key) == code)
-        & (pl.col("valid_from") <= day)
-        & (pl.col("valid_to").is_null() | (pl.col("valid_to") >= day))
-    )
-    assert rows.height == 1, (code, day, rows.height)
-    return rows["puan"][0]
-
-
 def test_every_committed_procedure_line_is_priced_at_its_puan_cut_at_the_kurus() -> None:
-    lists = {
-        "EK-2B": pl.read_parquet(_CURATED / "ek2b_catalog_history.parquet"),
-        "EK-2C": pl.read_parquet(_CURATED / "ek2c_catalog_history.parquet"),
-    }
     lines = pl.read_parquet(_LINES, columns=["claim_id", "procedure_date", "procedure_code", "unit_price_try"])
     wrong = [
         (row["claim_id"], row["procedure_code"], row["unit_price_try"], price)
         for row in lines.iter_rows(named=True)
-        if row["unit_price_try"] != (price := _cut(_puan_on(lists, row["procedure_code"], row["procedure_date"])))
+        if row["unit_price_try"] != (price := _cut(list_puan(row["procedure_code"], row["procedure_date"])))
     ]
     assert lines.height > 200
     assert wrong == []

@@ -9,6 +9,7 @@ import pytest
 
 from src.bilun.domain.claims.models import ClaimHeader, PerformedProcedureLine, ProcedureClaimLine
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
+from tests.unit._helpers.catalog_prices import list_price, list_text
 
 
 def _claim(**overrides) -> ClaimHeader:
@@ -122,15 +123,19 @@ class TestProcedureCaptureGap:
 
 # Clean showcase package bills (reports/synthetic-data/2026-10-15-showcase-proofs/
 # stories.py): admission, operation day, discharge, and the paket lines billed at
-# the EK-2C price in force on the operation day (S8's second operation at 25%).
+# the EK-2C price in force on the operation day (S8's second operation at 25%), read from the curated catalog
+# histories.
 _PACKAGE_BILLS: dict[str, tuple[date, date, date, tuple[tuple[str, str], ...]]] = {
-    "S1": (date(2026, 7, 14), date(2026, 7, 14), date(2026, 7, 16), (("P610131", "8636.51"),)),
-    "S5": (date(2026, 9, 3), date(2026, 9, 4), date(2026, 9, 8), (("P612320", "18390.80"),)),
+    "S1": (date(2026, 7, 14), date(2026, 7, 14), date(2026, 7, 16), (("P610131", list_text("P610131", "2026-07-14")),)),
+    "S5": (date(2026, 9, 3), date(2026, 9, 4), date(2026, 9, 8), (("P612320", list_text("P612320", "2026-09-04")),)),
     "S8": (
         date(2026, 9, 15),
         date(2026, 9, 15),
         date(2026, 9, 16),
-        (("P609235", "12065.73"), ("P603840", "1792.40")),
+        (
+            ("P609235", list_text("P609235", "2026-09-15")),
+            ("P603840", str((Decimal(list_text("P603840", "2026-09-15")) * Decimal("0.25")).quantize(Decimal("0.01")))),
+        ),
     ),
 }
 
@@ -215,14 +220,15 @@ class TestPackageLinesCountAsSubmitted:
         assert [(r["procedure_code"], r["price_methodology"]) for r in rows] == [
             ("609235", "ek2c_package_price")
         ]
-        # EK-2C P609235 on 2026-09-15; the EK-2B 609235 price would be 4,099.42.
-        assert rows[0]["recoverable_gap_try"] == pytest.approx(12065.73, abs=0.005)
+        # EK-2C P609235 on 2026-09-15, not the EK-2B 609235 price.
+        assert rows[0]["recoverable_gap_try"] == pytest.approx(list_price("P609235", "2026-09-15"), abs=0.005)
+        assert list_price("609235", "2026-09-15") != list_price("P609235", "2026-09-15")
 
 
 # Showcase S7 (stories.py s7): the ER lines its EMR/PACS log lists, at the EK-2B
 # price in force on 2026-02-19. The faulty bill leaves out CT angiography R101450.
 _S7_DAY = date(2026, 2, 19)
-_S7_LINES = (("530100", "16.66"), ("530080", "35.74"), ("801720", "44.75"), ("R101450", "1138.22"))
+_S7_LINES = tuple((code, list_text(code, _S7_DAY)) for code in ("530100", "530080", "801720", "R101450"))
 
 
 def _s7_bill(
@@ -275,7 +281,7 @@ class TestShowcaseS7CaptureGap:
         assert [
             (r["type"], r["procedure_code"], r["source"], r["price_methodology"]) for r in rows
         ] == [("performed_not_submitted", "R101450", "pacs", "ek2b_list_price")]
-        assert rows[0]["recoverable_gap_try"] == pytest.approx(1138.22, abs=0.005)
+        assert rows[0]["recoverable_gap_try"] == pytest.approx(list_price("R101450", _S7_DAY), abs=0.005)
 
     def test_clean_bill_has_no_gap(self) -> None:
         claim, performed, procs = _s7_bill(ct_billed=True)

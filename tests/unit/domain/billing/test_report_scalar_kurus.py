@@ -15,6 +15,7 @@ from src.bilun.domain.billing.patient_report import compute_patient_billing_repo
 from src.bilun.domain.billing.report_totals import finalize_report_totals
 from src.bilun.domain.billing.types import EXACTNESS_STATUS_EXACT, BillingActionReport
 from src.bilun.domain.claims.models import PerformedProcedureLine
+from tests.unit._helpers.catalog_prices import list_price
 from tests.unit.domain.billing.test_showcase_session_and_package_gaps import s7
 
 pytestmark = pytest.mark.unit
@@ -39,7 +40,7 @@ def test_s7_capture_gap_keeps_its_kurus() -> None:
     )
     ctx = replace(bill.ctx(), performed_procedure_lines=performed)
     report = compute_patient_billing_report(ctx.patient_id, claim_context=ctx)
-    assert report.capture_gap_try == 1138.22  # Was 1138: cast to int.
+    assert report.capture_gap_try == list_price("R101450", day)  # The CT's list price; was cast to int.
     assert isinstance(report.capture_gap_try, float)
 
 

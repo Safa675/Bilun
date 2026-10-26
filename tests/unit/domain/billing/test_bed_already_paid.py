@@ -2,10 +2,11 @@
 
 Follow-up of the day-bed change (tasks/todo.md, 2026-10-19). A one-date `yatis` claim that bills 530000 (EK-2/B: "Yatak,
 yemek, hasta vizit hizmetlerini kapsar. 510120, 530003 ile birlikte faturalandırılmaz.") or hemodialysis 704210 / 704230
-(SUT §2.4.4.D-1.(11): "gündüz yatak ücreti fiyata dâhil") showed a 44.45 TL day bed; a stay of several dates showed the
+(SUT §2.4.4.D-1.(11): "gündüz yatak ücreti fiyata dâhil") showed a day bed; a stay of several dates showed the
 510010 / Kuvöz days an ER bed (530000) or a special room (510100, 510110) had paid already. The bills are built in memory
-and run through `compute_patient_billing_report`; prices are those of the 2026-07-07 list (510010 222.35, 510070
-440.98, 510120 44.45), read back from the engine's own rows in the invariants.
+and run through `compute_patient_billing_report`; prices are those of the 2026-07-07 list (510010, 510070, 510120, the
+ICU day 510090 and package P552002), read from the curated catalog histories and back from the engine's own rows in
+the invariants.
 """
 
 from __future__ import annotations
@@ -20,12 +21,15 @@ from src.bilun.domain.billing.patient_report import compute_patient_billing_repo
 from src.bilun.domain.billing.types import BillingActionReport
 from src.bilun.domain.claims.models import ClaimDiagnosis
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from tests.unit._helpers.catalog_prices import list_price, list_text
 from tests.unit.domain.billing.test_blood_uplift_wiring import _claim, _proc
 
 pytestmark = pytest.mark.unit
 
 _NOT_EXEMPT = {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []}
 _START = date(2026, 7, 10)
+_BED, _KUVOZ, _DAY_BED = list_price("510010", _START), list_price("510070", _START), list_price("510120", _START)
+_ICU_DAY, _ICU_PKG = list_price("510090", _START), list_price("P552002", _START)
 _ADULT = ("kardiyoloji", "I10")
 _NEWBORN = ("yenidoğan", "Z38.0")
 _ICU_UNIT = ("Yoğun Bakım", "I21.0")
@@ -55,6 +59,11 @@ def _line(claim_id: str, code: str, day: int, billed: str, *, quantity: int = 1,
         procedure_name=code, quantity=quantity, billed_amount_try=Decimal(billed), procedure_category=category,
         procedure_date=_START + timedelta(days=day),
     )
+
+
+def _at_list(code: str, units: int = 1) -> str:
+    """`units` x the list price of `code` on 10 July 2026, as a billed amount."""
+    return list_text(code, _START, units)
 
 
 def _context(*stays, lines=()) -> PatientClaimContext:
@@ -110,8 +119,8 @@ def _assert_invariants(report: BillingActionReport) -> None:
 #             standard-bed days left, newborn days (None: no newborn row), recoverable TL on the two rows together)
 _CASES = {
     # --- one date: the day bed the SUT forbids -------------------------------------------------------------
-    "control adult one date": (_ADULT, 0, 0, [], "yatis", 1, None, 44.45),
-    "control newborn one date": (_NEWBORN, 0, 0, [], "yatis", 0, 1, 44.45),
+    "control adult one date": (_ADULT, 0, 0, [], "yatis", 1, None, _DAY_BED),
+    "control newborn one date": (_NEWBORN, 0, 0, [], "yatis", 0, 1, _DAY_BED),
     "adult ER bed": (_ADULT, 0, 0, [("530000", 0, "577.45", 1)], "yatis", 0, None, 0.0),
     "newborn ER bed": (_NEWBORN, 0, 0, [("530000", 0, "577.45", 1)], "yatis", 0, 0, 0.0),
     "adult hemodialysis 704230": (_ADULT, 0, 0, [("704230", 0, "4342.48", 1)], "yatis", 0, None, 0.0),
@@ -119,36 +128,36 @@ _CASES = {
     "newborn hemodialysis": (_NEWBORN, 0, 0, [("704230", 0, "4342.48", 1)], "yatis", 0, 0, 0.0),
     "adult day case with a hyperbaric-oxygen session": (_ADULT, 0, 0, [("702580", 0, "545.76", 1)], "day_case", 0, None, 0.0),
     "adult ER bed and the day bed billed (the pair is forbidden)": (
-        _ADULT, 0, 0, [("530000", 0, "577.45", 1), ("510120", 0, "44.45", 1)], "yatis", 0, None, 0.0),
-    "adult 530003 only": (_ADULT, 0, 0, [("530003", 0, "100.00", 1)], "yatis", 1, None, 44.45),
-    "adult reversed ER bed": (_ADULT, 0, 0, [("530000", 0, "-577.45", 1)], "yatis", 1, None, 44.45),
-    "adult home hemodialysis": (_ADULT, 0, 0, [("704233", 0, "4342.48", 1)], "yatis", 1, None, 44.45),
+        _ADULT, 0, 0, [("530000", 0, "577.45", 1), ("510120", 0, _at_list("510120"), 1)], "yatis", 0, None, 0.0),
+    "adult 530003 only": (_ADULT, 0, 0, [("530003", 0, "100.00", 1)], "yatis", 1, None, _DAY_BED),
+    "adult reversed ER bed": (_ADULT, 0, 0, [("530000", 0, "-577.45", 1)], "yatis", 1, None, _DAY_BED),
+    "adult home hemodialysis": (_ADULT, 0, 0, [("704233", 0, "4342.48", 1)], "yatis", 1, None, _DAY_BED),
     "adult inpatient claim with the same hyperbaric session": (
-        _ADULT, 0, 0, [("702580", 0, "545.76", 1)], "yatis", 1, None, 44.45),
+        _ADULT, 0, 0, [("702580", 0, "545.76", 1)], "yatis", 1, None, _DAY_BED),
     # --- a day case crosses midnight: no ward bed, and its day bed is forbidden for EK-2/C procedures -----------
     "adult day case over two dates with a hyperbaric-oxygen session": (
         _ADULT, 0, 1, [("702580", 0, "545.76", 1)], "day_case", 0, None, 0.0),
-    "adult day case over two dates, no EK-2/C procedure (untouched)": (_ADULT, 0, 1, [], "day_case", 2, None, 444.70),
+    "adult day case over two dates, no EK-2/C procedure (untouched)": (_ADULT, 0, 1, [], "day_case", 2, None, 2 * _BED),
     "adult inpatient claim over two dates with the same session (untouched)": (
-        _ADULT, 0, 1, [("702580", 0, "545.76", 1)], "yatis", 2, None, 444.70),
+        _ADULT, 0, 1, [("702580", 0, "545.76", 1)], "yatis", 2, None, 2 * _BED),
     "newborn day case over two dates with a hyperbaric-oxygen session": (
         _NEWBORN, 0, 1, [("702580", 0, "545.76", 1)], "day_case", 0, 0, 0.0),
     # --- three days: the days the bed-including code pays -----------------------------------------------------
-    "control adult 3 days": (_ADULT, 0, 2, [], "yatis", 3, None, 667.05),
-    "control newborn 3 days": (_NEWBORN, 0, 2, [], "yatis", 0, 3, 1322.94),
-    "adult ER bed on day 1": (_ADULT, 0, 2, [("530000", 0, "577.45", 1)], "yatis", 2, None, 444.70),
-    "adult ER bed on day 2": (_ADULT, 0, 2, [("530000", 1, "577.45", 1)], "yatis", 2, None, 444.70),
-    "adult ER bed for two days": (_ADULT, 0, 2, [("530000", 0, "1154.90", 2)], "yatis", 1, None, 222.35),
+    "control adult 3 days": (_ADULT, 0, 2, [], "yatis", 3, None, 3 * _BED),
+    "control newborn 3 days": (_NEWBORN, 0, 2, [], "yatis", 0, 3, 3 * _KUVOZ),
+    "adult ER bed on day 1": (_ADULT, 0, 2, [("530000", 0, "577.45", 1)], "yatis", 2, None, 2 * _BED),
+    "adult ER bed on day 2": (_ADULT, 0, 2, [("530000", 1, "577.45", 1)], "yatis", 2, None, 2 * _BED),
+    "adult ER bed for two days": (_ADULT, 0, 2, [("530000", 0, "1154.90", 2)], "yatis", 1, None, _BED),
     "adult ER bed and standard bed billed on the other days": (
-        _ADULT, 0, 2, [("530000", 0, "577.45", 1), ("510010", 1, "444.70", 2)], "yatis", 2, None, 0.0),
+        _ADULT, 0, 2, [("530000", 0, "577.45", 1), ("510010", 1, _at_list("510010", 2), 2)], "yatis", 2, None, 0.0),
     "adult sterile room all three days": (_ADULT, 0, 2, [("510100", 0, "2981.00", 3)], "yatis", 0, None, 0.0),
     "adult isolation room all three days": (_ADULT, 0, 2, [("510110", 0, "1333.00", 3)], "yatis", 0, None, 0.0),
-    "adult hemodialysis on a stay of three dates": (_ADULT, 0, 2, [("704230", 1, "4342.48", 1)], "yatis", 3, None, 667.05),
-    "newborn ER bed on day 1": (_NEWBORN, 0, 2, [("530000", 0, "577.45", 1)], "yatis", 0, 2, 881.96),
+    "adult hemodialysis on a stay of three dates": (_ADULT, 0, 2, [("704230", 1, "4342.48", 1)], "yatis", 3, None, 3 * _BED),
+    "newborn ER bed on day 1": (_NEWBORN, 0, 2, [("530000", 0, "577.45", 1)], "yatis", 0, 2, 2 * _KUVOZ),
     "newborn ER bed and the incubator billed on the other days": (
-        _NEWBORN, 0, 2, [("530000", 0, "577.45", 1), ("510070", 1, "881.96", 2)], "yatis", 0, 2, 0.0),
+        _NEWBORN, 0, 2, [("530000", 0, "577.45", 1), ("510070", 1, _at_list("510070", 2), 2)], "yatis", 0, 2, 0.0),
     "newborn ER bed and the standard bed billed on the other days": (
-        _NEWBORN, 0, 2, [("530000", 0, "577.45", 1), ("510010", 1, "444.70", 2)], "yatis", 2, None, 0.0),
+        _NEWBORN, 0, 2, [("530000", 0, "577.45", 1), ("510010", 1, _at_list("510010", 2), 2)], "yatis", 2, None, 0.0),
 }
 
 
@@ -222,7 +231,7 @@ def test_an_icu_transfer_day_the_er_bed_also_pays_is_taken_out_once(scope: str) 
     assert std is not None
     assert std["bed_days"] == 2  # 12 and 13 July, not 1
     assert "icu_overlap_days" not in std
-    assert std["recoverable_uplift_try"] == pytest.approx(2 * 222.35, abs=0.01)
+    assert std["recoverable_uplift_try"] == pytest.approx(2 * _BED, abs=0.01)
     _assert_invariants(report)
 
 
@@ -234,7 +243,7 @@ def test_an_er_day_and_a_different_icu_transfer_day_are_both_taken_out(scope: st
     std = _std(report)
     assert std is not None
     assert (std["bed_days"], std["icu_overlap_days"]) == (1, 1)  # 13 July
-    assert std["recoverable_uplift_try"] == pytest.approx(222.35, abs=0.01)
+    assert std["recoverable_uplift_try"] == pytest.approx(_BED, abs=0.01)
     _assert_invariants(report)
 
 
@@ -247,7 +256,7 @@ def test_a_newborn_ward_stay_after_the_icu_counts_each_day_once_in_one_row(scope
     assert newborn is not None and std is not None
     assert newborn["days"] == 2  # 12 and 13 July; the ICU last day, 11 July, is also the ER day: taken out once
     assert newborn["icu_overlap_dates"] == ["2026-07-11"]
-    assert newborn["expected_try"] == pytest.approx(2 * 440.98, abs=0.01)
+    assert newborn["expected_try"] == pytest.approx(2 * _KUVOZ, abs=0.01)
     assert std["bed_days"] == 0 and std["newborn_overlap_days"] == 2
     _assert_invariants(report)
 
@@ -276,9 +285,9 @@ def test_a_claim_with_these_lines_does_not_change_the_patients_other_claim() -> 
 
     assert _std(report, "A")["bed_days"] == 0
     assert _std(report, "B")["bed_days"] == 1
-    assert [(a["claim_id"], a["sgk_uplift_try"]) for a in _bed_rows(report)] == [("B", pytest.approx(44.45, abs=0.005))]
+    assert [(a["claim_id"], a["sgk_uplift_try"]) for a in _bed_rows(report)] == [("B", pytest.approx(_DAY_BED, abs=0.005))]
     assert _bed_rows(_report(ctx, "A")) == []
-    assert round(sum(a["sgk_uplift_try"] for a in _bed_rows(_report(ctx, "B"))), 2) == 44.45
+    assert round(sum(a["sgk_uplift_try"] for a in _bed_rows(_report(ctx, "B"))), 2) == _DAY_BED
     _assert_invariants(report)
 
 
@@ -290,16 +299,16 @@ def test_the_er_bed_of_another_claim_of_the_patient_takes_no_day() -> None:
     report = _report(ctx)
 
     assert _std(report)["bed_days"] == 3
-    assert _std(report)["recoverable_uplift_try"] == pytest.approx(667.05, abs=0.01)
+    assert _std(report)["recoverable_uplift_try"] == pytest.approx(3 * _BED, abs=0.01)
 
 
 # --- the days an ICU claim's own lines pay (tasks/todo.md, 2026-10-20) ---------------------------------------------
 # EK-2/B 510090 "Yemek, yatak, hasta vizit hizmetlerini kapsar"; the EK-2/C ICU packages P552001-3 / P552006-8 are the
 # points of "Yoğun bakım tedavileri" (SUT §2.4.4.H.(2)) and EK-2/C points include "Yatak bedeli" (§2.2.2.B-1.(1).a);
 # §2.4.4.H.(8): the first and the exit day are 510090, the days between the packages. A claim that carries one of these
-# lines used to show its ICU days as 510010 days (444.70 TL beside an ICU row of 0.00 for 510090 on all three dates).
+# lines used to show its ICU days as 510010 days (2 bed days beside an ICU row of 0.00 for 510090 on all three dates).
 
-_D90 = "742.59"  # 510090 on 2026-07-10
+_D90 = _at_list("510090")  # 510090 on 2026-07-10
 _PKG = "2000.00"  # an ICU package day, billed below the tariff (the ICU row then shows what is missing)
 
 
@@ -311,7 +320,7 @@ def _icu_day_rate(*days: int) -> list[tuple[str, int, str, int, str]]:
 #             standard-bed days left, recoverable TL on the bed rows, the ICU row's recoverable TL (None: not pinned))
 _ICU_CASES = {
     "3 dates, 510090 qty 3 on one line": (
-        _ICU_UNIT, 0, 2, [("510090", 0, "2227.77", 3, "islem")], 0, 0.0, 0.0),
+        _ICU_UNIT, 0, 2, [("510090", 0, _at_list("510090", 3), 3, "islem")], 0, 0.0, 0.0),
     "3 dates, 510090 on each date": (_ICU_UNIT, 0, 2, _icu_day_rate(0, 1, 2), 0, 0.0, 0.0),
     "3 dates, 510090 on the first and the last date, nothing between": (
         _ICU_UNIT, 0, 2, _icu_day_rate(0, 2), 0, 0.0, 0.0),
@@ -319,63 +328,64 @@ _ICU_CASES = {
         _ICU_UNIT, 0, 2, [*_icu_day_rate(0), ("P552002", 1, _PKG, 1, "paket"), *_icu_day_rate(2)], 0, 0.0, 0.0),
     "3 dates, 510090, an unprefixed 552002 as a procedure, 510090": (
         _ICU_UNIT, 0, 2, [*_icu_day_rate(0), ("552002", 1, _PKG, 1, "islem"), *_icu_day_rate(2)], 0, 0.0, 0.0),
-    "3 dates, 510090 once on the first date": (_ICU_UNIT, 0, 2, _icu_day_rate(0), 1, 222.35, 742.59),
+    "3 dates, 510090 once on the first date": (_ICU_UNIT, 0, 2, _icu_day_rate(0), 1, _BED, _ICU_DAY),
     "3 dates, P552002 qty 3 on the first date": (
         _ICU_UNIT, 0, 2, [("P552002", 0, "6000.00", 3, "paket")], 0, 0.0, 0.0),
     "3 dates, 510090 qty 3 and 510010 qty 3 billed beside it": (
-        _ICU_UNIT, 0, 2, [("510090", 0, "2227.77", 3, "islem"), ("510010", 0, "667.05", 3, "islem")], 0, 0.0, 0.0),
+        _ICU_UNIT, 0, 2, [("510090", 0, _at_list("510090", 3), 3, "islem"), ("510010", 0, _at_list("510010", 3), 3, "islem")], 0, 0.0, 0.0),
     "3 dates, 510090 qty 3 and the ER bed on the first date": (
-        _ICU_UNIT, 0, 2, [("510090", 0, "2227.77", 3, "islem"), ("530000", 0, "577.45", 1, "islem")], 0, 0.0, 0.0),
+        _ICU_UNIT, 0, 2, [("510090", 0, _at_list("510090", 3), 3, "islem"), ("530000", 0, "577.45", 1, "islem")], 0, 0.0, 0.0),
     "3 dates, 510090 qty 3 and a sterile room qty 3": (
-        _ICU_UNIT, 0, 2, [("510090", 0, "2227.77", 3, "islem"), ("510100", 0, "5024.28", 3, "islem")], 0, 0.0, 0.0),
+        _ICU_UNIT, 0, 2, [("510090", 0, _at_list("510090", 3), 3, "islem"), ("510100", 0, "5024.28", 3, "islem")], 0, 0.0, 0.0),
     "2 dates, 510090 on both": (_ICU_UNIT, 0, 1, _icu_day_rate(0, 1), 0, 0.0, 0.0),
     "1 date, 510090": (_ICU_UNIT, 0, 0, _icu_day_rate(0), 0, 0.0, 0.0),
     "5 dates, 510090, P552002 qty 3, 510090": (
-        _ICU_UNIT, 0, 4, [*_icu_day_rate(0), ("P552002", 1, "6000.00", 3, "paket"), *_icu_day_rate(4)], 0, 0.0, 2119.76),
+        _ICU_UNIT, 0, 4, [*_icu_day_rate(0), ("P552002", 1, "6000.00", 3, "paket"), *_icu_day_rate(4)], 0, 0.0, 2 * _ICU_PKG - 6000.0),
     "5 dates, 510090 on the first and the last date": (_ICU_UNIT, 0, 4, _icu_day_rate(0, 4), 0, 0.0, 0.0),
-    "5 dates, 510090 qty 5": (_ICU_UNIT, 0, 4, [("510090", 0, "3712.95", 5, "islem")], 0, 0.0, 0.0),
+    "5 dates, 510090 qty 5": (_ICU_UNIT, 0, 4, [("510090", 0, _at_list("510090", 5), 5, "islem")], 0, 0.0, 0.0),
     # a day-rate line of quantity 2 or more is the first and the exit day in one line (the ICU motor reads it so)
-    "10 dates, 510090 qty 2 on the first date": (_ICU_UNIT, 0, 9, [("510090", 0, "1485.18", 2, "islem")], 0, 0.0, 0.0),
-    "10 dates, 510090 qty 2 dated on the last date": (_ICU_UNIT, 0, 9, [("510090", 9, "1485.18", 2, "islem")], 0, 0.0, 0.0),
+    "10 dates, 510090 qty 2 on the first date": (_ICU_UNIT, 0, 9, [("510090", 0, _at_list("510090", 2), 2, "islem")], 0, 0.0, 0.0),
+    "10 dates, 510090 qty 2 dated on the last date": (_ICU_UNIT, 0, 9, [("510090", 9, _at_list("510090", 2), 2, "islem")], 0, 0.0, 0.0),
     "12 dates, 510090 qty 5 from d2 (a daily billing: quantity is days, ward days after)": (
-        _ADULT, 0, 11, [("510090", 2, "3712.95", 5, "islem")], 6, 1334.10, 0.0),
-    "10 dates, 510090 on the first date and on d3 (two lines)": (_ICU_UNIT, 0, 9, _icu_day_rate(0, 3), 5, 1111.75, 0.0),
+        _ADULT, 0, 11, [("510090", 2, _at_list("510090", 5), 5, "islem")], 6, 6 * _BED, 0.0),
+    "10 dates, 510090 on the first date and on d3 (two lines)": (_ICU_UNIT, 0, 9, _icu_day_rate(0, 3), 5, 5 * _BED, 0.0),
     "10 dates, an unprefixed 552002 qty 2 from the first date (a package's quantity is days)": (
-        _ICU_UNIT, 0, 9, [("552002", 0, "8119.76", 2, "islem")], 7, 1556.45, None),
+        _ICU_UNIT, 0, 9, [("552002", 0, _at_list("P552002", 2), 2, "islem")], 7, 7 * _BED, None),
     # ward days around the ICU stay on the same claim; an ICU package opens no package window (no işlem grubu,
     # §2.2.2.B-1.(3)), so the ward days before the stay are expected whether the package is spelled with a P or not
     # (WP22; before, the P-prefixed package's one-day window from the admission took d0-d1: 0 days, 0.00)
     "7 dates, ward d0-d1, ICU d2-d5 (510090, two packages, 510090), ward d6": (
         _ADULT, 0, 6,
         [*_icu_day_rate(2), ("P552002", 3, _PKG, 1, "paket"), ("P552002", 4, _PKG, 1, "paket"), *_icu_day_rate(5)],
-        2, 444.70, 4119.76),
+        2, 2 * _BED, 2 * (_ICU_PKG - 2000.0)),
     "7 dates, the same ICU lines and 510010 billed on the ward days": (
         _ADULT, 0, 6,
         [*_icu_day_rate(2), ("P552002", 3, _PKG, 1, "paket"), ("P552002", 4, _PKG, 1, "paket"), *_icu_day_rate(5),
-         ("510010", 0, "444.70", 2, "islem"), ("510010", 6, "222.35", 1, "islem")],
-        2, 0.0, 4119.76),
-    "7 dates, 510090 on d2 and d5 only, ward around": (_ADULT, 0, 6, _icu_day_rate(2, 5), 2, 444.70, 0.0),
-    "7 dates, 510090 qty 4 from d2, ward around": (_ADULT, 0, 6, [("510090", 2, "2970.36", 4, "islem")], 2, 444.70, 0.0),
-    "7 dates, 510090 qty 7": (_ADULT, 0, 6, [("510090", 0, "5198.13", 7, "islem")], 0, 0.0, 0.0),
-    # (WP22; before: 5 days, 1111.75, the window took d0-d6; the same segment with an unprefixed 552001 gave 10)
+         ("510010", 0, _at_list("510010", 2), 2, "islem"), ("510010", 6, _at_list("510010"), 1, "islem")],
+        2, 0.0, 2 * (_ICU_PKG - 2000.0)),
+    "7 dates, 510090 on d2 and d5 only, ward around": (_ADULT, 0, 6, _icu_day_rate(2, 5), 2, 2 * _BED, 0.0),
+    "7 dates, 510090 qty 4 from d2, ward around": (_ADULT, 0, 6, [("510090", 2, _at_list("510090", 4), 4, "islem")], 2, 2 * _BED, 0.0),
+    "7 dates, 510090 qty 7": (_ADULT, 0, 6, [("510090", 0, _at_list("510090", 7), 7, "islem")], 0, 0.0, 0.0),
+    # (WP22; before: 5 days, the window took d0-d6; the same segment with an unprefixed 552001 gave 10)
     "14 dates, a 3-day ICU segment in the middle": (
-        _ADULT, 0, 13, [*_icu_day_rate(5), ("P552001", 6, _PKG, 1, "paket"), *_icu_day_rate(7)], 10, 2223.50, 0.0),
+        _ADULT, 0, 13, [*_icu_day_rate(5), ("P552001", 6, _PKG, 1, "paket"), *_icu_day_rate(7)], 10, 10 * _BED, 0.0),
     "14 dates, the same segment with an unprefixed 552001": (
-        _ADULT, 0, 13, [*_icu_day_rate(5), ("552001", 6, _PKG, 1, "islem"), *_icu_day_rate(7)], 10, 2223.50, None),
+        _ADULT, 0, 13, [*_icu_day_rate(5), ("552001", 6, _PKG, 1, "islem"), *_icu_day_rate(7)], 10, 10 * _BED, None),
     # lines that say nothing about the stay
     "3 dates, 510090 reversed on each date": (
-        _ICU_UNIT, 0, 2, [("510090", d, "-742.59", 1, "islem") for d in (0, 1, 2)], 2, 444.70, None),
-    "3 dates, 510090 dated the day before the stay": (_ICU_UNIT, 0, 2, _icu_day_rate(-1), 2, 444.70, 742.59),
+        _ICU_UNIT, 0, 2, [("510090", d, _at_list("510090", -1), 1, "islem") for d in (0, 1, 2)], 2, 2 * _BED, None),
+    "3 dates, 510090 dated the day before the stay": (_ICU_UNIT, 0, 2, _icu_day_rate(-1), 2, 2 * _BED, _ICU_DAY),
     # newborn ICU claims: the ICU motor's, not the newborn motor's; the standard-bed row loses the ICU days
-    "newborn, 3 dates, 510090 qty 3": (_NEWBORN, 0, 2, [("510090", 0, "2227.77", 3, "islem")], 0, 0.0, 0.0),
+    "newborn, 3 dates, 510090 qty 3": (_NEWBORN, 0, 2, [("510090", 0, _at_list("510090", 3), 3, "islem")], 0, 0.0, 0.0),
     "NICU, 3 dates, P552006 qty 3": (_NICU, 0, 2, [("P552006", 0, "6000.00", 3, "paket")], 0, 0.0, 0.0),
     "newborn, 3 dates, 510090 qty 3 and the incubator billed beside it": (
-        _NEWBORN, 0, 2, [("510090", 0, "2227.77", 3, "islem"), ("510070", 0, "1322.94", 3, "islem")], 0, 0.0, 0.0),
+        _NEWBORN, 0, 2, [("510090", 0, _at_list("510090", 3), 3, "islem"), ("510070", 0, _at_list("510070", 3), 3, "islem")], 0, 0.0, 0.0),
     "newborn, 5 dates, 510090, P552007 qty 3, 510090": (
-        _NEWBORN, 0, 4, [*_icu_day_rate(0), ("P552007", 1, "6000.00", 3, "paket"), *_icu_day_rate(4)], 0, 0.0, 2119.76),
+        _NEWBORN, 0, 4, [*_icu_day_rate(0), ("P552007", 1, "6000.00", 3, "paket"), *_icu_day_rate(4)], 0, 0.0,
+        2 * list_price("P552007", _START) - 6000.0),
     # controls: no ICU code on the claim, the rows are what they were
-    "control: an ICU-named unit without any ICU code": (_ICU_UNIT, 0, 2, [], 3, 667.05, None),
-    "control: a ward claim billing 530000 on the first date": (_ADULT, 0, 2, [("530000", 0, "577.45", 1, "islem")], 2, 444.70, None),
+    "control: an ICU-named unit without any ICU code": (_ICU_UNIT, 0, 2, [], 3, 3 * _BED, None),
+    "control: a ward claim billing 530000 on the first date": (_ADULT, 0, 2, [("530000", 0, "577.45", 1, "islem")], 2, 2 * _BED, None),
 }
 
 
@@ -412,7 +422,7 @@ def test_each_icu_bill_shows_a_bed_day_only_where_no_icu_line_pays_it(name: str)
 
 @pytest.mark.parametrize("scope", ["patient", "bill"])
 def test_the_row_of_an_icu_claim_explains_the_days_it_took_out(scope: str) -> None:
-    ctx = _context(_stay("CLM", _ICU_UNIT, 0, 2), lines=[_line("CLM", "510090", 0, "2227.77", quantity=3)])
+    ctx = _context(_stay("CLM", _ICU_UNIT, 0, 2), lines=[_line("CLM", "510090", 0, _at_list("510090", 3), quantity=3)])
     std = _std(_report(ctx, "CLM" if scope == "bill" else None))
 
     assert std is not None
@@ -432,7 +442,7 @@ def test_the_ward_claim_after_an_icu_claim_keeps_the_transfer_day_and_the_icu_cl
     assert ward_row is not None
     assert (ward_row["gross_bed_days"], ward_row["bed_days"]) == (3, 2)  # the ICU last day (12 July) is the ICU's
     assert (ward_row["icu_overlap_days"], ward_row["icu_overlap_dates"]) == (1, ["2026-07-12"])
-    assert ward_row["recoverable_uplift_try"] == pytest.approx(2 * 222.35, abs=0.01)
+    assert ward_row["recoverable_uplift_try"] == pytest.approx(2 * _BED, abs=0.01)
     if scope == "patient":
         icu_row = _std(report, "ICU")
         assert icu_row is not None and icu_row["bed_days"] == 0 and "icu_overlap_days" not in icu_row
@@ -452,7 +462,7 @@ def test_a_ward_claim_that_ends_on_the_icu_claims_first_day_is_left_as_it_is() -
 
     ward_row = _std(report)
     assert ward_row is not None and ward_row["bed_days"] == 3
-    assert ward_row["recoverable_uplift_try"] == pytest.approx(3 * 222.35, abs=0.01)
+    assert ward_row["recoverable_uplift_try"] == pytest.approx(3 * _BED, abs=0.01)
     icu_row = _std(report, "ICU")
     assert icu_row is not None and icu_row["bed_days"] == 0
     _assert_invariants(report)

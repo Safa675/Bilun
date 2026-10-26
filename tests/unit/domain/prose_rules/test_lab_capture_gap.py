@@ -9,6 +9,8 @@ from typing import Any
 import polars as pl
 import pytest
 
+from tests.unit._helpers.catalog_prices import list_price
+
 pytestmark = pytest.mark.unit
 
 
@@ -166,15 +168,16 @@ def test_exact_lab_code_l107020_still_prices_correctly_on_2026_10_15() -> None:
         detect_lab_capture_gaps,
     )
 
+    listed = list_price("L107020", "2026-10-15")  # read from the curated catalog history, not by the engine
     price, method = _resolve_lab_list_price("L107020", service_date="2026-10-15")
-    assert price == pytest.approx(19.72, abs=0.01)
+    assert price == pytest.approx(listed, abs=0.01)
     assert method == "ek2b_list_price"
 
     lab_df = _lab_df([{"patient_id": "P1", "visit_id": "V1", "test_name": "L107020"}])
     gaps = detect_lab_capture_gaps(lab_df, [], "V1", service_date="2026-10-15")
     assert len(gaps) == 1
     assert gaps[0]["procedure_code"] == "L107020"
-    assert gaps[0]["list_price_try"] == 19.72
-    assert gaps[0]["recoverable_gap_try"] == 19.72
+    assert gaps[0]["list_price_try"] == listed
+    assert gaps[0]["recoverable_gap_try"] == listed
     assert gaps[0]["price_methodology"] == "ek2b_list_price"
 

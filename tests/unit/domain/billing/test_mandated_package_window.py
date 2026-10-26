@@ -21,7 +21,9 @@ from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_f
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.yatak_puani import claim_package_window, mandated_package_lines
+from tests.unit._helpers.catalog_prices import list_price
 from tests.unit.domain.billing.test_showcase_session_and_package_gaps import (
+    _S1_GAP,
     ANEST,
     GENCER,
     ORTO,
@@ -35,8 +37,8 @@ from tests.unit.domain.billing.test_showcase_session_and_package_gaps import (
 
 pytestmark = pytest.mark.unit
 
-_BED_DAY = 222.35  # 510010 in force in 2026 (bed rate on S1/S2 days), cut at the kuruş (SUT 2.2.(15)).
-_COMPANION_NIGHT = 74.09  # 510121: 124.95 puan × 0.593 = 74.09535, cut at the kuruş.
+_BED_DAY = list_price("510010", "2026-07-14")  # 510010 on S1's admission day.
+_COMPANION_NIGHT = list_price("510121", "2026-07-14")  # 510121, puan × 0.593 cut at the kuruş (SUT 2.2.(15)).
 
 
 def _report(ctx: PatientClaimContext):
@@ -78,8 +80,8 @@ class TestMandatedPackageShownOnce:
     def test_faulty_s1_shows_the_package_gap_once(self) -> None:
         ctx = s1("faulty").ctx()
         report = _report(ctx)
-        assert _strategy_savings(ctx) == 4085.94
-        assert report.sgk_uplift_try == 4085.94  # Was 4,234.07: + 148.20 companion.
+        assert _strategy_savings(ctx) == _S1_GAP  # P610131 less the hizmet başı lines.
+        assert report.sgk_uplift_try == _S1_GAP  # Was 4,234.07: + 148.20 companion.
         companion = _only(report.refakatci.opportunities)
         assert (companion["days"], companion["recoverable_uplift_try"]) == (0, 0.0)
         assert companion["included_in_sgk_total"] is False
@@ -182,6 +184,8 @@ class TestClaimsWithoutAMandatedPackage:
         for bill in (s2_faulty, s3_faulty, s4_faulty):
             ctx = bill.ctx()
             assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)) is None
-        assert _report(s2_faulty.ctx()).yatak_puani.confirmed_yatak_try == 667.05
-        assert _report(s3_faulty.ctx()).anestezi_puani.confirmed_anestezi_try == 928.08
-        assert _report(s4_faulty.ctx()).refakatci.confirmed_refakat_try == 370.45
+        # S2's three unbilled bed days (13-15 March), S3's group-B anaesthesia charge (550160's puan × 0.593, its list
+        # price on the operation day) and S4's five companion nights (11-15 May), each at its list price.
+        assert _report(s2_faulty.ctx()).yatak_puani.confirmed_yatak_try == round(3 * list_price("510010", "2026-03-13"), 2)
+        assert _report(s3_faulty.ctx()).anestezi_puani.confirmed_anestezi_try == list_price("550160", "2026-08-18")
+        assert _report(s4_faulty.ctx()).refakatci.confirmed_refakat_try == round(5 * list_price("510121", "2026-05-11"), 2)

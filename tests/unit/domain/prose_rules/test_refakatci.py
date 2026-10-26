@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
 
+from tests.unit._helpers.catalog_prices import list_price, list_puan, list_text, list_total
+
 pytestmark = pytest.mark.unit
+
+# The companion bed 510121 of 10-13 July 2026 (puan × 0.593 cut at the kuruş, SUT 2.2.(15)), read from the curated
+# catalog histories.
+_NIGHT = list_price("510121", "2026-07-10")
+_NIGHT_TEXT = list_text("510121", "2026-07-10")
+_THREE_NIGHTS = list_total("510121", "2026-07-10", 3)
 
 
 def _make_claim_header(
@@ -72,7 +80,7 @@ def _make_procedure_line(
 
 
 def test_3day_inpatient_stay_companion_opportunity() -> None:
-    """Inpatient claim Jul 10→13 → 3 companion days × 124.95 × 0.593."""
+    """Inpatient claim Jul 10→13 → 3 companion days at the 510121 list price."""
     from src.bilun.domain.prose_rules.refakatci import (
         detect_refakatci_opportunities,
     )
@@ -86,11 +94,11 @@ def test_3day_inpatient_stay_companion_opportunity() -> None:
     assert len(opps) == 1
     opp = opps[0]
     assert opp["days"] == 3
-    assert opp["puan"] == pytest.approx(124.95, abs=0.01)
-    # 3 × 74.09 (124.95 × 0.593 = 74.09535, cut at the kuruş: SUT 2.2.(15)) = 222.27
-    assert opp["expected_try"] == pytest.approx(222.27, abs=0.02)
+    assert opp["puan"] == pytest.approx(list_puan("510121", "2026-07-10"), abs=0.01)
+    # 3 × the night (puan × 0.593 cut at the kuruş: SUT 2.2.(15))
+    assert opp["expected_try"] == pytest.approx(_THREE_NIGHTS, abs=0.02)
     assert opp["actual_billed_try"] == 0.0
-    assert opp["recoverable_uplift_try"] == pytest.approx(222.27, abs=0.02)
+    assert opp["recoverable_uplift_try"] == pytest.approx(_THREE_NIGHTS, abs=0.02)
     assert opp["rule_id"] == "refakatci_510121"
     assert opp["sut_section_id"] == "2.6.3"
     assert opp["included_in_sgk_total"] is True
@@ -181,9 +189,9 @@ def test_icu_package_codes_suppressed(icu_code: str) -> None:
 @pytest.mark.parametrize(
     ("admission", "discharge", "expected_puan", "expected_daily_rate", "expected_total"),
     [
-        (date(2023, 6, 15), date(2023, 6, 18), 46.28, 27.44, 82.32),
-        (date(2024, 7, 1), date(2024, 7, 4), 104.13, 61.74, 185.22),
-        (date(2026, 7, 10), date(2026, 7, 13), 124.95, 74.09, 222.27),
+        (admission, admission + timedelta(days=3), list_puan("510121", admission),
+         list_price("510121", admission), list_total("510121", admission, 3))
+        for admission in (date(2023, 6, 15), date(2024, 7, 1), date(2026, 7, 10))
     ],
 )
 def test_historical_admission_date_pricing(
@@ -221,34 +229,34 @@ def test_already_billed_510121_subtracted_from_recoverable() -> None:
     header = _make_claim_header(
         admission=date(2026, 7, 10), discharge=date(2026, 7, 13)
     )
-    # Partial billing: 1 day (74.09 TL) billed out of 3 days (3 × 74.09 = 222.27 TL)
+    # Partial billing: 1 night billed out of 3 nights
     partial_procs = [
         _make_procedure_line(code="510010", line_id="L-bed"),
         _make_procedure_line(
-            code="510121", line_id="L-ref", billed_amount_try=Decimal("74.09")
+            code="510121", line_id="L-ref", billed_amount_try=Decimal(_NIGHT_TEXT)
         ),
     ]
     partial_opps = detect_refakatci_opportunities([header], partial_procs)
     assert len(partial_opps) == 1
     opp = partial_opps[0]
-    assert opp["expected_try"] == pytest.approx(222.27, abs=0.01)
-    assert opp["actual_billed_try"] == pytest.approx(74.09, abs=0.01)
-    assert opp["recoverable_uplift_try"] == pytest.approx(148.18, abs=0.01)
+    assert opp["expected_try"] == pytest.approx(_THREE_NIGHTS, abs=0.01)
+    assert opp["actual_billed_try"] == pytest.approx(_NIGHT, abs=0.01)
+    assert opp["recoverable_uplift_try"] == pytest.approx(2 * _NIGHT, abs=0.01)
     assert RefakatciReview(opportunities=partial_opps).confirmed_refakat_try == pytest.approx(
-        148.18, abs=0.01
+        2 * _NIGHT, abs=0.01
     )
 
-    # Full billing: all 222.27 TL already billed -> 0.0 recoverable
+    # Full billing: all 3 nights already billed -> 0.0 recoverable
     full_procs = [
         _make_procedure_line(code="510010", line_id="L-bed"),
         _make_procedure_line(
-            code="510121", line_id="L-ref", billed_amount_try=Decimal("222.27")
+            code="510121", line_id="L-ref", billed_amount_try=Decimal(list_text("510121", "2026-07-10", 3))
         ),
     ]
     full_opps = detect_refakatci_opportunities([header], full_procs)
     assert len(full_opps) == 1
-    assert full_opps[0]["expected_try"] == pytest.approx(222.27, abs=0.01)
-    assert full_opps[0]["actual_billed_try"] == pytest.approx(222.27, abs=0.01)
+    assert full_opps[0]["expected_try"] == pytest.approx(_THREE_NIGHTS, abs=0.01)
+    assert full_opps[0]["actual_billed_try"] == pytest.approx(_THREE_NIGHTS, abs=0.01)
     assert full_opps[0]["recoverable_uplift_try"] == 0.0
     assert RefakatciReview(opportunities=full_opps).confirmed_refakat_try == 0.0
 
@@ -280,7 +288,7 @@ def test_refakatci_opportunities_survive_public_projection() -> None:
     procs = [
         _make_procedure_line(code="510010", line_id="L-bed"),
         _make_procedure_line(
-            code="510121", line_id="L-ref", billed_amount_try=Decimal("74.09")
+            code="510121", line_id="L-ref", billed_amount_try=Decimal(_NIGHT_TEXT)
         ),
     ]
     opps = detect_refakatci_opportunities([header], procs)
@@ -288,9 +296,9 @@ def test_refakatci_opportunities_survive_public_projection() -> None:
     projected = project_public_response({"refakatci": asdict(review)}, "get_billing_report")
 
     proj_opp = projected["refakatci"]["opportunities"][0]
-    assert proj_opp["expected_try"] == pytest.approx(222.27, abs=0.01)
-    assert proj_opp["actual_billed_try"] == pytest.approx(74.09, abs=0.01)
-    assert proj_opp["recoverable_uplift_try"] == pytest.approx(148.18, abs=0.01)
+    assert proj_opp["expected_try"] == pytest.approx(_THREE_NIGHTS, abs=0.01)
+    assert proj_opp["actual_billed_try"] == pytest.approx(_NIGHT, abs=0.01)
+    assert proj_opp["recoverable_uplift_try"] == pytest.approx(2 * _NIGHT, abs=0.01)
 
 
 def test_package_window_bundles_companion_days_and_bills_excess() -> None:
@@ -348,6 +356,6 @@ def test_package_window_bundles_companion_days_and_bills_excess() -> None:
     )
     assert len(excess_opps) == 1
     assert excess_opps[0]["days"] == 2
-    assert excess_opps[0]["expected_try"] == pytest.approx(2 * 74.09, abs=0.01)
+    assert excess_opps[0]["expected_try"] == pytest.approx(2 * _NIGHT, abs=0.01)
     assert excess_opps[0]["included_in_sgk_total"] is True
 

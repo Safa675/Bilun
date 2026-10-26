@@ -19,13 +19,14 @@ from src.bilun.domain.billing.patient_report import compute_patient_billing_repo
 from src.bilun.domain.claims.models import ClaimDiagnosis
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
+from tests.unit._helpers.catalog_prices import list_price
 from tests.unit.domain.billing.test_blood_uplift_wiring import _claim, _proc
 from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d
 
 pytestmark = pytest.mark.unit
 
 _NOT_EXEMPT = {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []}
-_KUVOZ_DAY = 440.98  # 510070 in force in 2026.
+_KUVOZ_DAY = list_price("510070", "2026-07-10")  # 510070 in force on the stays below.
 
 
 def _billed_package_report(*, package_code: str, package_day: date):

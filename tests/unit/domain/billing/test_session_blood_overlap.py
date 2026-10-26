@@ -20,9 +20,29 @@ from src.bilun.domain.prose_rules.blood_uplift import (
     detect_blood_component_underbilling_opportunities,
 )
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
+from tests.unit._helpers.catalog_prices import list_text
 from tests.unit.domain.billing.test_blood_uplift_wiring import _claim, _proc
 
 pytestmark = pytest.mark.unit
+
+_DAY = "2026-01-10"  # the date of `_proc`'s lines
+
+
+def _cents(value: Decimal) -> float:
+    return float(value.quantize(Decimal("0.01"), rounding="ROUND_HALF_UP"))
+
+
+# The list prices on _DAY (curated catalog histories) and what the SUT pays of them: a blood component's package
+# share (C000694: 36 % for 705430, 20 % for 705441) and a share of the operation secondary 615995 (§2.2.2.B).
+_PRIMARY = list_text("P610070", _DAY)
+_PLASMA = Decimal(list_text("705430", _DAY))
+_PLASMA_SHARE = _cents(_PLASMA * Decimal("0.36"))
+_FFP_SHARE = _cents(Decimal(list_text("705441", _DAY)) * Decimal("0.20"))
+_SECOND = Decimal(list_text("615995", _DAY))
+
+
+def _of_second(factor: str) -> float:
+    return _cents(_SECOND * Decimal(factor))
 
 
 @pytest.fixture(autouse=True)
@@ -42,8 +62,8 @@ def stable_catalog(monkeypatch):
 def _primary(**overrides):
     values = dict(
         procedure_line_id="operation", procedure_code="P610070", procedure_category="paket",
-        procedure_specialty_code="surgery", unit_price_try=Decimal("12562.36"),
-        expected_payable_try=Decimal("12562.36"), billed_amount_try=Decimal("12562.36"),
+        procedure_specialty_code="surgery", unit_price_try=Decimal(_PRIMARY),
+        expected_payable_try=Decimal(_PRIMARY), billed_amount_try=Decimal(_PRIMARY),
     )
     values.update(overrides)
     return _proc(**values)
@@ -52,15 +72,15 @@ def _primary(**overrides):
 def _blood(**overrides):
     values = dict(
         procedure_line_id="plasma", procedure_code="705430",
-        procedure_specialty_code="surgery", unit_price_try=Decimal("1134.70"),
-        expected_payable_try=Decimal("1134.70"), billed_amount_try=Decimal("200"),
+        procedure_specialty_code="surgery", unit_price_try=_PLASMA,
+        expected_payable_try=_PLASMA, billed_amount_try=Decimal("200"),
     )
     values.update(overrides)
     return _proc(**values)
 
 
 def _operation(**overrides):
-    """An EK-2/B §6 secondary operation in the primary's session (list 3,032.00).
+    """An EK-2/B §6 secondary operation in the primary's session, at its list price.
 
     615995 is EK-2/B only. 610080 was used before, but its EK-2/C package makes
     it a must-package line at this tier, which has no hizmet başı session
@@ -69,8 +89,8 @@ def _operation(**overrides):
     """
     values = dict(
         procedure_line_id="second-operation", procedure_code="615995",
-        procedure_specialty_code="surgery", unit_price_try=Decimal("3032.00"),
-        expected_payable_try=Decimal("3032.00"), billed_amount_try=Decimal("100"),
+        procedure_specialty_code="surgery", unit_price_try=_SECOND,
+        expected_payable_try=_SECOND, billed_amount_try=Decimal("100"),
     )
     values.update(overrides)
     return _proc(**values)
@@ -96,28 +116,28 @@ def test_original_plasma_gap_counts_once_in_direct_detectors_and_blocks(reverse)
     session = detect_session_underbilling_opportunities(lines, claim=_claim())
     blood = detect_blood_component_underbilling_opportunities(lines)
     # #261: the plasma line is not a session secondary (was 30 % = 340.41);
-    # its 36 % package ceiling (408.49) is the one gap, counted by the blood detector.
+    # its 36 % package ceiling is the one gap, counted by the blood detector.
     assert session == []
     assert len(blood) == 1
-    assert blood[0]["max_billable_try"] == 408.49
-    assert blood[0]["recoverable_uplift_try"] == 208.49
+    assert blood[0]["max_billable_try"] == _PLASMA_SHARE
+    assert blood[0]["recoverable_uplift_try"] == round(_PLASMA_SHARE - 200, 2)
     session_block, blood_block = _blocks(lines)
     assert session_block.confirmed_uplift_try == 0
-    assert blood_block.confirmed_uplift_try == 208.49
+    assert blood_block.confirmed_uplift_try == round(_PLASMA_SHARE - 200, 2)
 
 
 @pytest.mark.parametrize(
     "code,unit,payable,billed,expected",
     [
-        # #336: the base is the EK-2/B list price on the date (705430 1134.70, 705441
-        # 2564.26), never the line's unit price or payable (was 36 % of payable 1000).
-        ("705430", "1000", "1000", "310", "98.49"),  # 36 % of 1134.70 = 408.492.
-        ("705441", "1000", "1000", "600", None),  # Above the 20 % ceiling 512.85.
-        ("705441", "1000", "1000", "100", "412.85"),
-        ("705430", "2000", "1000", "100", "308.49"),  # The list, not the unit price, is the base.
-        ("705430", "1000", "2000", "100", "308.49"),  # Nor the payable.
-        ("705430", "1000", "1000", "295", "113.49"),
-        ("705441", "1000", "1000", "503", None),  # Within the 2 % tolerance (502.59).
+        # #336: the base is the EK-2/B list price on the date, never the line's unit price or payable (was 36 % of
+        # payable 1000).
+        ("705430", "1000", "1000", "310", f"{_PLASMA_SHARE - 310:.2f}"),  # 36 % of the list.
+        ("705441", "1000", "1000", "600", None),  # Above the 20 % ceiling.
+        ("705441", "1000", "1000", "100", f"{_FFP_SHARE - 100:.2f}"),
+        ("705430", "2000", "1000", "100", f"{_PLASMA_SHARE - 100:.2f}"),  # The list, not the unit price, is the base.
+        ("705430", "1000", "2000", "100", f"{_PLASMA_SHARE - 100:.2f}"),  # Nor the payable.
+        ("705430", "1000", "1000", "295", f"{_PLASMA_SHARE - 295:.2f}"),
+        ("705441", "1000", "1000", "503", None),  # Within the 2 % tolerance of the 20 % ceiling.
     ],
 )
 def test_blood_ceiling_alone_applies_on_the_operation_date(
@@ -146,8 +166,8 @@ def test_blood_gap_is_not_held_back_by_the_session_review_heuristic():
         ),
     ])
     assert session.opportunities == []
-    assert blood.opportunities[0]["max_billable_try"] == 512.85  # 20 % of the list price 2564.26 (#336)
-    assert blood.confirmed_uplift_try == 462.85
+    assert blood.opportunities[0]["max_billable_try"] == _FFP_SHARE  # 20 % of the list price (#336)
+    assert blood.confirmed_uplift_try == round(_FFP_SHARE - 50, 2)
 
 
 def test_partial_overlap_preserves_same_code_on_other_lines_dates_and_claims():
@@ -161,7 +181,7 @@ def test_partial_overlap_preserves_same_code_on_other_lines_dates_and_claims():
         )], claims)
         # #261: the same-date plasma is the blood detector's too (was session 140.41).
         assert session.confirmed_uplift_try == 0
-        assert blood.confirmed_uplift_try == 625.47
+        assert blood.confirmed_uplift_try == round(3 * (_PLASMA_SHARE - 200), 2)
         assert {(r["claim_id"], r["procedure_line_id"]) for r in blood.opportunities} == {
             ("CLM-BLOOD", "plasma"), ("CLM-BLOOD", "next-day"), ("OTHER", "plasma"),
         }
@@ -171,9 +191,9 @@ def test_two_same_code_blood_lines_keep_distinct_amounts():
     lines = [_primary(), _blood(), _blood(procedure_line_id="plasma-2", billed_amount_try=Decimal("250"))]
     for order in permutations(lines):
         session, blood = _blocks(order)
-        # #261: both are blood-detector gaps against 408.49 (were session 140.41 / 90.41).
+        # #261: both are blood-detector gaps against the 36 % share (were session 140.41 / 90.41).
         assert {r["procedure_line_id"]: r["recoverable_uplift_try"] for r in blood.opportunities} == {
-            "plasma": 208.49, "plasma-2": 158.49,
+            "plasma": round(_PLASMA_SHARE - 200, 2), "plasma-2": round(_PLASMA_SHARE - 250, 2),
         }
         assert session.opportunities == []
 
@@ -189,7 +209,7 @@ def test_same_normalized_blood_codes_never_form_a_session(reverse):
     assert [r["procedure_line_id"] for r in blood.opportunities] == [
         line.procedure_line_id for line in lines
     ]
-    assert blood.confirmed_uplift_try == 416.98
+    assert blood.confirmed_uplift_try == round(2 * (_PLASMA_SHARE - 200), 2)
 
 
 def test_zero_billed_and_package_included_lines_keep_existing_eligibility():
@@ -199,13 +219,13 @@ def test_zero_billed_and_package_included_lines_keep_existing_eligibility():
     ])
     assert session.opportunities == []
     assert len(blood.opportunities) == 1
-    assert blood.confirmed_uplift_try == 408.49
+    assert blood.confirmed_uplift_try == _PLASMA_SHARE
 
 
 def test_standalone_blood_line_in_actual_package_treatment():
     session, blood = _blocks([_blood(), _primary(procedure_date=date(2026, 1, 12))])
     assert session.opportunities == []
-    assert blood.confirmed_uplift_try == 208.49
+    assert blood.confirmed_uplift_try == round(_PLASMA_SHARE - 200, 2)
 
 
 def test_quantity_and_fractional_cent_rounding_use_whole_line_bases():
@@ -215,10 +235,10 @@ def test_quantity_and_fractional_cent_rounding_use_whole_line_bases():
                expected_payable_try=Decimal("1000.05"), billed_amount_try=Decimal("100")),
     ])
     # #261: not a 30 % session secondary. #336: 36 % of the list price times the
-    # whole quantity, 2 x 1134.70 x 0.36 = 816.984, whatever the line's payable says.
+    # whole quantity, rounded once, whatever the line's payable says.
     assert session.opportunities == []
-    assert blood.opportunities[0]["max_billable_try"] == 816.98
-    assert blood.confirmed_uplift_try == 716.98
+    assert blood.opportunities[0]["max_billable_try"] == _cents(2 * _PLASMA * Decimal("0.36"))
+    assert blood.confirmed_uplift_try == round(_cents(2 * _PLASMA * Decimal("0.36")) - 100, 2)
 
 
 def test_direct_detector_never_borrows_another_claims_session():
@@ -234,7 +254,7 @@ def test_blank_line_ids_do_not_collapse_distinct_occurrences():
     # #261: both occurrences are blood gaps (were one session row and one blood row).
     assert session.opportunities == []
     assert len(blood.opportunities) == 2
-    assert blood.confirmed_uplift_try == 416.98
+    assert blood.confirmed_uplift_try == round(2 * (_PLASMA_SHARE - 200), 2)
 
 
 def test_operation_secondary_gap_remains_independent_of_blood():
@@ -243,21 +263,21 @@ def test_operation_secondary_gap_remains_independent_of_blood():
     lines = [_primary(billed_amount_try=Decimal("1000")), _blood(), _operation()]
     session, blood = _blocks(lines)
     assert [r["procedure_line_id"] for r in session.opportunities] == ["second-operation"]
-    assert session.opportunities[0]["expected_billed_try"] == 909.60  # 30 % of 3,032.00.
-    assert session.confirmed_uplift_try == 809.60
-    assert blood.confirmed_uplift_try == 208.49
+    assert session.opportunities[0]["expected_billed_try"] == _of_second("0.30")  # 30 % of its list.
+    assert session.confirmed_uplift_try == round(_of_second("0.30") - 100, 2)
+    assert blood.confirmed_uplift_try == round(_PLASMA_SHARE - 200, 2)
 
 
 def test_a_missing_payable_leaves_the_list_price_ceiling_unchanged():
     # #336: the ceiling never read the payable's billed fallback (200 x 36 % = 72).
     session, blood = _blocks([_primary(), _blood(expected_payable_try=Decimal("0"))])
     assert session.opportunities == []
-    assert [r["recoverable_uplift_try"] for r in blood.opportunities] == [208.49]
+    assert [r["recoverable_uplift_try"] for r in blood.opportunities] == [round(_PLASMA_SHARE - 200, 2)]
 
 
 @pytest.mark.parametrize(
     "cross_specialty,same_incision,expected",
-    [(True, True, 1667.60), (False, False, 1516.00)],  # §2.2.2.B.c/ç: 30 %+25 or 50 % of 3,032.00.
+    [(True, True, _of_second("0.55")), (False, False, _of_second("0.50"))],  # §2.2.2.B.c/ç: 30 %+25 or 50 %.
 )
 def test_direct_detectors_share_nondefault_session_options(
     cross_specialty, same_incision, expected,
@@ -270,7 +290,7 @@ def test_direct_detectors_share_nondefault_session_options(
     assert [r["procedure_line_id"] for r in session] == ["second-operation"]
     assert session[0]["expected_billed_try"] == expected
     assert session[0]["recoverable_uplift_try"] == round(expected - 100, 2)
-    assert [r["recoverable_uplift_try"] for r in blood] == [208.49]
+    assert [r["recoverable_uplift_try"] for r in blood] == [round(_PLASMA_SHARE - 200, 2)]
 
 
 def test_claim_context_reaches_both_detectors(monkeypatch):
@@ -289,8 +309,8 @@ def test_claim_context_reaches_both_detectors(monkeypatch):
         [_primary(billed_amount_try=Decimal("1000")), _operation(), _blood()],
         [_claim(department="cross-specialty")],
     )
-    assert session.confirmed_uplift_try == 1567.60  # 55 % of 3,032.00 − 100.
-    assert blood.confirmed_uplift_try == 208.49
+    assert session.confirmed_uplift_try == round(_of_second("0.55") - 100, 2)  # 55 % of the list − 100.
+    assert blood.confirmed_uplift_try == round(_PLASMA_SHARE - 200, 2)
     assert seen == ["CLM-BLOOD", "CLM-BLOOD"]
 
 
@@ -309,14 +329,14 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
     from src.bilun.domain.billing.types import BloodComponentUplift, SessionPricingUplift
 
     # #261: the session row comes from an operation secondary (was the plasma
-    # line, composed with its blood ceiling); 30 % of its list 3,032.00 = 909.60
+    # line, composed with its blood ceiling); 30 % of its list
     # (#300: was 30 % of a unit price of 1,134.71, 340.41, billed 200). Billed at
     # 700 it is no chart-review case (5.6 % of the primary).
     lines = [_primary(), _operation(billed_amount_try=Decimal("700"))]
-    expected_total = 209.60
+    expected_total = round(_of_second("0.30") - 700, 2)
     if review_only:
         lines[1] = _operation(billed_amount_try=Decimal("50"))
-        expected_total = 859.60
+        expected_total = round(_of_second("0.30") - 50, 2)
     expected_confirmed = 0 if review_only else expected_total
     seen = []
 
@@ -329,7 +349,7 @@ def test_report_actions_serialization_and_cohort_receive_reconciled_rows(monkeyp
             rows = kwargs["session_opportunities"]
             assert len(rows) == 1
             assert rows[0]["recoverable_uplift_try"] == expected_confirmed
-            assert rows[0]["expected_billed_try"] == 909.60
+            assert rows[0]["expected_billed_try"] == _of_second("0.30")
             seen.append(_name)
             return _original(ctx, **kwargs)
 

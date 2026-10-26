@@ -39,6 +39,7 @@ from scripts.synthetic.cohort.ids import (
 from scripts.synthetic.faults import FaultSpec, apply_fault, load_registry, load_siblings
 from scripts.synthetic.pathways import Pathway, load_all
 from scripts.synthetic.pathways.expand import expand
+from tests.unit._helpers.catalog_prices import list_text
 
 pytestmark = pytest.mark.unit
 
@@ -498,7 +499,8 @@ def test_a_newborn_story_composes_incubator_lines_as_bed_lines(
     claim = compose_claim(expand(pathway, annotate=True), ctx, catalogs)
     beds = [p for p in claim.procedures if p.procedure_code == "510070"]
     assert len(beds) == 6 and {p.procedure_category for p in beds} == {"yatak"}
-    assert {p.quantity for p in beds} == {1} and {str(p.billed_amount_try) for p in beds} == {"440.98"}
+    assert {p.quantity for p in beds} == {1}
+    assert [str(p.billed_amount_try) for p in beds] == [list_text("510070", p.procedure_date) for p in beds]
     assert claim.header.department == "Yenidoğan" and claim.header.admission_date == date(2026, 7, 10)
     assert claim.header.expected_total_billed_try == Decimal("3049.50")
 
@@ -552,7 +554,7 @@ def test_catalogs_lazy_loading_and_in_memory_mutations() -> None:
     row_2b = cats.procedure_row("510010", date(2026, 7, 14))
     assert "ek2b" in cats.__dict__
     assert row_2b.name == "Standart yatak tarifesi"
-    assert money(row_2b.price) == Decimal("222.35")
+    assert money(row_2b.price) == Decimal(list_text("510010", "2026-07-14"))  # the curated history, read apart
 
     # (a) A date outside every row raises CatalogError (EK-2B, EK-2C, EK-4A).
     with pytest.raises(CatalogError, match="EK-2B '510010' on 1999-01-01"):
@@ -778,9 +780,8 @@ def test_the_red_cell_units_of_s24_carry_their_isbt128_numbers_and_the_fault_bla
     clean = compose_claim(bill, ctx, catalogs)
     units = [p for p in clean.procedures if p.procedure_code == "705371"]
     assert [p.isbt128_barcode for p in units] == ["=X99992610001100", "=X99992610001200"]
-    assert {(p.quantity, p.billed_amount_try, p.expected_payable_try) for p in units} == {
-        (1, Decimal("4462.64"), Decimal("4462.64"))
-    }
+    listed = Decimal(list_text("705371", units[0].procedure_date))  # each unit in full at its list price
+    assert {(p.quantity, p.billed_amount_try, p.expected_payable_try) for p in units} == {(1, listed, listed)}
     assert {p.isbt128_barcode for p in clean.procedures if p.procedure_code != "705371"} == {""}
     faulty_bill = apply_fault(faults_by_story["S24"], pathway, annotate=True)
     faulty = compose_claim(faulty_bill, ctx, catalogs)

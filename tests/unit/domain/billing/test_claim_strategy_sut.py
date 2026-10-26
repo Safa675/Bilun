@@ -11,6 +11,7 @@ from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_f
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from tests.fixtures import synthetic_cohort as cohort
+from tests.unit._helpers.catalog_prices import list_price
 
 pytestmark = pytest.mark.unit
 
@@ -579,7 +580,8 @@ class TestClaimStrategySut:
             and rec.get("recommendation_kind") == "optional_override"
         )
         assert claim_rec["itemized_price_methodology"] == "ek2b_catalog"
-        assert claim_rec["itemized_total_try"] == pytest.approx(3038.15)
+        itemized = list_price("609270", "2024-03-12")  # 609270's EK-2B list price on the line date
+        assert claim_rec["itemized_total_try"] == pytest.approx(itemized)
         assert claim_rec["package_total_try"] == pytest.approx(2000.00)
         assert claim_rec["recommendation"] == "itemized"
-        assert claim_rec["savings_try"] == pytest.approx(1038.15)
+        assert claim_rec["savings_try"] == pytest.approx(itemized - 2000.00)

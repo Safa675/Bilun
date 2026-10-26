@@ -11,6 +11,7 @@ from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
 from src.bilun.domain.billing.claim_blood_uplift import recommend_blood_uplift_from_claims
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from tests.unit._helpers.catalog_prices import list_text
 
 pytestmark = pytest.mark.unit
 
@@ -86,14 +87,18 @@ class TestBloodUpliftWiring:
         ]
         ctx = _ctx(claim, *lines)
         blood = recommend_blood_uplift_from_claims(ctx)
-        # 36 % of 705371's list price 4462.65 (#336), less the 50 billed.
-        assert blood.confirmed_uplift_try == pytest.approx(1556.55)
+        # 36 % of 705371's list price on the line date (#336, curated catalog history), less the 50 billed.
+        share = (Decimal(list_text("705371", "2026-01-10")) * Decimal("0.36")).quantize(
+            Decimal("0.01"), rounding="ROUND_HALF_UP"
+        )
+        uplift = float(share - 50)
+        assert blood.confirmed_uplift_try == pytest.approx(uplift)
 
         report = compute_patient_billing_report(
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
         )
-        assert report.blood_uplift.confirmed_uplift_try == pytest.approx(1556.55)
-        assert report.sgk_uplift_try >= 1556.55
+        assert report.blood_uplift.confirmed_uplift_try == pytest.approx(uplift)
+        assert report.sgk_uplift_try >= uplift
         assert report.audit_exposure_try == 0.0
