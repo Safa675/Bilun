@@ -95,6 +95,7 @@ def _assemble_sut_and_billing_context(
         compute_all_billing_reports_fn=compute_all_billing_reports,
         sut_claim_dataset=sut_ctx.get("sut_claim_dataset"),
         compute_all_bill_billing_reports_fn=compute_all_bill_billing_reports,
+        copay_inputs_by_pid=sut_ctx.get("copay_inputs_by_pid"),
     )
     _log_memory_snapshot(
         "analytics_context:after_billing",

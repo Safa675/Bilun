@@ -10,10 +10,16 @@ from typing import Any, TypeVar
 
 import polars as pl
 
+from src.bilun.domain.claims.models import ClaimHeader
 from src.bilun.domain.claims.patient_context import (
     build_bill_claim_context,
     build_patient_claim_context,
 )
+from src.bilun.domain.optimization.copay_exemption_context import (
+    bill_copay_exemption_input,
+)
+from src.bilun.domain.optimization.copay_exemption_types import CopayExemptionInput
+from src.bilun.domain.optimization.copay_exemptions import evaluate_copay_exemption
 
 from .cohort_summary import build_cohort_recovery_summary
 from .priority import assign_priority_by_percentile
@@ -75,6 +81,26 @@ def patient_ids_from_cache(
     return sorted(patient_id_set)
 
 
+def bill_copay_exemption(
+    pid: str,
+    claim: ClaimHeader,
+    alerts_by_pid: dict[str, dict[str, Any]],
+    copay_inputs_by_pid: dict[str, CopayExemptionInput],
+) -> dict[str, Any]:
+    """The copay exemption of one bill's report: the patient's, with EK-1/A read on the bill's date (#292).
+
+    The patient's copay input (``assemble_sut_context`` builds it) is evaluated again on the bill's
+    own date (``bill_copay_exemption_input``), so a bill served before an EK-1/A change reads the
+    list in force then. Without an input (a cache built without one) the patient-level result of the
+    alerts cache is reused, read on the patient's latest claim.
+    """
+    patient_input = copay_inputs_by_pid.get(pid)
+    if patient_input is None:
+        alert = alerts_by_pid.get(pid, {})
+        return alert.get("copay_exemption", _DEFAULT_COPAY_EXEMPTION)
+    return evaluate_copay_exemption(bill_copay_exemption_input(patient_input, claim))
+
+
 def compute_all_bill_billing_reports(
     cache: dict[str, Any],
     *,
@@ -84,10 +110,11 @@ def compute_all_bill_billing_reports(
 
     Mirrors :func:`compute_all_billing_reports` but scopes each report to a
     single ``claim_id`` via ``build_bill_claim_context``, with the clinical lab
-    feed filtered to the claim's episode (``visit_id``). Reuses the same
-    patient-level ``copay_exemption``; the copay block reads a claim-scoped
-    ground (the emergency visit, SUT 1.8.5.(5)) on the bill's own claim only. Keyed
-    by ``f"{patient_id}::{claim_id}"`` so it stores in the generic payload-rows
+    feed filtered to the claim's episode (``visit_id``). The copay exemption is
+    the patient's read on the bill's own date (``bill_copay_exemption``: EK-1/A
+    as of the bill, #292); the copay block reads a claim-scoped ground (the
+    emergency visit, SUT 1.8.5.(5)) on the bill's own claim only. Keyed by
+    ``f"{patient_id}::{claim_id}"`` so it stores in the generic payload-rows
     table. Returns ``{}`` when no claim dataset is present.
     """
     claim_dataset = cache.get("sut_claim_dataset")
@@ -95,24 +122,31 @@ def compute_all_bill_billing_reports(
         return {}
 
     alerts_by_pid = alerts_by_patient_id(cache)
+    copay_inputs_by_pid = cache.get("copay_inputs_by_pid") or {}
     lab_df_pl: pl.DataFrame = cache.get("lab_df_pl", pl.DataFrame())
 
-    tasks: list[tuple[str, str, str]] = [
-        (pid, claim.claim_id, claim.episode_id)
+    # Each bill's exemption is evaluated here, before the fan-out: the EK-1/A index
+    # of its date is built in this thread, not in the workers.
+    tasks: list[tuple[str, str, dict[str, Any]]] = [
+        (
+            pid,
+            claim.claim_id,
+            bill_copay_exemption(pid, claim, alerts_by_pid, copay_inputs_by_pid),
+        )
         for pid, claims in claim_dataset.claims_by_patient.items()
         for claim in claims
     ]
     if not tasks:
         return {}
 
-    def _one(task: tuple[str, str, str]) -> tuple[str, BillingActionReport | None]:
-        pid, claim_id, _episode_id = task
+    def _one(
+        task: tuple[str, str, dict[str, Any]],
+    ) -> tuple[str, BillingActionReport | None]:
+        pid, claim_id, copay_exemption = task
         key = f"{pid}::{claim_id}"
         bill_context = build_bill_claim_context(pid, claim_id, claim_dataset)
         if bill_context is None:
             return key, None
-        alert = alerts_by_pid.get(pid, {})
-        copay_exemption = alert.get("copay_exemption", _DEFAULT_COPAY_EXEMPTION)
         report = _compute_patient_billing_report(
             pid,
             claim_context=bill_context,

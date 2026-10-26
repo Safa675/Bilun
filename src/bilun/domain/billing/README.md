@@ -14,7 +14,7 @@ recovery amounts.
 | # | Algorithm | Gazette Annex | Description |
 |---|-----------|---------------|-------------|
 | 1 | Lab Billing Optimizer | EK-2B | Hemogram (CBC) bundling — L107020 |
-| 2 | Copay Savings Calculator | EK-1A, EK-4/D | Exemption savings + rate corrections on claim lines; a report over some bills is exempt on the emergency ground (SUT 1.8.5.(5)) only when every bill is an emergency bill |
+| 2 | Copay Savings Calculator | EK-1A, EK-4/D | Exemption savings + rate corrections on claim lines; a report over some bills is exempt on the emergency ground (SUT 1.8.5.(5)) only when every bill is an emergency bill; a bill's report reads EK-1/A on that bill's date, a patient's report on its latest bill's (#292) |
 | 3 | Package vs Itemized Recommender | EK-2C | Exact package vs itemized comparison when claim totals are supplied |
 | 4 | Material Reimbursability Pre-Check | EK-3C-1/3C-2 | Pre-auth flags + MIAT warnings; KDV price reviews and the §3.1 material rules read each EK-3 row (list price, catalog membership, separate-billing marker) on the line's material date, its claim's date when it has none (#292) |
 
@@ -24,7 +24,7 @@ recovery amounts.
 |----------|-------------|
 | `compute_patient_billing_report(...)` | Full billing report for one patient |
 | `compute_all_billing_reports(cache)` | Cohort-level reports + summary |
-| `compute_all_bill_billing_reports(cache)` | Per-bill reports keyed by `patient_id::claim_id` |
+| `compute_all_bill_billing_reports(cache)` | Per-bill reports keyed by `patient_id::claim_id`; the copay exemption is the patient's input (`cache["copay_inputs_by_pid"]`) read on the bill's date |
 
 ## Dataclasses
 

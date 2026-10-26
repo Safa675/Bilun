@@ -532,4 +532,6 @@ def assemble_sut_context(
         **claim_line_indexes,
         "optimization_summary": optimization_summary,
         "patient_alerts_cache": patient_alerts_cache,
+        # The inputs of the alerts' copay exemptions: a bill's report reads them on its own date (#292).
+        "copay_inputs_by_pid": copay_inputs_by_pid,
     }

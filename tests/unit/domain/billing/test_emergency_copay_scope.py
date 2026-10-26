@@ -248,7 +248,8 @@ def test_an_exemption_without_the_claim_scope_keeps_its_patient_level_verdict() 
 @pytest.fixture(scope="module")
 def demo() -> dict[str, Any]:
     """The app path's patient-level copay exemption and the copay block of every bill of the demo's ER patients, each
-    bill's report built as `compute_all_bill_billing_reports` builds it (the patient's exemption, the bill's lines)."""
+    bill's report built as `compute_all_bill_billing_reports` builds it (the patient's exemption, the bill's lines; the
+    runner reads EK-1/A on the bill's date, which gives the patient's exemption on every demo bill, #292)."""
     from scripts.synthetic.cohort.coverage_metrics import DEFAULT_CLAIMS_DIR, app_path_inputs
     from scripts.synthetic.cohort.engine_proof import load_showcase_dataset
     from src.bilun.domain.billing.patient_report import compute_patient_billing_report

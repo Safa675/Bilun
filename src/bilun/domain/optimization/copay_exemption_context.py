@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from typing import Any
 
@@ -62,6 +63,21 @@ def build_copay_exemption_input(
         # EK-1/A as of the latest claim, as the age is (one bill: its own date, #292).
         service_date=max(claim_dates, default=None),
     )
+
+
+def bill_copay_exemption_input(
+    patient_input: CopayExemptionInput, claim: ClaimHeader
+) -> CopayExemptionInput:
+    """The patient's input read on one bill's date (#292): EK-1/A as of that bill, not the latest claim.
+
+    Only the date changes. The visit types stay the patient's (the emergency ground is listed for the
+    patient and scoped to its own bills by the copay block), as do the age at the latest claim and the
+    report flag. A bill without a date keeps the patient's date.
+    """
+    bill_date = service_date_of(None, claim)
+    if bill_date is None:
+        return patient_input
+    return replace(patient_input, service_date=bill_date)
 
 
 def build_copay_inputs_by_patient(
