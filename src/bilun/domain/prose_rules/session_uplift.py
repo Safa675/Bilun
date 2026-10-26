@@ -9,7 +9,7 @@ from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from .catalog_membership import normalize_procedure_code
-from .claim_utils import group_procedure_lines_by_session
+from .claim_utils import group_procedure_lines_by_session, line_billed_amount
 from ..money import money_round_half_up as _money
 from .mandated_package_gap import mandated_package_scope
 from .session_pricing import (
@@ -38,10 +38,6 @@ _MAX_SECONDARY_RATIO_FOR_REVIEW = 0.05
 _MIN_UPLIFT_FOR_RATIO_REVIEW_TRY = 200.0
 _MAX_SECONDARY_ABSOLUTE_FOR_REVIEW_TRY = 100.0
 
-
-
-def _line_billed(line: ProcedureClaimLine) -> float:
-    return float(line.billed_amount_try)
 
 
 def needs_clinical_review(
@@ -113,7 +109,7 @@ def iter_session_secondary_assessments(
         for session_date, session_lines in group_procedure_lines_by_session(claim_lines).items():
             billable = [
                 line for line in session_operation_lines(session_lines)
-                if not line.is_package_included and _line_billed(line) > 0
+                if not line.is_package_included and line_billed_amount(line) > 0
             ]
             if len(billable) < 2:
                 continue
@@ -301,7 +297,7 @@ def _session_review_row(
         "session_date": str(assessment.session_date),
         "expected_point_factor": factor.point_factor,
         "primary_procedure_code": assessment.primary_line.procedure_code,
-        "primary_billed_try": _money(_line_billed(assessment.primary_line)),
+        "primary_billed_try": _money(line_billed_amount(assessment.primary_line)),
         "expected_billed_try": _money(lenient_expected),
         "actual_billed_try": _money(actual_billed),
         "recoverable_uplift_try": 0.0,
@@ -383,7 +379,7 @@ def detect_session_underbilling_opportunities(
             min(lenient_session_expected, blood_ceiling) if blood_ceiling is not None
             else lenient_session_expected
         )
-        actual_billed = _line_billed(line)
+        actual_billed = line_billed_amount(line)
         if actual_billed >= expected_billed * (1.0 - _BILLING_TOLERANCE):
             if (
                 assessment.missing_facts
@@ -400,7 +396,7 @@ def detect_session_underbilling_opportunities(
             continue
 
         uplift_money = _money(uplift)
-        primary_billed = _line_billed(primary_line)
+        primary_billed = line_billed_amount(primary_line)
         # A lower blood ceiling must not promote an existing chart-review-only
         # session into confirmed money by reducing the review heuristic's gap.
         clinical_review = needs_clinical_review(

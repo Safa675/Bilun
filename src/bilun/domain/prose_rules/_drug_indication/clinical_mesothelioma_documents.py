@@ -8,12 +8,11 @@ the prescriber flag addresses only the specialist-status observation.
 """
 from __future__ import annotations
 
-from datetime import date
 from typing import Any
 
 from ...claims.clinical_evidence import clinical_date
-from ...claims.mesothelioma_evidence import MesotheliomaEvidence, parse_mesothelioma_evidence
-from .clinical_common import Predicate, Reader, all_of, result
+from ...claims.mesothelioma_evidence import parse_mesothelioma_evidence
+from .clinical_common import Predicate, Reader, all_of, evidence_date_missing, result
 from .matching import _drug_name_matches
 from .source_authority import resolve_source_authority
 
@@ -46,18 +45,6 @@ def _selected_source(line: Any, selected_rule_id: str | None) -> str | None:
     if branch is None or not _drug_name_matches(getattr(line, "drug_name", ""), branch[0]):
         return None
     return branch[1]
-
-
-def _date_missing(evidence: MesotheliomaEvidence | None, service: date | None) -> list[str]:
-    if service is None:
-        return ["drug_claim_date"]
-    missing = []
-    if getattr(evidence, "applies_on", None) != service:
-        missing.append(_PREFIX + ".applies_on")
-    assessed = getattr(evidence, "assessment_date", None)
-    if assessed is None or assessed > service:
-        missing.append(_PREFIX + ".assessment_date")
-    return missing
 
 
 def _output(reader: Reader, predicate: Predicate, source: str,
@@ -118,7 +105,7 @@ def evaluate_mesothelioma_documentary_candidate(
         return None
     evidence = parse_mesothelioma_evidence(getattr(line, "mesothelioma_evidence", None))
     reader = Reader(evidence, _PREFIX)
-    missing = _date_missing(evidence, clinical_date(getattr(line, "drug_claim_date", None)))
+    missing = evidence_date_missing(evidence, _PREFIX, clinical_date(getattr(line, "drug_claim_date", None)))
     if missing:
         return _output(reader, Predicate(None), source, date_missing=missing)
     return _candidate(reader, source, codes)
@@ -136,7 +123,7 @@ def evaluate_mesothelioma_documents(
     service = clinical_date(getattr(line, "drug_claim_date", None))
     authority = resolve_source_authority(AUTHORITY_ID, service)
     reader.source_authority = authority.model_dump()
-    missing = _date_missing(evidence, service)
+    missing = evidence_date_missing(evidence, _PREFIX, service)
     if authority.status != "admitted":
         missing.append("verified_source_for_service_date")
     if not _DOCUMENTARY_INTERPRETATION_RELEASED:

@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import infer_care_setting, line_billed_amount
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_HEURISTIC,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
@@ -68,10 +68,6 @@ _SURGICAL_CATEGORIES = frozenset({"islem"})
 # before the detector's findings should be treated as anything stronger than
 # a heuristic audit exposure. Each entry is a normalized procedure code.
 ALLOWED_SEPARATELY_BILLABLE_CODES: frozenset[str] = frozenset()
-
-
-def _line_billed(line: ProcedureClaimLine) -> float:
-    return float(line.billed_amount_try)
 
 
 def _is_liver_transplant_line(line: ProcedureClaimLine) -> bool:
@@ -125,7 +121,7 @@ def detect_transplant_package_scope_violations(
             continue
 
         # Only flag lines that were actually billed separately.
-        if _line_billed(line) <= _BILLING_TOLERANCE:
+        if line_billed_amount(line) <= _BILLING_TOLERANCE:
             continue
 
         # Allow-listed items (blood components §4.6.4, carved-out imaging,
@@ -134,7 +130,7 @@ def detect_transplant_package_scope_violations(
         if code and code in ALLOWED_SEPARATELY_BILLABLE_CODES:
             continue
 
-        billed = _line_billed(line)
+        billed = line_billed_amount(line)
         detail = (
             f"Surgical procedure {line.procedure_code} ({line.procedure_name}) "
             f"billed separately at {billed:.2f} TRY on liver transplant claim "

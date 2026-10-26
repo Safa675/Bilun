@@ -7,7 +7,7 @@ from functools import lru_cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
-from ..turkish_fold import TurkishFold, fold_turkish
+from .material_lines import material_fields, material_name_matches
 
 _RULES_PATH = _PROSE_RULES_DIR / "specialty_materials_prose.json"
 
@@ -69,23 +69,6 @@ def load_specialty_materials_rules() -> dict[str, Any]:
         return json.load(handle)
 
 
-def _material_fields(mat: dict[str, Any]) -> tuple[str, str, float]:
-    name = str(mat.get("name") or mat.get("material_name") or "").strip()
-    code = str(mat.get("code") or mat.get("material_code") or "").strip().upper()
-    unit_price = float(mat.get("unit_price") or mat.get("billed_amount_try") or 0)
-    return name, code, unit_price
-
-
-def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
-    normalized = fold_turkish(material_name, TurkishFold.ACCENTLESS)
-    if not normalized:
-        return False
-    for keyword in keywords:
-        if fold_turkish(keyword, TurkishFold.ACCENTLESS) in normalized:
-            return True
-    return False
-
-
 def _rule_evaluation_priority(rule: dict[str, Any]) -> int:
     condition = rule.get("condition") or {}
     if any(condition.get(flag) for flag in SPECIALTY_CLAIM_FLAGS):
@@ -107,7 +90,7 @@ def _condition_matches(
         return False
 
     keywords = condition.get("material_name_any") or []
-    name_hit = bool(keywords) and _material_name_matches(name, keywords)
+    name_hit = bool(keywords) and material_name_matches(name, keywords)
 
     active_flags = [flag for flag in SPECIALTY_CLAIM_FLAGS if condition.get(flag)]
     if active_flags:
@@ -185,11 +168,11 @@ def check_specialty_materials_prose(
     # Collect all material names on the claim once — duplicate-billing rules
     # need to check co-material presence against this set.
     all_names = frozenset(
-        str(_material_fields(m)[0]).casefold() for m in materials if _material_fields(m)[0]
+        str(material_fields(m)[0]).casefold() for m in materials if material_fields(m)[0]
     )
 
     for idx, mat in enumerate(materials):
-        name, code, unit_price = _material_fields(mat)
+        name, code, unit_price = material_fields(mat)
         if unit_price <= 0:
             continue
 

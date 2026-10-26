@@ -31,7 +31,11 @@ from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money, puan_price_try
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    PackagePrefix,
+    clean_procedure_code,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -105,23 +109,9 @@ _ANESTEZI_GROUPS: list[tuple[float, float, str, str, float]] = [
 ]
 
 
-def _normalize_code(raw_code: str) -> str:
-    code = (
-        str(raw_code or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
-    if code.startswith("P") and len(code) > 1 and code[1:].isdigit():
-        code = code[1:]
-    return code
-
-
 def _is_surgical_code(raw_code: str) -> bool:
     """Return True only for EK-2B §6 surgical codes (600000–629999)."""
-    code = _normalize_code(raw_code)
+    code = clean_procedure_code(raw_code, PackagePrefix.BEFORE_DIGITS)
     if len(code) != 6 or not code.isdigit():
         return False
     return 600000 <= int(code) <= 629999
@@ -129,7 +119,7 @@ def _is_surgical_code(raw_code: str) -> bool:
 
 def _is_anestezi_group_code(raw_code: str) -> bool:
     """Return True for EK-2B §4 surgical anesthesia group codes (550130–550346)."""
-    code = _normalize_code(raw_code)
+    code = clean_procedure_code(raw_code, PackagePrefix.BEFORE_DIGITS)
     if len(code) != 6 or not code.isdigit():
         return False
     return 550130 <= int(code) <= 550346

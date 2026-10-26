@@ -19,7 +19,7 @@ from .catalog_membership import get_ek2c_description, get_ek2c_entry, normalize_
 from .clause_linking import clause_ref_for_rule_id
 
 from ..constants import _PROSE_RULES_DIR
-from ..turkish_fold import TurkishFold, fold_turkish
+from .material_lines import material_fields, material_name_matches
 from ..loaders.validity import service_date_of
 
 _RULES_PATH = _PROSE_RULES_DIR / "material_bundling_prose.json"
@@ -124,23 +124,6 @@ def _rule_evaluation_priority(rule: dict[str, Any]) -> int:
     return 50
 
 
-def _material_fields(mat: dict[str, Any]) -> tuple[str, str, float]:
-    name = str(mat.get("name") or mat.get("material_name") or "").strip()
-    code = str(mat.get("code") or mat.get("material_code") or "").strip().upper()
-    unit_price = float(mat.get("unit_price") or mat.get("billed_amount_try") or 0)
-    return name, code, unit_price
-
-
-def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
-    normalized = fold_turkish(material_name, TurkishFold.ACCENTLESS)
-    if not normalized:
-        return False
-    for keyword in keywords:
-        if fold_turkish(keyword, TurkishFold.ACCENTLESS) in normalized:
-            return True
-    return False
-
-
 def _procedure_pairing_satisfied(
     material_code: str,
     *,
@@ -229,7 +212,7 @@ def material_paid_next_to_package(
         return _separate_billing_permitted(normalized, mat)
     return any(
         _is_sut_3_1_4_item_rule(rule)
-        and _material_name_matches(name, rule["condition"]["material_name_any"])
+        and material_name_matches(name, rule["condition"]["material_name_any"])
         for rule in load_material_bundling_rules().get("rules", [])
     )
 
@@ -386,7 +369,7 @@ def _condition_matches(
 
     keywords = condition.get("material_name_any") or []
     if keywords:
-        return _material_name_matches(name, keywords)
+        return material_name_matches(name, keywords)
 
     if condition.get("material_not_in_ek3c") and code:
         if is_material_in_ek3_catalog(code, day) and not is_material_in_ek3c_catalog(code):
@@ -489,7 +472,7 @@ def check_material_bundling_prose(
     )
 
     for idx, mat in enumerate(materials):
-        name, code, unit_price = _material_fields(mat)
+        name, code, unit_price = material_fields(mat)
         if unit_price <= 0 and not code and not name:
             continue
         mat = _with_package_context(mat, code, default_context)

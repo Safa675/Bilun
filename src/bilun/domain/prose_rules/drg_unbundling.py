@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from .claim_utils import claim_is_day_case, infer_care_setting
+from .claim_utils import claim_is_day_case, infer_care_setting, line_billed_amount
 from ..money import money_round_half_up as _money
 from .mandated_package_gap import line_payment_method_compliance, mandated_package_gap
 from .payment_method import resolve_payment_method
@@ -64,10 +64,6 @@ class ClaimUnbundlingFinding:
         )
 
 
-def _line_billed(line: ProcedureClaimLine) -> float:
-    return float(line.billed_amount_try)
-
-
 def _line_payable(line: ProcedureClaimLine) -> float:
     return float(line.expected_payable_try)
 
@@ -81,7 +77,7 @@ def detect_payment_method_violations(
     hizmet_basi = {id(line) for line in c000672_hizmet_basi_lines(claim, lines)}
 
     for line in lines:
-        if _line_billed(line) <= 0 or id(line) in hizmet_basi:
+        if line_billed_amount(line) <= 0 or id(line) in hizmet_basi:
             continue
         billed_as_package = line_billed_as_package(line)
         # On the line's procedure date, as the #269 gate reads it.
@@ -95,11 +91,11 @@ def detect_payment_method_violations(
             "procedure_name": line.procedure_name,
             "mandated_method": compliance.mandated_method,
             "billed_as_package": billed_as_package,
-            "billed_amount_try": _money(_line_billed(line)),
+            "billed_amount_try": _money(line_billed_amount(line)),
             "sut_section": compliance.trace.sut_section,
             "rule_id": compliance.trace.rule_id,
             "detail": compliance.detail,
-            "risk_amount_try": _money(_line_billed(line)),
+            "risk_amount_try": _money(line_billed_amount(line)),
         }
         if compliance.message_code:
             violation_row["message_code"] = compliance.message_code
@@ -132,7 +128,7 @@ def _session_point_rows(
         lenient_expected = expected_session_billed_try(
             line, point_factor=lenient.point_factor, claim=claim,
         )
-        actual_billed = _line_billed(line)
+        actual_billed = line_billed_amount(line)
         if strict_expected is None or lenient_expected is None:
             continue
         if actual_billed <= strict_expected * (1.0 + _BILLING_TOLERANCE):
@@ -251,7 +247,7 @@ def detect_blood_component_violations(
     for line in lines:
         if (line.patient_id, line.claim_id, line.episode_id) not in package_scopes:
             continue
-        if line.is_package_included or _line_billed(line) <= 0:
+        if line.is_package_included or line_billed_amount(line) <= 0:
             continue
         fraction = blood_component_billable_fraction(line.procedure_code)
         if fraction is None:
@@ -260,7 +256,7 @@ def detect_blood_component_violations(
         max_billable = blood_component_max_billable_try(line, package_context=True)
         if max_billable is None:
             continue
-        billed = _line_billed(line)
+        billed = line_billed_amount(line)
         if billed <= max_billable * (1.0 + _BILLING_TOLERANCE):
             continue
 
@@ -378,9 +374,9 @@ def analyze_claim_unbundling(
             "procedure_line_id": line.procedure_line_id,
             "procedure_code": line.procedure_code,
             "procedure_name": line.procedure_name,
-            "billed_amount_try": _money(_line_billed(line)),
+            "billed_amount_try": _money(line_billed_amount(line)),
             "expected_payable_try": _money(_line_payable(line)),
-            "risk_amount_try": _money(max(0.0, _line_billed(line) - _line_payable(line))),
+            "risk_amount_try": _money(max(0.0, line_billed_amount(line) - _line_payable(line))),
             "savings_basis": "audit_flag",
             "detail": (
                 "HEURISTIC — package-included flag on claim line; "
@@ -388,7 +384,7 @@ def analyze_claim_unbundling(
             ),
         }
         for line in lines
-        if line.is_package_included and _line_billed(line) > 0
+        if line.is_package_included and line_billed_amount(line) > 0
     ]
 
     finding.payment_method_violations = detect_payment_method_violations(claim, lines)
@@ -446,7 +442,7 @@ def analyze_claim_unbundling(
             day_case=claim_is_day_case(claim),
         ).payment_method
         for line in lines
-        if _line_billed(line) > 0 or _line_payable(line) > 0
+        if line_billed_amount(line) > 0 or _line_payable(line) > 0
     }
     mandated_methods.discard("unknown")
 

@@ -57,7 +57,11 @@ from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.money import money_round_half_up as _money
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    PackagePrefix,
+    clean_procedure_code,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
@@ -72,24 +76,6 @@ _SUT_SECTION_ID = "2.4.4.H"
 _RULE_ID = "yatak_icu_overlap_510010"
 
 _BED_CODE = "510010"  # Standart yatak (EK-2B)
-
-
-def _normalize_code(raw: str) -> str:
-    """Normalize a procedure code for matching (mirrors icu_puani helpers).
-
-    Strips a leading P/p (MEDULA package prefix), removes punctuation, and
-    upper-cases so that ``"p510010"``, ``"510.010"``, ``"510 010"`` all
-    collapse to ``"510010"``.
-    """
-    cleaned = (
-        str(raw or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
-    return cleaned[1:] if cleaned.startswith("P") else cleaned
 
 
 def _is_icu_code(normalized: str) -> bool:
@@ -123,7 +109,7 @@ def _collect_icu_discharge_claims(
             continue
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
         if not any(
-            _is_icu_code(_normalize_code(line.procedure_code))
+            _is_icu_code(clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS))
             for line in claim_procs
         ):
             continue
@@ -185,7 +171,7 @@ def detect_yatak_icu_overlap(
     for line in procedure_lines:
         if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
             continue
-        if _normalize_code(line.procedure_code) != _BED_CODE:
+        if clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS) != _BED_CODE:
             continue
         if line.billed_amount_try <= 0:
             continue

@@ -9,7 +9,8 @@ Unlike the algorithmic rules, these do NOT produce violations. They surface
 "required documents" as informational warnings.
 
 Matching:
-  - Rules with ``procedure_code_any``: billed-code overlap + branch gate.
+  - Rules with ``procedure_code_any``: billed-code overlap + branch gate
+    (``fatura_inceleme._branch_matches``, the algorithmic rules' own gate).
   - Code-less rules: require ``relevance_signals`` (Option B). Missing/empty
     signals → hidden. Signals are claim-shape flags derived in the context
     bridge (TPN, EK-2/C, surgery/biopsy, outpatient, inpatient/ICU, etc.).
@@ -28,38 +29,9 @@ from typing import Any
 from src.bilun.domain.claims.claim_type import claim_type_kind, fold_claim_type
 
 from ..constants import _PROSE_RULES_DIR
+from .fatura_inceleme import _branch_matches
 
 _RULES_PATH = _PROSE_RULES_DIR / "fatura_inceleme_checklist.json"
-
-_BRANCH_KEYWORDS: dict[str, list[str]] = {
-    "ANESTEZİ VE REANİMASYON": ["anestezi", "reanimasyon"],
-    "BEYİN VE SİNİR CERRAHİSİ": ["beyin", "sinir cerrahisi", "norosirurji"],
-    "DERMATOLOJİ": ["dermatoloji"],
-    "ÇOCUK SAĞLIĞI VE HASTALIKLARI": ["çocuk sağlığı", "çocuk hastalıkları", "pediatri"],
-    "ÇOCUK CERRAHİSİ": ["çocuk cerrahisi"],
-    "İÇ HASTALIKLARI": ["iç hastalıkları", "dahiliye"],
-    "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ": ["enfeksiyon", "mikrobiyoloji"],
-    "FİZİK TEDAVİ VE REHABİLİTASYON": ["fizik tedavi", "rehabilitasyon", "ftr"],
-    "GENEL CERRAHİ": ["genel cerrahi"],
-    "GÖĞÜS CERRAHİSİ": ["göğüs cerrahisi", "toraks cerrahisi"],
-    "GÖĞÜS HASTALIKLARI": ["göğüs hastalıkları", "göğüs", "toraks"],
-    "GÖZ HASTALIKLARI": ["göz", "göz hastalıkları", "oftalmoloji"],
-    "KARDİYOLOJİ": ["kardiyoloji"],
-    "KALP VE DAMAR CERRAHİSİ": ["kalp damar cerrahisi", "kvc"],
-    "KULAK BURUN BOĞAZ": ["kulak burun boğaz", "kbb", "ent"],
-    "KADIN HASTALIKLARI VE DOĞUM": ["kadın hastalıkları", "doğum", "jinekoloji", "obstetri"],
-    "NÖROLOJİ": ["nöroloji"],
-    "ORTOPEDİ VE TRAVMATOLOJİ": ["ortopedi", "travmatoloji"],
-    "PATOLOJİ": ["patoloji"],
-    "PLASTİK VE REKONSTRÜKTİF CERRAHİ": ["plastik cerrahi", "rekonstrüktif"],
-    "PSİKİYATRİ": ["psikiyatri"],
-    "RADYASYON ONKOLOJİSİ": ["radyasyon onkolojisi", "radyoterapi"],
-    "ÜROLOJİ": ["üroloji"],
-    "RADYOLOJİ": ["radyoloji"],
-    "NÜKLEER TIP": ["nükleer tıp"],
-    "DİYALİZ": ["diyaliz"],
-    "ACİL TIP HEKİMLİĞİ": ["acil tip", "acil servis", "emergency"],
-}
 
 _TPN_CODES = frozenset({"530430", "530980", "P530430", "P530980"})
 _TPN_NAME_RE = re.compile(r"\bTPN\b|parenteral\s+n[uü]trisyon|total\s+parenteral", re.I)
@@ -95,19 +67,6 @@ def format_fi_dayanak(rule_or_ref: dict[str, Any] | str) -> str:
     if sut_label:
         basis = f"{basis} · {sut_label}"
     return basis
-
-
-def _branch_matches(rule_branch: str | None, context: dict[str, Any]) -> bool:
-    """Check if a rule's branch matches the claim's department/specialty."""
-    if rule_branch is None:
-        return True
-    keywords = _BRANCH_KEYWORDS.get(rule_branch, [])
-    if not keywords:
-        return False
-    dept = (context.get("department") or "").lower()
-    specialty = (context.get("provider_specialty") or "").lower()
-    combined = f"{dept} {specialty}"
-    return any(kw in combined for kw in keywords)
 
 
 def _code_overlap(rule: dict[str, Any], context: dict[str, Any]) -> bool:

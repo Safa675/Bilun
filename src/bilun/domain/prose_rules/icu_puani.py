@@ -45,7 +45,11 @@ from typing import TYPE_CHECKING, Any
 from src.bilun.domain.catalog import get_ek2c1_copay_rates, lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    PackagePrefix,
+    clean_procedure_code,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
@@ -110,35 +114,20 @@ _TIER_3_SUPPORT_KEYWORDS: tuple[str, ...] = (
 )
 
 
-def _normalize_code(raw: str) -> str:
-    return (
-        str(raw or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
-
-
-def _strip_p(normalized: str) -> str:
-    return normalized[1:] if normalized.startswith("P") else normalized
-
-
 def _is_icu_code(normalized: str) -> bool:
     """True for 510090 or any P55200x package code."""
-    stripped = _strip_p(_normalize_code(normalized))
+    stripped = clean_procedure_code(normalized, PackagePrefix.ALWAYS)
     if stripped == _ICU_DAY_RATE_CODE:
         return True
     return stripped in _ICU_PACKAGE_PREFIXES
 
 
 def _is_day_rate_code(raw: str) -> bool:
-    return _strip_p(_normalize_code(raw)) == _ICU_DAY_RATE_CODE
+    return clean_procedure_code(raw, PackagePrefix.ALWAYS) == _ICU_DAY_RATE_CODE
 
 
 def _is_icu_package_code(raw: str) -> bool:
-    return _strip_p(_normalize_code(raw)) in _ICU_PACKAGE_PREFIXES
+    return clean_procedure_code(raw, PackagePrefix.ALWAYS) in _ICU_PACKAGE_PREFIXES
 
 
 def _day_rate_puan(visit_date: date | str | None = None) -> float:
@@ -202,7 +191,7 @@ def _claim_icu_package_code(
 ) -> str | None:
     """If the claim's procedure lines carry a P55200x code, return its code."""
     for line in procedure_lines:
-        stripped = _strip_p(_normalize_code(line.procedure_code))
+        stripped = clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS)
         if stripped in _ICU_PACKAGE_PREFIXES:
             return stripped
     return None
@@ -251,7 +240,7 @@ def _infer_billed_icu_days(
         if _is_icu_package_code(p.procedure_code)
     )
     has_ward_bed = any(
-        _strip_p(_normalize_code(p.procedure_code)) in ("510010", "510070", "510081")
+        clean_procedure_code(p.procedure_code, PackagePrefix.ALWAYS) in ("510010", "510070", "510081")
         for p in claim_procs
     )
 
@@ -417,7 +406,7 @@ def _line_is_tier_3_support(
     as_of_date: date | str | None = None,
 ) -> bool:
     """True when a line is a separately billable §2.4.4.H.(2)/(4) ICU support/A-B-C item."""
-    code = _strip_p(_normalize_code(line.procedure_code))
+    code = clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS)
     if not code or code == _ICU_DAY_RATE_CODE or code.startswith(_ICU_PACKAGE_PREFIXES):
         return False
     if code in _TIER_3_SUPPORT_PROCEDURE_CODES:
@@ -482,7 +471,7 @@ def detect_icu_tier_overbilling(
             continue
 
         for line in claim_procs:
-            stripped = _strip_p(_normalize_code(line.procedure_code))
+            stripped = clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS)
             if stripped not in _TIER_3_PACKAGE_CODES:
                 continue
 

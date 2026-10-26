@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 from ...claims.clinical_evidence import clinical_date
@@ -67,6 +68,17 @@ def scope_missing(evidence: Any, prefix: str, service_date: Any,
         return ['drug_claim_date']
     if authority.status != 'admitted':
         return ['verified_source_for_service_date']
+    return evidence_date_missing(evidence, prefix, service)
+
+
+def evidence_date_missing(evidence: Any, prefix: str, service: date | None) -> list[str]:
+    """The dated facts an evidence record lacks for the service date.
+
+    No service date: ``drug_claim_date``. Otherwise the record must apply on that date
+    (``<prefix>.applies_on``) and be assessed on or before it (``<prefix>.assessment_date``).
+    """
+    if service is None:
+        return ['drug_claim_date']
     missing = []
     if getattr(evidence, 'applies_on', None) != service:
         missing.append(prefix + '.applies_on')

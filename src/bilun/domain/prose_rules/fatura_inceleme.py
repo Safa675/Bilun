@@ -91,6 +91,8 @@ def _branch_matches(rule_branch: str | None, context: dict[str, Any]) -> bool:
 
     ORTAK rules (branch=null) match all claims. Branch-specific rules
     match when the claim's department contains any of the branch's keywords.
+    The documentation checklist (``fatura_inceleme_checklist``) gates its
+    rules with this same function and keyword table.
     """
     if rule_branch is None:
         return True  # ORTAK — applies to all branches

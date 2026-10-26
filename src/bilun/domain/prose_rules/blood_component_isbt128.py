@@ -39,6 +39,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from src.bilun.domain.prose_rules.claim_utils import PackagePrefix, clean_procedure_code
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
@@ -77,24 +78,6 @@ _PROSE_RULE_IDS: tuple[str, ...] = (
 # or the legacy Codabar 'A' prefix. Anything else is not an ISBT 128
 # identifier.
 _ISBT128_VALID_PREFIXES: tuple[str, ...] = ("=", "A")
-
-
-def _normalize_code(raw: str) -> str:
-    """Normalize a procedure code for matching (mirrors catalog_membership).
-
-    Strips a leading P/p (MEDULA package prefix), removes punctuation, and
-    upper-cases so ``"p705371"``, ``"705.371"``, ``"705 371"`` all collapse
-    to ``"705371"``.
-    """
-    cleaned = (
-        str(raw or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
-    return cleaned[1:] if cleaned.startswith("P") else cleaned
 
 
 def is_valid_isbt128_barcode(raw: str) -> bool:
@@ -156,7 +139,7 @@ def detect_blood_component_isbt128_violations(
     for line in procedure_lines:
         if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
             continue
-        if _normalize_code(line.procedure_code) not in _BLOOD_COMPONENT_CODES:
+        if clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS) not in _BLOOD_COMPONENT_CODES:
             continue
 
         barcode = (getattr(line, "isbt128_barcode", "") or "").strip()

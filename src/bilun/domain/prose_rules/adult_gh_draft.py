@@ -9,10 +9,10 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from ..claims.adult_gh import AdultGhEvidence, parse_adult_gh_evidence
+from ..claims.adult_gh import parse_adult_gh_evidence
 from ..claims.clinical_evidence import clinical_date
 from ..claims.growth_hormone import validated_growth_hormone_value
-from ._drug_indication.clinical_common import Predicate, Reader, all_of, any_of, result
+from ._drug_indication.clinical_common import Predicate, Reader, all_of, any_of, evidence_date_missing, result
 from ._drug_indication.matching import _drug_name_matches
 from ._drug_indication.source_authority import resolve_source_authority
 
@@ -54,18 +54,6 @@ def _scope_missing(line: Any) -> list[str]:
     expected = {"gh_patient_group": "adult", "epiphyses_closed": True, "gh_treatment_phase": "initiation"}
     return [field for field, value in expected.items()
             if validated_growth_hormone_value(field, getattr(line, field, None)) != value]
-
-
-def _date_missing(evidence: AdultGhEvidence | None, service: date | None) -> list[str]:
-    if service is None:
-        return ["drug_claim_date"]
-    missing = []
-    if getattr(evidence, "applies_on", None) != service:
-        missing.append(_PREFIX + ".applies_on")
-    assessed = getattr(evidence, "assessment_date", None)
-    if assessed is None or assessed > service:
-        missing.append(_PREFIX + ".assessment_date")
-    return missing
 
 
 def _output(reader: Reader, predicate: Predicate, *, date_missing: list[str] | None = None) -> dict[str, Any]:
@@ -214,7 +202,7 @@ def evaluate_adult_gh_closed_epiphysis_candidate(
     evidence = parse_adult_gh_evidence(getattr(line, "adult_gh_evidence", None))
     reader = Reader(evidence, _PREFIX)
     service = clinical_date(getattr(line, "drug_claim_date", None))
-    missing = _date_missing(evidence, service)
+    missing = evidence_date_missing(evidence, _PREFIX, service)
     if missing:
         return _output(reader, Predicate(None), date_missing=missing)
     return _candidate(line, reader, service)
@@ -235,7 +223,7 @@ def evaluate_adult_gh_closed_epiphysis(
     service = clinical_date(getattr(line, "drug_claim_date", None))
     authority = resolve_source_authority(AUTHORITY_ID, service)
     reader.source_authority = authority.model_dump()
-    missing = _date_missing(evidence, service)
+    missing = evidence_date_missing(evidence, _PREFIX, service)
     if authority.status != "admitted":
         missing.append("verified_source_for_service_date")
     if not _ADULT_GH_INTERPRETATION_RELEASED:

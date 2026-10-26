@@ -14,7 +14,7 @@ from typing import Any
 
 from ...claims.clinical_evidence import clinical_date
 from ...claims.mds_evidence import MdsEvidence, parse_mds_evidence
-from .clinical_common import Predicate, Reader, all_of, result
+from .clinical_common import Predicate, Reader, all_of, evidence_date_missing, result
 from .source_authority import resolve_source_authority
 
 KIND = "mds_epoetin"
@@ -53,18 +53,6 @@ def _pure_ckd(evidence: MdsEvidence | None, codes: list[str] | None) -> bool:
     mds, ckd = _codes(codes)
     indication = getattr(evidence, "indication", None)
     return not mds and (indication == "ckd_anemia" or (ckd and indication != "mds_anemia"))
-
-
-def _date_missing(evidence: MdsEvidence | None, service: date | None) -> list[str]:
-    if service is None:
-        return ["drug_claim_date"]
-    missing = []
-    if getattr(evidence, "applies_on", None) != service:
-        missing.append(_PREFIX + ".applies_on")
-    assessed = getattr(evidence, "assessment_date", None)
-    if assessed is None or assessed > service:
-        missing.append(_PREFIX + ".assessment_date")
-    return missing
 
 
 def _output(reader: Reader, predicate: Predicate, *, date_missing: list[str] | None = None) -> dict[str, Any]:
@@ -166,7 +154,7 @@ def evaluate_mds_clinical_candidate(
         return None
     reader = Reader(evidence, _PREFIX)
     service = clinical_date(getattr(line, "drug_claim_date", None))
-    missing = _date_missing(evidence, service)
+    missing = evidence_date_missing(evidence, _PREFIX, service)
     if missing:
         return _output(reader, Predicate(None), date_missing=missing)
     return _candidate(reader, substance, selected_rule_id, service, codes)
@@ -186,7 +174,7 @@ def evaluate_mds_clinical_draft(
     service = clinical_date(getattr(line, "drug_claim_date", None))
     authority = resolve_source_authority(AUTHORITY_ID, service)
     reader.source_authority = authority.model_dump()
-    missing = _date_missing(evidence, service)
+    missing = evidence_date_missing(evidence, _PREFIX, service)
     if authority.status != "admitted":
         missing.append("verified_source_for_service_date")
     if not _MDS_CLINICAL_INTERPRETATION_RELEASED:
