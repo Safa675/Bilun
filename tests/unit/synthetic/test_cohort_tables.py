@@ -421,8 +421,11 @@ def test_table_schemas_cover_all_dataclass_fields_and_have_no_null_dtype(
         assert dict(tables[name].schema) == expected_schema
         assert dict(pl.read_parquet_schema(tmp_path / name)) == expected_schema
 
-    # Material table includes all 97 legacy columns plus the 5 newer dataclass fields (102 total).
-    assert len(schemas["material_claim_lines.parquet"]) == 102
+    # Material table includes all 97 legacy columns plus the 6 newer dataclass fields (103 total);
+    # the last is the declared KDV percent, an Int64 that no demo line fills (#298).
+    assert len(schemas["material_claim_lines.parquet"]) == 103
+    assert schemas["material_claim_lines.parquet"]["kdv_percent"] == pl.Int64()
+    assert tables["material_claim_lines.parquet"]["kdv_percent"].null_count() == tables["material_claim_lines.parquet"].height
     assert material_synthetic_validation_columns() <= set(schemas["material_claim_lines.parquet"])
 
     # Loader required columns and synthetic validation columns are all present.

@@ -833,6 +833,8 @@
         "actual_billed_try": true,
         "recoverable_uplift_try": true,
         "list_price_try": true,
+        "kdv_rate": true,
+        "kdv_rate_declared": true,
         "price_methodology": true,
         "savings_basis": true,
         "savings_category": true,
@@ -1628,6 +1630,7 @@
         "gazette_ceiling_try": true,
         "kdv_applied": true,
         "kdv_rate": true,
+        "kdv_rate_declared": true,
         "note": true,
         "claim_id": true,
         "material_line_id": true

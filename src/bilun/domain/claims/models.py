@@ -254,6 +254,10 @@ class MaterialClaimLine:
     nimv_heated_humidifier_separate_billing: bool = False
     dental_prosthesis_adhesive_claim: bool = False
     dual_mesh_primary_hernia_repair: bool = False
+    # The KDV rate the facility declares on the line: MEDULA MalzemeBilgisiDVO.kdv, an integer percent
+    # (10 = 10 %, Kılavuz p.243). SGK adds KDV at this rate (SUT 3.2.1.C(1), C002886); None = not declared,
+    # priced at the 20 % default (pricing/material_kdv.py, Safa675/Bilun#298).
+    kdv_percent: int | None = None
 
 
 @dataclass(frozen=True)

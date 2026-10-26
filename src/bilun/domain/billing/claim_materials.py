@@ -7,8 +7,8 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.loaders.validity import service_date_of
 from src.bilun.domain.materials.catalog_lookup import lookup_ek3_list_price_try
 from src.bilun.domain.pricing.material_kdv import (
-    DEFAULT_MATERIAL_KDV_RATE,
     ek3_payable_ceiling_try,
+    material_line_kdv_rate,
     should_apply_kdv_to_material,
 )
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
@@ -115,6 +115,20 @@ def _enrich_material_precheck_row(
     return enriched
 
 
+def _kdv_review_note(*, apply_kdv: bool, rate: float, declared: bool) -> str:
+    if not apply_kdv:
+        return "Billed amount exceeds EK-3 list price (KDV exempt path) (§3.1.1(10))."
+    if declared:
+        return (
+            f"Billed amount exceeds EK-3 list price + the {rate * 100:g} % KDV declared on the line "
+            "(§3.1.1(10), §3.2.1.C(1))."
+        )
+    return (
+        f"Billed amount exceeds EK-3 list price + KDV at the {rate * 100:g} % default; "
+        "the line declares no KDV rate (§3.1.1(10))."
+    )
+
+
 def _append_kdv_price_reviews(
     result: MaterialPreCheck,
     ctx: PatientClaimContext,
@@ -123,7 +137,9 @@ def _append_kdv_price_reviews(
 
     The list price is the one in force on the line's material_date, its claim's
     date when the line has none (#292): a set billed at its then-valid price is
-    no review after SGK reprices it.
+    no review after SGK reprices it. The KDV is the rate the line declares
+    (MEDULA ``kdv``, §3.2.1.C(1)), the 20 % default when it declares none; the
+    row says which (``kdv_rate_declared``, #298).
     """
     claims = {claim.claim_id: claim for claim in ctx.claims}
     for line in ctx.material_lines:
@@ -135,9 +151,11 @@ def _append_kdv_price_reviews(
         if ex_vat is None:
             continue
         apply_kdv = should_apply_kdv_to_material(foreign_facility=line.foreign_facility)
+        rate, declared = material_line_kdv_rate(line)
         ceiling = ek3_payable_ceiling_try(
             ex_vat,
             foreign_facility=line.foreign_facility,
+            kdv_rate=rate,
         )
         if ceiling is None:
             continue
@@ -153,12 +171,9 @@ def _append_kdv_price_reviews(
             "gazette_ex_vat_try": round(float(ex_vat), 2),
             "gazette_ceiling_try": ceiling,
             "kdv_applied": apply_kdv,
-            "kdv_rate": DEFAULT_MATERIAL_KDV_RATE if apply_kdv else 0.0,
-            "note": (
-                "Billed amount exceeds EK-3 list price"
-                + (" + KDV" if apply_kdv else " (KDV exempt path)")
-                + " (§3.1.1(10))."
-            ),
+            "kdv_rate": rate if apply_kdv else 0.0,
+            "kdv_rate_declared": declared,
+            "note": _kdv_review_note(apply_kdv=apply_kdv, rate=rate, declared=declared),
         }
         if line.material_line_id:
             review_row["material_line_id"] = line.material_line_id
