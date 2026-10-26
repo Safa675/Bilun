@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 from typing import Any
 
 from scripts.sut.prose.drug_indication_gate_b import infer_defer_themes
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 # ── Bucket B: biomarker + prior-therapy ───────────────────────────────────────
 
@@ -112,13 +112,8 @@ _EMR_RE = re.compile("|".join(_STRICT_EMR_SIGNALS), re.IGNORECASE)
 _ICD_RE = re.compile(r"\b([CD]\d{2}(?:\.\d+)?)\b", re.IGNORECASE)
 
 
-def normalize_tr(text: str) -> str:
-    folded = unicodedata.normalize("NFKD", str(text or "").casefold())
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
-
-
 def extract_drug_tokens(text: str, known_inns: list[str]) -> list[str]:
-    norm_text = normalize_tr(text)
+    norm_text = fold_turkish(text or "", TurkishFold.ACCENTLESS)
     found: list[str] = []
     for inn in known_inns:
         if inn and inn in norm_text:
@@ -130,7 +125,7 @@ def extract_drug_tokens(text: str, known_inns: list[str]) -> list[str]:
     rest = t[m.end() :].strip() if m else t
     seg = rest.split(";")[0].split(",")[0].strip()
     if 2 < len(seg) < 80 and not seg.lower().startswith("bu "):
-        return [normalize_tr(seg)]
+        return [fold_turkish(seg, TurkishFold.ACCENTLESS)]
     return []
 
 
@@ -139,7 +134,7 @@ def extract_icd_hints(text: str) -> list[str]:
     uniq = sorted({c.upper().split(".")[0] for c in codes})
     if uniq:
         return uniq
-    lower = normalize_tr(text)
+    lower = fold_turkish(text or "", TurkishFold.ACCENTLESS)
     if "prostat" in lower or "psa" in lower:
         return ["C61"]
     if "meme" in lower:

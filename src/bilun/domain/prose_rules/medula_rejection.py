@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.constants import _DATA_DIR
 from src.bilun.domain.prose_rules.types import SAVINGS_CATEGORY_MEDULA_PLAYBOOK
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, MedulaRejectionEvent
@@ -23,28 +24,27 @@ def load_medula_rejection_playbook() -> dict[str, Any]:
         return json.load(handle)
 
 
-def _normalize(text: str) -> str:
-    return text.casefold().strip()
-
-
 def _message_matches(event: MedulaRejectionEvent, keywords: list[str]) -> bool:
     if not keywords:
         return True
-    message = _normalize(event.hata_mesaji)
-    return any(_normalize(keyword) in message for keyword in keywords)
+    message = fold_turkish(event.hata_mesaji, TurkishFold.CASEFOLD, strip=True)
+    return any(
+        fold_turkish(keyword, TurkishFold.CASEFOLD, strip=True) in message for keyword in keywords
+    )
 
 
 def match_playbook_template(event: MedulaRejectionEvent) -> dict[str, Any] | None:
     """Return the first playbook template matching a MEDULA rejection event."""
     playbook = load_medula_rejection_playbook()
-    sonuc = _normalize(event.sonuc_kodu)
-    stage = _normalize(event.medula_stage)
+    sonuc = fold_turkish(event.sonuc_kodu, TurkishFold.CASEFOLD, strip=True)
+    stage = fold_turkish(event.medula_stage, TurkishFold.CASEFOLD, strip=True)
 
     for entry in playbook.get("entries", []):
-        if _normalize(str(entry.get("sonuc_kodu", ""))) != sonuc:
+        if fold_turkish(entry.get("sonuc_kodu", ""), TurkishFold.CASEFOLD, strip=True) != sonuc:
             continue
         allowed_stages = {
-            _normalize(str(value)) for value in entry.get("medula_stages", [])
+            fold_turkish(value, TurkishFold.CASEFOLD, strip=True)
+            for value in entry.get("medula_stages", [])
         }
         if allowed_stages and stage not in allowed_stages:
             continue

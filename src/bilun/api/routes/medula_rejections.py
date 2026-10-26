@@ -12,14 +12,11 @@ from src.bilun.domain.claims import load_sut_claim_dataset
 from src.bilun.domain.claims.config import SUTDataSourceConfigError
 from src.bilun.domain.claims.errors import ClaimValidationError
 from src.bilun.domain.prose_rules.medula_rejection import match_playbook_template
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/medula-rejections", tags=["medula-rejections"])
-
-
-def _normalize(text: str | None) -> str:
-    return (text or "").casefold().strip()
 
 
 def _load_dataset_with_fallback() -> Any | None:
@@ -129,16 +126,20 @@ def get_medula_rejection_queue(
 
     rows: list[dict[str, Any]] = []
     for row in all_rows:
-        if sonuc_kodu is not None and _normalize(row["sonuc_kodu"]) != _normalize(sonuc_kodu):
+        if sonuc_kodu is not None and fold_turkish(
+            row["sonuc_kodu"] or "", TurkishFold.CASEFOLD, strip=True
+        ) != fold_turkish(sonuc_kodu or "", TurkishFold.CASEFOLD, strip=True):
             continue
-        if medula_stage is not None and _normalize(row["medula_stage"]) != _normalize(medula_stage):
+        if medula_stage is not None and fold_turkish(
+            row["medula_stage"] or "", TurkishFold.CASEFOLD, strip=True
+        ) != fold_turkish(medula_stage or "", TurkishFold.CASEFOLD, strip=True):
             continue
         if rebill_permitted is not None and row["rebill_permitted"] != rebill_permitted:
             continue
         if playbook_matched is not None and bool(row["playbook_matched"]) != playbook_matched:
             continue
         if q:
-            query = _normalize(q)
+            query = fold_turkish(q or "", TurkishFold.CASEFOLD, strip=True)
             searchable = " ".join(
                 [
                     row["patient_id"],
@@ -148,7 +149,7 @@ def get_medula_rejection_queue(
                     row["hata_mesaji"],
                 ]
             )
-            if query not in _normalize(searchable):
+            if query not in fold_turkish(searchable or "", TurkishFold.CASEFOLD, strip=True):
                 continue
         rows.append(row)
 

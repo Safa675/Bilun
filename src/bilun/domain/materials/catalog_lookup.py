@@ -17,7 +17,7 @@ from ..constants import (
     EK3I_PARQUET_PATH,
 )
 from ..loaders.validity import as_of_iso, change_days, version_day
-from ..utils import turkish_lower
+from ..turkish_fold import TurkishFold, fold_turkish
 
 logger = logging.getLogger("bilun.domain.materials.catalog_lookup")
 
@@ -103,18 +103,19 @@ _NOUN_SUFFIXES = ("leri", "lari", "ler", "lar", "si", "su", "sü", "i", "u", "ü
 _FINAL_CONSONANT = {"d": "t", "b": "p", "c": "ç", "ğ": "k"}
 
 
-def _fold_tr(text: str) -> str:
-    return turkish_lower(str(text)).replace("ı", "i")
-
-
-_PROCEDURE_CONDITION = re.compile(r"([^.]*?)" + re.escape(_fold_tr(_PROCEDURE_CONDITION_TEXT)))
-_EK2C_STOPWORDS = frozenset(_fold_tr(_EK2C_STOPWORDS_RAW).split())
-_MATERIAL_NOUNS = frozenset(_fold_tr(_MATERIAL_NOUNS_RAW).split())
+_PROCEDURE_CONDITION = re.compile(
+    r"([^.]*?)" + re.escape(fold_turkish(_PROCEDURE_CONDITION_TEXT, TurkishFold.DOTTED_I))
+)
+_EK2C_STOPWORDS = frozenset(fold_turkish(_EK2C_STOPWORDS_RAW, TurkishFold.DOTTED_I).split())
+_MATERIAL_NOUNS = frozenset(fold_turkish(_MATERIAL_NOUNS_RAW, TurkishFold.DOTTED_I).split())
 
 
 def _text_indicates_separate_billing_allowed(*parts: object) -> bool:
-    combined = _fold_tr(" ".join(str(part or "") for part in parts))
-    return any(_fold_tr(marker) in combined for marker in _SEPARATE_BILLING_ALLOW_MARKERS)
+    combined = fold_turkish(" ".join(str(part or "") for part in parts), TurkishFold.DOTTED_I)
+    return any(
+        fold_turkish(marker, TurkishFold.DOTTED_I) in combined
+        for marker in _SEPARATE_BILLING_ALLOW_MARKERS
+    )
 
 
 def _extract_aggregate_codes(*parts: object) -> set[str]:
@@ -388,7 +389,7 @@ def _ek3_procedure_conditions(day: str) -> dict[str, frozenset[str]]:
     for code, text in frame.select("sut_code", "text").iter_rows():
         procedures = {
             proc
-            for clause in _PROCEDURE_CONDITION.findall(_fold_tr(text))
+            for clause in _PROCEDURE_CONDITION.findall(fold_turkish(text, TurkishFold.DOTTED_I))
             for proc in _PROCEDURE_CODE.findall(clause)
         }
         if procedures:
@@ -422,7 +423,8 @@ def _noun_forms(word: str) -> frozenset[str]:
 
 @lru_cache(maxsize=4096)
 def _ek3_noun_forms(material_code: str, day: str) -> frozenset[str]:
-    words = _WORD.findall(_fold_tr(_ek3_definitions(day).get(material_code, "")))
+    definition = _ek3_definitions(day).get(material_code, "")
+    words = _WORD.findall(fold_turkish(definition, TurkishFold.DOTTED_I))
     return frozenset(form for word in words for form in _noun_forms(word))
 
 
@@ -435,7 +437,7 @@ def _ek2c_clauses(description: str) -> tuple[tuple[str, tuple[tuple[str, ...], .
     tuple of its content words; "Tüm malzemeler dahildir" sets all_materials.
     """
     clauses = []
-    for sentence in _EK2C_SENTENCE_BREAK.split(_fold_tr(description)):
+    for sentence in _EK2C_SENTENCE_BREAK.split(fold_turkish(description, TurkishFold.DOTTED_I)):
         start = 0
         for verb in _EK2C_PREDICATE.finditer(sentence):
             subject, start = sentence[start : verb.start()], verb.end()
@@ -484,7 +486,7 @@ def ek2c_aciklama_verdict(
     texts = [str(text or "") for text in descriptions]
     if not code or not texts:
         return None
-    folded_code = _fold_tr(code)
+    folded_code = fold_turkish(code, TurkishFold.DOTTED_I)
     forms = _ek3_noun_forms(code, _ek3_version_day(as_of))
     signals: set[str] = set()
     all_included = True

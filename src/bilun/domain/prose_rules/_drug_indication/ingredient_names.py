@@ -17,7 +17,7 @@ import itertools
 import re
 from functools import lru_cache
 
-from .matching import _normalize_tr
+from ...turkish_fold import TurkishFold, fold_turkish
 
 # A core shorter than this would match ordinary Turkish words ("bi", "cc") and
 # flag every product that carries it; plain water ("su") is not an ingredient
@@ -73,7 +73,7 @@ def fold_name(text: str | None) -> str:
     """Lower-case, fold İ/ı and Turkish diacritics, unify apostrophes."""
     if not text:
         return ""
-    return _normalize_tr(str(text).translate(_APOSTROPHES))
+    return fold_turkish(str(text).translate(_APOSTROPHES), TurkishFold.ACCENTLESS_DOTLESS_I)
 
 
 def ingredient_cores(raw: str | None) -> tuple[str, ...]:

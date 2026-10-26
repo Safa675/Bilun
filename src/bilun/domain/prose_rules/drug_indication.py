@@ -37,7 +37,6 @@ from ._drug_indication.matching import (
     _has_prior_therapy_requirement as _has_prior_therapy_requirement,
     _has_tier_b_constraints as _has_tier_b_constraints,
     _is_indication_route_rule as _is_indication_route_rule,
-    _normalize_tr as _normalize_tr,
     _rule_has_icd_selector as _rule_has_icd_selector,
     _rule_icd_selectors as _rule_icd_selectors,
     _rule_tier_b_score as _rule_tier_b_score,

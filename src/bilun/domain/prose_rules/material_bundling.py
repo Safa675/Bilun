@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import unicodedata
 from functools import lru_cache
 from typing import Any
 
@@ -20,6 +19,7 @@ from .catalog_membership import get_ek2c_description, get_ek2c_entry, normalize_
 from .clause_linking import clause_ref_for_rule_id
 
 from ..constants import _PROSE_RULES_DIR
+from ..turkish_fold import TurkishFold, fold_turkish
 from ..loaders.validity import service_date_of
 
 _RULES_PATH = _PROSE_RULES_DIR / "material_bundling_prose.json"
@@ -37,11 +37,6 @@ _INPATIENT_SCOPED_FLAGS = frozenset(
         "ek3c_inpatient_external_supply_invalid",
     }
 )
-
-
-def _normalize_tr(text: str) -> str:
-    folded = unicodedata.normalize("NFKD", str(text).casefold())
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
 
 
 @lru_cache(maxsize=1)
@@ -137,11 +132,11 @@ def _material_fields(mat: dict[str, Any]) -> tuple[str, str, float]:
 
 
 def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
-    normalized = _normalize_tr(material_name)
+    normalized = fold_turkish(material_name, TurkishFold.ACCENTLESS)
     if not normalized:
         return False
     for keyword in keywords:
-        if _normalize_tr(keyword) in normalized:
+        if fold_turkish(keyword, TurkishFold.ACCENTLESS) in normalized:
             return True
     return False
 

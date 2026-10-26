@@ -6,6 +6,7 @@ import json
 from typing import TYPE_CHECKING, Any
 
 from ...claims.growth_hormone import validated_growth_hormone_value
+from ...turkish_fold import TurkishFold, fold_turkish
 
 from .matching import (
     _diagnosis_matches_specific_rule,
@@ -15,7 +16,6 @@ from .matching import (
     _has_prior_therapy_requirement,
     _has_tier_b_constraints,
     _is_indication_route_rule,
-    _normalize_tr,
     _rule_has_icd_selector,
     _rule_icd_selectors,
     _rule_tier_b_score,
@@ -283,7 +283,7 @@ def _supplemental_matches_route(
 ) -> bool:
     """Require route metadata before treating a generic rule as applicable."""
     supplemental_specialties = {
-        _normalize_tr(value)
+        fold_turkish(value or "", TurkishFold.ACCENTLESS_DOTLESS_I)
         for value in (
             *(supplemental.get("report_specialties") or []),
             *(supplemental.get("prescriber_specialties") or []),
@@ -293,7 +293,7 @@ def _supplemental_matches_route(
     if not supplemental_specialties:
         return True
     route_specialties = {
-        _normalize_tr(value)
+        fold_turkish(value or "", TurkishFold.ACCENTLESS_DOTLESS_I)
         for value in (
             *(selected_route.get("report_specialties") or []),
             *(selected_route.get("prescriber_specialties") or []),

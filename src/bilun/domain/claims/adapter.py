@@ -51,6 +51,7 @@ from src.bilun.domain.claims.models import (
 )
 from src.bilun.domain.claims.parsing.primitives import decimal_quantity
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 # Material-name keyword → §2.4.1 specialty_category. The dental evaluator's
 # _for_context shim falls back to specialty_category when a material has no
@@ -93,18 +94,6 @@ def _coerce_bool(value: Any) -> bool | None:
     return True
 
 
-def _fold_tr(text: str) -> str:
-    """ASCII-fold Turkish chars so keyword matching is accent-insensitive.
-
-    Handles the Turkish-specific letters NFKD decomposition leaves behind
-    (dotless ``ı`` and dotted ``İ``) in addition to stripping combining marks.
-    """
-    import unicodedata
-    folded = unicodedata.normalize("NFKD", (text or "").casefold())
-    folded = folded.replace("ı", "i").replace("İ", "i")
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
-
-
 def _derive_specialty_category(material_name: str) -> str:
     """Infer a §2.4.1 specialty_category from the material name.
 
@@ -112,11 +101,14 @@ def _derive_specialty_category(material_name: str) -> str:
     nothing changes for existing consumable claims. Only unambiguous
     multi-word dental procedure phrases are mapped (see
     ``_DENTAL_SPECIALTY_KEYWORDS`` for why single tokens like "implant" are
-    excluded). Matching is Turkish-accent-insensitive.
+    excluded). Matching is Turkish-accent-insensitive: ``TurkishFold.ACCENTLESS``
+    and then ``ı`` → ``i``. That ``ı`` folds after NFKD, so the mathematical
+    dotless i (U+1D6A4) folds to ``i`` too, which ``ACCENTLESS_DOTLESS_I``
+    leaves as ``ı``.
     """
-    folded = _fold_tr(material_name)
+    folded = fold_turkish(material_name or "", TurkishFold.ACCENTLESS).replace("ı", "i")
     for keyword, category in _DENTAL_SPECIALTY_KEYWORDS:
-        if _fold_tr(keyword) in folded:
+        if fold_turkish(keyword or "", TurkishFold.ACCENTLESS).replace("ı", "i") in folded:
             return category
     return "general"
 

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
@@ -15,6 +14,7 @@ from ...icd10 import (
     normalize_icd10,
     normalize_icd10_list,
 )
+from ...turkish_fold import TurkishFold, fold_turkish
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader
@@ -71,29 +71,24 @@ def _rule_tier_b_score(rule: dict[str, Any]) -> int:
 
 
 def _specialty_phrase(text: str) -> str:
-    words = [w for w in re.split(r"[^a-z0-9]+", _normalize_tr(text)) if w and w != "ve"]
+    folded = fold_turkish(text or "", TurkishFold.ACCENTLESS_DOTLESS_I)
+    words = [w for w in re.split(r"[^a-z0-9]+", folded) if w and w != "ve"]
     return " ".join(words)
 
 
 def _specialty_matches(actual: str | None, allowed: list[str]) -> bool:
-    normalized_actual = _normalize_tr(actual or "")
+    normalized_actual = fold_turkish(actual or "", TurkishFold.ACCENTLESS_DOTLESS_I)
     if not normalized_actual:
         return False
     phrase_actual = _specialty_phrase(actual or "")
     for specialty in allowed:
-        token = _normalize_tr(specialty)
+        token = fold_turkish(specialty or "", TurkishFold.ACCENTLESS_DOTLESS_I)
         if token and token in normalized_actual:
             return True
         phrase_token = _specialty_phrase(specialty)
         if phrase_token and phrase_token in phrase_actual:
             return True
     return False
-
-
-def _normalize_tr(text: str) -> str:
-    lowered = str(text or "").replace("İ", "i").replace("I", "ı").casefold().replace("ı", "i")
-    folded = unicodedata.normalize("NFKD", lowered)
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
 
 
 @lru_cache(maxsize=4096)
@@ -116,11 +111,11 @@ def _drug_name_matches(drug_name: str, rule_names: list[str]) -> bool:
     parenthesized or whitespace-delimited token, so a whole-word/whole-phrase
     match is the correct semantics.
     """
-    normalized = _normalize_tr(drug_name)
+    normalized = fold_turkish(drug_name or "", TurkishFold.ACCENTLESS_DOTLESS_I)
     if not normalized:
         return False
     for inn in rule_names:
-        token = _normalize_tr(inn)
+        token = fold_turkish(inn or "", TurkishFold.ACCENTLESS_DOTLESS_I)
         if not token:
             continue
         # Build a regex that matches `token` only at a word boundary. Word

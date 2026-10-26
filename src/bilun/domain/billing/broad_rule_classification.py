@@ -30,7 +30,7 @@ from src.bilun.domain.billing.broad_rule_catalog import load_broad_rule_catalog
 from src.bilun.domain.billing.rule_findings import RuleEvaluation, RuleFinding, build_finding_id
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.constants import SUT_CLAUSES_PATH, _GAZETTE_DIR, _PROSE_RULES_DIR
-from src.bilun.domain.prose_rules.dental_2_4_1 import _normalize_tr
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 _POLICY_PATH = _GAZETTE_DIR / "broad_rule_classification_policy.json"
 _POLICY_SHA256 = "f3f107828e5cebd41749ad43b98288fc56fc2ba045dc8b43859a21ee139087c4"
@@ -97,7 +97,7 @@ class SourceApplicabilityAttestation:
 
 
 def _name(value: str) -> str:
-    return " ".join(_normalize_tr(value).split())
+    return " ".join(fold_turkish(value, TurkishFold.ACCENTLESS).split())
 
 
 @lru_cache(maxsize=4)
