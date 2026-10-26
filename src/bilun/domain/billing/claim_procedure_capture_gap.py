@@ -32,7 +32,9 @@ def recommend_procedure_capture_gap_from_claims(
     - ``ctx.performed_procedure_lines`` (EMR/OR log) for non-lab procedures.
     - ``lab_df_pl`` (clinical lab feed) for lab tests with results but no claim line.
 
-    The section is unavailable only when both sources are absent.
+    The section is unavailable only when both sources are absent. On a yatarak claim
+    with an EK-2/C package, the examinations and tests of either source that fall in
+    its window are inside the package and no gap (SUT §2.2.2.B-1, #290).
     """
     has_performed = bool(ctx.performed_procedure_lines)
     has_lab = lab_df_pl is not None and not lab_df_pl.is_empty()
@@ -78,6 +80,7 @@ def recommend_procedure_capture_gap_from_claims(
                     claim_procs,
                     claim.episode_id,
                     service_date=service_date,
+                    claim=claim,
                 )
             )
 

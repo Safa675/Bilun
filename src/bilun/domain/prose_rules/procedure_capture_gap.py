@@ -1,4 +1,12 @@
-"""EMR/OR performed procedure vs claim submission gap detector."""
+"""EMR/OR performed procedure vs claim submission gap detector.
+
+A performed row is a gap when the claim bills nothing for its code: on that date for an itemized line, anywhere on
+the claim for a package that bills the operation (#266). On a yatarak claim with an EK-2/C package of an işlem
+grubu, billed or mandated, an examination or a lab, pathology or radiology test logged from the admission through
+the package window's last day is inside the package (SUT §2.2.2.B-1(1), (3); ``package_window_tests``, #290): no
+gap, nothing priced from EK-2B. Outside the window, or billed apart by the package's EK-2/C açıklama, it keeps its
+gap.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date, get_ek2c_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+from src.bilun.domain.prose_rules.package_window_tests import package_test_window
 
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_CAPTURE_GAP
 
@@ -109,6 +118,7 @@ def detect_procedure_capture_gaps(
 
     submitted = _submitted_amount_by_code_date(claim_procs)
     packages = _package_billed_by_code(claim_procs)
+    window = package_test_window(claim, claim_procs)
     opportunities: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
@@ -129,6 +139,8 @@ def detect_procedure_capture_gaps(
             submitted.get((service_date_str, code), 0.0), packages.get(code, 0.0)
         )
         if billed > _BILLING_TOLERANCE:
+            continue
+        if window is not None and window.covers(code, performed.service_date):
             continue
 
         list_price, methodology = _resolve_catalog_price(
