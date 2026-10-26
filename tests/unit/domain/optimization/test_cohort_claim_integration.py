@@ -16,6 +16,7 @@ import pytest
 from src.bilun.domain.claims import SUTClaimDataset, load_sut_claim_dataset
 from src.bilun.domain.optimization.aggregator import compute_optimization_summary
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.session_cache import SessionCache
 
 pytestmark = pytest.mark.unit
 
@@ -64,9 +65,21 @@ def dataset() -> SUTClaimDataset:
 
 
 @pytest.fixture(scope="module")
-def single_summaries(dataset: SUTClaimDataset) -> dict[str, dict[str, Any]]:
-    """The summary of each patient on their own."""
-    return {pid: _summary(dataset, [pid]) for pid in sorted(dataset.patient_totals)}
+def single_summaries(dataset: SUTClaimDataset, session_cache: SessionCache) -> dict[str, dict[str, Any]]:
+    """The summary of each patient on their own (built once per session, a copy for the module)."""
+    return session_cache.get(
+        "cohort_claim_integration_single_summaries",
+        lambda: {pid: _summary(dataset, [pid]) for pid in sorted(dataset.patient_totals)},
+    )
+
+
+@pytest.fixture(scope="module")
+def cohort_summary(dataset: SUTClaimDataset, session_cache: SessionCache) -> dict[str, Any]:
+    """`_summary(dataset, <every patient>)`: the summary of the whole cohort (built once per session)."""
+    return session_cache.get(
+        "cohort_claim_integration_cohort_summary",
+        lambda: _summary(dataset, sorted(dataset.patient_totals)),
+    )
 
 
 def _sum_of_singles(
@@ -76,12 +89,14 @@ def _sum_of_singles(
 
 
 def test_optimization_summary_exact_with_claim_dataset(
-    dataset: SUTClaimDataset, single_summaries: dict[str, dict[str, Any]]
+    dataset: SUTClaimDataset,
+    single_summaries: dict[str, dict[str, Any]],
+    cohort_summary: dict[str, Any],
 ) -> None:
     patient_ids = sorted(dataset.patient_totals)
     assert patient_ids == cohort.patient_ids()
 
-    summary = _summary(dataset, patient_ids)
+    summary = cohort_summary  # _summary(dataset, patient_ids)
 
     for section in _EXACT_SECTIONS:
         assert summary[section]["exactness_status"] == "exact", section
@@ -132,7 +147,7 @@ def test_optimization_summary_counts_only_the_requested_patients(
 
 
 def test_optimization_summary_includes_bill_level_copay_exemptions(
-    dataset: SUTClaimDataset,
+    dataset: SUTClaimDataset, cohort_summary: dict[str, Any]
 ) -> None:
     patient_ids = sorted(dataset.patient_totals)
     # The emergency bills are the cohort's copay-exempt ones (the visit-type rule, category
@@ -140,7 +155,7 @@ def test_optimization_summary_includes_bill_level_copay_exemptions(
     emergency_bills = sum(claim.claim_type == "acil" for claim in dataset.claims.values())
     assert emergency_bills > 0
 
-    copay = _summary(dataset, patient_ids)["copay_exemptions"]
+    copay = cohort_summary["copay_exemptions"]  # _summary(dataset, patient_ids)
 
     assert copay["n_total_patients"] == len(patient_ids)
     assert copay["n_total_bills"] == cohort.claim_count()

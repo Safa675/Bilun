@@ -209,8 +209,8 @@ WALKER_CLAIM = claim_id(PATIENT[6], 2)
 
 
 @pytest.fixture(scope="module")
-def built():
-    return build_showcase()
+def built(committed_showcase):
+    return committed_showcase
 
 
 @pytest.fixture(scope="module")
@@ -2330,11 +2330,21 @@ def fresh(case: Case, built, twins, anadata) -> Data:
     return faulty_data(built, anadata) if case.on_faulty else Data(dict(twins), anadata)
 
 
+def test_the_base_of_a_defect_case_has_the_findings_of_the_module_fixtures(
+    built, twins, anadata, context, clean_problems, faulty_problems
+) -> None:
+    """A case's base (`fresh`) finds what `clean_problems` or `faulty_problems` found, so the cases read those."""
+    for on_faulty, problems in ((False, clean_problems), (True, faulty_problems)):
+        case = next(case for case in CASES if case.on_faulty is on_faulty)
+        assert fresh(case, built, twins, anadata).problems(context) == problems, on_faulty
+
+
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.name)
 def test_a_defect_trips_its_own_check_and_what_it_must(
-    case: Case, built, twins, anadata, context
+    case: Case, built, twins, anadata, context, clean_problems, faulty_problems
 ) -> None:
-    before = fresh(case, built, twins, anadata).problems(context)
+    # the findings of the base, `fresh(case, built, twins, anadata).problems(context)`, computed once per module
+    before = list(faulty_problems if case.on_faulty else clean_problems)
     if case.on_faulty:
         # the faulty bills trip the pinned ids already; the case may add only its own finding
         assert {p.check for p in before} == set().union(*EXPECTED_FAULT_TRIPS.values())

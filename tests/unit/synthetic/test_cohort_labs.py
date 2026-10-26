@@ -39,6 +39,7 @@ from scripts.synthetic.cohort import (
     ParsedState,
     PatientClinical,
     ShowcaseClinical,
+    StoryProof,
     UnsupportedLabStateError,
     UnsupportedState,
     build_clean_tables,
@@ -52,14 +53,12 @@ from scripts.synthetic.cohort import (
     load_lab_reference,
     parse_abnormal_state_item,
     parse_abnormal_states,
-    prove_showcase,
     validate_clean_tables,
     write_showcase,
 )
 from scripts.synthetic.cohort.build import DEFAULT_OUT_DIR, main
 from scripts.synthetic.cohort import labs as labs_module
 from scripts.synthetic.cohort.clinical import PatientLabs
-from scripts.synthetic.cohort.engine_proof import load_showcase_dataset
 from scripts.synthetic.cohort.labs import (
     BILLED_LAB_CODES,
     _base_excess,
@@ -85,7 +84,6 @@ from scripts.synthetic.cohort.labs import (
     severinghaus_sao2,
 )
 from scripts.synthetic.pathways.loader import hygiene
-from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import _normalize_lab, load_normalized_raw_data
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
@@ -236,8 +234,8 @@ def _fresh_claims_cache() -> Iterator[None]:
 
 
 @pytest.fixture(scope="module")
-def built_showcase() -> BuildResult:
-    return build_showcase()
+def built_showcase(committed_showcase: BuildResult) -> BuildResult:
+    return committed_showcase
 
 
 @pytest.fixture(scope="module")
@@ -2387,13 +2385,10 @@ def test_cache_loaders_accept_the_lab_table(built_showcase: BuildResult) -> None
     assert lab_df["value"].null_count() == 12
 
 
-def test_the_full_build_context_runs_and_no_report_has_a_lab_capture_gap() -> None:
-    context = load_sut_build_context(
-        billing_workers=1,
-        sut_data_mode="synthetic_demo",
-        sut_claims_dir=_CLAIMS_DIR,
-        sut_clean_dir=_CLEAN_DIR,
-    )
+def test_the_full_build_context_runs_and_no_report_has_a_lab_capture_gap(demo_build_context: dict[str, Any]) -> None:
+    """`load_sut_build_context(billing_workers=1, sut_data_mode="synthetic_demo")` over the committed claims and clean
+    tables (`demo_build_context` of `tests/conftest.py`, built once per session)."""
+    context = demo_build_context
     assert context["lab_df_pl"].height == cohort.counts()["lab_clean.parquet"]
     reports = context["billing_reports"]
     assert sorted(reports) == cohort.patient_ids()
@@ -2407,9 +2402,11 @@ def test_the_full_build_context_runs_and_no_report_has_a_lab_capture_gap() -> No
 
 
 def test_the_engine_proof_over_the_committed_files_reports_no_mismatch(
-    built_showcase: BuildResult,
+    showcase_proofs: tuple[StoryProof, ...],
 ) -> None:
-    proofs = prove_showcase(built_showcase, dataset=load_showcase_dataset(_CLAIMS_DIR))
+    """`prove_showcase(build_showcase(), dataset=load_showcase_dataset(<committed claims>))` (`showcase_proofs` of
+    `tests/conftest.py`, built once per session)."""
+    proofs = showcase_proofs
     faults = len(cohort.load_registry()["faults"])  # a proof for each bill that carries a fault
     assert len(proofs) == faults
     assert [sp.mismatches for sp in proofs] == [()] * faults

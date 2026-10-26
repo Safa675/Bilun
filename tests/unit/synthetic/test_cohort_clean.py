@@ -10,7 +10,7 @@ from decimal import ROUND_HALF_UP, Decimal
 import json
 from pathlib import Path
 import re
-from typing import get_args
+from typing import Any, get_args
 
 import polars as pl
 import pytest
@@ -53,18 +53,16 @@ from scripts.synthetic.faults import load_siblings
 from scripts.synthetic.pathways import load_all
 from scripts.synthetic.pathways.loader import hygiene
 from scripts.synthetic.pathways.schema import Unit
-from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.cache.loaders import load_normalized_raw_data, resolve_patient_ids
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from tests.fixtures import synthetic_cohort as cohort
-from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, Extra, with_encounters
+from tests.fixtures.synthetic_encounters import Extra, with_encounters
 
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
 _OUT_DIR = DEFAULT_OUT_DIR
-_CLAIMS_DIR = _OUT_DIR / "sut" / "claims"
 _CLEAN_DIR = _OUT_DIR / "sut" / "clean"
 _REGISTRY_JSON_PATH = _OUT_DIR / "cohort_registry.json"
 
@@ -211,8 +209,8 @@ def _fresh_claims_cache() -> Iterator[None]:
 
 
 @pytest.fixture(scope="module")
-def built_showcase() -> BuildResult:
-    return build_showcase()
+def built_showcase(committed_showcase: BuildResult) -> BuildResult:
+    return committed_showcase
 
 
 # --- 2. Clean table schemas & content rules -----------------------------------------------------
@@ -831,13 +829,10 @@ def test_cache_loaders_accept_committed_clean_folder() -> None:
 # --- 5. Smoke: load_sut_build_context ----------------------------------------------------------
 
 
-def test_smoke_load_sut_build_context_on_committed_showcase() -> None:
-    ctx = load_sut_build_context(
-        billing_workers=1,
-        sut_data_mode="synthetic_demo",
-        sut_claims_dir=_CLAIMS_DIR,
-        sut_clean_dir=_CLEAN_DIR,
-    )
+def test_smoke_load_sut_build_context_on_committed_showcase(demo_build_context: dict[str, Any]) -> None:
+    """`load_sut_build_context(billing_workers=1, sut_data_mode="synthetic_demo")` over the committed claims and clean
+    tables (`demo_build_context` of `tests/conftest.py`, built once per session)."""
+    ctx = demo_build_context
     expected_pids = cohort.patient_ids()
     assert ctx["patient_ids"] == expected_pids
     assert [m["patient_id"] for m in ctx["patient_meta"]] == expected_pids
@@ -1452,9 +1447,8 @@ def test_there_is_one_allowed_dataframe_loop_and_it_is_the_reference_reader() ->
 
 
 @pytest.fixture(scope="module")
-def two_bills() -> BuildResult:
-    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
-    return build_showcase(recipes=recipes, clinical=clinical)
+def two_bills(two_bill_showcase: BuildResult) -> BuildResult:
+    return two_bill_showcase
 
 
 def test_every_bill_has_its_own_anadata_row_with_its_own_vitals_pins_and_date(two_bills: BuildResult) -> None:

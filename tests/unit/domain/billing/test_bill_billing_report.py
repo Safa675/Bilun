@@ -22,6 +22,7 @@ import pytest
 
 from src.bilun.domain.claims import SUTClaimDataset, load_sut_claim_dataset
 from src.bilun.domain.claims.config import DEFAULT_SYNTHETIC_CLAIMS_DIR
+from tests.fixtures.session_cache import SessionCache
 from tests.fixtures.synthetic_cohort import role
 
 pytestmark = pytest.mark.unit
@@ -95,6 +96,18 @@ def _cache_for(dataset) -> dict:
     }
 
 
+def _orchestrate(multi_bill: _MultiBill):
+    from src.bilun.domain.billing import (
+        compute_all_bill_billing_reports,
+        compute_all_billing_reports,
+    )
+
+    cache = _cache_for(multi_bill.dataset)
+    patient_reports, _ = compute_all_billing_reports(cache)
+    bill_reports = compute_all_bill_billing_reports(cache)
+    return patient_reports, bill_reports
+
+
 class TestBillClaimContext:
     def test_scopes_lines_to_single_claim(self, multi_bill: _MultiBill) -> None:
         from src.bilun.domain.claims.patient_context import (
@@ -142,8 +155,9 @@ class TestPerBillAdditivity:
     All tests consume the same expensive orchestrator output (patient-level
     + bill-level billing reports across the cohort's patients and bills). The
     ``_orchestrator_outputs`` class-scoped fixture computes it ONCE for the
-    class — without it, each test would re-run ``compute_all_bill_billing_reports``
-    for identical work.
+    session (``_orchestrate``, shared by the xdist workers through
+    ``session_cache``) — without it, each test would re-run
+    ``compute_all_bill_billing_reports`` for identical work.
 
     ``xdist_group("billing_heavy")`` keeps these tests on a single xdist
     worker: they share the module-scope ``multi_bill`` dataset and the
@@ -152,16 +166,9 @@ class TestPerBillAdditivity:
     """
 
     @pytest.fixture(scope="class")
-    def _orchestrator_outputs(self, multi_bill: _MultiBill):
-        from src.bilun.domain.billing import (
-            compute_all_bill_billing_reports,
-            compute_all_billing_reports,
-        )
-
-        cache = _cache_for(multi_bill.dataset)
-        patient_reports, _ = compute_all_billing_reports(cache)
-        bill_reports = compute_all_bill_billing_reports(cache)
-        return patient_reports, bill_reports
+    def _orchestrator_outputs(self, multi_bill: _MultiBill, session_cache: SessionCache):
+        """Built once per session (the xdist workers share it through `session_cache`), a copy for the class."""
+        return session_cache.get("bill_billing_report_orchestrator_outputs", lambda: _orchestrate(multi_bill))
 
     def test_recoverable_sums_to_patient_total(self, _orchestrator_outputs) -> None:
         patient_reports, bill_reports = _orchestrator_outputs

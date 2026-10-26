@@ -23,6 +23,7 @@ import pytest
 
 from scripts.synthetic.cohort import coverage_metrics as cm
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.session_cache import SessionCache
 
 pytestmark = pytest.mark.unit
 
@@ -729,9 +730,9 @@ PLAN_BASELINE_PER_PATIENT = [
 
 
 @pytest.fixture(scope="module")
-def measured() -> dict[str, dict[str, Any]]:
-    """The real engine over the committed claims, once for the module."""
-    return cm.measure_patients(cm.DEFAULT_CLAIMS_DIR)
+def measured(session_cache: SessionCache) -> dict[str, dict[str, Any]]:
+    """The real engine over the committed claims, once for the session (a copy for the module)."""
+    return session_cache.get("coverage_measured", lambda: cm.measure_patients(cm.DEFAULT_CLAIMS_DIR))
 
 
 @pytest.fixture(scope="module")
@@ -1100,9 +1101,12 @@ def test_patient_12_is_measured_over_its_two_bills_and_alone_lights_the_three_bl
 
 
 @pytest.fixture(scope="module")
-def measured_app_path() -> dict[str, dict[str, Any]]:
-    """The real engine over the committed claims, with the app path's copay exemption and lab feed."""
-    return cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
+def measured_app_path(session_cache: SessionCache) -> dict[str, dict[str, Any]]:
+    """The real engine over the committed claims, with the app path's copay exemption and lab feed (once for the
+    session, a copy for the module)."""
+    return session_cache.get(
+        "coverage_measured_app_path", lambda: cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
+    )
 
 
 def _partial_patients() -> set[str]:
@@ -1179,7 +1183,9 @@ def test_the_app_path_moves_no_block_and_no_wave_a_rule_of_the_claims_only_measu
     assert set(plain["finding_kinds"]["kinds"]) <= set(app["finding_kinds"]["kinds"])
 
 
-def test_the_chronic_report_on_s2s_profile_is_what_turns_the_partial_match_into_the_waiver(tmp_path: Path) -> None:
+def test_the_chronic_report_on_s2s_profile_is_what_turns_the_partial_match_into_the_waiver(
+    tmp_path: Path, measured_app_path: dict[str, dict[str, Any]]
+) -> None:
     """S2's report is on file (WP9). Measured against a copy of the claims with S2's profile flag unknown, the report
     is the whole difference: with it the patient is exempt, the partial row and the generic drug-copay row leave its
     copay block (EI-25), the money waiver of the control's examination and the exemption review appear, and no other
@@ -1206,7 +1212,7 @@ def test_the_chronic_report_on_s2s_profile_is_what_turns_the_partial_match_into_
     clean = cm.DEFAULT_CLAIMS_DIR.parent / "clean"
 
     unflagged = cm.measure_patients(claims, app_path=True, clean_dir=clean)
-    flagged = cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
+    flagged = measured_app_path  # cm.measure_patients(cm.DEFAULT_CLAIMS_DIR, app_path=True)
     lines = cm.diff(
         {"cohort": cm.summarize(unflagged), "patients": unflagged},
         {"cohort": cm.summarize(flagged), "patients": flagged},
