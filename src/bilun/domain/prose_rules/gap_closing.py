@@ -28,6 +28,7 @@ from functools import lru_cache, cache, wraps
 from typing import Any
 
 from src.bilun.domain.claims.claim_type import (
+    EMERGENCY_CARE_SETTING,
     claim_type_care_setting,
     is_day_case,
 )
@@ -93,12 +94,23 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     - ``procedure_in_annex`` → at least one billed procedure code is a member
       of the named annex (e.g. ``EK-2/A-2``, ``EK-2/C-1``, ``EK-2/C``,
       ``EK-2/B``); resolved against the loaded catalog code sets.
-    - scalar field → ``context.get(field)`` must equal the condition value.
+    - scalar field → ``context.get(field)`` must equal the condition value;
+    - ``care_setting: emergency`` → ``context["emergency_care_setting"]`` must be
+      True: an ER claim's ``care_setting`` stays ``outpatient`` for every other
+      rule (``claims/claim_type.py``).
 
     Keys absent from ``context`` cause the rule to be skipped (returns False)
     rather than firing on missing data — this is the honesty guard.
     """
     for key, expected in condition.items():
+        # The emergency department is a care setting of its own for the rules
+        # that name it (1.8.5.(5), 1.9.1.(6)); the builder places an acil claim
+        # in it and in the outpatient one.
+        if key == "care_setting" and expected == EMERGENCY_CARE_SETTING:
+            if context.get("emergency_care_setting") is not True:
+                return False
+            continue
+
         # procedure_in_annex — annex membership over the billed procedure codes.
         # The predicate value is the annex identifier (e.g. "EK-2/A-2"); the
         # billed codes are surfaced under context["procedure_code_any"]. We
@@ -344,6 +356,13 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
         or "acil" in dept
         or "emergency" in dept
     )
+    # The emergency care setting two rules name beside inpatient and outpatient
+    # (1.8.5.(5), 1.9.1.(6): "acil servislerde") is the acil claim type itself;
+    # care_setting above stays outpatient for every other rule. Only True is
+    # surfaced (as emergency_excluded below), and not from the department: an
+    # admission or a visit may carry ER services its header does not show.
+    if is_emergency_claim_type(header.claim_type):
+        context["emergency_care_setting"] = True
     # Facility contracting: uncontracted if provider_type indicates it.
     # The Turkish contracted/uncontracted marker is "sozlesmesiz" (single s);
     # the synthetic generators use exactly this spelling — see

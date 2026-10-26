@@ -22,7 +22,7 @@ registry: `data/synthetic/README.md`).
 | `types.py` | `RowDict` alias for raw Parquet rows |
 | `config.py` | `BILUN_DATA_MODE`, path guards, provenance |
 | `models.py` | Typed row and aggregate dataclasses |
-| `claim_type.py` | The one `claim_type` vocabulary every rule reader uses (#335): spellings folded once, the SUT care setting of each type |
+| `claim_type.py` | The one `claim_type` vocabulary every rule reader uses (#335): spellings folded once, the SUT care setting of each type, and the emergency setting (`EMERGENCY_CARE_SETTING`) only `acil` is in |
 
 ## Inputs
 
@@ -30,9 +30,10 @@ Required Parquet tables (see `schema.REQUIRED_CLAIM_TABLES`):
 
 - `claim_headers.parquet` (its `claim_type` is read through `claim_type.py`, whatever its case, Turkish letters or
   spaces: `yatis`/`yatan`/`yatarak` inpatient, `poliklinik`/`ayakta`, `gunubirlik`/`günübirlik`/`day_case` (a day
-  case) and `acil` outpatient, `acil` billed fee for service (SUT 2.2.1.B-2(2)(a)); `koruyucu` and
-  `meslek_hastaligi` are provision grounds with no care setting, so the rules that need one leave such a claim
-  unavailable, Safa675/Bilun#335)
+  case) and `acil` outpatient, `acil` billed fee for service (SUT 2.2.1.B-2(2)(a)); an `acil` claim is also in
+  the `emergency` care setting that the gap-closing rules 1.8.5.(5) and 1.9.1.(6) name, no other type is, whatever
+  its department; `koruyucu` and `meslek_hastaligi` are provision grounds with no care setting, so the rules that
+  need one leave such a claim unavailable, Safa675/Bilun#335)
 - `claim_diagnoses.parquet`
 - `procedure_claim_lines.parquet`
 - `material_claim_lines.parquet` (its optional column `kdv_percent` is the KDV rate the facility declares on the

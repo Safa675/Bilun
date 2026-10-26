@@ -23,7 +23,12 @@ The care setting of each type, from the SUT corpus (``data/gazette/sut_clauses.p
   tedaviler billed "hizmet başına ödeme yöntemi ile" (2.2.1.B-2(2)(a), C000607, C000617), calls them
   "ayaktan acil müracaat" (C006357) and excepts them from the rules of the other outpatient visits
   ("acil servise başvuruları hariç", C000573, C000587). An admission from the emergency department ends
-  the emergency (1.9.1(6), C000416): it is a ``yatis`` claim.
+  the emergency (1.9.1(6), C000416): it is a ``yatis`` claim. Two authored gap-closing rules name the
+  emergency department as a care setting of its own, ``EMERGENCY_CARE_SETTING`` (1.8.5.(5) "acil
+  servislerde verilen sağlık hizmetleri", C000370; 1.9.1.(6) "acil servislerde 24 saat içinde
+  stabilizasyonu", C000416): an ``acil`` claim is in it (``is_emergency``) and stays outpatient for every
+  other reader. No other type is placed in it, whatever its department: an admission or a polyclinic claim
+  may carry services given in the emergency department that the header does not show.
 - ``koruyucu`` (koruyucu sağlık, preventive): no care setting. A provision ground (1.7, C000196) whose
   services range from a vaccine (2.4.3-A..D) to a circumcision (2.4.3-F, a day case under anaesthesia,
   2.1.2.B(1)(c)); the type does not say whether the patient was admitted.
@@ -73,6 +78,9 @@ _KIND_BY_SPELLING: dict[str, ClaimTypeKind] = {
     spelling: kind for kind, spellings in _SPELLINGS.items() for spelling in spellings
 }
 
+# The emergency-department setting a rule may name beside inpatient and outpatient: ``acil`` only.
+EMERGENCY_CARE_SETTING = "emergency"
+
 CARE_SETTING_BY_KIND: dict[ClaimTypeKind, CareSetting | None] = {
     "yatis": "inpatient",
     "poliklinik": "outpatient",
@@ -121,5 +129,8 @@ def is_day_case(value: object) -> bool:
 
 
 def is_emergency(value: object) -> bool:
-    """True for an emergency-department claim type (``acil``), in any spelling."""
+    """True for an emergency-department claim type (``acil``), in any spelling.
+
+    It is the one type in ``EMERGENCY_CARE_SETTING``.
+    """
     return claim_type_kind(value) == "acil"

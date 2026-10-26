@@ -23,6 +23,7 @@ from src.bilun.domain.billing.payment_traceability_evaluations import (
     _raw_header_gate,
 )
 from src.bilun.domain.billing.rule_findings import RuleEvaluation
+from src.bilun.domain.claims.claim_type import EMERGENCY_CARE_SETTING
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.gap_closing import (
     _build_gap_closing_context,
@@ -108,7 +109,12 @@ def _metadata_gate(
     The reused payment observer calls the very same gap-closing predicate and
     preserves authored short circuit/fallback behavior. These additional gates
     prevent missing raw fields or a negative emergency inference from becoming
-    certified typed metadata. Raw legacy matches remain available separately.
+    certified typed metadata, and hold the green-area rule whose scope is open.
+    Raw legacy matches remain available separately.
+
+    The emergency care setting (``care_setting: emergency``) is derived for an
+    acil claim only: on such a claim 1.9.1.(6) reads its own inputs next, on any
+    other claim both emergency rules stay ``emergency_care_setting_not_derived``.
     """
     header = claim_ctx.claims[0]
     keys = {_base_key(key) for key in condition}
@@ -120,14 +126,28 @@ def _metadata_gate(
     raw_gate = _raw_header_gate(raw_keys, header)
     if raw_gate is not None:
         return raw_gate
-    if condition.get("care_setting") == "emergency":
-        # Legacy care_setting represents inpatient/outpatient while emergency
-        # evidence is a separate flag. Its scalar nonmatch is not proof that
-        # either emergency-specific authored rule is inapplicable.
+    if (
+        condition.get("care_setting") == EMERGENCY_CARE_SETTING
+        and flat.get("emergency_care_setting") is not True
+    ):
+        # Only an acil claim is placed in the emergency care setting. Another
+        # type's nonmatch is not proof that an emergency-specific rule is
+        # inapplicable: an admission or a visit may carry ER services
+        # (1.9.1.(6), C000416) that its header and department do not establish.
         return (
             "unavailable",
             [],
             "emergency_care_setting_not_derived",
+        )
+    if "is_green_area_code_520021" in keys:
+        # 1.8.5.(5) (C000370) excepts "520.021 kodlu 'Yeşil alan muayenesi' adı
+        # altında Kuruma fatura edilebilen sağlık hizmetleri"; which services
+        # that covers is open for Safa (WP23), so no flag is derived from the
+        # bill's codes, whether or not it bills 520021.
+        return (
+            "unavailable",
+            [],
+            "green_area_520021_scope_not_settled",
         )
     if "facility_tier" in keys and not (header.facility_tier or "").strip():
         return "missing_inputs", ["facility_tier"], "raw facility tier is absent"
