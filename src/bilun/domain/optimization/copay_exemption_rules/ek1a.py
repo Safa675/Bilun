@@ -7,9 +7,9 @@ from datetime import date
 from typing import Any
 
 from ...catalog import get_ek1a_exemptions
+from ...icd10 import icd10_in_range
 from ...labels import normalize_sut_display_text
 from ...loaders.legacy import ek1a_version_day
-from ..shared import _icd10_in_range
 
 logger = logging.getLogger("bilun.domain.optimization")
 
@@ -62,7 +62,7 @@ def evaluate_ek1a_exemption(
 
         letter = normalized[0]
         for start, end, disease in ek1a_idx.get(letter, []):
-            if _icd10_in_range(normalized, start, end):
+            if icd10_in_range(normalized, start, end):
                 if disease not in seen_diseases:
                     seen_diseases.add(disease)
                     range_str = f"{start}-{end}" if start != end else start

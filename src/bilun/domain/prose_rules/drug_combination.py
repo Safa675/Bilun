@@ -32,6 +32,7 @@ from functools import lru_cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
+from ..icd10 import Icd10Cover, icd10_any_code_covered, normalize_icd10_list
 
 _RULES_PATH = _PROSE_RULES_DIR / "drug_combination_4_2.json"
 
@@ -188,22 +189,14 @@ def _diagnosis_matches(codes: list[str], rule_codes: list[str]) -> bool:
     """ICD-10 PREFIX match — ported from ``drug_indication._diagnosis_matches_rule``.
 
     ``rule_codes = ["K50"]`` matches a billed ``"K50.0"`` (prefix) or ``"K50"``
-    (exact). Matching is case-insensitive and ignores stray whitespace. When
-    the rule lists no codes the predicate passes (no diagnosis constraint).
+    (exact); a dotted listed code matches only itself (``Icd10Cover.EXACT``).
+    Matching is case-insensitive and ignores stray whitespace. When the rule
+    lists no codes the predicate passes (no diagnosis constraint).
     """
-    icd_codes = [str(c).strip().upper() for c in rule_codes if c]
+    icd_codes = normalize_icd10_list(rule_codes)
     if not icd_codes:
         return True
-    for raw in codes:
-        code = str(raw or "").strip().upper()
-        if not code:
-            continue
-        if code in icd_codes:
-            return True
-        for listed in icd_codes:
-            if code.startswith(listed + ".") or code == listed:
-                return True
-    return False
+    return icd10_any_code_covered(codes, icd_codes, cover=Icd10Cover.EXACT)
 
 
 # ---------------------------------------------------------------------------

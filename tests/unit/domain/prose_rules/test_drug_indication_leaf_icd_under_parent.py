@@ -20,9 +20,9 @@ import pytest
 from src.bilun.domain.billing.claim_drug_indication import validate_drug_indication_from_claims
 from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader, DrugClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.icd10 import Icd10Cover, icd10_covers
 from src.bilun.domain.prose_rules._drug_indication.matching import (
     _diagnosis_matches_specific_rule,
-    _icd10_listed_covers,
 )
 from src.bilun.domain.prose_rules.drug_indication import (
     check_drug_indication_for_context,
@@ -241,7 +241,7 @@ def test_listed_code_cover_on_both_selector_fields(
     ],
 )
 def test_the_cover_helper_on_its_own(listed: str, code: str, covered: bool) -> None:
-    assert _icd10_listed_covers(listed, code) is covered
+    assert icd10_covers(listed, code, cover=Icd10Cover.LEAVES) is covered
 
 
 @pytest.mark.parametrize(
