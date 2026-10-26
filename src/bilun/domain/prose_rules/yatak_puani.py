@@ -58,7 +58,7 @@ yatak-puani plan.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -143,20 +143,28 @@ def _is_billed_bed_line(line: ProcedureClaimLine, *, same_day: bool) -> bool:
     return same_day and normalize_procedure_code(line.procedure_code) == DAY_BED_CODE
 
 
+def _package_group(
+    line: ProcedureClaimLine,
+    *,
+    fallback_date: date | None = None,
+) -> str:
+    """The EK-2/C işlem grubu of a billed or mandated package line on its date ("" when it has none)."""
+    as_of = line.procedure_date or fallback_date
+    entry = get_ek2c_entry(line.procedure_code, as_of_date=as_of)
+    if entry is None and getattr(line, "package_code", ""):
+        entry = get_ek2c_entry(line.package_code, as_of_date=as_of)
+    return str(
+        (entry or {}).get("group") or getattr(line, "ek2c_group", "") or ""
+    ).strip().upper()
+
+
 def _resolve_package_window_days(
     line: ProcedureClaimLine,
     *,
     fallback_date: date | None = None,
 ) -> int:
     """Return the §2.2.2.B-1(3) window length for a billed or mandated package line."""
-    as_of = line.procedure_date or fallback_date
-    entry = get_ek2c_entry(line.procedure_code, as_of_date=as_of)
-    if entry is None and getattr(line, "package_code", ""):
-        entry = get_ek2c_entry(line.package_code, as_of_date=as_of)
-    group = str(
-        (entry or {}).get("group") or getattr(line, "ek2c_group", "") or ""
-    ).strip().upper()
-    return PACKAGE_WINDOW_DAYS.get(group, 1)
+    return PACKAGE_WINDOW_DAYS.get(_package_group(line, fallback_date=fallback_date), 1)
 
 
 @dataclass(frozen=True)
@@ -167,12 +175,14 @@ class PackageWindow:
     ("takip alındıktan sonraki") through ``end``, the procedure date plus the
     group's days minus one; ``start`` is the first package line's procedure
     date. ``mandated`` marks a claim that bills no package line although one
-    of its lines must be billed as a package (§2.2.2(1)).
+    of its lines must be billed as a package (§2.2.2(1)). ``lines`` are the
+    package lines that open it, billed and mandated (not compared).
     """
 
     start: date | None
     end: date
     mandated: bool = False
+    lines: tuple[ProcedureClaimLine, ...] = field(default=(), compare=False)
 
 
 def _package_window_end(
@@ -355,6 +365,27 @@ def claim_bed_package_window(
     return _package_window(claim, claim_procs, billed)
 
 
+def claim_islem_grubu_package_window(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+) -> PackageWindow | None:
+    """``claim_package_window`` opened only by the packages with an işlem grubu (A1–E) on their date.
+
+    §2.2.2.B-1(3) (C000701-C000706) counts the window by the işlem grubu, from the procedure date: A 15, B 10, C 8,
+    D 5, E 3 days. A package without one (the ICU day packages, dialysis, FTR, palliative care, psychiatry, home
+    care) has no such window: ``claim_package_window`` reads it as a day for the bed and companion days, but what its
+    price includes is its own clause's question, so it opens none here. A mandated package has a group by
+    definition (``mandated_package_lines``). The capture gaps read this window (``package_window_tests``, #290).
+    """
+    billed = [
+        line
+        for line in claim_procs
+        if line_billed_as_package(line)
+        and _package_group(line, fallback_date=claim.admission_date) in PACKAGE_WINDOW_DAYS
+    ]
+    return _package_window(claim, claim_procs, billed)
+
+
 def _package_window(
     claim: ClaimHeader,
     claim_procs: list[ProcedureClaimLine],
@@ -367,7 +398,7 @@ def _package_window(
     )
     if end is None:
         return None
-    return PackageWindow(start=lines[0].procedure_date, end=end, mandated=not billed)
+    return PackageWindow(start=lines[0].procedure_date, end=end, mandated=not billed, lines=tuple(lines))
 
 
 def counts_against_expected_days(

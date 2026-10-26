@@ -43,7 +43,7 @@ recovery amounts.
 - `block_registry.py` — Declarative metadata for billing blocks
 - `claim_*.py` — Claim-backed algorithm implementations
 - `patient_report.py` — Single-patient report assembly
-- `lab_bill_merge.py` — Per-bill lab optimization + capture-gap merge
+- `lab_bill_merge.py` — Per-bill lab optimization + capture-gap merge (tests and examinations inside an EK-2/C package window are no gap: `prose_rules/package_window_tests.py`, SUT §2.2.2.B-1)
 - `procedure_dedup.py` — Add-on vs capture-gap deduplication
 - `report_totals.py` — TRY headline totals on `BillingActionReport`
 - `report_exactness.py` — Block and report exactness rollup
