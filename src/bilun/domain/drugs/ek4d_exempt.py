@@ -11,8 +11,8 @@ from typing import Any
 import pandas as pd
 
 from ..constants import EK4D_ENTRIES_PATH, EK4D_SECTIONS_PATH
+from ..icd10 import Icd10Cover, icd10_covered_by_any, icd10_in_range, normalize_icd10
 from ..materials.ek4a_as_of import ek4a_as_of
-from ..optimization.shared import _icd10_in_range
 from ..utils import fuzzy_match_name
 
 logger = logging.getLogger("bilun.domain.drugs.ek4d")
@@ -94,18 +94,23 @@ def _section_index() -> dict[int, dict[str, Any]]:
 
 
 def _diagnosis_matches_section(diagnosis: str, bucket: dict[str, Any]) -> bool:
-    code = str(diagnosis or "").strip().upper()
+    """True when the diagnosis is one of the section's listed codes or lies in one of its ranges.
+
+    A listed code reads ``Icd10Cover.EXACT``: a category covers its dotted sub-codes, a dotted code
+    (``M86.3``) only itself, not the SKRS leaves under it (WP35 left that reading to Safa). A range
+    reads ``icd10_in_range``.
+    """
+    code = normalize_icd10(diagnosis)
     if not code:
         return False
     if code in bucket["icd_codes"]:
         return True
-    for listed in bucket["icd_codes"]:
-        if listed and (code == listed or code.startswith(listed + ".")):
-            return True
+    if icd10_covered_by_any(code, (c for c in bucket["icd_codes"] if c), cover=Icd10Cover.EXACT):
+        return True
     for span in bucket["icd_ranges"]:
         start = str(span.get("start", "")).upper()
         end = str(span.get("end", start)).upper()
-        if start and _icd10_in_range(code, start, end):
+        if start and icd10_in_range(code, start, end):
             return True
     return False
 

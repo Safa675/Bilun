@@ -3,6 +3,7 @@ import math
 from typing import Any
 
 from ...claims.clinical_evidence import RavulizumabEvidence, parse_clinical_evidence
+from ...icd10 import Icd10Cover, icd10_covers
 from .clinical_common import Predicate, Reader, all_of, result, scope_missing
 
 KIND = 'ravulizumab_nmosd_continuation_2026'
@@ -13,7 +14,7 @@ SOURCE_REFS = ['4.2.14.C.b#769b2a20@between:4.2.14.C#c36e5ca4|4.2.14.C#024594a5'
 
 def evaluate_ravulizumab_continuation(line: Any, codes: list[str] | None = None) -> dict[str, Any] | None:
     evidence = parse_clinical_evidence(getattr(line, 'ravulizumab_evidence', None), RavulizumabEvidence)
-    has_nmosd_code = any(code == 'G36.0' or code.startswith('G36.0.') for code in codes or [])
+    has_nmosd_code = any(icd10_covers('G36.0', code, cover=Icd10Cover.EXACT) for code in codes or [])
     indication = evidence.indication if evidence else None
     if indication in {'pnh', 'ahus'} and not has_nmosd_code:
         return None

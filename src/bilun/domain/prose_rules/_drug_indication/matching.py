@@ -7,7 +7,14 @@ import unicodedata
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
-from ...optimization.shared import _icd10_in_range
+from ...icd10 import (
+    Icd10Cover,
+    icd10_covered_by_any,
+    icd10_covers,
+    icd10_in_range,
+    normalize_icd10,
+    normalize_icd10_list,
+)
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader
@@ -155,46 +162,32 @@ def _is_indication_route_rule(rule: dict[str, Any]) -> bool:
     return rule.get("pay") is not False
 
 
-def _icd10_listed_covers(listed: str, code: str) -> bool:
-    """True when ``code`` is ``listed`` or lies under it in the ICD-10 hierarchy.
-
-    A category covers its dotted sub-codes (``M45`` covers ``M45.9``); a dotted code covers every
-    longer code that starts with it, so ``M08.0`` covers the SKRS site leaves ``M08.00``-``M08.09``
-    (#305). A code never covers its parent or a sibling: ``M08.0`` covers neither ``M08`` nor
-    ``M08.1``.
-    """
-    if code == listed:
-        return True
-    if "." in listed:
-        return code.startswith(listed)
-    return code.startswith(listed + ".")
-
-
 def _diagnosis_matches_specific_rule(codes: list[str], rule: dict[str, Any]) -> bool:
     """True when a coded diagnosis is covered by one of the rule's ICD-10 selectors.
 
     A listed code (``icd10_codes``) and a single range (``icd10_ranges`` without a hyphen) cover the
-    code itself and every code under it (``_icd10_listed_covers``); a hyphen range compares the
-    three-character categories (``M05-M06`` covers ``M06.01``).
+    code itself and every code under it (``Icd10Cover.LEAVES``: ``M08.0`` covers ``M08.01``, #305);
+    a hyphen range compares the three-character categories (``M05-M06`` covers ``M06.01``).
     """
-    icd_codes = [str(c).strip().upper() for c in (rule.get("icd10_codes") or []) if c]
-    icd_ranges = [str(r).strip().upper() for r in (rule.get("icd10_ranges") or []) if r]
+    icd_codes = normalize_icd10_list(rule.get("icd10_codes"))
+    icd_ranges = normalize_icd10_list(rule.get("icd10_ranges"))
 
     for raw in codes:
-        code = str(raw or "").strip().upper()
+        code = normalize_icd10(raw)
         if not code:
             continue
         if code in icd_codes:
             return True
-        for listed in icd_codes:
-            if _icd10_listed_covers(listed, code):
-                return True
+        if icd10_covered_by_any(code, icd_codes, cover=Icd10Cover.LEAVES):
+            return True
         for span in icd_ranges:
             if "-" in span:
                 start, end = span.split("-", 1)
-                if _icd10_in_range(code, start, end):
+                if icd10_in_range(code, start, end):
                     return True
-            elif _icd10_in_range(code, span, span) or _icd10_listed_covers(span, code):
+            elif icd10_in_range(code, span, span) or icd10_covers(
+                span, code, cover=Icd10Cover.LEAVES
+            ):
                 return True
     return False
 

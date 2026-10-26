@@ -15,6 +15,10 @@ legacy shim modules.
 - `src.sut.pricing` re-exports cohort/patient/DRG pricing APIs.
 - `src.sut.optimization` exposes rule engines and cohort aggregation helpers.
 - `src.sut.billing` exposes billing dataclasses and orchestrator entry points.
+- `icd10.py` normalises and matches ICD-10 codes for every rule that lists them: a caller names
+  its reading (`Icd10Cover.EXACT`: a dotted code covers only itself; `Icd10Cover.LEAVES`: it also
+  covers the SKRS leaves under it, the 4.2 drug-indication rules) and ranges go through
+  `icd10_in_range`.
 
 ## Data source modes
 

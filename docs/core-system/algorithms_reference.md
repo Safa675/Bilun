@@ -343,9 +343,19 @@ Session-fraction / seans kesir oranı rules are **not** applied to laboratory te
 
 ## Shared Foundations
 
-### ICD-10 Range Matching (`shared.py`)
+### ICD-10 Code Matching (`src/bilun/domain/icd10.py`)
 
-Used by copay exemptions (EK-1A). Matches a diagnosis code against gazette-defined ranges:
+One module normalises and matches ICD-10 codes for every rule that lists them. A listed code is
+read one of two ways (`Icd10Cover`):
+- `EXACT`: a category covers its dotted sub-codes (K50 covers K50.0); a dotted code covers only
+  itself (M86.3 does not cover the SKRS leaf M86.31). EK-4/D listed codes, the 4.2 drug-combination
+  and 2.4 treatment-pricing rules (EK-2/D-3 HBO list and clinical categories included), ravulizumab's
+  G36.0.
+- `LEAVES`: as `EXACT`, and a dotted code also covers the longer codes under it (M08.0 covers
+  M08.01, #305). The 4.2 drug-indication rules.
+
+`icd10_in_range` matches a code against gazette-defined ranges (EK-1A, EK-4/D ranges, drug-indication
+ranges):
 - Range "A15-A19": matches any code A15 through A19 (including sub-codes like A16.2).
 - Single code "C34": matches C34 and all sub-codes (C34.0, C34.1, etc.).
 - Sub-code "C49.5": matches only C49.5 exactly.

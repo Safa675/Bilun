@@ -162,6 +162,7 @@ def coverage_dependency_hashes(project_root: Path, clauses_path: Path) -> dict[s
         "src/bilun/domain/claims/adult_gh.py",
         "src/bilun/domain/claims/mds_evidence.py",
         "src/bilun/domain/optimization/shared.py",
+        "src/bilun/domain/icd10.py",
         "src/bilun/domain/constants.py",
         "pyproject.toml",
     ))

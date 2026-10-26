@@ -56,6 +56,13 @@ from typing import Any
 from src.bilun.domain.claims.claim_type import claim_type_kind
 
 from ..constants import _PROSE_RULES_DIR
+from ..icd10 import (
+    Icd10Cover,
+    icd10_any_code_covered,
+    icd10_covered_by_any,
+    normalize_icd10,
+    normalize_icd10_list,
+)
 
 _RULES_PATH = _PROSE_RULES_DIR / "treatment_pricing_2_4.json"
 _RULESET_ID = "treatment_pricing_2_4"
@@ -114,19 +121,18 @@ def _icd10_categories(codes: list[str]) -> set[str]:
     """Map billed ICD-10 codes to the clinical categories they fall under.
 
     A code is assigned every category whose listed prefix it shares (prefix
-    with a trailing ``.`` segment boundary, mirroring ``_diagnosis_matches``).
+    with a trailing ``.`` segment boundary, ``Icd10Cover.EXACT`` as in
+    ``_diagnosis_matches``).
     Returns an empty set when ``codes`` is empty or no category matches.
     """
     out: set[str] = set()
     for raw in codes or []:
-        code = str(raw or "").strip().upper()
+        code = normalize_icd10(raw)
         if not code:
             continue
         for cat, prefixes in _ICD10_CATEGORY_PREFIXES.items():
-            for prefix in prefixes:
-                if code == prefix or code.startswith(prefix + "."):
-                    out.add(cat)
-                    break
+            if icd10_covered_by_any(code, prefixes, cover=Icd10Cover.EXACT):
+                out.add(cat)
     return out
 
 
@@ -145,26 +151,18 @@ def _diagnosis_matches(codes: list[str], rule_codes: list[str]) -> bool:
     """ICD-10 PREFIX membership — ported from drug_indication._diagnosis_matches_rule.
 
     A billed ``code`` matches a rule ``listed`` code when they are equal OR the
-    billed code starts with ``listed + "."`` (so ``"E11"`` matches ``"E11.9"``).
+    billed code starts with ``listed + "."`` (so ``"E11"`` matches ``"E11.9"``;
+    ``Icd10Cover.EXACT``, so a dotted ``M86.3`` does not cover ``M86.31``).
     Codes are normalized to upper-case + stripped before comparison.
 
     Returns ``True`` if ANY billed code matches ANY rule code. Empty
     ``rule_codes`` is treated as "no diagnosis restriction" → ``True`` (the
     other condition keys on the rule still gate firing).
     """
-    listed = [str(c).strip().upper() for c in (rule_codes or []) if c]
+    listed = normalize_icd10_list(rule_codes)
     if not listed:
         return True
-    for raw in codes or []:
-        code = str(raw or "").strip().upper()
-        if not code:
-            continue
-        if code in listed:
-            return True
-        for prefix in listed:
-            if code == prefix or code.startswith(prefix + "."):
-                return True
-    return False
+    return icd10_any_code_covered(codes, listed, cover=Icd10Cover.EXACT)
 
 
 def _suffix_len(key: str) -> int:
