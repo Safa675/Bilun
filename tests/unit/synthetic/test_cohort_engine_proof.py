@@ -54,6 +54,7 @@ from src.bilun.domain.claims.patient_context import (
     build_patient_claim_context,
 )
 from tests.fixtures import synthetic_cohort as cohort
+from tests.fixtures.session_cache import SessionCache
 from tests.fixtures.synthetic_encounters import Extra, with_encounters
 
 pytestmark = pytest.mark.unit
@@ -97,8 +98,8 @@ def _fresh_claims_cache() -> Iterator[None]:
 
 
 @pytest.fixture(scope="module")
-def built_showcase() -> BuildResult:
-    return build_showcase()
+def built_showcase(committed_showcase: BuildResult) -> BuildResult:
+    return committed_showcase
 
 
 @pytest.fixture(scope="module")
@@ -110,12 +111,25 @@ def showcase_dataset() -> SUTClaimDataset:
 def story_bundles(
     built_showcase: BuildResult,
     showcase_dataset: SUTClaimDataset,
+    showcase_proofs: tuple[StoryProof, ...],
+    session_cache: SessionCache,
 ) -> dict[str, _StoryBundle]:
+    """The engine over each faulty bill and its clean twin, built once per session (the fields of each bundle)."""
+    fields = session_cache.get(
+        "engine_proof_story_bundles",
+        lambda: _story_bundle_fields(built_showcase, showcase_dataset, showcase_proofs),
+    )
+    return {story: _StoryBundle(**values) for story, values in fields.items()}
+
+
+def _story_bundle_fields(
+    built_showcase: BuildResult,
+    showcase_dataset: SUTClaimDataset,
+    showcase_proofs: tuple[StoryProof, ...],
+) -> dict[str, dict[str, Any]]:
     clean_by_claim = {c.header.claim_id: c for c in built_showcase.clean_claims}
-    proofs_by_story = {
-        sp.story: sp for sp in prove_showcase(built_showcase, dataset=showcase_dataset)
-    }
-    bundles: dict[str, _StoryBundle] = {}
+    proofs_by_story = {sp.story: sp for sp in showcase_proofs}
+    bundles: dict[str, dict[str, Any]] = {}
     for rec in built_showcase.records:
         assert rec.story is not None
         story = rec.story
@@ -142,7 +156,7 @@ def story_bundles(
             patient_id=rec.patient_id,
         )
 
-        bundles[story] = _StoryBundle(
+        bundles[story] = dict(
             story=story,
             record=rec,
             proof=proof,

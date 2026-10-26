@@ -142,8 +142,8 @@ LAB_SCHEMA = {
 
 
 @pytest.fixture(scope="module")
-def built():
-    return build_showcase()
+def built(committed_showcase):
+    return committed_showcase
 
 
 @pytest.fixture(scope="module")
@@ -1486,10 +1486,19 @@ def test_the_committed_files_give_the_result_of_the_tables_in_memory(built, clea
 # --- 3. the mutation cases -------------------------------------------------------------------------
 
 
+def test_the_base_of_a_defect_case_has_the_findings_of_the_module_fixture(
+    built, clean, context, committed_problems
+) -> None:
+    """A case's base (`fresh`) finds what `committed_problems` found, so the cases read that."""
+    assert fresh(built, clean).problems(context) == committed_problems
+
+
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.name)
-def test_a_defect_trips_its_own_check_and_what_it_must(case: Case, built, clean, context) -> None:
-    base = fresh(built, clean)
-    assert base.problems(context) == [], "the base (the committed tables) must be clean"
+def test_a_defect_trips_its_own_check_and_what_it_must(
+    case: Case, built, clean, context, committed_problems
+) -> None:
+    # the findings of the base, `fresh(built, clean).problems(context)`, computed once per module
+    assert committed_problems == [], "the base (the committed tables) must be clean"
     broken = fresh(built, clean)
     case.mutate(broken)
     found = broken.problems(context)

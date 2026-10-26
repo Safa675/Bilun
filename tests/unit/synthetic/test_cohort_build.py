@@ -160,8 +160,8 @@ def _fresh_claims_cache() -> Iterator[None]:
 
 
 @pytest.fixture(scope="module")
-def built_showcase() -> BuildResult:
-    return build_showcase()
+def built_showcase(committed_showcase: BuildResult) -> BuildResult:
+    return committed_showcase
 
 
 # --- 2. Build equals committed & CLI --check ---------------------------------------------------
@@ -1058,9 +1058,8 @@ _EPISODE_COLUMN = {
 
 
 @pytest.fixture(scope="module")
-def two_bills() -> BuildResult:
-    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
-    return build_showcase(recipes=recipes, clinical=clinical)
+def two_bills(two_bill_showcase: BuildResult) -> BuildResult:
+    return two_bill_showcase
 
 
 def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two_bills: BuildResult) -> None:
