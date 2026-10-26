@@ -14,6 +14,7 @@ def _build_billing_cache(
     lab_df: pl.DataFrame,
     rec_df: pl.DataFrame,
     sut_claim_dataset: Any | None = None,
+    copay_inputs_by_pid: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "sut_by_pid": sut_by_pid,
@@ -21,6 +22,8 @@ def _build_billing_cache(
         "lab_df_pl": lab_df,
         "rec_df_pl": rec_df,
         "sut_claim_dataset": sut_claim_dataset,
+        # Each patient's copay input: the bill reports read EK-1/A on the bill's date (#292).
+        "copay_inputs_by_pid": copay_inputs_by_pid or {},
     }
 
 
@@ -34,6 +37,7 @@ def assemble_billing_context(
     compute_all_billing_reports_fn,
     sut_claim_dataset: Any | None = None,
     compute_all_bill_billing_reports_fn=None,
+    copay_inputs_by_pid: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     billing_cache = _build_billing_cache(
         sut_by_pid=sut_by_pid,
@@ -41,6 +45,7 @@ def assemble_billing_context(
         lab_df=lab_df,
         rec_df=rec_df,
         sut_claim_dataset=sut_claim_dataset,
+        copay_inputs_by_pid=copay_inputs_by_pid,
     )
     if billing_workers is None:
         billing_reports, revenue_recovery = compute_all_billing_reports_fn(billing_cache)
