@@ -12,8 +12,13 @@ from src.bilun.domain.prose_rules.blood_uplift import (
     detect_blood_component_underbilling_opportunities,
 )
 from src.bilun.domain.prose_rules.drg_unbundling import detect_blood_component_violations
+from tests.unit._helpers.catalog_prices import list_text
 
 pytestmark = pytest.mark.unit
+
+# 705371's list price on the line date (curated catalog histories) and the 36 % a package bill may hold (C000694).
+_RED_CELLS = Decimal(list_text("705371", "2026-01-10"))
+_AT_SHARE = (_RED_CELLS * Decimal("0.36")).quantize(Decimal("0.01"), rounding="ROUND_HALF_UP")
 
 
 def _proc(**overrides) -> ProcedureClaimLine:
@@ -57,25 +62,28 @@ class TestBloodComponentUplift:
         assert len(hits) == 1
         assert hits[0]["type"] == "blood_component_underbilling"
         assert hits[0]["allowed_fraction"] == pytest.approx(0.36)
-        # #336: 36 % of 705371's list price 4462.64, not of the line's payable 1000.
-        assert hits[0]["max_billable_try"] == pytest.approx(1606.55)
-        assert hits[0]["reference_payable_try"] == pytest.approx(4462.64)
-        assert hits[0]["recoverable_uplift_try"] == pytest.approx(1556.55)
+        # #336: 36 % of 705371's list price, not of the line's payable 1000.
+        assert hits[0]["max_billable_try"] == pytest.approx(float(_AT_SHARE))
+        assert hits[0]["reference_payable_try"] == pytest.approx(float(_RED_CELLS))
+        assert hits[0]["recoverable_uplift_try"] == pytest.approx(float(_AT_SHARE - 50))
         assert hits[0]["savings_category"] == "sgk_uplift"
 
     def test_skips_when_billed_within_tolerance(self) -> None:
         hits = detect_blood_component_underbilling_opportunities(
-            [_package(), _proc(billed_amount_try=Decimal("1580"))],  # within 2 % of 1606.55
+            [_package(), _proc(billed_amount_try=Decimal("1580"))],  # within 2 % of the 36 % share
             claim_id="CLM1",
         )
         assert hits == []
 
     def test_overbilling_goes_to_audit_not_uplift(self) -> None:
-        line = _proc(billed_amount_try=Decimal("4462.64"))  # in full inside the package
+        line = _proc(billed_amount_try=_RED_CELLS)  # in full inside the package
         assert detect_blood_component_underbilling_opportunities([_package(), line]) == []
         violations = detect_blood_component_violations([_package(), line])
         assert len(violations) == 1
-        assert violations[0]["risk_amount_try"] == pytest.approx(2856.09)
+        # the rest of the list price above the share, rounded once
+        assert violations[0]["risk_amount_try"] == pytest.approx(
+            float((_RED_CELLS * Decimal("0.64")).quantize(Decimal("0.01"), rounding="ROUND_HALF_UP"))
+        )
 
     def test_ignores_non_blood_codes(self) -> None:
         hits = detect_blood_component_underbilling_opportunities(

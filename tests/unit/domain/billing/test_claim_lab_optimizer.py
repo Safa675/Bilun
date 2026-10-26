@@ -16,10 +16,12 @@ from typing import Any
 import polars as pl
 import pytest
 
+from tests.unit._helpers.catalog_prices import list_price, list_text
+
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[4]
-# EK-2B prices in force on this day: L107020 19.72, L102820 26.33, L103120 5.88 TL.
+# The lines below on this day are billed at the EK-2B prices in force (curated catalog histories).
 _DAY = "2026-03-01"
 
 
@@ -157,9 +159,9 @@ def test_no_hemogram_bundling_for_single_cbc_line() -> None:
     assert not result.flagged_tests
 
 
-_HEMOGRAM = {"code": "L107020", "name": "Tam Kan Sayımı (Hemogram)", "billed": "19.72"}
-_MANUAL_HCT = {"code": "L103120", "name": "Hematokrit (Manuel)", "billed": "5.88"}
-_HBA1C = {"code": "L102820", "name": "Glike hemoglobin (Hb A1c)", "billed": "26.33"}
+_HEMOGRAM = {"code": "L107020", "name": "Tam Kan Sayımı (Hemogram)", "billed": list_text("L107020", _DAY)}
+_MANUAL_HCT = {"code": "L103120", "name": "Hematokrit (Manuel)", "billed": list_text("L103120", _DAY)}
+_HBA1C = {"code": "L102820", "name": "Glike hemoglobin (Hb A1c)", "billed": list_text("L102820", _DAY)}
 
 
 def _one_date(*lines: dict[str, str]) -> _MockPatientClaimContext:
@@ -181,7 +183,7 @@ def test_hemogram_with_hba1c_on_one_date_is_not_unbundling() -> None:
 
 @pytest.mark.parametrize(
     ("second", "savings"),
-    [(_HEMOGRAM, 19.72), (_MANUAL_HCT, 5.88)],
+    [(_HEMOGRAM, list_price("L107020", _DAY)), (_MANUAL_HCT, list_price("L103120", _DAY))],
     ids=["two_hemograms", "hemogram_and_manual_hematocrit"],
 )
 def test_coded_cbc_lines_on_one_date_are_unbundling(second: dict[str, str], savings: float) -> None:
@@ -191,7 +193,7 @@ def test_coded_cbc_lines_on_one_date_are_unbundling(second: dict[str, str], savi
     result = _optimize_lab_billing_from_claims(_one_date(_HEMOGRAM, second))
     assert result.hemogram_bundling_savings == savings
     flags = [(f["flag_type"], f["gazette_price"], f["savings_try"]) for f in result.flagged_tests]
-    assert flags == [("hemogram_unbundling", 19.72, savings)]
+    assert flags == [("hemogram_unbundling", list_price("L107020", _DAY), savings)]
 
 
 @pytest.mark.parametrize(

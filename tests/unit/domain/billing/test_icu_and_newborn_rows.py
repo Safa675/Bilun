@@ -36,6 +36,7 @@ from src.bilun.domain.billing.types import (
 from src.bilun.domain.claims.models import ClaimDiagnosis
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.icu_puani import detect_icu_tier_overbilling
+from tests.unit._helpers.catalog_prices import list_price, list_text
 from tests.unit.domain.billing.test_blood_uplift_wiring import _claim, _proc
 
 pytestmark = pytest.mark.unit
@@ -365,7 +366,7 @@ class TestNewbornBedRows:
         assert _counted(report) == _try(report.sgk_uplift_try)
 
     def test_a_billed_kot_is_not_a_row_for_the_kuvoz_difference(self) -> None:
-        report = _newborn_report(bed_billed="933.90", bed_code="510081")
+        report = _newborn_report(bed_billed=list_text("510081", "2026-07-10", 3), bed_code="510081")
 
         [opportunity] = report.yenidogan_yatak.opportunities
         assert opportunity["bed_code"] == "510081"
@@ -412,19 +413,20 @@ class TestNewbornBedRows:
         showcase bill has: without this test a missing entry in public_contracts.json would fail nothing."""
         from src.bilun.api.public_responses import project_public_response
 
-        report = _newborn_report(bed_billed="440.98", quantity=1)
+        kuvoz = list_price("510070", "2026-07-10")  # one of the three days billed at list
+        report = _newborn_report(bed_billed=list_text("510070", "2026-07-10"), quantity=1)
         payload = json.loads(json.dumps(_serialize_billing_report(report), default=str))
 
         public = project_public_response(payload, "/api/billing-report/{patient_id}")
 
         [newborn] = public["yenidogan_yatak"]["opportunities"]
-        assert newborn["actual_billed_try"] == pytest.approx(440.98, abs=0.005)
+        assert newborn["actual_billed_try"] == pytest.approx(kuvoz, abs=0.005)
         assert newborn["bundled_days"] == 0
         assert newborn["days"] == 3
         [standard] = public["yatak_puani"]["opportunities"]
         assert standard["newborn_overlap_days"] == 3
         [row] = [a for a in public["recommended_actions"] if a["surface"] == "yenidogan_yatak"]
-        assert row["sgk_uplift_try"] == pytest.approx(881.96, abs=0.005)
+        assert row["sgk_uplift_try"] == pytest.approx(2 * kuvoz, abs=0.005)
 
         # Incubator, then a standard bed: `standard_bed_days` of the newborn row.
         from tests.unit.domain.billing.test_yatak_newborn_overlap import _report as _stay_report
@@ -454,7 +456,7 @@ class TestNewbornBedRows:
     def test_every_bill_of_the_grid_keeps_rows_equal_to_the_headline_and_the_top_action_backed(
         self, days: int, bed_code: str, share: str | None
     ) -> None:
-        rate = {"510070": Decimal("440.98"), "510081": Decimal("311.30")}[bed_code]
+        rate = Decimal(list_text(bed_code, "2026-07-10"))
         full = rate * days
         billed = {
             None: None, "0": "0", "half": str((full / 2).quantize(_CENT)), "full": str(full), "over": str(full + 50),

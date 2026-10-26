@@ -23,6 +23,7 @@ from src.bilun.domain.claims.models import ClaimHeader, PerformedProcedureLine, 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.lab_capture_gap import detect_lab_capture_gaps
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
+from tests.unit._helpers.catalog_prices import list_price
 
 pytestmark = pytest.mark.unit
 
@@ -169,10 +170,12 @@ class TestTheIssueLogs:
         assert _gaps(claim, procs, *logs) == []
 
     def test_an_x_ray_after_the_window_keeps_its_gap(self) -> None:
-        # Acceptance: S1 extended to 07-25, X-ray on 07-23 is 44.74 TL (EK-2/B 801720 on 2026-07-23).
+        # Acceptance: S1 extended to 07-25, X-ray on 07-23 is its EK-2/B 801720 price on 2026-07-23.
         claim = _claim(discharge_date=date(2026, 7, 25), claim_end_date=date(2026, 7, 25))
 
-        assert _gaps(claim, [_package()], _log("801720", date(2026, 7, 23))) == [("801720", 44.74)]
+        assert _gaps(claim, [_package()], _log("801720", date(2026, 7, 23))) == [
+            ("801720", list_price("801720", "2026-07-23"))
+        ]
 
     def test_a_mandated_package_billed_itemized_has_the_same_window(self) -> None:
         # Faulty S1: 610131 billed hizmet başı where its package is mandated (§2.2.2(1)).
@@ -441,7 +444,7 @@ class TestTheCommittedDemo:
         longer = replace(clean.claims[0], discharge_date=date(2026, 7, 25), claim_end_date=date(2026, 7, 25))
         ctx = _with_logs(replace(clean, claims=(longer,)), ("801720", date(2026, 7, 23), "pacs"))
 
-        assert _report_gaps(ctx, None) == [("801720", "pacs", 44.74)]
+        assert _report_gaps(ctx, None) == [("801720", "pacs", list_price("801720", "2026-07-23"))]
 
     def test_faulty_s1_with_the_x_ray_log_has_no_gap(self) -> None:
         from scripts.synthetic.cohort.engine_proof import load_showcase_dataset
@@ -461,4 +464,4 @@ class TestTheCommittedDemo:
         s7 = cohort.role("showcase_S7")
         ctx = build_bill_claim_context(s7.patient_id, s7.claim_id, load_showcase_dataset())
 
-        assert _report_gaps(ctx, None) == [("R101450", "pacs", 1138.22)]
+        assert _report_gaps(ctx, None) == [("R101450", "pacs", list_price("R101450", "2026-02-19"))]  # S7's day

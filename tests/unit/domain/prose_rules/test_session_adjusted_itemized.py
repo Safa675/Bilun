@@ -13,8 +13,13 @@ from src.bilun.domain.prose_rules import session_pricing
 from src.bilun.domain.prose_rules.session_pricing import (
     compute_session_adjusted_itemized_total,
 )
+from tests.unit._helpers.catalog_prices import list_text
 
 pytestmark = pytest.mark.unit
+
+# 705430 at its list price on the line date (curated catalog histories) and its 36 % package share (C000694).
+_PLASMA = Decimal(list_text("705430", "2026-01-10"))
+_PLASMA_SHARE = (_PLASMA * Decimal("0.36")).quantize(Decimal("0.01"), rounding="ROUND_HALF_UP")
 
 
 def _proc(**overrides) -> ProcedureClaimLine:
@@ -273,11 +278,13 @@ class TestSessionAdjustedItemizedTotal:
 
     # #261: blood is not a session operation, so without the package cap it
     # keeps its full amount (was 50 % as a separate-incision secondary). #336:
-    # the cap is 36 % of 705430's list price on the date (1134.70 x 0.36 =
-    # 408.492), never of the line's own payable (was 36 % of 100 = 36).
+    # the cap is 36 % of 705430's list price on the date, never of the line's own payable (was 36 % of 100 = 36).
     @pytest.mark.parametrize(
         "billed, apply_blood_fraction, expected",
-        [("1134.70", True, 1408.49), ("1134.70", False, 2134.70), ("100", True, 1100.0), ("100", False, 1100.0)],
+        [
+            (str(_PLASMA), True, float(1000 + _PLASMA_SHARE)), (str(_PLASMA), False, float(1000 + _PLASMA)),
+            ("100", True, 1100.0), ("100", False, 1100.0),
+        ],
     )
     def test_blood_cap_is_the_share_of_the_list_price(
         self, catalog, billed, apply_blood_fraction, expected,

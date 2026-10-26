@@ -1,7 +1,8 @@
 """Session scope, cross-specialty and package-gap acceptance on the showcase bills.
 
 The bills mirror reports/synthetic-data/2026-10-15-showcase-proofs/stories.py
-(S1, S2, S3, S4, S6, S7, S8), priced from the catalog in force on each line date.
+(S1, S2, S3, S4, S6, S7, S8), priced from the catalog in force on each line date (the curated catalog histories,
+read by `tests/unit/_helpers/catalog_prices.py`, not by the engine's loaders).
 Safa675/Bilun#261 (session = operations only), #264 (no specialty from the EK-2/C
 işlem grubu) and #269 (a mandated package compared with what was billed).
 """
@@ -26,8 +27,6 @@ from src.bilun.domain.claims.models import (
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.money import money_round_half_up
 from src.bilun.domain.optimization.unbundling import detect_drg_unbundling
-from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
-from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
 from src.bilun.domain.prose_rules.drg_unbundling import (
     analyze_claim_unbundling,
     detect_session_point_violations,
@@ -35,6 +34,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import (
 from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
 from src.bilun.domain.prose_rules.session_uplift import iter_session_secondary_assessments
 from src.bilun.domain.prose_rules.yatak_puani import claim_package_window
+from tests.unit._helpers.catalog_prices import list_price, list_text
 
 pytestmark = pytest.mark.unit
 
@@ -47,12 +47,27 @@ _CENT = Decimal("0.01")
 
 
 def _price(code: str, day: date) -> Decimal:
-    if code.startswith("P"):
-        raw = (get_ek2c_entry(code, as_of_date=day) or {}).get("price_try")
-    else:
-        raw = get_ek2b_price_for_date(code, day)
-    assert raw, f"{code} has no catalog price on {day}"
-    return Decimal(str(raw)).quantize(_CENT, rounding=ROUND_HALF_UP)
+    return Decimal(list_text(code, day))
+
+
+def _listed(code: str, day: str, qty: int = 1, *, starred_uplift: bool = False) -> float:
+    """``qty`` units of ``code`` at its list price on ``day``; a starred EK-2/C package at a tier C000678 names is
+    paid 30 % above the line's amount (rounded once)."""
+    amount = _price(code, _d(day)) * qty
+    if starred_uplift:
+        amount = (amount * Decimal("1.3")).quantize(_CENT, rounding=ROUND_HALF_UP)
+    return float(amount)
+
+
+def _share(code: str, day: str, factor: str, qty: int = 1, *, starred_uplift: bool = False) -> float:
+    """``factor`` of the list amount of ``code`` on ``day`` (§2.2.2 point factors), rounded half up."""
+    listed = Decimal(str(_listed(code, day, qty, starred_uplift=starred_uplift)))
+    return float((listed * Decimal(factor)).quantize(_CENT, rounding=ROUND_HALF_UP))
+
+
+def _above(code: str, day: str, factor: str, *, billed: float | None = None) -> float:
+    """What a line of ``code`` billed at ``billed`` (its list amount when not given) holds above ``factor`` of it."""
+    return round((_listed(code, day) if billed is None else billed) - _share(code, day, factor), 2)
 
 
 class _Bill:
@@ -223,6 +238,20 @@ def s8(variant: str, *, branches: tuple[str, str] = (GENCER, GENCER)) -> _Bill:
     return bill
 
 
+# S1 (#269): its package P610131 on the admission day, and the faulty bill's hizmet başı lines at list. The gap is
+# what the package pays above the bill.
+_S1_PACKAGE = list_price("P610131", "2026-07-14")
+_S1_ITEMIZED = float(sum(line.billed_amount_try for line in s1("faulty").procs))
+_S1_GAP = round(_S1_PACKAGE - _S1_ITEMIZED, 2)
+# S8 (#311): the second operation P603840 beside P609235 on the operation day; one incision pays 25 %, separate
+# incisions 50 % of its EK-2/C list (§2.2.2.B(3)(a), (b)).
+_S8_DAY = "2026-09-15"
+_S8_QUARTER, _S8_HALF = _share("P603840", _S8_DAY, "0.25"), _share("P603840", _S8_DAY, "0.5")
+_S8_ABOVE_HALF = _above("P603840", _S8_DAY, "0.5")
+# S3's second operation 615995 on the operation day (§2.2.2.A(5): 30 % one incision, 50 % separate ones).
+_S3_DAY = "2026-08-18"
+
+
 class TestSessionScope261:
     @pytest.mark.parametrize("build", [s2, s3, s4, s6, s7], ids=["S2", "S3", "S4", "S6", "S7"])
     def test_clean_itemized_showcase_bills_have_no_audit_exposure(self, build) -> None:
@@ -256,10 +285,10 @@ class TestSessionScope261:
         assert row["risk_amount_try"] == pytest.approx(list_price * (1 - factor), abs=0.01)
 
     def test_faulty_s8_second_package_at_full_points_is_still_exposure(self) -> None:
-        # Safa 2026-10-16: unknown incision → lenient reading. P603840 (list
-        # 7,169.60) billed in full is over-billed above B(3)(b)'s 50 % (3,584.80);
-        # the 25 % of B(3)(a) only holds with one incision (was 5,377.20).
-        assert compute_audit_exposure_from_claims(s8("faulty").ctx()) == 3584.80
+        # Safa 2026-10-16: unknown incision → lenient reading. P603840 billed in
+        # full at its list is over-billed above B(3)(b)'s 50 %; the 25 % of B(3)(a)
+        # only holds with one incision (was the 75 % above 25 %).
+        assert compute_audit_exposure_from_claims(s8("faulty").ctx()) == _S8_ABOVE_HALF
         assert compute_audit_exposure_from_claims(s8("clean").ctx()) == 0.0
 
     @pytest.mark.parametrize("same_incision, factor", [(True, 0.30), (False, 0.50)])
@@ -290,10 +319,11 @@ class TestSessionScope261:
     @pytest.mark.parametrize(
         "codes, rule_id, factor, risk",
         [
-            (("P700910", "P700810"), "2.2.2.B.a", 0.25, 3060.48),  # PTCA + angio (C000993).
-            (("P700660", "P700732"), "2.2.2.B.a", 0.25, 1400.59),  # Pacemaker + pocket.
-            (("701450", "701540"), "2.2.2.A.(5)", 0.30, 338.78),  # SGK GENEL CERRAHİ-2.
-            (("802830", "802780"), "2.2.2.A.(5)", 0.30, 1524.82),  # SGK RADYOLOJİ-3.
+            # The secondary billed in full at its list, at risk above its point factor.
+            (("P700910", "P700810"), "2.2.2.B.a", 0.25, _above("P700810", "2026-07-14", "0.25")),  # PTCA + angio (C000993).
+            (("P700660", "P700732"), "2.2.2.B.a", 0.25, _above("P700732", "2026-07-14", "0.25")),  # Pacemaker + pocket.
+            (("701450", "701540"), "2.2.2.A.(5)", 0.30, _above("701540", "2026-07-14", "0.3")),  # SGK GENEL CERRAHİ-2.
+            (("802830", "802780"), "2.2.2.A.(5)", 0.30, _above("802780", "2026-07-14", "0.3")),  # SGK RADYOLOJİ-3.
         ],
         ids=["angio-ptca", "pacemaker-pocket", "colonoscopy-ogd", "stent-pta"],
     )
@@ -361,7 +391,8 @@ class TestSessionScope261:
             (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"],
              r["expected_point_factor"], r["missing_facts"])
             for r in rows
-        ] == [("615995", 0.0, 606.40, 0.50, ["kesi"])]
+        ] == [("615995", 0.0, round(_share("615995", _S3_DAY, "0.5") - _share("615995", _S3_DAY, "0.3"), 2),
+                0.50, ["kesi"])]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_hizmet_basi_operations_rank_by_their_ek2b_puan(self) -> None:
@@ -379,7 +410,7 @@ class TestSessionScope261:
             (r["procedure_code"], r["primary_procedure_code"], r["expected_point_factor"],
              r["risk_amount_try"])
             for r in rows
-        ] == [("603830", "603840", 0.30, 1148.48)]
+        ] == [("603830", "603840", 0.30, _above("603830", "2026-07-14", "0.3"))]
 
 
 class TestMixedSessions:
@@ -405,14 +436,14 @@ class TestMixedSessions:
         assert [
             (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
             for r in rows if r["procedure_code"] == "P603840"
-        ] == [("P603840", "2.2.2.B.a", 0.25, 5377.20)]
+        ] == [("P603840", "2.2.2.B.a", 0.25, _above("P603840", "2026-07-14", "0.25"))]
 
     def test_the_hizmet_basi_line_takes_b3c(self) -> None:
         rows = _finding(self._bill("615931", "1", second_factor="0.25").ctx()).session_violations
         assert [
             (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
             for r in rows
-        ] == [("615931", "2.2.2.B.c", 0.30, 2686.12)]
+        ] == [("615931", "2.2.2.B.c", 0.30, _above("615931", "2026-07-14", "0.3"))]
 
     def test_a_correct_mixed_bill_has_no_exposure(self) -> None:
         ctx = self._bill("615931", "0.3", second_factor="0.25").ctx()
@@ -425,7 +456,12 @@ class TestMixedSessions:
         assert [
             (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"], r["rule_id"])
             for r in rows
-        ] == [("P603840", 0.0, 1792.40, "2.2.2.B.b"), ("615931", 0.0, 767.46, "2.2.2.B.ç")]
+        ] == [
+            ("P603840", 0.0, round(_share("P603840", "2026-07-14", "0.5") - _share("P603840", "2026-07-14", "0.25"), 2),
+             "2.2.2.B.b"),
+            ("615931", 0.0, round(_share("615931", "2026-07-14", "0.5") - _share("615931", "2026-07-14", "0.3"), 2),
+             "2.2.2.B.ç"),
+        ]
 
 
 def _without_unit_price(bill: _Bill) -> PatientClaimContext:
@@ -463,8 +499,9 @@ class TestMissingUnitPrice:
     @pytest.mark.parametrize(
         "build, code, risk",
         [
-            (lambda: s3(second_operation=True), "615995", 2122.40),  # EK-2/B list 3,032.00.
-            (lambda: s8("faulty"), "P603840", 5377.20),  # EK-2/C list 7,169.60.
+            # The EK-2/B list above its 30 %; the EK-2/C list above its 25 %.
+            (lambda: s3(second_operation=True), "615995", _above("615995", _S3_DAY, "0.3")),
+            (lambda: s8("faulty"), "P603840", _above("P603840", _S8_DAY, "0.25")),
         ],
         ids=["hizmet-basi", "package"],
     )
@@ -542,16 +579,18 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
 
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
     def test_clean_s8_has_no_exposure_whatever_the_unit_price(self, unit_price) -> None:
-        # The issue's probe: P603840 billed at 25 % of 7,169.60 with a unit price of
-        # 1,792.40 read 1,792.40 as its list, so the lenient 50 % was 896.20 and
-        # 896.20 TL was exposure (``billed``, ``quarter``).
+        # The issue's probe: P603840 billed at 25 % of its list with a unit price of
+        # that 25 % read the 25 % as its list, so the lenient 50 % was half of it and
+        # that half was exposure (``billed``, ``quarter``).
         ctx = _with_unit_prices(s8("clean").ctx(), unit_price)
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert _exposure_rows(ctx) == []
         # The 0-TL "kontrol et … kesi" row stays: one incision pays 25 %, two 50 %
         # (#311 item 6, no incision on the bill). Was no row (``billed``,
-        # ``quarter``) and 3,584.80 TL recoverable (``triple``).
-        assert _uplift_rows(ctx) == [("P603840", 0.0, 1792.40, 1792.40, 3584.80, ["kesi"])]
+        # ``quarter``) and the 50 % recoverable (``triple``).
+        assert _uplift_rows(ctx) == [
+            ("P603840", 0.0, round(_S8_HALF - _S8_QUARTER, 2), _S8_QUARTER, _S8_HALF, ["kesi"])
+        ]
 
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
     def test_faulty_s8_is_exposure_above_half_its_list_whatever_the_unit_price(
@@ -559,13 +598,13 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
     ) -> None:
         # Was 6,273.40 (``quarter``) and 0.00 (``triple``).
         ctx = _with_unit_prices(s8("faulty").ctx(), unit_price)
-        assert compute_audit_exposure_from_claims(ctx) == 3584.80
-        assert _exposure_rows(ctx) == [("P603840", 3584.80, 3584.80, 1792.40)]
+        assert compute_audit_exposure_from_claims(ctx) == _S8_ABOVE_HALF
+        assert _exposure_rows(ctx) == [("P603840", _S8_ABOVE_HALF, _S8_HALF, round(_S8_HALF - _S8_QUARTER, 2))]
         assert _uplift_rows(ctx) == []
 
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
     def test_a_hizmet_basi_secondary_at_30_percent_has_no_exposure(self, unit_price) -> None:
-        # 601200 at 30 % of 10,072.97 next to 613730. Was 1,510.94 (``billed``) and
+        # 601200 at 30 % of its list next to 613730. Was 1,510.94 (``billed``) and
         # 1,762.77 (``quarter``) TL exposure.
         day = _d("2026-07-14")
         bill = _Bill("C-PR", "yatis", day, day, tier="egitim_arastirma")
@@ -574,14 +613,17 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
         ctx = _with_unit_prices(bill.ctx(), unit_price)
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert _exposure_rows(ctx) == []
-        assert _uplift_rows(ctx) == [("601200", 0.0, 2014.60, 3021.89, 5036.49, ["kesi"])]
+        strict, lenient = _share("601200", "2026-07-14", "0.3"), _share("601200", "2026-07-14", "0.5")
+        assert _uplift_rows(ctx) == [("601200", 0.0, round(lenient - strict, 2), strict, lenient, ["kesi"])]
 
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
     def test_an_under_billed_secondary_keeps_its_uplift(self, unit_price) -> None:
-        # 615995 at 10 % of 3,032.00: 30 % (909.60) is owed, 606.40 more. A unit price
-        # of its billed 303.20 hid the uplift and showed 151.60 TL of exposure.
+        # 615995 at 10 % of its list: 30 % is owed, the difference more. A unit price
+        # of its billed 10 % hid the uplift and showed exposure.
         ctx = _with_unit_prices(s3(second_operation=True, second_factor="0.1").ctx(), unit_price)
-        assert _uplift_rows(ctx) == [("615995", 606.40, 0.0, 909.60, 1516.00, ["kesi"])]
+        strict, lenient = _share("615995", _S3_DAY, "0.3"), _share("615995", _S3_DAY, "0.5")
+        billed = _share("615995", _S3_DAY, "0.1")
+        assert _uplift_rows(ctx) == [("615995", round(strict - billed, 2), 0.0, strict, lenient, ["kesi"])]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert _exposure_rows(ctx) == []
 
@@ -590,17 +632,18 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
         self, unit_price,
     ) -> None:
         # 615931 billed 6,000.00 next to the must-package 610131: the package side is
-        # 8,636.50 + 0.55 × 3,837.32 = 10,747.03 (C000672, C000674). Was 11,936.51
-        # (``billed``: 0.55 × 6,000.00), 9,356.01 and 1,194.63 TL exposure
-        # (``quarter``), 14,968.09 (``triple``).
+        # P610131 + 0.55 × 615931's EK-2/B list (C000672, C000674). Was 0.55 × 6,000.00
+        # (``billed``), exposure (``quarter``) and 0.55 × three times the list (``triple``).
         bill = s1("faulty")
         extra = bill.proc("615931", bill.start, specialty=BEYIN)
         bill.procs[-1] = replace(extra, billed_amount_try=Decimal("6000.00"),
                                  expected_payable_try=Decimal("6000.00"))
         ctx = _with_unit_prices(bill.ctx(), unit_price)
         row = _claim_row(ctx)
+        package = round(_S1_PACKAGE + _share("615931", "2026-07-14", "0.55"), 2)
+        itemized = round(_S1_ITEMIZED + 6000.00, 2)
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            10747.03, 10550.56, 196.47,
+            package, itemized, round(package - itemized, 2),
         )
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
@@ -612,51 +655,62 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
     def test_a_starred_secondary_billed_with_the_c000678_uplift_has_no_exposure(
         self, tier, provider_type, unit,
     ) -> None:
-        # P603840 at 50 % of 7,169.60 + 30 % = 4,660.24, the separate-incision reading:
-        # a 0-TL review under the one-incision 25 % (2,330.12). Without the uplift its
-        # lenient side would be 3,584.80 and 1,075.44 exposure (``billed``: was 2,330.12).
+        # P603840 at 50 % of its list + 30 %, the separate-incision reading: a 0-TL
+        # review under the one-incision 25 %. Without the uplift its lenient side would
+        # be 50 % of the list and the rest exposure (``billed``: was the 25 %).
         ctx = _eah_pair(tier, unit=unit, factor="0.5" if unit == "1.3" else "1",
                         provider_type=provider_type)
-        assert float(ctx.procedure_lines[1].billed_amount_try) == 4660.24
+        billed = float(ctx.procedure_lines[1].billed_amount_try)
+        listed = _price("P603840", _d("2026-07-14"))  # the unit price `_eah_pair` scales, then the factor billed
+        unit_price = (listed * Decimal(unit)).quantize(_CENT, rounding=ROUND_HALF_UP)
+        factor = Decimal("0.5" if unit == "1.3" else "1")
+        assert billed == float((unit_price * factor).quantize(_CENT, rounding=ROUND_HALF_UP))
+        strict = _share("P603840", "2026-07-14", "0.25", starred_uplift=True)
         assert compute_audit_exposure_from_claims(ctx) == 0.0
-        assert _exposure_rows(ctx) == [("P603840", 0.0, 2330.12, 2330.12)]
+        assert _exposure_rows(ctx) == [("P603840", 0.0, strict, round(billed - strict, 2))]
         assert _uplift_rows(ctx) == []
 
     def test_a_starred_secondary_at_a_c000678_tier_billed_without_the_uplift_is_under_billed(
         self,
     ) -> None:
-        # 25 % of 7,169.60 (1,792.40) where 25 % of 9,320.48 (2,330.12) is owed.
+        # 25 % of the list where 25 % of the list + 30 % is owed.
         ctx = _eah_pair("egitim_arastirma", unit="1", factor="0.25")
-        assert _uplift_rows(ctx) == [("P603840", 537.72, 0.0, 2330.12, 4660.24, ["kesi"])]
+        strict = _share("P603840", "2026-07-14", "0.25", starred_uplift=True)
+        lenient = _share("P603840", "2026-07-14", "0.5", starred_uplift=True)
+        billed = _share("P603840", "2026-07-14", "0.25")
+        assert _uplift_rows(ctx) == [("P603840", round(strict - billed, 2), 0.0, strict, lenient, ["kesi"])]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_private_hospital_billing_the_c000678_uplift_is_exposure(self) -> None:
-        # The tier does not take the 30 %: 4,660.24 against a lenient 3,584.80. Was 0.00
-        # (the unit price of 9,320.48 was read as the list).
+        # The tier does not take the 30 %: 50 % of the list + 30 % against a lenient 50 %
+        # of the list. Was 0.00 (the unit price of the list + 30 % was read as the list).
         ctx = _eah_pair("2_3_basamak_ozel", unit="1.3", factor="0.5")
-        assert compute_audit_exposure_from_claims(ctx) == 1075.44
-        assert _exposure_rows(ctx) == [("P603840", 1075.44, 3584.80, 1792.40)]
+        billed = float(ctx.procedure_lines[1].billed_amount_try)
+        lenient, strict = _share("P603840", "2026-07-14", "0.5"), _share("P603840", "2026-07-14", "0.25")
+        assert compute_audit_exposure_from_claims(ctx) == round(billed - lenient, 2)
+        assert _exposure_rows(ctx) == [("P603840", round(billed - lenient, 2), lenient, round(lenient - strict, 2))]
 
     def test_an_unstarred_package_takes_no_uplift_at_a_c000678_tier(self) -> None:
-        # P600720 (V-Y flap, group C) has no star: 50 % of 5,532.44 is 2,766.22, so a
-        # bill at 50 % of 7,192.17 (3,596.09) overstates 829.87.
+        # P600720 (V-Y flap, group C) has no star: a bill at 50 % of its list + 30 %
+        # overstates the 30 % of the half.
         ctx = _eah_pair("egitim_arastirma", unit="1.3", factor="0.5", second="P600720")
-        assert compute_audit_exposure_from_claims(ctx) == 829.87
+        billed = float(ctx.procedure_lines[1].billed_amount_try)
+        assert compute_audit_exposure_from_claims(ctx) == round(billed - _share("P600720", "2026-07-14", "0.5"), 2)
         ctx = _eah_pair("egitim_arastirma", unit="1", factor="0.5", second="P600720")
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     @pytest.mark.parametrize(
         "line_kwargs, tier, listed",
         [
-            ({"code": "P603840"}, "2_3_basamak_ozel", 7169.60),
-            ({"code": "P603840", "qty": 2}, "2_3_basamak_ozel", 14339.20),
-            ({"code": "P603840"}, "egitim_arastirma", 9320.48),  # Starred: + 30 %.
-            ({"code": "P603840", "qty": 2}, "universite_devlet", 18640.96),
-            ({"code": "P600720"}, "egitim_arastirma", 5532.44),  # No star.
-            ({"code": "603840"}, "egitim_arastirma", 1914.42),  # EK-2/B: no C000678.
-            ({"code": "601200", "qty": 2}, "2_3_basamak_ozel", 20145.94),
-            ({"code": "P603840", "day": "2025-06-01"}, "2_3_basamak_ozel", 5515.07),
-            ({"code": "601200", "day": "2025-06-01"}, "2_3_basamak_ozel", 8394.14),
+            ({"code": "P603840"}, "2_3_basamak_ozel", _listed("P603840", "2026-07-14")),
+            ({"code": "P603840", "qty": 2}, "2_3_basamak_ozel", _listed("P603840", "2026-07-14", 2)),
+            ({"code": "P603840"}, "egitim_arastirma", _listed("P603840", "2026-07-14", starred_uplift=True)),
+            ({"code": "P603840", "qty": 2}, "universite_devlet", _listed("P603840", "2026-07-14", 2, starred_uplift=True)),
+            ({"code": "P600720"}, "egitim_arastirma", _listed("P600720", "2026-07-14")),  # No star.
+            ({"code": "603840"}, "egitim_arastirma", _listed("603840", "2026-07-14")),  # EK-2/B: no C000678.
+            ({"code": "601200", "qty": 2}, "2_3_basamak_ozel", _listed("601200", "2026-07-14", 2)),
+            ({"code": "P603840", "day": "2025-06-01"}, "2_3_basamak_ozel", _listed("P603840", "2025-06-01")),
+            ({"code": "601200", "day": "2025-06-01"}, "2_3_basamak_ozel", _listed("601200", "2025-06-01")),
         ],
     )
     @pytest.mark.parametrize("unit_price", _UNIT_PRICES)
@@ -680,7 +734,8 @@ class TestTheListPriceIsNeverTheBillsUnitPrice300:
         )
         # Without its claim the tier is unknown: no C000678 uplift.
         assert line_gazette_list_billed_try(line) == (
-            7169.60 * line.quantity if tier != "2_3_basamak_ozel" and line.procedure_code == "P603840"
+            _listed("P603840", "2026-07-14", line.quantity)
+            if tier != "2_3_basamak_ozel" and line.procedure_code == "P603840"
             else listed
         )
 
@@ -723,8 +778,8 @@ class TestBilledAsPackage:
 
     def test_a_second_package_without_a_category_is_still_flagged(self) -> None:
         ctx = _blank_categories(s8("faulty").ctx())
-        # Was 19,235.33, then 5,377.20 (Safa 2026-10-16: unknown incision → lenient reading).
-        assert compute_audit_exposure_from_claims(ctx) == 3584.80
+        # Was 19,235.33, then the 75 % (Safa 2026-10-16: unknown incision → lenient reading).
+        assert compute_audit_exposure_from_claims(ctx) == _S8_ABOVE_HALF
 
 
 class TestRepeatedCodes:
@@ -733,8 +788,10 @@ class TestRepeatedCodes:
     @pytest.mark.parametrize(
         "code, risk, exposure",
         [
-            ("P603840", 5377.20, 3584.80),  # Was 0: the repeated code lost its primary.
-            ("P621510", 3589.96, 2393.31),  # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
+            # Was 0: the repeated code lost its primary.
+            ("P603840", _above("P603840", "2026-07-14", "0.25"), _above("P603840", "2026-07-14", "0.5")),
+            # Bilateral hydrocelectomy (SGK F000045): one session, one incision.
+            ("P621510", _above("P621510", "2026-07-14", "0.25"), _above("P621510", "2026-07-14", "0.5")),
         ],
     )
     def test_a_repeated_package_pays_the_second_occurrence_at_25_percent(
@@ -764,6 +821,10 @@ class TestUnknownIncisionOrBranch2b:
     below the strictest one; in between a 0-TL "kontrol et" row names the fact.
     """
 
+    # 601200 on the day of `_pair`: one incision in one branch 30 %, separate incisions 50 %, across branches 75 %.
+    _STRICT = _share("601200", "2026-07-14", "0.3")
+    _LENIENT = _share("601200", "2026-07-14", "0.5")
+
     @staticmethod
     def _pair(factor: str, branches: tuple[str, str] = (ORTO, ORTO)) -> PatientClaimContext:
         # 613730 + 601200 billed hizmet başı (legal at a training hospital).
@@ -774,7 +835,7 @@ class TestUnknownIncisionOrBranch2b:
         return bill.ctx()
 
     def test_a_correct_separate_incision_secondary_at_50_percent_is_no_exposure(self) -> None:
-        # A reviewer measured 2,014.60 of false exposure here (601200 list 10,072.96).
+        # A reviewer measured false exposure here: the 50 % less the 30 %.
         ctx = self._pair("0.5")
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         finding = _finding_unknown_incision(ctx)
@@ -783,7 +844,7 @@ class TestUnknownIncisionOrBranch2b:
             (r["procedure_code"], r["risk_amount_try"], r["review_risk_try"], r["review_kind"],
              r["missing_facts"])
             for r in finding.session_reviews
-        ] == [("601200", 0.0, 2014.60, "needs_clinical_review", ["kesi"])]
+        ] == [("601200", 0.0, round(self._LENIENT - self._STRICT, 2), "needs_clinical_review", ["kesi"])]
         assert "kesi bilgisi" in finding.session_reviews[0]["detail"]
         assert not finding.has_risk
         assert detect_drg_unbundling(set(), ctx)["has_unbundling_risk"] is False
@@ -792,27 +853,29 @@ class TestUnknownIncisionOrBranch2b:
         self,
     ) -> None:
         ctx = self._pair("1")
-        assert compute_audit_exposure_from_claims(ctx) == 5036.48  # Was 7,051.08 (30 %).
+        above_half = _above("601200", "2026-07-14", "0.5")
+        assert compute_audit_exposure_from_claims(ctx) == above_half  # Was the 70 % above 30 %.
         row = _finding_unknown_incision(ctx).session_violations[0]
         assert (row["expected_point_factor"], row["risk_amount_try"], row["review_risk_try"]) == (
-            0.50, 5036.48, 2014.60,
+            0.50, above_half, round(self._LENIENT - self._STRICT, 2),
         )
         assert row["missing_facts"] == ["kesi"]  # 2600 twice: the branch is known.
 
     def test_a_blank_branch_pair_at_55_percent_is_no_exposure(self) -> None:
-        # A reviewer measured 2,518.24 here: 55 % sits between one incision in one
-        # branch (30 %) and separate incisions across branches (50 % + 25 = 75 %).
+        # A reviewer measured the 55 % less the 30 % here: 55 % sits between one incision
+        # in one branch (30 %) and separate incisions across branches (50 % + 25 = 75 %).
         ctx = self._pair("0.55", ("", ""))
+        billed = _share("601200", "2026-07-14", "0.55")
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         reviews = _finding_unknown_incision(ctx).session_reviews
         assert [(r["review_risk_try"], r["missing_facts"]) for r in reviews] == [
-            (2518.24, ["kesi", "branş"]),
+            (round(billed - self._STRICT, 2), ["kesi", "branş"]),
         ]
         assert "kesi ve branş bilgisi" in reviews[0]["detail"]
         uplift = recommend_session_uplift_from_claims(ctx)
         assert uplift.confirmed_uplift_try == 0.0
         assert [(r["recoverable_uplift_try"], r["review_uplift_try"]) for r in uplift.opportunities] == [
-            (0.0, 2014.60),
+            (0.0, round(_share("601200", "2026-07-14", "0.75") - billed, 2)),
         ]
 
     def test_known_branches_keep_todays_numbers(self) -> None:
@@ -824,29 +887,30 @@ class TestUnknownIncisionOrBranch2b:
         assert [
             (r["procedure_code"], r["rule_id"], r["expected_point_factor"], r["risk_amount_try"])
             for r in rows
-        ] == [("601200", "2.2.2.A.(5)", 0.30, 7051.08)]
+        ] == [("601200", "2.2.2.A.(5)", 0.30, _above("601200", "2026-07-14", "0.3"))]
         assert "missing_facts" not in rows[0]
         # Known branches with an unknown incision: the branch part adds nothing to
         # either reading (50 %, not 75 %) and SGK uplift keeps today's strict money.
-        assert compute_audit_exposure_from_claims(self._pair("1")) == 5036.48
+        assert compute_audit_exposure_from_claims(self._pair("1")) == _above("601200", "2026-07-14", "0.5")
         uplift = recommend_session_uplift_from_claims(s8("clean", branches=(GENCER, ORTO)).ctx())
         assert [(r["recoverable_uplift_try"], r["missing_facts"]) for r in uplift.opportunities] == [
-            (1792.40, ["kesi"]),
+            (round(_S8_HALF - _S8_QUARTER, 2), ["kesi"]),
         ]
 
     def test_s8_fires_at_the_excess_over_the_lenient_50_percent(self) -> None:
-        # P603840 (list 7,169.60) billed in full next to P609235, both 1900: the
-        # branch is known, the incision is not. B(3)(b) 50 % = 3,584.80 is the most
-        # a separate incision allows; the rest of the bill is over-billed in every
-        # reading. One incision (B(3)(a) 25 %) would add 1,792.40: kontrol et.
+        # P603840 billed in full at its list next to P609235, both 1900: the branch is
+        # known, the incision is not. B(3)(b) 50 % is the most a separate incision
+        # allows; the rest of the bill is over-billed in every reading. One incision
+        # (B(3)(a) 25 %) would add the 50 % less the 25 %: kontrol et.
         ctx = s8("faulty").ctx()
-        assert compute_audit_exposure_from_claims(ctx) == 3584.80
+        assert compute_audit_exposure_from_claims(ctx) == _S8_ABOVE_HALF
         row = _finding_unknown_incision(ctx).session_violations[0]
         assert (row["rule_id"], row["expected_point_factor"], row["expected_billed_try"]) == (
-            "2.2.2.B.b", 0.50, 3584.80,
+            "2.2.2.B.b", 0.50, _S8_HALF,
         )
-        assert (row["strict_point_factor"], row["review_risk_try"]) == (0.25, 1792.40)
-        assert "Aynı kesi ise SUT §2.2.2.B.a %25 uygulanır ve 1792.40 TRY" in row["detail"]
+        review = round(_S8_HALF - _S8_QUARTER, 2)
+        assert (row["strict_point_factor"], row["review_risk_try"]) == (0.25, review)
+        assert f"Aynı kesi ise SUT §2.2.2.B.a %25 uygulanır ve {review:.2f} TRY" in row["detail"]
 
 
 def _finding_unknown_incision(ctx: PatientClaimContext):
@@ -868,7 +932,8 @@ class TestCrossSpecialty264:
             (r["procedure_code"], r["recoverable_uplift_try"], r["review_uplift_try"],
              r["expected_point_factor"], r["missing_facts"], r["included_in_sgk_total"])
             for r in rows
-        ] == [("P603840", 0.0, 3584.80, 0.75, ["kesi", "branş"], False)]
+        ] == [("P603840", 0.0, round(_share("P603840", _S8_DAY, "0.75") - _S8_QUARTER, 2), 0.75, ["kesi", "branş"],
+               False)]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_line_without_a_branch_does_not_cancel_two_known_branches(self) -> None:
@@ -886,7 +951,7 @@ class TestCrossSpecialty264:
         rows = recommend_session_uplift_from_claims(ctx).opportunities
         assert [r["procedure_code"] for r in rows] == ["P603840"]
         assert rows[0]["expected_point_factor"] == 0.50  # §2.2.2.B(3)(a) 25 % + 25.
-        assert rows[0]["recoverable_uplift_try"] == 1792.40
+        assert rows[0]["recoverable_uplift_try"] == round(_S8_HALF - _S8_QUARTER, 2)
         assert rows[0]["included_in_sgk_total"] is True
 
 
@@ -916,10 +981,10 @@ class TestMandatedPackageGap269:
         row = _claim_row(ctx)
         assert row["payment_method_kind"] == "DRG_MANDATORY"
         assert row["current_billing"] == "itemized"
-        assert row["package_total_try"] == 8636.50
-        assert row["itemized_total_try"] == 4550.56  # Was 1,231.00 (610131 dropped).
+        assert row["package_total_try"] == _S1_PACKAGE
+        assert row["itemized_total_try"] == _S1_ITEMIZED  # Was 1,231.00 (610131 dropped).
         assert row["itemized_price_methodology"] == "billed_lines"
-        assert row["savings_try"] == 4085.94  # Was 0.00.
+        assert row["savings_try"] == _S1_GAP  # Was 0.00.
         assert row["savings_category"] == "sgk_uplift"
         assert row["included_in_sgk_total"] is True
         assert row["message_code"] == "claim_mandate_package"
@@ -937,42 +1002,44 @@ class TestMandatedPackageGap269:
         bill = s1("faulty")
         bill.drug(bill.start, "100.00")
         row = _claim_row(bill.ctx())
-        assert row["itemized_total_try"] == 4650.56
-        assert row["savings_try"] == 3985.94
+        assert row["itemized_total_try"] == round(_S1_ITEMIZED + 100.00, 2)
+        assert row["savings_try"] == round(_S1_GAP - 100.00, 2)
 
     def test_clean_s1_is_unchanged(self) -> None:
         row = _claim_row(s1("clean").ctx())
         assert row["current_billing"] == "package"
         assert row["message_code"] == "claim_package_ok"
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            8636.50, 0.0, 0.0,
+            _S1_PACKAGE, 0.0, 0.0,
         )
 
     def test_an_ek2b_operation_next_to_the_package_is_on_its_side(self) -> None:
         # Review item 11: 615931 (EK-2/B only) next to the package is paid at 30 %
         # + 25 points across specialties (C000672 / C000674), so the package side
-        # is 8,636.50 + 0.55 × 3,837.32 = 10,747.03, above the 10,550.56 bill (was
-        # a 1,914.06 compliance saving with 3,022.30 at risk).
+        # is P610131 + 0.55 × 615931's list, above the bill (was a compliance
+        # saving with the 610131 line at risk).
         bill = s1("faulty")
         extra = bill.proc("615931", bill.start, specialty=BEYIN)
         bill.procs[-1] = replace(extra, billed_amount_try=Decimal("6000.00"),
                                  expected_payable_try=Decimal("6000.00"))
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["package_total_try"], row["itemized_total_try"]) == (10747.03, 10550.56)
+        package = round(_S1_PACKAGE + _share("615931", "2026-07-14", "0.55"), 2)
+        itemized = round(_S1_ITEMIZED + 6000.00, 2)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (package, itemized)
         assert (row["savings_try"], row["savings_category"], row["included_in_sgk_total"]) == (
-            196.47, "sgk_uplift", True,
+            round(package - itemized, 2), "sgk_uplift", True,
         )
         assert _payment_risk(ctx) == [("610131", 0.0)]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_package_equal_to_the_bill_clears_the_risk_without_savings(self) -> None:
         bill = s1("faulty")
-        bill.drug(bill.start, "4085.94")  # Brings the bill to the package's 8,636.50.
+        bill.drug(bill.start, f"{_S1_GAP:.2f}")  # Brings the bill to the package's price.
         ctx = bill.ctx()
         row = _claim_row(ctx)
         assert (row["itemized_total_try"], row["savings_try"], row["savings_category"]) == (
-            8636.50, 0.0, None,
+            _S1_PACKAGE, 0.0, None,
         )
         assert _payment_risk(ctx) == [("610131", 0.0)]
 
@@ -987,7 +1054,7 @@ class TestMandatedPackageGap269:
         ctx = replace(ctx, claims=(replace(ctx.claims[0], package_candidate=package_candidate),))
         row = _claim_row(ctx)
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            8636.50, 4550.56, 4085.94,
+            _S1_PACKAGE, _S1_ITEMIZED, _S1_GAP,
         )
         assert (row["savings_category"], row["included_in_sgk_total"]) == ("sgk_uplift", True)
         assert _payment_risk(ctx) == [("610131", 0.0)]
@@ -1009,8 +1076,7 @@ class TestMandatedPackageGap269:
     def test_several_mandated_operations_are_priced_by_b3(self) -> None:
         # Review item 11: two must-package operations billed hizmet başı at 100 %.
         # The package side prices them by §2.2.2.B(3)(a) (C000670): P610131 in
-        # full and P603840 at 25 %, 8,636.50 + 1,792.40 = 10,428.90 (was the
-        # single highest package, 8,636.50, and a 2,171.44 gap).
+        # full and P603840 at 25 % (was the single highest package, P610131 alone).
         bill = s1("faulty")
         bill.proc("603840", bill.start, specialty=GENCER)
         ctx = bill.ctx()
@@ -1020,16 +1086,27 @@ class TestMandatedPackageGap269:
         ]
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         row = _claim_row(ctx)
-        assert (row["package_total_try"], row["itemized_total_try"]) == (10428.90, 6464.98)
-        assert (row["savings_try"], row["savings_category"]) == (3963.92, "sgk_uplift")
+        package = round(_S1_PACKAGE + _share("P603840", "2026-07-14", "0.25"), 2)
+        itemized = round(_S1_ITEMIZED + _listed("603840", "2026-07-14"), 2)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (package, itemized)
+        assert (row["savings_try"], row["savings_category"]) == (round(package - itemized, 2), "sgk_uplift")
 
     @pytest.mark.parametrize(
         "drug, exposure, review, package, savings, category",
         [
-            # Between B(3)(a) 25 % (10,428.90) and B(3)(b) 50 % (12,221.30): no money.
-            ("5000.00", 0.0, 1036.08, 10428.90, 0.0, None),
+            # Between B(3)(a) 25 % and B(3)(b) 50 % of P603840 beside P610131: no money.
+            ("5000.00", 0.0, round(_S1_ITEMIZED + _listed("603840", "2026-07-14") + 5000.00 - _S1_PACKAGE
+                                   - _share("P603840", "2026-07-14", "0.25"), 2),
+             round(_S1_PACKAGE + _share("P603840", "2026-07-14", "0.25"), 2), 0.0, None),
             # Above the lenient side: over-billed in every reading (was 6,036.16).
-            ("10000.00", 4243.68, 1792.40, 12221.30, 4243.68, "compliance_adjustment"),
+            ("10000.00",
+             round(_S1_ITEMIZED + _listed("603840", "2026-07-14") + 10000.00 - _S1_PACKAGE
+                   - _share("P603840", "2026-07-14", "0.5"), 2),
+             round(_share("P603840", "2026-07-14", "0.5") - _share("P603840", "2026-07-14", "0.25"), 2),
+             round(_S1_PACKAGE + _share("P603840", "2026-07-14", "0.5"), 2),
+             round(_S1_ITEMIZED + _listed("603840", "2026-07-14") + 10000.00 - _S1_PACKAGE
+                   - _share("P603840", "2026-07-14", "0.5"), 2),
+             "compliance_adjustment"),
         ],
         ids=["review-band", "above-lenient"],
     )
@@ -1045,7 +1122,7 @@ class TestMandatedPackageGap269:
         assert compute_audit_exposure_from_claims(ctx) == exposure
         first = _finding(ctx).payment_method_violations[0]
         assert (first["procedure_code"], first["review_risk_try"]) == ("610131", review)
-        assert first["package_total_lenient_try"] == 12221.30
+        assert first["package_total_lenient_try"] == round(_S1_PACKAGE + _share("P603840", "2026-07-14", "0.5"), 2)
         row = _claim_row(ctx)
         assert (row["package_total_try"], row["savings_try"], row["savings_category"]) == (
             package, savings, category,
@@ -1055,7 +1132,11 @@ class TestMandatedPackageGap269:
 
     @pytest.mark.parametrize(
         "drug, risk",
-        [("4085.94", 0.0), ("4085.95", 0.01), ("5000.00", 914.06)],
+        [
+            (f"{_S1_GAP:.2f}", 0.0),
+            (f"{_S1_GAP + 0.01:.2f}", 0.01),
+            ("5000.00", round(_S1_ITEMIZED + 5000.00 - _S1_PACKAGE, 2)),
+        ],
         ids=["tie", "one-kurus-above", "drug-5000"],
     )
     def test_the_risk_is_what_the_bill_overstates_in_both_exposure_surfaces(
@@ -1079,12 +1160,13 @@ class TestMandatedPackageGap269:
 
     def test_an_excess_above_the_mandated_lines_stays_at_risk_in_full(self) -> None:
         # The replaced lines have no row of their own; the must-package row
-        # carries the whole excess (20,000 + 4,550.64 − 8,636.50).
+        # carries the whole excess (20,000 + the bill − the package).
         bill = s1("faulty")
         bill.drug(bill.start, "20000.00")
         ctx = bill.ctx()
-        assert _payment_risk(ctx) == [("610131", 15914.06)]
-        assert compute_audit_exposure_from_claims(ctx) == 15914.06
+        excess = round(20000.00 + _S1_ITEMIZED - _S1_PACKAGE, 2)
+        assert _payment_risk(ctx) == [("610131", excess)]
+        assert compute_audit_exposure_from_claims(ctx) == excess
 
     def test_lines_of_another_claim_are_ignored(self) -> None:
         bill = s1("faulty")
@@ -1092,44 +1174,46 @@ class TestMandatedPackageGap269:
         bill.material(bill.start, "SARF SETİ", "5000.00", bundled=True, claim_id="C-OTHER")
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["itemized_total_try"], row["savings_try"]) == (4550.56, 4085.94)
+        assert (row["itemized_total_try"], row["savings_try"]) == (_S1_ITEMIZED, _S1_GAP)
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 0.0
 
     @pytest.mark.parametrize("bundled", [False, True])
     def test_a_material_paid_next_to_the_package_leaves_the_gap(self, bundled) -> None:
         # SUT §3.1.4(a): a plate is paid on top of the package, so it is on
-        # neither side of the comparison (review: it flipped the row to 914.06),
+        # neither side of the comparison (review: it flipped the row to a compliance adjustment),
         # whatever the is_bundled input flag says (review item 6).
         bill = s1("faulty")
         bill.material(bill.start, "KİLİTLİ PLAK", "5000.00", bundled=bundled)
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["itemized_raw_try"], row["itemized_total_try"]) == (9550.56, 4550.56)
-        assert (row["savings_try"], row["savings_category"]) == (4085.94, "sgk_uplift")
+        assert (row["itemized_raw_try"], row["itemized_total_try"]) == (round(_S1_ITEMIZED + 5000.00, 2), _S1_ITEMIZED)
+        assert (row["savings_try"], row["savings_category"]) == (_S1_GAP, "sgk_uplift")
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_package_included_material_counts_in_the_bill(self) -> None:
         bill = s1("faulty")
         bill.material(bill.start, "SARF SETİ", "100.00", bundled=True)
         row = _claim_row(bill.ctx())
-        assert (row["itemized_total_try"], row["savings_try"]) == (4650.56, 3985.94)
+        assert (row["itemized_total_try"], row["savings_try"]) == (
+            round(_S1_ITEMIZED + 100.00, 2), round(_S1_GAP - 100.00, 2),
+        )
 
     def test_the_blood_share_billed_next_to_the_package_drops_out(self) -> None:
         bill = s1("faulty")
         blood = bill.proc("705430", bill.start, specialty=GENCER)
         row = _claim_row(bill.ctx())
         # C000694: 36 % of 705430 is billed next to the package either way.
-        replaced = 4550.56 + float(blood.billed_amount_try) * (1 - 0.36)
+        replaced = _S1_ITEMIZED + float(blood.billed_amount_try) * (1 - 0.36)
         assert row["itemized_total_try"] == pytest.approx(replaced, abs=0.01)
         assert row["itemized_raw_try"] == pytest.approx(
-            4550.56 + float(blood.billed_amount_try), abs=0.01,
+            _S1_ITEMIZED + float(blood.billed_amount_try), abs=0.01,
         )
 
     def test_package_billed_claim_keeps_risk_on_an_itemized_mandated_line(self) -> None:
         bill = s1("clean")
         bill.proc("610131", bill.start, specialty=GENCER)
-        assert compute_audit_exposure_from_claims(bill.ctx()) == 3022.30
+        assert compute_audit_exposure_from_claims(bill.ctx()) == list_price("610131", "2026-07-14")
 
 
 class TestWhatThePackageReplaces:
@@ -1140,9 +1224,11 @@ class TestWhatThePackageReplaces:
         "name, amount, replaced, gap, category",
         [
             # C000695: consumables are inside (was 4,085.87 with is_bundled False).
-            ("STERİL CERRAHİ ÖRTÜ SETİ (sarf)", "2000.00", 6550.56, 2085.94, "sgk_uplift"),
+            ("STERİL CERRAHİ ÖRTÜ SETİ (sarf)", "2000.00", round(_S1_ITEMIZED + 2000.00, 2),
+             round(_S1_GAP - 2000.00, 2), "sgk_uplift"),
             # Not a §3.1.4 item: inside, so the bill overstates the package.
-            ("SARF SETİ", "5000.00", 9550.56, 914.06, "compliance_adjustment"),
+            ("SARF SETİ", "5000.00", round(_S1_ITEMIZED + 5000.00, 2),
+             round(_S1_ITEMIZED + 5000.00 - _S1_PACKAGE, 2), "compliance_adjustment"),
         ],
         ids=["consumable-2000", "sarf-seti-5000"],
     )
@@ -1171,7 +1257,7 @@ class TestWhatThePackageReplaces:
         bill = s1("faulty")
         bill.material(bill.start, name, "1000.00", bundled=False, code=code)
         row = _claim_row(bill.ctx())
-        assert row["itemized_total_try"] == (5550.56 if inside else 4550.56)
+        assert row["itemized_total_try"] == (round(_S1_ITEMIZED + 1000.00, 2) if inside else _S1_ITEMIZED)
 
     @pytest.mark.parametrize(
         "name, barkod",
@@ -1191,17 +1277,17 @@ class TestWhatThePackageReplaces:
         bill.drug(bill.start, "1000.00", name=name, barkod=barkod)
         row = _claim_row(bill.ctx())
         assert (row["itemized_raw_try"], row["itemized_total_try"], row["savings_try"]) == (
-            5550.56, 4550.56, 4085.94,
+            round(_S1_ITEMIZED + 1000.00, 2), _S1_ITEMIZED, _S1_GAP,
         )
 
     def test_an_ordinary_drug_is_inside_the_package(self) -> None:
         bill = s1("faulty")
         bill.drug(bill.start, "1000.00")  # IESEF (cefazolin), C000690 "yatış dönemindeki ilaçlar".
-        assert _claim_row(bill.ctx())["itemized_total_try"] == 5550.56
+        assert _claim_row(bill.ctx())["itemized_total_try"] == round(_S1_ITEMIZED + 1000.00, 2)
 
     def test_lines_after_the_package_window_are_billed_next_to_it(self) -> None:
         # Review item 12 / C000707: a 12-day stay billed hizmet başı; P610131
-        # (group C) covers 14–21 July, so the four bed days after it (889.40) are
+        # (group C) covers 14–21 July, so the four bed days after it are
         # paid either way and no longer sit in the replaced total.
         a = _d("2026-07-14")
         bill = _Bill("C-SH01", "yatis", a, _d("2026-07-25"))
@@ -1213,8 +1299,8 @@ class TestWhatThePackageReplaces:
         row = _claim_row(ctx)
         billed = sum(float(line.billed_amount_try) for line in bill.procs) + 300.00
         assert row["itemized_raw_try"] == round(billed, 2)
-        assert row["itemized_total_try"] == round(billed - 4 * 222.35 - 300.00, 2)
-        assert row["savings_try"] == round(8636.50 - row["itemized_total_try"], 2)
+        assert row["itemized_total_try"] == round(billed - 4 * list_price("510010", "2026-07-22") - 300.00, 2)
+        assert row["savings_try"] == round(_S1_PACKAGE - row["itemized_total_try"], 2)
 
 
 class TestPackageSide:
@@ -1223,9 +1309,10 @@ class TestPackageSide:
     @pytest.mark.parametrize(
         "tier, inpatient, code, package",
         [
-            ("egitim_arastirma", True, "603840", 9320.48),  # Starred, named tier: 7,169.60 + 30 %.
-            ("universite_vakif", True, "603840", 9320.48),
-            ("2_3_basamak_ozel", True, "603840", 7169.60),  # Starred, private hospital.
+            # Starred, named tier: P603840 + 30 %.
+            ("egitim_arastirma", True, "603840", _listed("P603840", "2026-07-14", starred_uplift=True)),
+            ("universite_vakif", True, "603840", _listed("P603840", "2026-07-14", starred_uplift=True)),
+            ("2_3_basamak_ozel", True, "603840", _listed("P603840", "2026-07-14")),  # Starred, private hospital.
         ],
     )
     def test_the_starred_package_uplift_applies_at_the_tiers_c000678_names(
@@ -1267,8 +1354,11 @@ class TestPackageSide:
         bill.stay(BEYIN)
         ctx = bill.ctx()
         row = _claim_row(ctx)
-        assert (row["package_total_try"], row["itemized_total_try"]) == (15160.38, 7423.98)
-        assert (row["savings_try"], row["savings_category"]) == (7736.40, "sgk_uplift")
+        package = _listed("P703365", "2026-07-14", starred_uplift=True)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (package, list_price("703365", "2026-07-14"))
+        assert (row["savings_try"], row["savings_category"]) == (
+            round(package - list_price("703365", "2026-07-14"), 2), "sgk_uplift",
+        )
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_neuromonitoring_and_neuronavigation_sit_next_to_the_package(self) -> None:
@@ -1279,7 +1369,7 @@ class TestPackageSide:
         for code in ("615350", "703365", "614981"):
             bill.proc(code, day, specialty=BEYIN)
         row = _claim_row(bill.ctx())
-        assert row["package_total_try"] == round(154376.12 + 11661.83 + 42087.28, 2)
+        assert row["package_total_try"] == round(sum(list_price(c, "2026-07-14") for c in ("P615350", "P703365", "P614981")), 2)
 
     def test_a_zero_billed_mandated_line_opens_no_package(self) -> None:
         # Review: an unbilled 609235 (group B) stretched the 610131 window (group
@@ -1295,7 +1385,7 @@ class TestPackageSide:
                                  expected_payable_try=Decimal("0"))
         ctx = bill.ctx()
         gap = mandated_package_gap(ctx.claims[0], list(ctx.procedure_lines))
-        assert (gap.window_end, gap.package_total_try) == (_d("2026-07-21"), 8636.50)
+        assert (gap.window_end, gap.package_total_try) == (_d("2026-07-21"), _S1_PACKAGE)
         assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)).end == _d("2026-07-21")
 
 
@@ -1323,12 +1413,13 @@ class TestOutpatientPackageMandateEk2a2:
 
     def test_an_outpatient_procedure_on_ek2a2_is_mandated(self) -> None:
         # 608310 (bronchoscopy) is on EK-2/A-2 and in EK-2/C: package P608310
-        # (3,235.82) against the 636.68 billed hizmet başı.
+        # against the EK-2/B 608310 billed hizmet başı.
         ctx = self._bill("608310", "poliklinik")
         row = _claim_row(ctx)
         assert (row["payment_method_kind"], row["sut_section_id"]) == ("DRG_MANDATORY", "2.2.1.B-1.a")
+        package, itemized = _listed("P608310", "2026-07-14"), _listed("608310", "2026-07-14")
         assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            3235.82, 636.68, 2599.14,
+            package, itemized, round(package - itemized, 2),
         )
         assert row["savings_category"] == "sgk_uplift"
         assert _payment_risk(ctx) == [("608310", 0.0)]
@@ -1336,14 +1427,18 @@ class TestOutpatientPackageMandateEk2a2:
     def test_a_day_case_keeps_the_yatarak_mandate(self) -> None:
         # Günübirlik tedavi is yatarak tedavi (C003484): §2.2.2(1) still applies.
         row = _claim_row(self._bill("603830", "gunubirlik"))
+        package = _listed("P603830", "2026-07-14")
         assert (row["payment_method_kind"], row["package_total_try"], row["savings_try"]) == (
-            "DRG_MANDATORY", 7909.81, 6269.13,
+            "DRG_MANDATORY", package, round(package - _listed("603830", "2026-07-14"), 2),
         )
 
     def test_inpatient_mandate_is_unchanged(self) -> None:
         row = _claim_row(self._bill("603830", "yatis", tier="2_3_basamak_ozel"))
         assert (row["payment_method_kind"], row["sut_section_id"]) == ("DRG_MANDATORY", "2.2.2.(1)")
-        assert (row["package_total_try"], row["savings_try"]) == (7909.81, 6269.13)
+        package = _listed("P603830", "2026-07-14")
+        assert (row["package_total_try"], row["savings_try"]) == (
+            package, round(package - _listed("603830", "2026-07-14"), 2),
+        )
 
 
 class TestC000672:
@@ -1417,7 +1512,10 @@ class TestNoUpliftOnPackageLines:
         ctx = bill.ctx()
         assert recommend_session_uplift_from_claims(ctx).opportunities == []
         row = _claim_row(ctx)  # The package gap: P610131 + 615931 at 55 %.
-        assert (row["package_total_try"], row["itemized_total_try"]) == (10747.03, 4139.55)
+        assert (row["package_total_try"], row["itemized_total_try"]) == (
+            round(_S1_PACKAGE + _share("615931", "2026-07-14", "0.55"), 2),
+            round(_listed("615931", "2026-07-14") + _share("610131", "2026-07-14", "0.1"), 2),
+        )
         assert compute_audit_exposure_from_claims(ctx) == 0.0
 
     def test_a_stray_must_package_line_next_to_a_billed_package_has_no_uplift(self) -> None:
