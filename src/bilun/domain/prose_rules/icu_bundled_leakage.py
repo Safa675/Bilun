@@ -40,7 +40,11 @@ from __future__ import annotations
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    PackagePrefix,
+    clean_procedure_code,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
@@ -103,24 +107,6 @@ _BUNDLED_SERVICE_KEYWORDS: tuple[str, ...] = (
 )
 
 
-def _normalize_code(raw: str) -> str:
-    """Normalize a procedure code for matching (mirrors icu_puani helpers).
-
-    Strips a leading P/p (MEDULA package prefix), removes punctuation, and
-    upper-cases so that ``"p530130"``, ``"530.130"``, ``"530 130"`` all
-    collapse to ``"530130"``.
-    """
-    cleaned = (
-        str(raw or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
-    return cleaned[1:] if cleaned.startswith("P") else cleaned
-
-
 def _is_bundled_service(code: str, name: str) -> bool:
     """True when a procedure line represents a service bundled into 510090.
 
@@ -131,7 +117,7 @@ def _is_bundled_service(code: str, name: str) -> bool:
     keywords whether or not the source carries the Turkish letters (the SUT
     catalog is inconsistent on this).
     """
-    normalized = _normalize_code(code)
+    normalized = clean_procedure_code(code, PackagePrefix.ALWAYS)
     if normalized in _BUNDLED_SERVICE_CODES:
         return True
     name_folded = fold_turkish(name or "", TurkishFold.ASCII)
@@ -146,7 +132,7 @@ def _bundled_category_for(code: str, name: str) -> str:
     Used to make the violation detail self-explanatory for an auditor.
     Falls back to the raw procedure name when no keyword matches.
     """
-    normalized = _normalize_code(code)
+    normalized = clean_procedure_code(code, PackagePrefix.ALWAYS)
     name_folded = fold_turkish(name or "", TurkishFold.ASCII)
 
     if normalized == "530130" or ("baglanmas" in name_folded) or ("ventilator" in name_folded and "non" not in name_folded and "invaziv" not in name_folded):
@@ -215,7 +201,7 @@ def detect_icu_bundled_leakage(
         icu_days = {
             line.procedure_date
             for line in claim_procs
-            if _normalize_code(line.procedure_code) == _ICU_DAY_RATE_CODE
+            if clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS) == _ICU_DAY_RATE_CODE
         }
         if icu_days:
             icu_days_by_claim[claim.claim_id] = icu_days
@@ -225,14 +211,14 @@ def detect_icu_bundled_leakage(
         claim_procs = procedures_by_claim.get(claim_id, [])
         for line in claim_procs:
             # Skip the 510090 line itself.
-            if _normalize_code(line.procedure_code) == _ICU_DAY_RATE_CODE:
+            if clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS) == _ICU_DAY_RATE_CODE:
                 continue
             if line.procedure_date not in icu_days:
                 continue
             # Skip ICU intermediate-day packages (P552001-008) — those are a
             # separate bundled-service regime audited elsewhere; flagging them
             # here would conflate two different rules.
-            normalized = _normalize_code(line.procedure_code)
+            normalized = clean_procedure_code(line.procedure_code, PackagePrefix.ALWAYS)
             if normalized.startswith("55200") and len(normalized) == 6:
                 continue
             if not _is_bundled_service(line.procedure_code, line.procedure_name):

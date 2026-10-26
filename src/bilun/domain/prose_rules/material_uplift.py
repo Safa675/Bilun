@@ -27,6 +27,7 @@ from src.bilun.domain.pricing.material_kdv import (
     material_line_kdv_rate,
 )
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+from src.bilun.domain.prose_rules.claim_utils import line_billed_amount
 
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
@@ -55,8 +56,8 @@ def _rules_by_procedure() -> dict[str, list[dict[str, Any]]]:
     return index
 
 
-def _line_billed(line: ProcedureClaimLine) -> bool:
-    return float(line.billed_amount_try) > 0
+def _has_billed_amount(line: ProcedureClaimLine) -> bool:
+    return line_billed_amount(line) > 0
 
 
 def _linked_material_line(
@@ -167,7 +168,7 @@ def detect_missing_billable_material_opportunities(
     for proc in procedure_lines:
         if proc.claim_id != claim.claim_id:
             continue
-        if proc.is_package_included or not _line_billed(proc):
+        if proc.is_package_included or not _has_billed_amount(proc):
             continue
 
         proc_code = normalize_procedure_code(proc.procedure_code)

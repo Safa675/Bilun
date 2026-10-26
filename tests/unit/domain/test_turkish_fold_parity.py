@@ -243,8 +243,8 @@ _OLD_TABLE: tuple[tuple[str, Callable[[Any], str], Callable[[Any], str], str], .
 _CALLER_FOLDS: dict[str, set[tuple[str, bool]]] = {
     "src/bilun/domain/prose_rules/dental_2_4_1.py": {("ACCENTLESS", False)},
     "src/bilun/domain/billing/broad_rule_classification.py": {("ACCENTLESS", False)},
-    "src/bilun/domain/prose_rules/specialty_materials.py": {("ACCENTLESS", False)},
-    "src/bilun/domain/prose_rules/material_bundling.py": {("ACCENTLESS", False)},
+    # specialty_materials and material_bundling share material_lines' name match (WP42).
+    "src/bilun/domain/prose_rules/material_lines.py": {("ACCENTLESS", False)},
     "src/bilun/domain/prose_rules/drug_combination.py": {("ACCENTLESS", False)},
     "scripts/sut/prose/drug_indication_gate_b.py": {("ACCENTLESS", False)},
     "scripts/sut/prose/gate_b_generic.py": {("ACCENTLESS", False)},

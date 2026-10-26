@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
 from typing import TYPE_CHECKING, Literal
 from collections.abc import Iterable
 
@@ -190,3 +191,49 @@ def _undated_session_key(line: ProcedureClaimLine, used_keys: set[date]) -> date
     h = hashlib.blake2b(raw, digest_size=4).digest()
     ordinal = 719162 + (int.from_bytes(h, "little") % 3650)  # 0001..0010 range, far before real data
     return date.fromordinal(ordinal)
+
+
+class PackagePrefix(Enum):
+    """What ``clean_procedure_code`` does with a leading MEDULA package ``P``.
+
+    The rule modules that share it did not read the prefix alike, and each keeps its reading:
+    ``KEEP`` leaves it (``"P510010"`` stays), ``BEFORE_DIGITS`` drops it only before an
+    all-digit code (``"P510010"`` → ``"510010"``, ``"PAKET"`` stays) and ``ALWAYS`` drops any
+    leading ``P`` (``"PAKET"`` → ``"AKET"``).
+    """
+
+    KEEP = "keep"
+    BEFORE_DIGITS = "before_digits"
+    ALWAYS = "always"
+
+
+def clean_procedure_code(raw: object, package_prefix: PackagePrefix) -> str:
+    """A procedure code for matching: trimmed, ``.``, space and ``-`` removed, upper-cased.
+
+    ``None`` and other falsy values read ``""``. ``package_prefix`` says whether a leading
+    ``P`` (``p`` before upper-casing) is dropped. ``catalog_membership.normalize_procedure_code``
+    is a different reading: it does not upper-case.
+    """
+    code = (
+        str(raw or "")
+        .strip()
+        .replace(".", "")
+        .replace(" ", "")
+        .replace("-", "")
+        .upper()
+    )
+    if package_prefix is PackagePrefix.ALWAYS and code.startswith("P"):
+        return code[1:]
+    if (
+        package_prefix is PackagePrefix.BEFORE_DIGITS
+        and code.startswith("P")
+        and len(code) > 1
+        and code[1:].isdigit()
+    ):
+        return code[1:]
+    return code
+
+
+def line_billed_amount(line: ProcedureClaimLine) -> float:
+    """The line's ``billed_amount_try`` as a float (a missing amount raises, as it did)."""
+    return float(line.billed_amount_try)

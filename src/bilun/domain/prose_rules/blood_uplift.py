@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from .claim_utils import line_billed_amount
 from .session_pricing import (
     billed_package_scopes, blood_component_billable_fraction, blood_component_list_amount_try,
     blood_component_max_billable_try,
@@ -18,10 +19,6 @@ from src.bilun.domain.money import money_round_half_up as _money
 _BILLING_TOLERANCE = 0.02
 _OPPORTUNITY_TYPE = "blood_component_underbilling"
 
-
-
-def _line_billed(line: ProcedureClaimLine) -> float:
-    return float(line.billed_amount_try)
 
 
 def _line_payable(line: ProcedureClaimLine) -> float:
@@ -70,7 +67,7 @@ def detect_blood_component_underbilling_opportunities(
         if fraction is None:
             continue
 
-        billed = _line_billed(line)
+        billed = line_billed_amount(line)
         if _line_payable(line) <= 0 and billed <= 0:
             continue
 

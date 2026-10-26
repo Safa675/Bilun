@@ -23,6 +23,11 @@ legacy shim modules.
   folds (`TurkishFold.LOWER`/`CASEFOLD`: case only; `DOTTED_I`: İ, I, ı → i; `ASCII`: also
   ç ğ ö ş ü → c g o s u; `ACCENTLESS`: casefold and NFKD without combining marks, ı kept;
   `ACCENTLESS_DOTLESS_I`: the drug-indication fold, ı → i too) and whether it trims whitespace.
+- `prose_rules/claim_utils.py` also holds `clean_procedure_code` (trim, drop `.` space `-`,
+  upper-case; the caller names what happens to a leading package `P`: `PackagePrefix.KEEP`,
+  `BEFORE_DIGITS` or `ALWAYS`) and `line_billed_amount`, which the procedure rules share.
+  `prose_rules/material_lines.py` reads a material line's name, code and price and matches its
+  name against rule keywords for the material-bundling and specialty-material rules.
 
 ## Data source modes
 

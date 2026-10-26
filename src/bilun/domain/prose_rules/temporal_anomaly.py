@@ -25,6 +25,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
 
+from src.bilun.domain.prose_rules.claim_utils import PackagePrefix, clean_procedure_code
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -55,20 +56,6 @@ _PROCEDURE_DENSITY_RATIO_MAX = 5
 # billed with daily tariffs only is almost certainly a capture/documentation
 # defect.
 _GHOST_STAY_MIN_LOS_DAYS = 3
-
-
-def _normalize_code(raw: str | None) -> str:
-    code = (
-        str(raw or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
-    if code.startswith("P") and len(code) > 1 and code[1:].isdigit():
-        return code[1:]
-    return code
 
 
 def detect_procedure_time_overlap(
@@ -122,7 +109,7 @@ def detect_los_procedure_density_anomaly(
     for line in procedure_lines:
         if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
             continue
-        code = _normalize_code(line.procedure_code)
+        code = clean_procedure_code(line.procedure_code, PackagePrefix.BEFORE_DIGITS)
         if code.startswith(_DAILY_TARIFF_CODE_PREFIXES):
             continue
         non_tariff_by_claim[line.claim_id] += 1

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from src.bilun.domain.constants import _PROSE_RULES_DIR
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
-from src.bilun.domain.prose_rules.claim_utils import group_procedure_lines_by_session
+from src.bilun.domain.prose_rules.claim_utils import group_procedure_lines_by_session, line_billed_amount
 from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
 from src.bilun.domain.prose_rules.session_scope import (
     is_session_operation_code,
@@ -50,10 +50,6 @@ def _rules_by_trigger() -> dict[str, list[dict[str, Any]]]:
     return index
 
 
-def _line_billed(line: ProcedureClaimLine) -> float:
-    return float(line.billed_amount_try)
-
-
 def _procedure_name(code: str) -> str:
     try:
         from src.bilun.domain.catalog import lookup_procedure_code
@@ -89,7 +85,7 @@ def _addon_billed_on_session(
     lines = _addon_lines_on_session(session_lines, addon_codes)
     if not lines:
         return 0.0
-    return max(_line_billed(line) for line in lines)
+    return max(line_billed_amount(line) for line in lines)
 
 
 def _session_uplift_codes(
@@ -130,7 +126,7 @@ def _resolve_addon_factor(
         for line in session_operation_lines(session_lines)
         if not line_billed_as_package(line)
         and not line.is_package_included
-        and _line_billed(line) > 0
+        and line_billed_amount(line) > 0
     ]
     codes = list(
         dict.fromkeys(
@@ -185,7 +181,7 @@ def detect_missing_procedure_addon_opportunities(
             for line in session_lines
             if not line_billed_as_package(line)
             and not line.is_package_included
-            and _line_billed(line) > 0
+            and line_billed_amount(line) > 0
             and normalize_procedure_code(line.procedure_code) in rules_by_trigger
         ]
         if not triggers:
@@ -193,7 +189,7 @@ def detect_missing_procedure_addon_opportunities(
 
         for trigger_line in triggers:
             trigger_code = normalize_procedure_code(trigger_line.procedure_code)
-            trigger_billed = _line_billed(trigger_line)
+            trigger_billed = line_billed_amount(trigger_line)
             for rule in rules_by_trigger.get(trigger_code, []):
                 addon_codes = {
                     normalize_procedure_code(str(code))

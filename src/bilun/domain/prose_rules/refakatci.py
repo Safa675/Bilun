@@ -25,7 +25,11 @@ from typing import TYPE_CHECKING, Any
 from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money, puan_price_try
 from src.bilun.domain.pricing.temporal import get_ek2b_price_for_date
-from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.claim_utils import (
+    PackagePrefix,
+    clean_procedure_code,
+    infer_care_setting,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -53,17 +57,6 @@ _ICU_PROCEDURE_CODES = frozenset(
         *_ICU_PACKAGE_PREFIXES,
     }
 )
-
-
-def _normalize_code(raw: str) -> str:
-    return (
-        str(raw or "")
-        .strip()
-        .replace(".", "")
-        .replace(" ", "")
-        .replace("-", "")
-        .upper()
-    )
 
 
 def _refakatci_puan() -> float:
@@ -97,7 +90,7 @@ def _refakatci_tariff_for_date(
 def _claim_is_icu(procedure_lines: list[ProcedureClaimLine]) -> bool:
     """True when any procedure line on the claim is an ICU indicator code."""
     for line in procedure_lines:
-        code = _normalize_code(line.procedure_code)
+        code = clean_procedure_code(line.procedure_code, PackagePrefix.KEEP)
         if code in _ICU_PROCEDURE_CODES:
             return True
     return False
@@ -162,7 +155,7 @@ def detect_refakatci_opportunities(
         companion_days = (claim.discharge_date - claim.admission_date).days
         claim_procs = procedures_by_claim.get(claim.claim_id, [])
         companion_lines = [
-            p for p in claim_procs if _normalize_code(p.procedure_code) == _REFAKATCI_CODE
+            p for p in claim_procs if clean_procedure_code(p.procedure_code, PackagePrefix.KEEP) == _REFAKATCI_CODE
         ]
         actual_billed_try = _money(sum(float(p.billed_amount_try) for p in companion_lines))
 
