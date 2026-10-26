@@ -26,8 +26,8 @@ from scripts.sut.prose.tier_c_classify import (  # noqa: E402
     build_rule_candidate,
     classify_bucket,
     extract_drug_tokens,
-    normalize_tr,
 )
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish  # noqa: E402
 
 _CLAUSES = _REPO / "data/gazette/sut_clauses.parquet"
 _COVERAGE = _REPO / "data/gazette/sut_clause_coverage.parquet"
@@ -45,7 +45,7 @@ def _load_known_inns(rules_path: Path) -> list[str]:
     inns: set[str] = set()
     for rule in payload.get("rules") or []:
         for name in rule.get("drug_names") or []:
-            token = normalize_tr(name)
+            token = fold_turkish(name or "", TurkishFold.ACCENTLESS)
             if token and not token.startswith("__"):
                 inns.add(token)
     return sorted(inns, key=len, reverse=True)

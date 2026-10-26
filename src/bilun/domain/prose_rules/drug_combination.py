@@ -27,12 +27,12 @@ two engines agree on what "match" means.
 from __future__ import annotations
 
 import json
-import unicodedata
 from functools import lru_cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
 from ..icd10 import Icd10Cover, icd10_any_code_covered, normalize_icd10_list
+from ..turkish_fold import TurkishFold, fold_turkish
 
 _RULES_PATH = _PROSE_RULES_DIR / "drug_combination_4_2.json"
 
@@ -151,12 +151,6 @@ def load_drug_combination_rules() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _normalize_tr(text: str) -> str:
-    """Fold Turkish-aware case + strip combining marks (matches drug_indication)."""
-    folded = unicodedata.normalize("NFKD", str(text or "").casefold())
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
-
-
 def _drug_name_matches(codes_or_names: list[str], target: str) -> bool:
     """Match a billed drug name (``target``) against a list of INN tokens.
 
@@ -170,13 +164,13 @@ def _drug_name_matches(codes_or_names: list[str], target: str) -> bool:
     combination use-case ("do any of these billed names match the target
     INN?"). The matching logic is identical.
     """
-    normalized = _normalize_tr(target)
+    normalized = fold_turkish(target or "", TurkishFold.ACCENTLESS)
     if not normalized:
         return False
     import re
 
     for inn in codes_or_names:
-        token = _normalize_tr(inn)
+        token = fold_turkish(inn or "", TurkishFold.ACCENTLESS)
         if not token:
             continue
         pattern = re.compile(r"(?<![\w)])" + re.escape(token) + r"(?![\w(])")

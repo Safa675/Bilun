@@ -361,6 +361,25 @@ ranges):
 - Sub-code "C49.5": matches only C49.5 exactly.
 - Comparison is numeric within same letter: extracts the numeric portion after the letter and does integer range checking.
 
+### Turkish Text Folding (`src/bilun/domain/turkish_fold.py`)
+
+Every keyword and name match on Turkish text folds both sides with `fold_turkish(text, how,
+strip=...)`. The folds differ on purpose; each caller keeps the one it had:
+- `LOWER` / `CASEFOLD`: case only, with `strip=True` (MEDULA playbook and rejection queue, chatbot,
+  traffic-accident ICD-10 prefix, occupational visit types).
+- `DOTTED_I`: Turkish lower case, so İ, I, ı and i all read i; ç ğ ö ş ü stay (EK-3 / EK-2C
+  material and açıklama matching; hemogram parameter names, with `strip=True`).
+- `ASCII`: as `DOTTED_I`, and ç ğ ö ş ü read c g o s u; other accents stay (ICU tier and bundled
+  keywords).
+- `ACCENTLESS`: casefold, NFKD, every combining mark dropped; the dotless ı stays (dental, specialty
+  and bundling material keywords, drug combinations, broad-rule text, the Gate B scripts, and the
+  claim adapter's dental category, which then folds ı itself).
+- `ACCENTLESS_DOTLESS_I`: as `ACCENTLESS` with ı → i first (4.2 drug-indication drug names,
+  specialties, ingredient cores).
+
+The synthetic cohort's generator and plausibility checks keep their own folds, so the data that
+tests the engine shares none of its logic.
+
 ### 3-Tier Procedure Code Lookup (`catalog.py`)
 
 Used throughout the system for resolving SUT procedure codes to prices:

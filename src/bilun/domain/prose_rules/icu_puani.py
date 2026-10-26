@@ -52,6 +52,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -107,32 +108,6 @@ _TIER_3_SUPPORT_KEYWORDS: tuple[str, ...] = (
     "plazmaferez",
     "terapotik hipotermi",
 )
-
-
-def _fold_tr(text: str) -> str:
-    return (
-        str(text or "")
-        .translate(
-            str.maketrans(
-                {
-                    "Ç": "c",
-                    "ç": "c",
-                    "Ğ": "g",
-                    "ğ": "g",
-                    "I": "i",
-                    "İ": "i",
-                    "ı": "i",
-                    "Ö": "o",
-                    "ö": "o",
-                    "Ş": "s",
-                    "ş": "s",
-                    "Ü": "u",
-                    "ü": "u",
-                }
-            )
-        )
-        .lower()
-    )
 
 
 def _normalize_code(raw: str) -> str:
@@ -453,7 +428,7 @@ def _line_is_tier_3_support(
     entry = get_ek2c_entry(code, as_of_date=getattr(line, "procedure_date", None) or as_of_date)
     if entry and str(entry.get("group") or "").strip().upper() in _SEPARATELY_BILLABLE_EK2C_GROUPS:
         return True
-    folded_name = _fold_tr(getattr(line, "procedure_name", "") or "")
+    folded_name = fold_turkish(getattr(line, "procedure_name", "") or "", TurkishFold.ASCII)
     return any(kw in folded_name for kw in _TIER_3_SUPPORT_KEYWORDS)
 
 

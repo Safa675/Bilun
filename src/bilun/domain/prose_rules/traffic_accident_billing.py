@@ -51,6 +51,7 @@ from src.bilun.domain.sut.clause_reference import (
     SOURCE_ALGORITMA_REHBERI,
     non_sut_reference,
 )
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -81,18 +82,13 @@ _CLAUSE_REF = non_sut_reference(
 # ---------------------------------------------------------------------------
 
 
-def _normalize(value: str) -> str:
-    """Lower-case + strip helper mirroring copay_exemption_rules."""
-    return str(value or "").strip().lower()
-
-
 def _diagnosis_is_traffic(icd10: str) -> bool:
     """True when an ICD-10 code falls in the transport-accident ranges.
 
     Handles both "V01" and "V01.1" / "V89.9" shapes by inspecting the
     leading characters; V01–V99 (the entire V block) are transport accidents.
     """
-    code = _normalize(icd10).upper()
+    code = fold_turkish(icd10 or "", TurkishFold.LOWER, strip=True).upper()
     if not code:
         return False
     # Primary diagnosis text starting with "V" (e.g. "V89 - ...") also counts.

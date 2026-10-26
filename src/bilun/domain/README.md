@@ -19,6 +19,10 @@ legacy shim modules.
   its reading (`Icd10Cover.EXACT`: a dotted code covers only itself; `Icd10Cover.LEAVES`: it also
   covers the SKRS leaves under it, the 4.2 drug-indication rules) and ranges go through
   `icd10_in_range`.
+- `turkish_fold.py` folds Turkish text for keyword and name matching: a caller names how far it
+  folds (`TurkishFold.LOWER`/`CASEFOLD`: case only; `DOTTED_I`: İ, I, ı → i; `ASCII`: also
+  ç ğ ö ş ü → c g o s u; `ACCENTLESS`: casefold and NFKD without combining marks, ı kept;
+  `ACCENTLESS_DOTLESS_I`: the drug-indication fold, ı → i too) and whether it trims whitespace.
 
 ## Data source modes
 

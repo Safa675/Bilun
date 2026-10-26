@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import json
-import unicodedata
 from functools import lru_cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
+from ..turkish_fold import TurkishFold, fold_turkish
 
 _RULES_PATH = _PROSE_RULES_DIR / "specialty_materials_prose.json"
 
@@ -63,11 +63,6 @@ SPECIALTY_CLAIM_FLAGS: tuple[str, ...] = (
 )
 
 
-def _normalize_tr(text: str) -> str:
-    folded = unicodedata.normalize("NFKD", str(text).casefold())
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
-
-
 @lru_cache(maxsize=1)
 def load_specialty_materials_rules() -> dict[str, Any]:
     with _RULES_PATH.open(encoding="utf-8") as handle:
@@ -82,11 +77,11 @@ def _material_fields(mat: dict[str, Any]) -> tuple[str, str, float]:
 
 
 def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
-    normalized = _normalize_tr(material_name)
+    normalized = fold_turkish(material_name, TurkishFold.ACCENTLESS)
     if not normalized:
         return False
     for keyword in keywords:
-        if _normalize_tr(keyword) in normalized:
+        if fold_turkish(keyword, TurkishFold.ACCENTLESS) in normalized:
             return True
     return False
 

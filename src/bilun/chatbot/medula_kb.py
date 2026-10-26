@@ -12,6 +12,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
+
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "medula"
 
 
@@ -38,12 +40,8 @@ def stage_keywords() -> dict[str, list[str]]:
     return _load_json("stage_keywords.json")
 
 
-def _normalize(text: str) -> str:
-    return text.lower().strip()
-
-
 def _tokenize(text: str) -> set[str]:
-    tokens = re.split(r"[\s.,;:!?()\-/]+", _normalize(text))
+    tokens = re.split(r"[\s.,;:!?()\-/]+", fold_turkish(text, TurkishFold.LOWER, strip=True))
     return {token for token in tokens if len(token) >= 2}
 
 
@@ -107,7 +105,7 @@ def search_playbook_entries(
     """Keyword- and code-match playbook templates for chat or billing assist."""
     tokens = _tokenize(query)
     if sonuc_kodu:
-        tokens.add(_normalize(sonuc_kodu))
+        tokens.add(fold_turkish(sonuc_kodu, TurkishFold.LOWER, strip=True))
     code_hits = {entry.get("code", "") for entry in search_known_codes(query)}
     if sonuc_kodu:
         code_hits.add(sonuc_kodu)

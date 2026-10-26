@@ -25,7 +25,7 @@ from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
     _heuristic_inn,
     infer_defer_themes,
 )
-from scripts.sut.prose.gate_b_generic import normalize_tr  # noqa: E402
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish  # noqa: E402
 
 _MOTOR = "drug_indication_prose"
 _DEONTIC_MODALITIES = frozenset(
@@ -136,7 +136,7 @@ def default_scan_promotions(
         text = str(row.get("text_tr") or "")
         deontic = str(row.get("deontic_modality") or "")
         inn = _heuristic_inn(text)
-        normalized = normalize_tr(text)
+        normalized = fold_turkish(text, TurkishFold.ACCENTLESS)
         raw_tier = _encode_tier(text, inn)
         reasons: list[str] = []
         if raw_tier in {"A", "B"}:

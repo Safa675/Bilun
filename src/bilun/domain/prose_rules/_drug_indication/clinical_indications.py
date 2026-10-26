@@ -10,8 +10,9 @@ from typing import Any
 from dateutil.relativedelta import relativedelta
 
 from ...claims.clinical_evidence import IndicationEvidence, parse_clinical_evidence
+from ...turkish_fold import TurkishFold, fold_turkish
 from .clinical_common import Predicate, Reader, all_of, any_of, result, scope_missing
-from .matching import _drug_name_matches, _normalize_tr, _specialty_matches
+from .matching import _drug_name_matches, _specialty_matches
 
 SC_IG_DRUGS = ["immünglobulin", "immunglobulin", "immunoglobulin", "scig"]
 HBV_DRUGS = [
@@ -230,7 +231,7 @@ def evaluate_indications(line: Any) -> dict[str, Any]:
         line.drug_name, ["peginterferon", "pegile interferon"]
     ):
         remainder = (
-            _normalize_tr(line.drug_name)
+            fold_turkish(line.drug_name or "", TurkishFold.ACCENTLESS_DOTLESS_I)
             .replace("pegile interferon", "")
             .replace("peginterferon", "")
         )

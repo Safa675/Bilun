@@ -45,6 +45,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -84,7 +85,7 @@ _BUNDLED_SERVICE_CODES: frozenset[str] = frozenset(
 
 # Turkish keyword fallback — catches variant/typo codes that name a bundled
 # service but are not in the exact code set above. Matching is on the
-# ASCII-folded, lower-cased procedure name (see ``_fold_tr``). Keywords are
+# ASCII-folded, lower-cased procedure name (``TurkishFold.ASCII``). Keywords are
 # written in their folded form. Each keyword is specific enough to avoid
 # false positives (e.g. "ventilasyon sintigrafisi" is a nuclear-medicine
 # study, not ICU ventilation — we therefore key on "ventilator" rather than
@@ -120,40 +121,20 @@ def _normalize_code(raw: str) -> str:
     return cleaned[1:] if cleaned.startswith("P") else cleaned
 
 
-# Turkish diacritics → ASCII fold map. Used so that "Nebülizatör",
-# "Monitörizasyon", and "Mekanik ventilatör" match their ASCII keyword forms
-# regardless of whether the source string carries the dotted/dotless-i and
-# umlaut forms (SUT catalog is inconsistent on this).
-_TR_FOLD_MAP = str.maketrans(
-    {
-        "ç": "c", "Ç": "c",
-        "ğ": "g", "Ğ": "g",
-        "ı": "i", "I": "i",
-        "İ": "i",
-        "ö": "o", "Ö": "o",
-        "ş": "s", "Ş": "s",
-        "ü": "u", "Ü": "u",
-    }
-)
-
-
-def _fold_tr(text: str) -> str:
-    """Fold Turkish diacritics to ASCII and lower-case for keyword matching."""
-    return str(text or "").translate(_TR_FOLD_MAP).lower()
-
-
 def _is_bundled_service(code: str, name: str) -> bool:
     """True when a procedure line represents a service bundled into 510090.
 
     Matches first on the normalized code (exact), then falls back to a
     keyword scan of the procedure name so that variant/typo codes still
-    surface. Keyword matching uses ``_fold_tr`` so Turkish diacritics
-    (ü/ö/ş/ç/ı) do not cause misses.
+    surface. Keyword matching folds the name with ``TurkishFold.ASCII`` so
+    "Nebülizatör", "Monitörizasyon" and "Mekanik ventilatör" match their ASCII
+    keywords whether or not the source carries the Turkish letters (the SUT
+    catalog is inconsistent on this).
     """
     normalized = _normalize_code(code)
     if normalized in _BUNDLED_SERVICE_CODES:
         return True
-    name_folded = _fold_tr(name)
+    name_folded = fold_turkish(name or "", TurkishFold.ASCII)
     if not name_folded:
         return False
     return any(kw in name_folded for kw in _BUNDLED_SERVICE_KEYWORDS)
@@ -166,7 +147,7 @@ def _bundled_category_for(code: str, name: str) -> str:
     Falls back to the raw procedure name when no keyword matches.
     """
     normalized = _normalize_code(code)
-    name_folded = _fold_tr(name)
+    name_folded = fold_turkish(name or "", TurkishFold.ASCII)
 
     if normalized == "530130" or ("baglanmas" in name_folded) or ("ventilator" in name_folded and "non" not in name_folded and "invaziv" not in name_folded):
         # 530130 "hastanın mekanik ventilatöre bağlanması" + ventilator follow-up

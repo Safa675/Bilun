@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any
 
 from ..pricing.temporal import get_ek2b_price_for_date
 from ..constants import HEMOGRAM_TESTS
-from ..utils import turkish_lower
+from ..turkish_fold import TurkishFold, fold_turkish
 from .types import LabOptimization
 
 if TYPE_CHECKING:
@@ -27,21 +27,20 @@ if TYPE_CHECKING:
 _CBC_CODES = frozenset({"L107020", "L103120"})
 
 
-def _fold_lab_name(name: Any) -> str:
-    """Case-fold a lab name for exact equality; Turkish İ, I, ı and i all fold to "i"."""
-    return turkish_lower(str(name or "").strip()).replace("ı", "i")
-
-
 # Exact BILUN CBC parameter names, never substrings: catalog tests such as
 # "Glike hemoglobin (Hb A1c)" or "Folat (Eritrosit)" are not CBC lines (#270).
-_CBC_PARAMETER_NAMES = frozenset(_fold_lab_name(name) for name in HEMOGRAM_TESTS)
+# Names compare trimmed and case-folded, with Turkish İ, I, ı and i all as "i".
+_CBC_PARAMETER_NAMES = frozenset(
+    fold_turkish(name or "", TurkishFold.DOTTED_I, strip=True) for name in HEMOGRAM_TESTS
+)
 
 
 def _is_hemogram_subtest_line(line: Any) -> bool:
     """Return True when a lab claim line is a CBC line, by code or exact parameter name."""
     return (
         line.procedure_code in _CBC_CODES
-        or _fold_lab_name(line.procedure_name) in _CBC_PARAMETER_NAMES
+        or fold_turkish(line.procedure_name or "", TurkishFold.DOTTED_I, strip=True)
+        in _CBC_PARAMETER_NAMES
     )
 
 

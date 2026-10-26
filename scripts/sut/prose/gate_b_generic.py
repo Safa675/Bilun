@@ -20,7 +20,6 @@ import io
 import json
 import re
 import sys
-import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -37,6 +36,7 @@ from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
     _heuristic_inn,
     infer_defer_themes,
 )
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish  # noqa: E402
 
 # Extractor hashes empty ``in_force_text`` to sha256("")[:8] and sets
 # ``is_in_force=False``. Those superseded copies are not encode-eligible.
@@ -256,12 +256,6 @@ _DEONTIC_MODALITIES = frozenset(
 )
 
 
-def normalize_tr(text: str) -> str:
-    """Turkish-aware casefold + accent strip (deduplicated from 15+ copies)."""
-    folded = unicodedata.normalize("NFKD", str(text).casefold())
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
-
-
 def _has_report_signal(normalized: str) -> bool:
     return "rapor" in normalized or "reçete" in normalized or "recete" in normalized
 
@@ -396,7 +390,7 @@ def classify_tier(
     6. Passthrough fallback
     """
     inn = _heuristic_inn(text)
-    normalized = normalize_tr(text)
+    normalized = fold_turkish(text, TurkishFold.ACCENTLESS)
 
     # Step 1: clause-ID overrides (highest priority)
     for override in section.tier_a_overrides:
@@ -508,7 +502,7 @@ def _should_include_row(
             return True
 
     has_deontic = deontic in (_DEONTIC_MODALITIES | section.admit_deontic_modalities)
-    has_keyword = any(kw in normalize_tr(text) for kw in section.drug_keywords)
+    has_keyword = any(kw in fold_turkish(text, TurkishFold.ACCENTLESS) for kw in section.drug_keywords)
 
     # In-force filtering applies ONLY to the in_force_section_filter sub-section
     # (multi-section modules like 4209_4227: 4.2.27 is in-force filtered, 4.2.9 is not)
@@ -539,7 +533,7 @@ def _should_include_row(
 def _signal_score(record: dict[str, Any], section: GateBSection) -> int:
     """Compute signal_score (4201/4215/4224 pattern)."""
     text = str(record.get("text_tr") or "")
-    normalized = normalize_tr(text)
+    normalized = fold_turkish(text, TurkishFold.ACCENTLESS)
     score = 0
     for kw in section.drug_keywords:
         if kw in normalized:

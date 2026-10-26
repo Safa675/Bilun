@@ -7,7 +7,8 @@ with ``SECTION_4214C`` instead.
 from __future__ import annotations
 
 import re
-import unicodedata
+
+from src.bilun.domain.turkish_fold import TurkishFold, fold_turkish
 
 _TIER_C_PATTERNS = (
     r"\becog\b",
@@ -71,7 +72,7 @@ _DEFER_THEME_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 
 def infer_defer_themes(text: str) -> list[str]:
     """Map Tier C clause prose to deferred-ingest theme tags (Phase 5)."""
-    normalized = _normalize_tr(text)
+    normalized = fold_turkish(text, TurkishFold.ACCENTLESS)
     themes: list[str] = []
     for theme_id, pattern in _DEFER_THEME_PATTERNS:
         if pattern.search(normalized) or pattern.search(str(text or "")):
@@ -81,11 +82,6 @@ def infer_defer_themes(text: str) -> list[str]:
     if not themes:
         themes.append("clinical_pathway")
     return themes
-
-
-def _normalize_tr(text: str) -> str:
-    folded = unicodedata.normalize("NFKD", str(text).casefold())
-    return "".join(ch for ch in folded if not unicodedata.combining(ch))
 
 
 def _heuristic_inn(text: str) -> str:
@@ -104,7 +100,7 @@ def _encode_tier(text: str, heuristic_inn: str) -> str:
         return "C"
     if _CLINICAL_COMPLEX_RE.search(text):
         return "C"
-    normalized = _normalize_tr(text)
+    normalized = fold_turkish(text, TurkishFold.ACCENTLESS)
     if "rapor" in normalized or "reçete" in normalized or "recete" in normalized:
         if len(heuristic_inn) < 60:
             return "A"
