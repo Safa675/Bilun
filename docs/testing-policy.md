@@ -6,7 +6,7 @@ Bilun is pre-revenue and runs on synthetic data: a failure breaks the demo for m
 
 1. One regression test per defect, plus one per new branch the fix adds. Extend an existing test before adding a file.
 2. New test lines at most 2× the code lines they cover. More needs one sentence of reason in the PR.
-3. Build bills with the shared builders (`tests/builders.py`, from cleanup package C3 on), and read catalog prices through the catalog-price oracle (`tests/unit/_helpers/catalog_prices.py`); never hand-type a catalog price.
+3. Build bills with the helper the module already has, and read catalog prices through the catalog-price oracle (`tests/unit/_helpers/catalog_prices.py`); never hand-type a catalog price.
 4. No mutation-testing ritual: at most 6 mutation tests, and only on request, for money-computing logic.
 5. A change that makes a test obsolete deletes it in the same PR.
 
