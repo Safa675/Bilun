@@ -11,7 +11,7 @@
 
 ### Subtasks
 - [x] Measure: `tests/unit/synthetic` with `-n 5` in a 10 GB cgroup (systemd scope), record memory.peak and oom events
-- [x] `tests/conftest.py`: `pytest_xdist_auto_num_workers` hook caps xdist's own count at `memory.max // per-worker budget` (2 GiB: 5 workers in a 10 GB scope peaked at 6.07 GB, 0 OOM kills, 4,740 passed; about 1.2 GB a worker); no limit ("max", no cgroup file) or a set `PYTEST_XDIST_AUTO_NUM_WORKERS` leaves xdist's answer
+- [x] `tests/conftest.py`: `pytest_xdist_auto_num_workers` hook caps xdist's own count at `memory.max // per-worker budget` (2 GiB: 5 workers in a 10 GB scope peaked at 6.07 GB, 0 OOM kills, 4,740 passed; about 1.2 GB a worker); no limit ("max", no cgroup file) leaves xdist's answer. Correction after the first PR run (8 workers, 6 OOM kills): `ci.yml` sets `PYTEST_XDIST_AUTO_NUM_WORKERS: "8"` in the job env, which the first version let win; the memory cap now applies to that count too (10G with the env at 8 → 5/5, 16G → 8/8)
 - [x] Unit test for the cap (10g, 16g, no limit, env var set)
 - [x] Verify locally: the hook's count under a 10 GB scope; ruff; the new test (10G scope → `created: 5/5 workers`, 16G → 8/8, no limit → 8/8, `PYTEST_XDIST_AUTO_NUM_WORKERS=7` → 7/7)
 - [ ] PR; its CI on the VPS runner green with the capped count visible in the log (`created: N/N workers`)

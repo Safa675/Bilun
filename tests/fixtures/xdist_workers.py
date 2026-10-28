@@ -1,7 +1,6 @@
 """How many xdist workers `-n auto` may start in the memory this run has."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 # One worker's share. The laptop's 8 workers in 16 GB fit; 8 in the VPS's 10 GB were OOM-killed (2026-10-28).
@@ -19,8 +18,8 @@ def cgroup_memory_limit(proc=Path("/proc/self/cgroup"), sysfs=Path("/sys/fs/cgro
     return None if value == "max" else int(value)
 
 
-def auto_workers(workers, environ=os.environ, limit=None):
-    """xdist's count, capped at what the memory limit holds; an explicit PYTEST_XDIST_AUTO_NUM_WORKERS wins."""
-    if environ.get("PYTEST_XDIST_AUTO_NUM_WORKERS") or limit is None:
+def auto_workers(workers, limit=None):
+    """xdist's count (CPUs, or PYTEST_XDIST_AUTO_NUM_WORKERS as ci.yml sets it), capped at what the memory limit holds."""
+    if limit is None:
         return workers
     return max(1, min(workers, limit // WORKER_MEMORY))

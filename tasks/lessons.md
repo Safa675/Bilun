@@ -2,6 +2,12 @@
 
 Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
 
+## 2026-10-28 — Reproducing a CI command is not reproducing the CI job: copy the job's environment too
+
+**Pattern:** The fix for the OOM-killed VPS CI capped `-n auto` by the cgroup's memory and let an explicit `PYTEST_XDIST_AUTO_NUM_WORKERS` win. Every local check (a 10 GB systemd scope, the CI image with the lock's wheels, the exact `pytest -n auto` line) said 5 workers; the PR's own CI started 8 again and lost 6 workers to the OOM killer. `ci.yml` sets `PYTEST_XDIST_AUTO_NUM_WORKERS: "8"` in the job's `env:` (since #191), which the step's `run:` line does not show; the log's `env:` block did.
+
+**Rule:** Before trusting a local reproduction of a CI failure, read the job's `env:` block in the workflow (or the `env:` lines the log prints for the step) and set the same variables. A limit that protects the machine (memory, disk) is a ceiling: never let a configured count override it.
+
 ## 2026-10-20 — A "uses the first element only" mutant survives when every test lists the extreme element first: permute what a fold reads
 
 **Pattern:** The ICU-stay cause folds the first and the last covered day over every ICU line (a `min` of the minima, a `max` of the maxima). Of 46 mutants, 44 were killed at once; the two that survived read the stay from the first code that appeared in the lines only (`icu_covered[next(iter(icu_covered))]`). Every test I had written listed the 510090 lines first, and the 510090 lines held both ends of the stay, so the first code always had the answer. A package line that is the extreme (or comes first) was never tested.

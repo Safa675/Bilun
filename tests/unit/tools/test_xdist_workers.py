@@ -4,11 +4,11 @@ GB = 1024**3
 
 
 def test_the_worker_count_fits_the_memory_limit():
-    assert auto_workers(8, {}, limit=10 * GB) == 5  # the VPS runner
-    assert auto_workers(8, {}, limit=16 * GB) == 8  # the laptop runner, unchanged
-    assert auto_workers(8, {}, limit=None) == 8  # no limit
-    assert auto_workers(8, {}, limit=GB) == 1
-    assert auto_workers(3, {"PYTEST_XDIST_AUTO_NUM_WORKERS": "3"}, limit=GB) == 3
+    assert auto_workers(8, limit=10 * GB) == 5  # the VPS runner, where ci.yml pins 8
+    assert auto_workers(8, limit=16 * GB) == 8  # the laptop runner, unchanged
+    assert auto_workers(8, limit=None) == 8  # no limit
+    assert auto_workers(3, limit=10 * GB) == 3
+    assert auto_workers(8, limit=GB) == 1
 
 
 def test_the_limit_is_read_from_the_process_cgroup(tmp_path):
