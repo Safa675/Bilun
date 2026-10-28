@@ -70,26 +70,15 @@ Rate limits use the ASGI client identity. Configure Uvicorn to trust forwarding
 only from the actual loopback reverse proxy; never set forwarded allow-IPs to
 `*`. The app does not trust arbitrary client-supplied forwarding headers.
 
-## Health and release probes
+## Health
 
 Anonymous `/health` contains readiness fields only. Existing status codes remain
 200/503 according to cache readiness. To inspect build/release identity, use a
 verified developer session or `X-Bilun-Health-Token` with the configured operator
 token. Source address alone never unlocks detail: public proxy traffic is also
-forwarded from loopback. All variants use no-store caching.
-
-Updated `capture_release_preflight`, candidate observers and HTTP release probes
-use `BILUN_HEALTH_PROBE_TOKEN` from the operator environment, without printing it.
-They only send it to local health URLs or the known HTTPS app origin and refuse
-redirects. Export it through the existing private environment mechanism; do not
-paste it into a command line. Preserve full release/cache identity assertions.
-
-Short-lived probe cookies for newly configured targets require
-`BILUN_SESSION_TOKEN_PURPOSE=bilun-developer-v1` in their captured environment.
-Captured old environments without the marker retain legacy probe encoding for
-immutable old-artifact replay. The new backend never falls back to that format.
-Use separate target-specific sessions when verifying old and new artifacts; an
-old session must fail against the new developer boundary.
+forwarded from loopback. All variants use no-store caching. Export
+`BILUN_HEALTH_PROBE_TOKEN` through the existing private environment mechanism; do
+not paste it into a command line.
 
 ## Verification before public enablement
 
@@ -111,7 +100,7 @@ old session must fail against the new developer boundary.
 2. Build the exact frontend artifact and check public assets:
 
    ```bash
-   python -m scripts.deploy.verify_public_assets --frontend frontend
+   python -m scripts.ci.verify_public_assets --frontend frontend
    ```
 
    The verifier checks browser-served roots for private file types, source maps,
@@ -119,29 +108,19 @@ old session must fail against the new developer boundary.
    content. This is a bounded gate, not a guarantee against every possible
    secret encoding or proprietary-logic leak. Inspect public HTML, RSC and API
    payloads too. Recheck retained prior assets; do not confuse availability
-   verification with confidentiality verification.
-3. Verify new developer login and retired credential/session rejection. Store
-   a short-lived test developer cookie as `bilun:session=...` in an owner-only
-   file, not command-line arguments. Use the same checks against the direct
-   staged backend and frontend proxy:
-
-   ```bash
-   python -m scripts.deploy.verify_public_billing_access \
-     --base-url http://127.0.0.1:STAGED_PORT \
-     --developer-cookie-file /private/operator/path/developer.cookie \
-     --retired-cookie-file /private/operator/path/retired.cookie \
-     --expect-public off
-   ```
-
-   This script performs read-only checks without calling the LLM, including
-   forged-role denial and developer access. The optional retired-cookie check
-   verifies session invalidation; separately prove the former password cannot
-   sign in. With `--expect-public on`, it checks public billing output before
-   and after a developer warms the same cache. It prints check names, not
-   tokens, patient records or response bodies.
+   verification with confidentiality verification. The CI frontend job runs
+   the same check on every build.
+3. Verify new developer login and retired credential/session rejection against
+   the direct staged backend and the frontend proxy: forged-role denial,
+   developer access, a retired session cookie refused and the former password
+   refused, without calling the LLM. Keep a short-lived test developer cookie in
+   an owner-only file, not in command-line arguments. The scripted probe that did
+   this (`verify_public_billing_access.py`) was deleted with the strict release
+   lane on 2026-10-28; the git tag `archive/strict-lane` holds it.
 4. In the isolated candidate, enable the switch and configure the public chat
-   ledger/budget; repeat the probe with `--expect-public on`. Use a fresh browser
-   for billing, citations, evidence, reference tools and validation. Test chat
+   ledger/budget; repeat these checks with public access on, and check public
+   billing output before and after a developer warms the same cache. Use a
+   fresh browser for billing, citations, evidence, reference tools and validation. Test chat
    with a controlled fake provider, plus bounded operational provider checks if
    authorized. Verify developer login, failed login/logout, logout/expiry,
    direct developer URLs, changed role cookies and another tab signing out.
@@ -150,16 +129,12 @@ old session must fail against the new developer boundary.
 
 ## Activation and rollback
 
-This PR does not deploy or rotate live secrets. Preserve the Release Hold
-workflow. Record the actual current live pair and compatible rollback artifacts
-before release. At investigation time, `3099`/`8002` were already live despite
-their candidate names; `/opt/bilun-frontend/current` was not the serving frontend.
+This PR does not deploy or rotate live secrets. Record the actual current live
+pair and compatible rollback artifacts before release. At investigation time,
+`3099`/`8002` were already live despite their candidate names; `/opt/bilun-frontend/current` was not the serving frontend.
 
 Stage on verified unused loopback ports, with both the compiled frontend rewrite
-and its server identity origin pointing to the staged backend. Do not run old
-Wave A launch/transaction manifests verbatim: they contain historical fixed
-ports, old-format sessions and recorded release identities. Prepare/review a
-new release manifest and pair-specific probe sessions for the actual targets.
+and its server identity origin pointing to the staged backend.
 
 Keep public access off while installing the new policy, projections, compatible
 frontend, developer-only credential and coordinated signing configuration.

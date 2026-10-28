@@ -55,8 +55,6 @@ def _get_active_bilun_build_id(reader) -> str | None:
     return _get_active_build_id_or_none(reader, scope="bilun")
 
 
-# The deploy rehearsal extracts this function by AST; keep it self-contained
-# and do not add module-level helpers.
 def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> dict[str, Any]:
     """Serialize a BillingActionReport to a JSON-safe dict."""
     def _normalize_medula_playbook_counts(payload: dict[str, Any]) -> dict[str, Any]:

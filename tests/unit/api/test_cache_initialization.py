@@ -26,8 +26,6 @@ pytestmark = pytest.mark.unit
 
 @pytest.fixture(autouse=True)
 def isolated_startup(monkeypatch):
-    monkeypatch.delenv("BILUN_WAVEA_ACTIVATION_RECEIPT", raising=False)
-    monkeypatch.delenv("BILUN_WAVEA_ACTIVATION_KEY_FILE", raising=False)
     monkeypatch.setattr(startup, "_startup_ready", None)
     monkeypatch.setenv("BILUN_STARTUP_POLICY", "load-only")
 

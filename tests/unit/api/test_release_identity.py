@@ -130,47 +130,6 @@ def test_verified_load_requires_complete_build_with_pinned_code_sha(monkeypatch,
     assert startup_mod.is_cache_ready() is False
 
 
-def test_verified_load_rejects_partial_activation_and_clears_prior_state(
-    monkeypatch, tmp_path
-) -> None:
-    from src.bilun.api import startup as startup_mod, wavea_activation
-    from src.bilun.db import (
-        BILUN_BUILD_SCOPE, complete_build, connect, create_build, init_schema,
-        set_active_build,
-    )
-
-    db_path = tmp_path / "candidate.duckdb"
-    with connect(db_path) as con:
-        init_schema(con)
-        build = create_build(
-            con, project_root=tmp_path, source_hash="source", config_hash="config",
-            schema_version="v1", feature_set_version="v1",
-            benchmark_version="v1", nlp_version="test", build_scope=BILUN_BUILD_SCOPE,
-        )
-        con.execute("UPDATE build_meta SET code_sha = ? WHERE build_id = ?", [_CODE, build.build_id])
-        complete_build(con, build.build_id, row_counts={}, checksums={})
-        set_active_build(con, build.build_id, scope=BILUN_BUILD_SCOPE)
-    monkeypatch.setattr(
-        release_identity, "STARTUP_RELEASE_IDENTITY", ReleaseIdentity(_CODE, _MANIFEST)
-    )
-    monkeypatch.setenv("BILUN_STARTUP_POLICY", "verified-load-only")
-    monkeypatch.setenv("BILUN_CACHE_DB_PATH", str(db_path))
-    monkeypatch.setenv("BILUN_WAVEA_ACTIVATION_RECEIPT", str(tmp_path / "missing.json"))
-    monkeypatch.setattr(
-        wavea_activation, "_startup_activation",
-        wavea_activation.WaveAActivation(
-            "old", "1", _CODE, _MANIFEST, build.build_id,
-            "c" * 64, "d" * 64, "e" * 64,
-        ),
-    )
-
-    with pytest.raises(SystemExit) as exc:
-        asyncio.run(startup_mod.startup())
-    assert exc.value.code == 1
-    assert startup_mod.is_cache_ready() is False
-    assert wavea_activation.activation_for_build(build.build_id) is None
-
-
 def test_verified_candidate_request_reader_stays_read_only(monkeypatch, tmp_path) -> None:
     from src.bilun.shared.runtime import BilunRuntimeState
 
@@ -243,16 +202,3 @@ def test_health_reports_process_pinned_identity_and_cache_capability(monkeypatch
     assert payload["code_sha"] == _CODE
     assert payload["source_manifest_sha256"] == _MANIFEST
     assert payload["wavea_capability"] == "draft"
-
-    from src.bilun.api import wavea_activation
-
-    monkeypatch.setattr(
-        wavea_activation, "_startup_activation",
-        wavea_activation.WaveAActivation(
-            "release-1", "123", _CODE, _MANIFEST, build.build_id,
-            "c" * 64, "d" * 64, "e" * 64,
-        ),
-    )
-    activated = json.loads(health_check().body)
-    assert activated["wavea_capability"] == "complete-25-v1"
-    assert activated["wavea_receipt_sha256"] == "e" * 64

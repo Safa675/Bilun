@@ -1,5 +1,7 @@
 # Atomic Frontend Releases and Production Workspace Isolation Plan
 
+Historical (2026-10-28): the strict release lane was deleted; tag `archive/strict-lane` holds it.
+
 > **Status:** Ready for implementation; this PR is documentation only
 > **Date:** 2026-09-21
 > **Incident:** `app.bilun.tech` served HTML that referenced JavaScript chunks no

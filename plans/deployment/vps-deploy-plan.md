@@ -1,5 +1,7 @@
 # VPS Deployment Plan — BILUN product on app.bilun.tech
 
+Historical (2026-10-28): the strict release lane was deleted; tag `archive/strict-lane` holds it.
+
 **Target:** fresh DigitalOcean droplet (Ubuntu 24.04 LTS), `app.bilun.tech` with
 automatic HTTPS via Caddy. Marketing site stays on Vercel at `bilun.tech`.
 

@@ -579,7 +579,6 @@ def _validate_focused_report_dataflow(ctx: AuditContext) -> None:
     gate_api = ctx.wavea_gate_api_path.read_text(encoding="utf-8")
     for token in (
         "def complete_build_evidence_available(reader: Any, index: Any, build_id: str) -> bool:",
-        "activation_for_build(build_id) is not None",
         'index.get("schema_version") == FULL_EVIDENCE_SCHEMA_VERSION',
         'index.get("capability") == "draft"',
         "validate_full_wavea_evidence_index(index)",

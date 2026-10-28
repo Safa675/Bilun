@@ -177,14 +177,6 @@ def health_check(request: Request = None) -> Response:
     from src.bilun.api.startup import is_cache_ready  # noqa: E402
 
     cache_ready = is_cache_ready()
-    wavea_receipt_sha256 = None
-    if cache_ready and active_build is not None and wavea_capability == "draft":
-        from src.bilun.api.wavea_activation import activation_for_build
-
-        activation = activation_for_build(active_build)
-        if activation is not None:
-            wavea_capability = "complete-25-v1"
-            wavea_receipt_sha256 = activation.receipt_sha256
     service_ready = db_ok and active_build is not None and cache_ready
     status_code = 200 if service_ready else 503
     status_label = "ok" if service_ready else "degraded"
@@ -208,8 +200,6 @@ def health_check(request: Request = None) -> Response:
         "active_gazette_version": active_gazette_version,
         "version": "1.0.0",
     }
-    if wavea_receipt_sha256 is not None:
-        payload["wavea_receipt_sha256"] = wavea_receipt_sha256
     # Direct Python callers are internal release-identity tests. Every HTTP
     # request gets an injected Request and must authenticate for detail.
     if request is not None:
