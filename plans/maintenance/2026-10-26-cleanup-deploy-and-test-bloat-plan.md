@@ -52,7 +52,7 @@ What it costs: main CI median 12–16 min in October (5–7 min in July–Septem
 **C5. Test budget and brief rules (rules, no code). First.**
 - One regression test per defect, plus one per new branch the fix adds. Extend an existing test before adding a file.
 - New test lines at most 2× the code lines they cover; more needs one sentence of reason in the PR.
-- Use the shared builders (C3) and the catalog-price oracle (WP41); never hand-type a catalog price.
+- Use the builders the module already has and the catalog-price oracle (WP41); never hand-type a catalog price.
 - No mutation-testing ritual; at most 6 mutation tests, and only on request for money-critical logic.
 - No full-suite run inside a package; the PR's CI is the full gate.
 - A change that makes a test obsolete deletes it in the same PR.
@@ -101,6 +101,7 @@ What it costs: main CI median 12–16 min in October (5–7 min in July–Septem
 - The other 32 copied helpers move to the builders only when a later PR touches that file anyway (C5 rule).
 - No assertion changes; each migrated file passes and fails the same tests as before.
 - Expected: about −2K lines.
+- **Result (2026-10-28): stop, nothing migrated.** C4 already removed 31 `_claim` and 31 `_drug_line` copies (1,517 lines). Of the 55 copies left, 51 have distinct bodies, and each differs from the most common defaults in 9–13 fields, so every file would keep a 6–17 line list of its own values: about −300 lines net, under the package's 1K stop line. No `tests/builders.py`; the copies stay until a PR touches their file (C5).
 
 ## Order, checks, stop conditions
 
@@ -117,4 +118,4 @@ What it costs: main CI median 12–16 min in October (5–7 min in July–Septem
 
 ## Expected result
 
-About −62K lines: C2 −56K, C4 −4K, C3 −2K (C6 stopped at step 0, see above). Python test lines go from 161.5K to about 131K, about 1.8× `src/`, falling further under C5. Scripts go from 59.4K to about 39K. No staging ritual, and no runner time spent on Release Hold. The CI gain is reported from the measured durations.
+About −60K lines: C2 −56.4K, C4 −3.7K (C6 and C3 stopped at their gates, see above). Python test lines go from 161.5K to about 133K, about 1.9× `src/`, falling further under C5. Scripts go from 59.4K to about 39K. No staging ritual, and no runner time spent on Release Hold. The CI gain is reported from the measured durations.
