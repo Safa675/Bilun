@@ -152,6 +152,14 @@ def pytest_addoption(parser):
     )
 
 
+@pytest.hookimpl(wrapper=True, optionalhook=True)
+def pytest_xdist_auto_num_workers(config):
+    """`-n auto` counts CPUs only; cap it so the workers fit the container's memory."""
+    from tests.fixtures.xdist_workers import auto_workers, cgroup_memory_limit
+
+    return auto_workers((yield), limit=cgroup_memory_limit())
+
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",

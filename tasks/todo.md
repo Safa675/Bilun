@@ -1,3 +1,25 @@
+## Task: Test workers follow the container's memory, so CI on the VPS stops being OOM-killed (2026-10-28)
+
+### Goal
+`pytest -n auto` starts no more workers than the memory limit of the cgroup it runs in can hold, so main CI on the VPS runner (`BILUN_CI_MEMORY=10g`) is green again; the laptop (16g) and any run without a memory limit keep today's worker count.
+
+### Evidence (2026-10-28)
+- Main CI run 40738317613 (697351f9, #379) failed: `8 failed, 16412 passed`, every failure "worker 'gwN' crashed", gw0–gw7 down one by one 18:06–18:11 UTC, all in `tests/unit/synthetic`.
+- VPS kernel log, same minutes: 9 × "Memory cgroup out of memory: Killed process … (python)" in the job container's scope; "memory: usage 10485760kB, limit 10485760kB". Killed workers held 1.28–1.69 GB anon RSS.
+- `/etc/systemd/system/bilun-ci-watcher.service` sets `BILUN_CI_CPUS=6`, `BILUN_CI_MEMORY=10g`; `ci.yml` runs `pytest -n auto`; xdist 3.8.0 `pytest_xdist_auto_num_workers` reads `PYTEST_XDIST_AUTO_NUM_WORKERS`, psutil, then `sched_getaffinity`; `--cpus` changes none of them, so 8 workers in 10 GB.
+- Laptop: 8 workers in 16 GB (2 GB each) green on every run before the VPS took over.
+
+### Subtasks
+- [x] Measure: `tests/unit/synthetic` with `-n 5` in a 10 GB cgroup (systemd scope), record memory.peak and oom events
+- [x] `tests/conftest.py`: `pytest_xdist_auto_num_workers` hook caps xdist's own count at `memory.max // per-worker budget` (2 GiB: 5 workers in a 10 GB scope peaked at 6.07 GB, 0 OOM kills, 4,740 passed; about 1.2 GB a worker); no limit ("max", no cgroup file) or a set `PYTEST_XDIST_AUTO_NUM_WORKERS` leaves xdist's answer
+- [x] Unit test for the cap (10g, 16g, no limit, env var set)
+- [x] Verify locally: the hook's count under a 10 GB scope; ruff; the new test (10G scope → `created: 5/5 workers`, 16G → 8/8, no limit → 8/8, `PYTEST_XDIST_AUTO_NUM_WORKERS=7` → 7/7)
+- [ ] PR; its CI on the VPS runner green with the capped count visible in the log (`created: N/N workers`)
+- [ ] PR review check (AGENTS §11), merge, main CI green, back on main
+
+### Out of Scope
+The runner/watcher outside the repo (`/root/.local/share/bilun-ci/`), `ci.yml`, the memory limit itself, test speed, and the cleanup plan's packages (next, after this).
+
 ## Task: The bed motors stop expecting the days an ICU claim's own lines pay — EK-2/B 510090 and the EK-2/C ICU packages (2026-10-20)
 
 ### Goal
