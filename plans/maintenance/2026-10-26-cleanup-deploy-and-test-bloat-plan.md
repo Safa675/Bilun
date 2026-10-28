@@ -1,6 +1,6 @@
 # Cleanup plan: deploy tooling and test bloat (2026-10-26, revised 2026-10-28)
 
-**Status: revised draft for Safa. Nothing is deleted or started until he approves this plan.** First measured at `origin/main` on 2026-10-26; re-measured at `72f73aba` on 2026-10-28 (the numbers below are the re-measured ones).
+**Status: approved by Safa 2026-10-28 (D1–D5 below); executed headless on the VPS from 2026-10-28.** First measured at `origin/main` on 2026-10-26; re-measured at `72f73aba` on 2026-10-28 (the numbers below are the re-measured ones).
 
 **What changed in the revision (2026-10-28):** C2 moves up (staging does not use `scripts/deploy`, so it need not wait for C1); C3 shrinks (the copied helpers are mostly not identical); a new C6 covers the synthetic-data tests the first draft left out; C2 archives the lane under a git tag before deleting it and keeps one idea as a short note; C5 adds a weekly size report and four brief rules; the expected totals are corrected (the first draft subtracted 10.3K JSON lines from a Python-only count).
 
@@ -39,13 +39,13 @@ Why it happened:
 
 What it costs: main CI median 12–16 min in October (5–7 min in July–September), plus up to 14 min queue on the laptop runners; the full suite takes ~18 min on 4 VPS workers; a 1-kuruş price fix (#369) had to touch 91 files. Since #200 the 3,150 strict-lane tests are deselected from default CI, so deleting them shrinks the repo far more than it shortens CI; CI time is measured separately (see "Every package").
 
-## Decisions for Safa (recommended option first)
+## Decisions (Safa, 2026-10-28)
 
-- **D1. The strict release lane is finished.** Before deletion its last commit is tagged `archive/strict-lane` and the tag is pushed (one command brings it back); then its tooling is deleted. Alternative: keep it.
-- **D2. Wave A on real data:** one environment flag `BILUN_WAVEA_ENABLED` replaces the signed-receipt activation. It is on in `synthetic_demo` mode, as today, and off for real data until you turn it on. Alternative: always on.
-- **D3. Staging update:** one short script; the VPS fetches `main` itself with its existing read-only deploy key, so no more bundles from the laptop. Alternative: keep the laptop bundle and only slim the wrapper.
+- **D1. The strict release lane is finished.** Before deletion its last commit is tagged `archive/strict-lane` and the tag is pushed (one command brings it back); then its tooling is deleted.
+- **D2. Wave A is always on:** the signed-receipt activation goes and no flag replaces it; a build shows its Wave A evidence in every data mode when the evidence itself is complete (the index, schema and row-count checks stay). Chosen over the recommended `BILUN_WAVEA_ENABLED` flag (off for real data).
+- **D3. Staging update:** one short script; the VPS fetches `main` itself with its existing read-only deploy key, so no more bundles from the laptop.
 - **D4. The old frozen pair** (5c89ed53, ports 8001/3000, no traffic since Caddy sends app.bilun.tech to staging): left running for now. Retiring it is a later step.
-- **D5. Off-limits files:** approving this plan allows edits to exactly these, which agents normally may not touch: `.github/workflows/strict-release.yml`, `.github/workflows/deploy.yml`, `.github/workflows/ci.yml` (one path), the `docs/operations/` files named in C2, and `data/synthetic/demo_vignettes.json`.
+- **D5. Off-limits files:** approved; this plan allows edits to exactly these, which agents normally may not touch: `.github/workflows/strict-release.yml`, `.github/workflows/deploy.yml`, `.github/workflows/ci.yml` (one path), the `docs/operations/` files named in C2, and `data/synthetic/demo_vignettes.json`.
 
 ## Packages (one PR each, in this order)
 
@@ -66,9 +66,10 @@ What it costs: main CI median 12–16 min in October (5–7 min in July–Septem
 - Tag first (D1). Then delete `scripts/deploy/` (51 files, 20,364 lines), `tests/unit/deploy/` (62 files, 33,774 lines: 23,461 Python + 10,313 JSON) and `tests/integration/deploy/` (2 files, 1,362 lines).
 - Delete `.github/workflows/strict-release.yml` and `deploy.yml` (113 lines). The latter is "Release Hold": after every green main CI it only prints "Production release held", and it holds a laptop runner for 3–28 minutes.
 - In the app:
-  - `src/bilun/api/wavea_activation.py`'s receipt machinery (325 lines) and the `scripts.deploy` imports in `src/bilun/api/startup.py` become D2's flag.
-  - `src/bilun/api/routes/wavea_gate.py` reads the flag.
-  - `tests/unit/api/test_product_release_imports.py` goes; the activation tests in `tests/unit/api/test_claim_compliance_pipeline.py` move to the flag. `release_identity` is product code and stays.
+  - `src/bilun/api/wavea_activation.py` (the receipt machinery, 325 lines) and its loading in `src/bilun/api/startup.py` go (D2).
+  - `src/bilun/api/routes/wavea_gate.py`: `complete_build_evidence_available` drops the receipt-or-synthetic-demo condition and keeps the index, schema and row-count checks; `synthetic_demo_serves_draft_evidence` goes if nothing else reads it.
+  - `src/bilun/api/__init__.py` health: the receipt lookup and `wavea_receipt_sha256` go; what it reports as `wavea_capability` is checked against the frontend before it changes.
+  - `tests/unit/api/test_product_release_imports.py` goes; the activation tests in `tests/unit/api/test_claim_compliance_pipeline.py` become one test that a complete build shows its evidence in every mode. `release_identity` is product code and stays.
 - Keep `verify_public_assets.py`: move it to `scripts/ci/`, because the CI frontend job and `scripts/ci_local.sh` use it.
 - Checked 2026-10-28: the staging build (`build-release.sh`) calls only `scripts/bilun/build_cache.py`, nothing in `scripts/deploy`; the frozen pair runs from its own bundle under `/root`, not from the repo. So C2 does not wait for C1.
 - Docs: `docs/operations/RELEASE-LANES.md`, `single-vps-wavea-release.md`, `AI-RUNBOOK.md` and `public-billing-access.md` describe the current staging update and lose the lane. The deployment plans in `plans/deployment/` get a "historical" line. Delete `data/synthetic/demo_vignettes.json` if nothing reads it.
