@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import signal
@@ -31,6 +32,14 @@ def github(arguments, payload=None):
         code = status.group(1) if status else "unavailable"
         raise RuntimeError(f"GitHub runner API failed: HTTP {code} (response withheld)")
     return json.loads(result.stdout) if result.stdout.strip() else None
+
+
+def resource_limits(environ=os.environ):
+    """CPU and memory of one job container. The defaults fit the laptop; a host that also
+    serves the app (the VPS runs staging) sets BILUN_CI_CPUS and BILUN_CI_MEMORY lower."""
+    cpus = environ.get("BILUN_CI_CPUS", "8")
+    memory = environ.get("BILUN_CI_MEMORY", "16g")
+    return [f"--cpus={cpus}", f"--memory={memory}", f"--memory-swap={memory}"]
 
 
 def build(image):
@@ -63,8 +72,8 @@ def serve_one(image, index):
         arguments = [
             "docker", "run", "--rm", "--interactive", "--init", "--name", identity,
             "--read-only", "--user", "1001:1001", "--cap-drop=ALL",
-            "--security-opt=no-new-privileges", "--cpus=8", "--memory=16g",
-            "--memory-swap=16g", "--pids-limit=1024", "--shm-size=1g",
+            "--security-opt=no-new-privileges", *resource_limits(),
+            "--pids-limit=1024", "--shm-size=1g",
             "--mount", f"type=volume,source={volume},target=/workspace",
             "--tmpfs", "/runner:rw,exec,nosuid,nodev,size=2g,uid=1001,gid=1001,mode=0700",
             "--tmpfs", "/workspace/_temp:rw,exec,nosuid,nodev,size=2g,uid=1001,gid=1001,mode=0700",
