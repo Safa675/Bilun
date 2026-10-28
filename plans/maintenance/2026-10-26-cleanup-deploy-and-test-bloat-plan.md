@@ -94,6 +94,7 @@ What it costs: main CI median 12–16 min in October (5–7 min in July–Septem
 - Then: the checks become data-driven (a table of expectations over the built cohort) where they share a shape; every assertion survives; `build --check` stays the reproducibility gate.
 - These tests guard the data Ahmet Bey reviews: an assertion that cannot be kept is a stop, not a deletion.
 - Expected: −8K to −12K lines (estimate until step 0 measures it).
+- **Step 0 result (2026-10-28): stop.** The three files are already table-driven: 4,463 of their 15,064 lines are data tables (`CASES`, `PAIRS`, `ROUTE_ITEMS`), 94 of the 443 test functions are parametrized (1,858 node ids), and after normalising literals and names no two test bodies share a shape. An honest cut with every assertion kept is about 0.1K–0.2K lines (a shared `data` fixture, five identical helpers, 11 `PAIRS` rows that repeat a `CASES` row); even a row per test would save at most ~1.3K. Those small items wait for a PR that touches the files anyway (C5). (Measured by AST grouping of the 443 functions at four normalisation levels, collection only.)
 
 **C3. Shared test bill builders (small).**
 - `tests/builders.py` with the two most copied pieces only: `_claim` (77 files, 1,596 lines) and `_drug_line` (40 files, 1,139 lines). Each call site keeps its own defaults as explicit arguments.
@@ -116,4 +117,4 @@ What it costs: main CI median 12–16 min in October (5–7 min in July–Septem
 
 ## Expected result
 
-About −70K to −74K lines: C2 −56K, C4 −4K, C6 −8K to −12K, C3 −2K. Python test lines go from 161.5K to about 120K, about 1.7× `src/`, falling further under C5. Scripts go from 59.4K to about 39K. No staging ritual, and no runner time spent on Release Hold. The CI gain is reported from the measured durations.
+About −62K lines: C2 −56K, C4 −4K, C3 −2K (C6 stopped at step 0, see above). Python test lines go from 161.5K to about 131K, about 1.8× `src/`, falling further under C5. Scripts go from 59.4K to about 39K. No staging ritual, and no runner time spent on Release Hold. The CI gain is reported from the measured durations.
