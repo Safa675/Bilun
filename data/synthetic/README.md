@@ -27,7 +27,7 @@ The cohort is built from the 42 showcase recipes (one per bill) in `data/synthet
 | `pathways/` | One care pathway per showcase story (see its `README.md`) |
 | `faults/` | The fault registry (`fault_registry.yaml`) and the S1 itemized sibling pathway (see its `README.md`) |
 | `reference/` | Reference tables and notes the pathways and the lab values draw on: code sets, ICD-10, EK-2B chapters, the drug crosswalk, the lab reference table, public-statistics anchors and their sources |
-| `demo_vignettes.json` | Kept byte-identical because the paused strict release lane pins it (`scripts/deploy/generate_candidate_source_roster.py`); no code in `scripts/synthetic/` reads it any more |
+| `demo_vignettes.json` | Kept because an archived audit script reads it (`reports/synthetic-data/2026-10-14-audit-scripts/money_expected/k_extra.py`); no code in `scripts/synthetic/` reads it any more |
 
 The app reads `sut/claims/` through `load_sut_claim_dataset` and `sut/clean/` through `src/bilun/cache/`; `synthetic_demo` mode refuses any directory outside `data/synthetic/sut` (`src/bilun/domain/claims/config.py`).
 

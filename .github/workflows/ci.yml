@@ -102,4 +102,4 @@ jobs:
         run: npm run build
 
       - name: Check public assets for private files and source maps
-        run: python ../scripts/deploy/verify_public_assets.py --frontend .
+        run: python ../scripts/ci/verify_public_assets.py --frontend .

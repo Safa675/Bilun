@@ -1,3 +1,30 @@
+## Task: Delete the strict release lane — cleanup package C2 (2026-10-28)
+
+### Goal
+The strict release lane (its scripts, tests, workflows and the signed Wave A receipt) is gone, Wave A evidence shows for every complete draft build in every data mode (D2), and the engine, the demo data and every bill report are untouched.
+
+Plan: `plans/maintenance/2026-10-26-cleanup-deploy-and-test-bloat-plan.md`, section C2, decisions D1–D5 (Safa, 2026-10-28). The tag `archive/strict-lane` is created by the orchestrator.
+
+### Subtasks
+- [x] Move `verify_public_assets.py` (and its test) out of the lane; update `ci.yml` and `scripts/ci_local.sh`; drop `-m "not strict_release"`.
+- [x] Delete `scripts/deploy/`, `tests/unit/deploy/`, `tests/integration/deploy/`, `strict-release.yml`, `deploy.yml`.
+- [x] `tests/conftest.py`: drop the `strict_release` marker and its deselection hook.
+- [x] Delete `src/bilun/api/wavea_activation.py`; strip its use from `startup.py`, the health endpoint and `routes/wavea_gate.py` (keep the index, schema and row-count checks; drop `synthetic_demo_serves_draft_evidence`).
+- [x] Tests: delete the obsolete ones, merge the three activation tests into one "complete build shows its evidence whatever the data mode".
+- [x] Rule-surfacing audit: drop the activation token from the gate check and its test.
+- [x] Docs: the four `docs/operations` files lose the lane; `plans/deployment/*` get a historical line; add `docs/operations/release-same-bills-check.md`; `data/synthetic/README.md` line on `demo_vignettes.json`.
+- [x] Checks: ruff, the touched API/script tests (`-n 2`), import of `src.bilun.api`, no diff under the engine/data paths, the grep of step 9.
+
+### Out of Scope
+The staging script (C1), the old frozen pair, Caddy, the engine and its reports, `src/bilun/domain`, any data file other than `data/synthetic/README.md`, `release_identity` and the `verified-load-only` policy, the rule-surfacing audit's `complete-25-v1` wording (a domain constant), pushing and the PR.
+
+### Review (2026-10-28)
+- Net −56,377 lines (+126 / −56,503, 141 files, against `origin/main` b0fbde1d after the rebase over #380; the same against the cut 697351f9). No change under `src/bilun/domain`, `scripts/synthetic`, `scripts/bilun`, `scripts/sut` or `data/` except the `data/synthetic/README.md` line.
+- Health: `wavea_capability` reports the build index's own capability (`draft` on a complete build); `wavea_receipt_sha256` and `complete-25-v1` are gone from it. Readers: `tests/unit/api/test_release_identity.py`, `test_health_cache_connections.py`; no frontend or script reads either key (the frontend's `wavea_capability_unavailable` is an evidence `unavailable_reason`).
+- Three tests outside the merged set assumed a closed gate without a receipt and were adapted to D2 in `test_claim_compliance_pipeline.py`: the ingestion test now expects the stored compliance block and checks the five original rules on its projection; "hidden until completed build" closes the gate by an incomplete index (`n_patients + 1`); the session-gate test expects `available` true.
+- `tests/unit/deploy/test_verify_public_assets.py` moved with its script to `tests/unit/scripts/`.
+- Checks (rebased tree): ruff clean on `src/ scripts/`; `import src.bilun.api` ok; `tests/unit/api` + `test_agent_checkers.py`, `test_rule_surfacing_inventory.py`, `test_verify_public_assets.py`, `test_xdist_workers.py` 668 passed (`-n 2`); the eight domain tests that hit the gated routes 324 passed (before the rebase); whole-suite collection 16,437 tests, no error; `build_rule_surfacing_inventory.py --check` exit 0.
+
 ## Task: Test workers follow the container's memory, so CI on the VPS stops being OOM-killed (2026-10-28)
 
 ### Goal

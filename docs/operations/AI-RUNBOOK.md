@@ -1,6 +1,6 @@
 # AI operations handoff
 
-Verified on 2026-10-09 for `Safa675/Bilun`; checkout: `~/work/bilun-land`. Work sequentially, preserve branches and merge only authorized PRs with green default backend/frontend CI on their exact head SHA. No force-push; no screenshot, pixel or byte-profile gates in the fast lane.
+Verified on 2026-10-09 for `Safa675/Bilun`; checkout: `~/work/bilun-land`. Work sequentially, preserve branches and merge only authorized PRs with green default backend/frontend CI on their exact head SHA. No force-push; no screenshot, pixel or byte-profile gates.
 
 ## Laptop CI
 
@@ -13,7 +13,7 @@ TMPDIR="$HOME/.cache/bilun-land" python3 tools/ci/laptop_runner.py --image bilun
 runner_pid=$!
 ```
 
-`--jobs 2` serves two jobs sequentially; two terminals can serve backend/frontend concurrently. Retain each PID; repeat after quota exhaustion if checks remain queued. Finish merge/push CI, Release Hold and path-triggered Strict Release audits. Never stop a running job.
+`--jobs 2` serves two jobs sequentially; two terminals can serve backend/frontend concurrently. Retain each PID; repeat after quota exhaustion if checks remain queued. Finish merge/push CI. Never stop a running job.
 
 After all jobs finish, verify `busy=false`; stop your owned supervisor only if still running:
 
@@ -51,7 +51,7 @@ Verify the PR head still matches its green CI before the authorized merge:
 gh api -X PUT "repos/Safa675/Bilun/pulls/$pr_number/merge" -f merge_method=squash -f "sha=$head_sha"
 ```
 
-Then verify main contains the tested tree and finish its push workflows before cleanup. CI workflow name and Release Hold trigger must remain unchanged.
+Then verify main contains the tested tree and finish its push workflows before cleanup. The CI workflow name must remain unchanged.
 
 ## Staging: one operator command
 
@@ -85,7 +85,6 @@ Limits of the reports: `sut_delta.py` slices the current curated files by date, 
 
 ## Release lanes and pin traps
 
-- Fast lane: **staging only, synthetic data only** (`BILUN_DATA_MODE=synthetic_demo`). This runbook grants no production deployment permission.
-- Strict lane: **PAUSED**; read [RELEASE-LANES.md](RELEASE-LANES.md). Reopen before non-synthetic data, real claims or money enters the product, only after Safa confirms the trigger; add a real-claims launch path deliberately. Keep strict code/pins/runbook. Default pytest excludes `strict_release`; explicit `-m strict_release` audits it. Strict failures do not block the paused fast lane.
-- `src/bilun/api/routes/billing.py::_serialize_billing_report` must stay self-contained: the deploy rehearsal extracts only this function by AST and executes it in an isolated namespace. Keep helpers nested; no new module-level helpers.
-- `data/gazette/sut_coverage_evidence.json:file_sha256` pins `pyproject.toml` and other dependencies, including pytest metadata bytes. Put markers/default collection policy in `tests/conftest.py`; never silently refresh evidence hashes or strict pins for green CI.
+- **Staging only, synthetic data only** (`BILUN_DATA_MODE=synthetic_demo`). This runbook grants no production deployment permission. Before non-synthetic data, real claims or money enters the product, Safa decides the release path; a real-claims launch path is added deliberately. See [RELEASE-LANES.md](RELEASE-LANES.md).
+- The strict release lane was deleted on 2026-10-28; the git tag `archive/strict-lane` holds it.
+- `data/gazette/sut_coverage_evidence.json:file_sha256` pins `pyproject.toml` and other dependencies, including pytest metadata bytes. Put markers/default collection policy in `tests/conftest.py`; never silently refresh evidence hashes for green CI.

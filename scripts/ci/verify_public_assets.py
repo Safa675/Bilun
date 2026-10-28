@@ -2,7 +2,7 @@
 
 This is a bounded release gate, not a guarantee that browser code is secret.
 Run against the exact frontend artifact (and retained prior artifacts):
-    python -m scripts.deploy.verify_public_assets --frontend frontend
+    python -m scripts.ci.verify_public_assets --frontend frontend
 """
 
 from __future__ import annotations

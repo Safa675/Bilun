@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from scripts.deploy.verify_public_assets import inspect_assets, main
+from scripts.ci.verify_public_assets import inspect_assets, main
 
 
 @pytest.fixture

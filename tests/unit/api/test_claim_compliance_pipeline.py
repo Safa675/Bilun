@@ -460,10 +460,8 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
         response = client.get(f"/api/billing-report/{pid}")
         assert response.status_code == 200
         actual = response.json()
-        assert actual["claim_compliance"] == original_five_report_payload(expected)[
-            "claim_compliance"
-        ]
-        block = actual["claim_compliance"]
+        assert actual["claim_compliance"] == expected["claim_compliance"]
+        block = original_five_report_payload(actual)["claim_compliance"]
         assert {_identity(row) for row in block["findings"]} == {
             identity for identity in _EXPECTED_FINDINGS if identity[0] == pid
         }
@@ -482,10 +480,8 @@ def test_normal_ingestion_reports_cache_and_http_scopes(cached_pipeline, compute
         assert response.status_code == 200
         actual = response.json()
         assert (actual["patient_id"], actual["claim_id"], actual["scope"]) == (pid, cid, "bill")
-        assert actual["claim_compliance"] == original_five_report_payload(expected)[
-            "claim_compliance"
-        ]
-        block = actual["claim_compliance"]
+        assert actual["claim_compliance"] == expected["claim_compliance"]
+        block = original_five_report_payload(actual)["claim_compliance"]
         assert {_identity(row) for row in block["findings"]} == {
             identity for identity in _EXPECTED_FINDINGS if identity[:2] == (pid, cid)
         }
@@ -571,7 +567,7 @@ def test_wavea_evidence_hidden_until_completed_build(cached_pipeline):
     try:
         build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
         wavea_index = read_json_payload(con, "wavea_evidence_index", build_id)
-        wavea_index["capability"] = "draft"
+        wavea_index["n_patients"] += 1
         upsert_single_json_table(con, "wavea_evidence_index", build_id, wavea_index)
     finally:
         con.close()
@@ -646,35 +642,6 @@ def test_v2_capability_string_toggle_cannot_publish_unattested_evidence(cached_p
     assert {row["rule_id"] for row in patient["claim_compliance"]["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
 
 
-def test_v2_pinned_activation_opens_complete_draft_build(cached_pipeline, monkeypatch):
-    from src.bilun.api import wavea_activation
-
-    client, _, _, _ = cached_pipeline
-    con = connect(state._runtime.canonical_cache_db_path)
-    try:
-        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
-        index = read_json_payload(con, "wavea_evidence_index", build_id)
-        assert index["capability"] == "draft"
-    finally:
-        con.close()
-    monkeypatch.setattr(
-        wavea_activation,
-        "_startup_activation",
-        wavea_activation.WaveAActivation(
-            release_id="test-release", ci_run_id="123", code_sha="a" * 40,
-            source_roster_sha256="b" * 64, cache_build_id=build_id,
-            cache_sha256="c" * 64, sidecar_sha256="d" * 64,
-            receipt_sha256="e" * 64,
-        ),
-    )
-    index_response = client.get("/api/wavea-evidence-index").json()
-    patient_response = client.get("/api/billing-report/P1").json()
-    assert index_response["available"] is True
-    assert index_response["counts"]["by_group"] == index["counts"]["by_group"]
-    assert patient_response["claim_reviews"]["available"] is True
-    assert patient_response["claim_advisories"]["available"] is True
-
-
 _DEMO_SOURCE = {
     "mode": "synthetic_demo", "is_synthetic": True,
     "label": "Synthetic SUT demo claim data", "notice": "Demo data only.",
@@ -694,30 +661,45 @@ def _stamp_data_source(source):
         con.close()
 
 
-def test_synthetic_demo_build_shows_the_draft_evidence_without_a_receipt(cached_pipeline):
-    from src.bilun.api import wavea_activation
-
-    client, index, patients, bills = cached_pipeline
-    _stamp_data_source(_DEMO_SOURCE)
-    assert wavea_activation._startup_activation is None
+@pytest.mark.parametrize(
+    "source",
+    [
+        _DEMO_SOURCE,
+        {"mode": "real_claims", "is_synthetic": False, "label": "Hospital claim data", "notice": "Supplied."},
+    ],
+    ids=["synthetic_demo", "real_claims"],
+)
+def test_a_complete_draft_build_shows_its_wavea_evidence_whatever_the_data_mode(cached_pipeline, source):
+    client, _, patients, bills = cached_pipeline
+    _stamp_data_source(source)
+    con = connect(state._runtime.canonical_cache_db_path)
+    try:
+        build_id = get_active_build_id(con, scope=BILUN_BUILD_SCOPE)
+        wavea_index = read_json_payload(con, "wavea_evidence_index", build_id)
+    finally:
+        con.close()
+    assert wavea_index["capability"] == "draft"
     for path, stored in (
         ("/api/billing-report/P1", patients["P1"]),
         ("/api/billing-report/P1/bills/C-A", bills["P1::C-A"]),
     ):
         payload = client.get(path).json()
+        assert payload["data_source"]["mode"] == source["mode"]
         for field in _WAVEA_BLOCKS:
             assert payload[field]["available"] is True
             assert payload[field] == stored[field]
         assert payload["wavea_coverage"] == stored["wavea_coverage"]
         assert payload["wavea_coverage"]["available"] is True
-        assert payload["data_source"]["mode"] == "synthetic_demo"
         # The evidence stays beside the headline numbers; none of them moves.
         for field in ("recommended_actions", "action_count", "audit_exposure_try", "sgk_uplift_try", "total_recoverable_try"):
             assert payload[field] == stored[field]
-        # The compliance block is served as stored, with the evaluation identities the receipt gate strips.
+        # The compliance block is served as stored, with the evaluation identities a closed gate strips.
         assert payload["claim_compliance"] == stored["claim_compliance"]
         assert all("evaluation_id" in row for row in payload["claim_compliance"]["evaluations"])
-    for path in ("/api/wavea-evidence-index", "/api/wavea-evidence/P1", "/api/wavea-evidence-rows"):
+    index_response = client.get("/api/wavea-evidence-index").json()
+    assert index_response["available"] is True
+    assert index_response["counts"]["by_group"] == wavea_index["counts"]["by_group"]
+    for path in ("/api/wavea-evidence/P1", "/api/wavea-evidence-rows"):
         assert client.get(path).json()["available"] is True
     cohort = client.get("/api/compliance-index").json()
     assert cohort["claim_compliance"]["counts"] == {
@@ -728,35 +710,6 @@ def test_synthetic_demo_build_shows_the_draft_evidence_without_a_receipt(cached_
         )
         for status in ("evaluated", "missing_inputs", "unavailable")
     }
-
-
-@pytest.mark.parametrize(
-    "source",
-    [
-        {"mode": "real_claims", "is_synthetic": False, "label": "Hospital claim data", "notice": "Supplied."},
-        {"mode": "synthetic_demo", "is_synthetic": False, "label": "demo", "notice": "x"},
-        {"mode": "unavailable", "is_synthetic": None, "label": "n/a", "notice": "x"},
-        None,
-    ],
-    ids=["real_claims", "synthetic_not_marked_synthetic", "unavailable", "no_provenance"],
-)
-def test_without_demo_provenance_the_receipt_gate_stays_closed(cached_pipeline, source):
-    client, _, patients, bills = cached_pipeline
-    if source is not None:
-        _stamp_data_source(source)
-    for path in ("/api/billing-report/P1", "/api/billing-report/P1/bills/C-A"):
-        payload = client.get(path).json()
-        for field in _WAVEA_BLOCKS:
-            assert payload[field] == {
-                "available": False, "unavailable_reason": "wavea_capability_unavailable",
-                "total_rows": None, "rows": [], "has_more": False,
-            }
-        assert payload["wavea_coverage"] is None
-        assert {row["rule_id"] for row in payload["claim_compliance"]["evaluations"]} == ORIGINAL_FIVE_RULE_IDS
-    cohort = client.get("/api/compliance-index").json()
-    assert not any(row.get("rule_id") in _FOCUSED_IDS for row in cohort["rows"])
-    for path in ("/api/wavea-evidence-index", "/api/wavea-evidence/P1", "/api/wavea-evidence-rows"):
-        assert client.get(path).json()["available"] is False
 
 
 def test_demo_provenance_does_not_open_an_incomplete_build(cached_pipeline):
@@ -1092,7 +1045,7 @@ def test_wavea_routes_share_production_session_gate(cached_pipeline, monkeypatch
             assert authenticated.status_code == 200
         for path in ("/api/wavea-evidence-index", "/api/wavea-evidence-rows"):
             assert client.post(path, json={}).status_code == 200
-            assert authenticated.json()["available"] is False
+            assert authenticated.json()["available"] is True
     finally:
         client.close()
 
