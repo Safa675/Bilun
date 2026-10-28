@@ -56,17 +56,11 @@ Then verify main contains the tested tree and finish its push workflows before c
 ## Staging: one operator command
 
 ```bash
-~/work/bilun-deploy-plan/staging-ops/staging-update.sh
-ssh -p 8443 -L 3100:127.0.0.1:3100 root@169.58.50.165
+ssh contabo-vps 'git -C /opt/Bilun pull -q --ff-only && /opt/Bilun/scripts/staging/update.sh'   # optional SHA argument
+ssh -p 8443 -L 3100:127.0.0.1:3100 root@169.58.50.165       # staging UI at http://localhost:3100
 ```
 
-The tunnel serves `http://localhost:3100`. The wrapper uses existing `contabo-vps` SSH configuration (same host/port), pins latest `origin/main`, and requires its newest exact-SHA CI/main/push run to be completed/successful. Before transfer, activation and cleanup it checks health, the live pair's MainPIDs and start times against the `LIVE_PIDS` pin in the script (a VPS reboot changes them; see "After a VPS reboot"), authorized staging links and **4 GiB available RAM**.
-
-An available ancestor produces a thin bundle; otherwise full; same-SHA updates are no-ops. Remote size/SHA-256 must match. Builds use an 8 GiB staging scope; cache rebuild depends on evaluator/data/dependency changes. Only `bilun-staging-backend.service` and `bilun-staging-frontend.service` restart; health on `8101` and login on `3100` must pass. Failed startup restores prior staging when safe. Keep live, Caddy, UFW, Tailscale, OS packages and keys untouched; only wrapper-proven VPS cleanup is allowed.
-
-Interrupted transfer: `~/work/bilun-deploy-plan/staging-ops/staging-update.sh --retry "$staging_run_id"`, using its printed `update-YYYYMMDDTHHMMSS-xxxxxxxx` ID. Retry retains original SHA/bundle/owned directory, skips a verified complete upload and retransmits a partial one; fresh invocation selects latest main. Preserve laptop `runs/<id>/result.json`; report bytes, transfer/total seconds, cache reuse and exact live health/PID equality. First thin transfer to `9b9b9e2f`: **28,549 bytes / 2.48 s; total 145.23 s; cache reused**.
-
-After a VPS reboot the live PIDs change, and the wrapper stops before any VPS write (`update_exit: not_started` in `result.json`, "Canlı backend beklenen PID … değil"). Do not loosen the check. Read the live pair first, read-only: `ssh contabo-vps 'systemctl show bilun-backend.service bilun-frontend.service -p MainPID -p WorkingDirectory -p ActiveEnterTimestamp'`, and confirm that both `WorkingDirectory` paths are inside the frozen `5c89ed53` bundle (`/root/bilun-release-5c89ed53-…/bundle/`). Only then change the `LIVE_PIDS` line and its dated note in the operator's `staging-update.sh` (`~/work/bilun-deploy-plan/staging-ops`, outside this repo), keep a backup next to it, and rerun. An AI session asks Safa before re-pinning. The current pin is whatever that line says; this runbook does not repeat it.
+`scripts/staging/update.sh` runs on the VPS as root and fetches `main` itself with the VPS's read-only deploy key (no bundle from the laptop). It refuses a commit that is not on `main` or has no green CI run, waits while a CI job runs (it holds the CI watcher's lock, so a build never runs beside a 10 GB CI container), builds into a new `/opt/bilun-staging/releases/<sha>-<stamp>` with that release's own `scripts/staging/build.sh` under `MemoryMax=8G`, and stops the build if available RAM falls below 4 GiB. The cache is rebuilt only when the evaluator, data or dependencies changed. It then switches `current`, restarts only `bilun-staging-backend.service` and `bilun-staging-frontend.service`, waits for health on `8101` and `/login` on `3100` (60 tries), and restores the previous release if they do not come up. The old frozen pair (8001/3000) must keep its MainPIDs and health. The last 3 releases and their caches are kept. Same-SHA runs are no-ops. Keep live, Caddy, UFW, Tailscale, OS packages and keys untouched.
 
 ## Local SUT package ingest
 
