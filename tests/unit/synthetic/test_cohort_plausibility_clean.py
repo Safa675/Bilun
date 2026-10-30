@@ -8,9 +8,9 @@ that they say WHERE (the patient, the table and the key) and WHAT. Nothing here 
 
 The contract:
 1. the committed clean tables raise no problem with the committed claims tables; only two ids read
-   the bills (`lab.result_sets_match_bill`, `rx.matches_billed_line`), the other ten never read a
+   the bills (`lab.result_sets_match_bill`, `rx.matches_billed_line`), the other eleven never read a
    claims table and raise nothing when they are given none;
-2. with the claims tables of the nine clean twins, ten ids still raise none; the two ids that compare
+2. with the claims tables of the nine clean twins, eleven ids still raise none; the two ids that compare
    a clean table with the bill raise exactly the lines that story S1's fault adds (the clean tables
    are built from the faulty bills), derived here from the faulty-versus-twin anti-join of the
    billed lines, and the twin world (twin claims, clean tables without those lines) is clean for all
@@ -114,6 +114,7 @@ ROUTE = "rx.route_vs_product"
 DOSE = "rx.dose_unit"
 REQUIRED = "rx.required_fields"
 VITALS = "ana.vitals_bounds"
+COMPLAINT = "ana.complaint_not_diagnosis"
 
 STORIES = tuple(range(1, cohort.patient_count() + 1))  # patient numbers; one bill each
 PATIENT = {n: patient_id(n) for n in STORIES}
@@ -1142,6 +1143,28 @@ CASES: list[Case] = [
         says="donem is 2025 but RECETE_TARIH is in 2026",
         label="wrong_donem",
     ),
+    # --- ana.complaint_not_diagnosis (S2's stay: J44.0 is its primary; the review of 2026-10-30, A4)
+    Case(
+        COMPLAINT,
+        _vital(2, YAKINMA="Nefes darlığı arttı; J44.0 tanılı hasta."),
+        where=VITALS_2,
+        says="YAKINMA names the ICD-10 code J44.0",
+        label="icd_code_in_complaint",
+    ),
+    Case(
+        COMPLAINT,
+        _vital(2, YAKINMA="Kronik obstrüktif akciğer hastalığı, akut alt solunum yolu enfeksiyon ile."),
+        where=VITALS_2,
+        says="YAKINMA repeats the diagnosis name of J44.0",
+        label="diagnosis_name_as_complaint",
+    ),
+    Case(
+        COMPLAINT,
+        _vital(2, YAKINMA="   "),
+        where=VITALS_2,
+        says="YAKINMA is blank",
+        label="blank_complaint",
+    ),
     # --- ana.vitals_bounds (S2: KB-S 142, KB-D 84, SpO2 88, 170 cm, 68 kg, BMI 23.5)
     Case(
         VITALS,
@@ -1241,7 +1264,7 @@ CASES: list[Case] = [
 def test_every_check_id_has_a_function_a_short_meaning_and_a_mutation_case() -> None:
     assert set(CHECK_FUNCTIONS) == set(CHECKS)
     assert {case.check for case in CASES} == set(CHECKS)
-    assert len(CHECKS) == 12
+    assert len(CHECKS) == 13
     for check, meaning in CHECKS.items():
         assert 0 < len(meaning) <= 120, f"{check}: the meaning has {len(meaning)} characters"
     assert all(re.fullmatch(r"[a-z]+\.[a-z_]+", check) for check in CHECKS)
@@ -1661,7 +1684,7 @@ def test_only_restricts_the_run_and_unknown_ids_are_refused(built, clean, contex
 
 
 # The tables each id reads, written down here: (clean tables, claims tables). Only two ids read the
-# bills; the other ten never read a claims table.
+# bills; the other eleven never read a claims table.
 READS = {
     VALUE_BOUNDS: ((TABLE_LAB,), ()),
     HEMOGRAM: ((TABLE_LAB,), ()),
@@ -1675,6 +1698,7 @@ READS = {
     DOSE: ((TABLE_RECETE,), ()),
     REQUIRED: ((TABLE_RECETE,), ()),
     VITALS: ((TABLE_ANADATA,), ()),
+    COMPLAINT: ((TABLE_ANADATA,), ()),
 }
 
 
@@ -1864,6 +1888,7 @@ SCALE_CASES = (
     "rx.dose_unit-tablet_on_an_injection",
     "rx.required_fields-wrong_kohort",
     "ana.vitals_bounds-spo2_120",
+    "ana.complaint_not_diagnosis-icd_code_in_complaint",
 )
 
 

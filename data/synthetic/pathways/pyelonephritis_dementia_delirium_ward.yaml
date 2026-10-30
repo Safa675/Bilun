@@ -28,6 +28,11 @@ nights:
   basis: judgment
   source: "Story S4 has 5 nights. Min 4: the fixed 5-day ceftriaxone course (admit..admit+4) must end by discharge. Max 7: two nights past it, author's judgment."
 
+complaint:
+  text: "Üç gündür yüksek ateş, titreme ve idrarda yanma; iki gündür bilinci bulanık, huzursuz, yemek yemiyor (kızının ifadesi)."
+  basis: judgment
+  source: "Story S4: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: N10
     name: "AKUT TÜBÜLO-İNTERSTİSYEL NEFRİT"

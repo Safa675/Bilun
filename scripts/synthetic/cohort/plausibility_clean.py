@@ -2,7 +2,7 @@
 
 The checks read `lab_clean`, `recete_clean` and `anadata_clean` of one dataset. Only two ids read the
 bills (the claims tables `claim_headers`, `procedure_claim_lines` and `drug_claim_lines`):
-`lab.result_sets_match_bill` and `rx.matches_billed_line`; the other ten never read a claims table.
+`lab.result_sets_match_bill` and `rx.matches_billed_line`; the other eleven never read a claims table.
 They report what a clinician or an auditor would call implausible: a lab value no patient can have,
 a hemogram or a blood gas that contradicts its own arithmetic, a flag or a unit that is not the
 reference's, result sets that do not match the billed lab lines, a route or a dose unit that
@@ -62,6 +62,7 @@ TABLE_DRUGS = "drug_claim_lines.parquet"
 
 LAB_REFERENCE_PATH = "data/synthetic/reference/lab_reference.csv"
 DRUG_CROSSWALK_PATH = "data/synthetic/reference/drug_crosswalk.parquet"
+ICD10_PATH = "data/synthetic/reference/icd10_tr.parquet"
 
 # The columns each table must have; a table without one is reported by name, not by a Polars error.
 # Every column a check reads is listed (a test drops each column of the committed files in turn).
@@ -76,7 +77,7 @@ REQUIRED_COLUMNS: dict[str, tuple[str, ...]] = {
     ),
     TABLE_ANADATA: (
         "HASTA_ID", "SQ_EPISODE", "EPISODE_TARIH", "TANI_YASI", "CINSIYET", "KB-S", "KB-D", "Nabiz",
-        "SPO2", "Boy", "Kilo", "BMI", "kohort", "donem",
+        "SPO2", "Boy", "Kilo", "BMI", "kohort", "donem", "YAKINMA", "TUM_EPS_TANILAR",
     ),
     TABLE_HEADERS: ("claim_id", "patient_id", "episode_id"),
     TABLE_PROCEDURES: (
@@ -123,8 +124,9 @@ CHECKS: dict[str, str] = {
     "rx.route_vs_product": "a missing or unknown route, or a route that contradicts the product name (injection, tablet, nebule, LMWH)",
     "rx.dose_unit": "a dozaj_ham that is not a count and a Turkish unit that fits the product, or whose count differs from miktar",
     "rx.required_fields": "a null or blank required prescription column, a kohort that is not the cohort's, or a donem off the date's year",
-    # ana: the vital signs
+    # ana: the vital signs and the complaint
     "ana.vitals_bounds": "a vital sign, age or sex out of bounds, a diastolic not below the systolic, a BMI off Kilo/Boy^2, a bad kohort or donem",
+    "ana.complaint_not_diagnosis": "a YAKINMA that is blank, names an ICD-10 code, or repeats the name of one of the episode's diagnoses",
 }
 
 # --- judgment tables -------------------------------------------------------------------------
@@ -465,12 +467,25 @@ class CleanPlausibilityContext:
         *,
         lab_reference: pl.DataFrame | None = None,
         drug_crosswalk: pl.DataFrame | None = None,
+        icd10: pl.DataFrame | None = None,
         kohort: str = KOHORT,
     ) -> None:
         self.root = Path(root)
         self._lab_reference = lab_reference
         self._drug_crosswalk = drug_crosswalk
+        self._icd10 = icd10
         self.kohort = kohort
+
+    @cached_property
+    def diagnosis_names(self) -> pl.DataFrame:
+        """code, name_key: every ICD-10 code of the reference with its Turkish name, folded."""
+        icd10 = self._icd10
+        if icd10 is None:
+            icd10 = pl.read_parquet(self.root / ICD10_PATH, columns=["code", "name_tr"])
+        return icd10.select(
+            pl.col("code").cast(pl.String),
+            _name_key(pl.col("name_tr").cast(pl.String)).alias("name_key"),
+        ).filter(pl.col("name_key").str.len_chars() > 0)
 
     @cached_property
     def lab_reference(self) -> pl.DataFrame:
@@ -1628,6 +1643,59 @@ def check_vitals_bounds(bill: _Clean) -> list[Problem]:
     return _problems("ana.vitals_bounds", found)
 
 
+# ana.complaint_not_diagnosis: an ICD-10 code as it is written in a text (a letter, two digits, an
+# optional subcode). The practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-
+# realism-plan.md, A4): the complaint is what the patient says, never the diagnosis.
+ICD10_IN_TEXT = r"\b[A-Z][0-9]{2}(?:\.[0-9A-Z]{1,4})?\b"
+
+
+def check_complaint_not_diagnosis(bill: _Clean) -> list[Problem]:
+    """ana.complaint_not_diagnosis: the YAKINMA is the patient's complaint, not the diagnosis.
+
+    A blank YAKINMA, one that contains an ICD-10 code, or one that contains (folded) the reference name
+    of any diagnosis of the row's TUM_EPS_TANILAR is a finding. Codes that the reference does not know
+    are left to the claims checks (`patient.icd_valid`).
+    """
+    frame = bill.table(TABLE_ANADATA).with_row_index("row")
+    complaint = pl.col("YAKINMA")
+    blank = complaint.is_null() | (complaint.str.strip_chars() == "").fill_null(True)
+    code = complaint.str.extract(ICD10_IN_TEXT, 0)
+    names = (
+        frame.select(
+            "row",
+            pl.col("TUM_EPS_TANILAR").str.split(",").alias("code"),
+            _name_key(complaint).alias("said"),
+        )
+        .explode("code")
+        .with_columns(pl.col("code").str.strip_chars())
+        .join(bill.ctx.diagnosis_names, on="code", how="inner")
+        .filter(pl.col("said").str.contains(pl.col("name_key"), literal=True).fill_null(False))
+        .group_by("row")
+        .agg(pl.col("code").sort().first().alias("named"))
+    )
+    why = _reasons(
+        pl.when(blank).then(pl.lit("YAKINMA is blank")),
+        pl.when(~blank & code.is_not_null()).then(
+            _format("YAKINMA names the ICD-10 code {}", code)
+        ),
+        pl.when(~blank & pl.col("named").is_not_null()).then(
+            _format("YAKINMA repeats the diagnosis name of {}", pl.col("named"))
+        ),
+    )
+    found = (
+        frame.join(names, on="row", how="left")
+        .with_columns(why.alias("why"))
+        .filter(pl.col("why") != "")
+        .select(
+            _format("{} anadata_clean[{}]", pl.col("HASTA_ID"), pl.col("SQ_EPISODE")).alias(
+                "where"
+            ),
+            pl.col("why").alias("message"),
+        )
+    )
+    return _problems("ana.complaint_not_diagnosis", found)
+
+
 # --- the registry and the entry point ------------------------------------------------------------
 
 CHECK_FUNCTIONS: dict[str, Callable[[_Clean], list[Problem]]] = {
@@ -1643,6 +1711,7 @@ CHECK_FUNCTIONS: dict[str, Callable[[_Clean], list[Problem]]] = {
     "rx.dose_unit": check_dose_unit,
     "rx.required_fields": check_required_fields,
     "ana.vitals_bounds": check_vitals_bounds,
+    "ana.complaint_not_diagnosis": check_complaint_not_diagnosis,
 }
 
 

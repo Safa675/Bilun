@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S40 patient is 86, like story S4. The bounds are those of story S4 (the author's judgment)."
 
+complaint:
+  text: "Kontrolde istenen ultrason için geldi; sağ böğründe ara ara ağrı oluyor (kızının ifadesi)."
+  basis: judgment
+  source: "Story S40: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: N10
     name: "AKUT TÜBÜLO-İNTERSTİSYEL NEFRİT"

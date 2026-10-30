@@ -29,6 +29,11 @@ nights:
   basis: judgment
   source: "Story S24 has 3 nights (2026-07-13 to 07-16). Min 2: the control blood count is on day 2 and a night follows it. A hepatologist to confirm."
 
+complaint:
+  text: "Bu sabah iki kez kan kustu, dışkısı siyah; ayağa kalkınca bayılacak gibi oluyor."
+  basis: judgment
+  source: "Story S24: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: I85.0
     name: "ÖZOFAGUS VARİSLERİ, KANAMALI"

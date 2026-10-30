@@ -29,6 +29,11 @@ span:
   basis: judgment
   source: "The sessions of May 2026 on Monday, Wednesday and Friday: 05-04 to 05-29, the last day admit+25 (card S17 b1)."
 
+complaint:
+  text: "Düzenli diyaliz seansları için geliyor; seans aralarında halsizlik ve kilo alımı."
+  basis: judgment
+  source: "Story S17: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: N18.0
     name: "SON DÖNEM BÖBREK HASTALIĞI"

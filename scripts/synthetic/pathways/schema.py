@@ -354,6 +354,16 @@ class Window(_Model):
         return self
 
 
+class Complaint(Sourced):
+    """What the patient (or a relative) says on arrival: the `YAKINMA` of the clean tables.
+
+    In the patient's words, never a diagnosis name or an ICD code (plausibility `ana.complaint_not_diagnosis`;
+    practitioner review of 2026-10-30, plans/data/2026-10-30-synthetic-billing-realism-plan.md, A4).
+    """
+
+    text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=10, max_length=300)]
+
+
 class Diagnosis(Sourced):
     icd10: IcdCode
     name: Name
@@ -570,6 +580,7 @@ class Pathway(_Model):
     # the ICU bill (EK-2B 510090 covers yemek + yatak + vizit; src/bilun/domain/prose_rules/yatak_icu_overlap.py),
     # so the bed lines of this bill cover admit+1..discharge. A sibling without the flag bills the transfer day.
     arrives_from_icu: bool = False
+    complaint: Complaint
     diagnoses: list[Diagnosis] = Field(min_length=1)
     procedures: list[Procedure] = Field(min_length=1)
     materials: list[Material] = Field(default_factory=list)

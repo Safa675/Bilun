@@ -31,6 +31,11 @@ nights:
 
 op_day: admit                        # elective admission, operated on the day of admission (as story S3)
 
+complaint:
+  text: "Bel ameliyatından sonra geçmeyen, hareketle artan bel ağrısı; öne eğilince belinde kayma hissi."
+  basis: judgment
+  source: "Story S38: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: M53.26
     name: "SPİNAL İNSTABİLİTELER, LOMBER BÖLGE"

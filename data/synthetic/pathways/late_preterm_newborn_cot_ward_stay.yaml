@@ -30,6 +30,11 @@ nights:
   basis: judgment
   source: "Story S15 has 3 nights: feeding and weight gain in a cot before going home. 1 and 7 are the author's judgment. Neonatologist to confirm."
 
+complaint:
+  text: "Kuvöz takibinden sonra servise alındı; annesi emmenin hâlâ zayıf olduğunu söylüyor."
+  basis: judgment
+  source: "Story S15: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: P07.3
     name: "MİAD ÖNCESİ DİĞER İNFANTLAR"

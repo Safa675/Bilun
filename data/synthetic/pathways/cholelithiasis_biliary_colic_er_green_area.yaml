@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S49 patient is 47, like story S8; the bounds are those of story S8 (the author's judgment)."
 
+complaint:
+  text: "Akşam yağlı yemekten sonra başlayan, sağ üst karından sırta vuran kramp tarzı ağrı ve bulantı; ağrı birkaç saatte azaldı."
+  basis: judgment
+  source: "Story S49: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K80.2
     name: "SAFRA KESESİ TAŞI, KOLESİSTİT OLMADAN"

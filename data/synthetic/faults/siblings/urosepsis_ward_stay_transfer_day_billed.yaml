@@ -27,6 +27,11 @@ nights:
   basis: judgment
   source: "Story S14 has 3 nights. After septic shock a ward stay of a few days follows; 2 and 8 are the author's judgment. Internist to confirm."
 
+complaint:
+  text: "Yoğun bakımdan servise alındı; ateşi düştü, halsizlik ve iştahsızlık sürüyor."
+  basis: judgment
+  source: "Story S14: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: A41.9
     name: "SEPTİSEMİ, TANIMLANMAMIŞ"

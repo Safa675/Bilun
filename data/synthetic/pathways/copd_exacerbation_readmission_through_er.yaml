@@ -29,6 +29,11 @@ nights:
   basis: judgment
   source: "Story S33 has 3 nights (2026-04-20 to 04-23); the range is the author's judgment of a readmitted exacerbation. Clinician to confirm."
 
+complaint:
+  text: "İki gündür hızla artan nefes darlığı, konuşurken nefes nefese kalıyor, uykuya meyilli; balgamı arttı (eşinin ifadesi)."
+  basis: judgment
+  source: "Story S33: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: J44.1
     name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALEVLENMELERLE, TANIMLANMAMIŞ"
