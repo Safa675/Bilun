@@ -9,7 +9,7 @@
 | 08-19 | L107020 | Tam Kan Sayımı (Hemogram) | 1 | 19,72 | 19,72 | EK-2B from 2026-07-07 |
 | 08-19 | L104780 | Kreatinin (Serum/Plazma) | 1 | 7,20 | 7,20 | EK-2B from 2026-07-07 |
 | 08-18 | 8699814270253 | EQIZOLIN 1 GR IM/IV 1 FLK | 2 vial | TBD (Q4) | TBD (Q4) | EK-4A A02786 from 2025-04-26 |
-| 08-18 | 8699844770716 | PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK | 6 vial | TBD (Q4) | TBD (Q4) | EK-4A A13408 from 2025-04-26 |
+| 08-18, 08-19 | 8699844770716 | PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK | 6 vial (2 lines) | TBD (Q4) | TBD (Q4) | EK-4A A13408 from 2025-04-26 |
 
 ### S3 faulty — total 4.679,47 TL (drugs excluded)
 
@@ -21,5 +21,5 @@
 | 08-19 | L107020 | Tam Kan Sayımı (Hemogram) | 1 | 19,72 | 19,72 | EK-2B from 2026-07-07 |
 | 08-19 | L104780 | Kreatinin (Serum/Plazma) | 1 | 7,20 | 7,20 | EK-2B from 2026-07-07 |
 | 08-18 | 8699814270253 | EQIZOLIN 1 GR IM/IV 1 FLK | 2 vial | TBD (Q4) | TBD (Q4) | EK-4A A02786 from 2025-04-26 |
-| 08-18 | 8699844770716 | PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK | 6 vial | TBD (Q4) | TBD (Q4) | EK-4A A13408 from 2025-04-26 |
+| 08-18, 08-19 | 8699844770716 | PARTEMOL 1 G/100 ML INF ICIN COZ ICEREN 1 FLK | 6 vial (2 lines) | TBD (Q4) | TBD (Q4) | EK-4A A13408 from 2025-04-26 |
 

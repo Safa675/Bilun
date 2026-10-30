@@ -376,7 +376,12 @@ def test_drug_quantities_follow_the_nights_and_the_pinned_course_days() -> None:
             "course_days": {"ceftriaxone": 5, "clarithromycin": 5, "methylprednisolone": 5},
         }
     )
-    units = {d["barcode"]: d["qty"] for d in expand(pathway, pins)["drugs"]}
+    drugs = expand(pathway, pins)["drugs"]
+    units: dict[str, int] = {}
+    for d in drugs:
+        units[d["barcode"]] = units.get(d["barcode"], 0) + d["qty"]
+    # a course drug is one line a day of its daily units (review of 2026-10-30, A3)
+    assert [d["qty"] for d in drugs if d["barcode"] == "8699548270482"] == [2, 2, 2, 2, 2]
     assert units == {
         "8699809950696": 4,  # enoxaparin: one syringe per night
         "8699508270224": 5,  # ceftriaxone: 1 a day for 5 days

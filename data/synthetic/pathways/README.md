@@ -52,10 +52,10 @@ Every expression must land inside the stay for the shortest, the longest and the
 ### Quantities
 
 - A procedure or material line has `qty` (default 1) **per bill line**. `qty: 16` with `days: admit..admit+1` is 16 hours on each of two days. "Per calendar day" and "per night" are day ranges, one line each. A performed line has no quantity: it is one log entry.
-- A **drug** is one line on the first day of its course with the whole quantity. Exactly one form:
-  - `qty: 7`: a fixed number of units;
-  - `per_night: 1`: units times the nights of the stay (must start on `admit`);
-  - `per_day: 2` with `course_days: {min, max, basis, source}`: units a day times the course days chosen by the pins. `min == max` is a fixed duration.
+- A **drug** is entered on each day it is given (practitioner review of 2026-10-30, `plans/data/2026-10-30-synthetic-billing-realism-plan.md`, A3; the check `stay.drug_daily_lines`). Exactly one form:
+  - `qty: 7`: one line of a fixed number of units, on `day` (a single dose or a whole box);
+  - `per_night: 1`: one line of these units on each night of the stay (must start on `admit`);
+  - `per_day: 2` with `course_days: {min, max, basis, source}`: one line of these units on each of the course days chosen by the pins, from `day`. `min == max` is a fixed duration.
 - `unit` and `per_box` follow the EK-4A pack. The count is the units used (the review, Q7: drugs are billed by units used, fractions allowed), with two exceptions where the story bills a whole box with `unit: box`: the ipratropium/salbutamol nebules of S2 (one box of 20) and the paracetamol of S4. Their `source` says so; they are the stories' choice, not a rule.
 - A course must end on or before the discharge day (`drug.course`): the shortest course must fit the shortest stay, and `expand` refuses pins whose course outlasts the pinned stay. The composer draws the nights first and then the course days from `min` to the days left.
 

@@ -40,6 +40,7 @@ FAULT_IDS = {
     "anaesthesia.operation_pairing",
     "material.stray_flag",
     "bill.performed_billed",
+    "stay.drug_daily_lines",
 }
 FORBIDDEN_ATTRIBUTES = {
     "iter_rows",

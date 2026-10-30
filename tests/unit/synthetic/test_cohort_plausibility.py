@@ -131,6 +131,7 @@ VISIT = "fit.visit_code"
 BED = "stay.bed_coverage"
 COMP = "stay.companion_coverage"
 DATES = "stay.dates_in_window"
+DAILY = "stay.drug_daily_lines"
 PERF = "bill.performed_billed"
 PACKAGE = "package.mode"
 PAIRING = "anaesthesia.operation_pairing"
@@ -162,7 +163,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S18": set(),  # the albumin without the specialist report: no check reads a drug's report, only the engine (drug_indication) sees it
     "S24": set(),  # the red-cell units without their ISBT 128 numbers: no check reads the number, only the engine (4.6) sees it
     "S22": set(),  # the polypectomy beside the colonoscopy is not billed: a line is missing, only the engine (procedure_addon_uplift) sees it
-    "S33": set(),  # the enoxaparin strength keyed as the count (4000 syringes): no check bounds a drug count, only the engine (tablo15_11) sees it
+    "S33": {"stay.drug_daily_lines"},  # the enoxaparin strength keyed as the count: 4000, not 1, on each of its days
     "S34": set(),  # the control examination flagged as a package component: no check reads a procedure flag, only the engine (tablo15_3) sees it
     "S38": set(),  # the neuromonitoring beside an instrumentation that is not on EK-2/D-4: a listed package at its price, only the engine (conditional_addon_ek2d) sees it
     "S40": set(),  # the examination fee of a second visit to the same branch within 10 days: only the engine (tablo15_2) sees it
@@ -1499,11 +1500,41 @@ CASES: list[Case] = [
         at=f"{CLAIM[5]} material_claim_lines[{material_line_id(CLAIM[5], 1)}]",
         says="dated 2026-09-20 outside the claim window 2026-09-03..2026-09-08",
     ),
+    # --- stay.drug_daily_lines (S2's ceftriaxone: one vial a day, 2026-03-09..03-15; review of 2026-10-30, A3)
+    Case(
+        DAILY,
+        lambda d: (
+            edit(d, TABLE_DRUGS, of(2) & (pl.col("barkod") == "8699508270224") & (pl.col("drug_claim_date") == "2026-03-09"), quantity=7.0),
+            drop(d, TABLE_DRUGS, of(2) & (pl.col("barkod") == "8699508270224") & (pl.col("drug_claim_date") != "2026-03-09")),
+        ),
+        label="whole_course_on_one_line",
+        at=CLAIM[2] + " drug_claim_lines[",
+        says="has the quantity 7.0 on one line; its daily quantity is 1.0",
+    ),
+    Case(
+        DAILY,
+        lambda d: drop(d, TABLE_DRUGS, of(2) & (pl.col("barkod") == "8699508270224") & (pl.col("drug_claim_date") == "2026-03-12")),
+        label="a_day_of_the_course_is_missing",
+        at=CLAIM[2],
+        says="is billed on 6 of the 7 days from its first line to its last",
+    ),
+    Case(
+        DAILY,
+        lambda d: add_row(
+            d,
+            TABLE_DRUGS,
+            of(2) & (pl.col("barkod") == "8699508270224") & (pl.col("drug_claim_date") == "2026-03-12"),
+            drug_claim_line_id="ILC-F-SENTETIK-HASTA-0002-001-099",
+        ),
+        label="two_lines_on_a_day",
+        at=CLAIM[2],
+        says="has more than one line on a day",
+    ),
     Case(
         DATES,
-        lambda d: edit(d, TABLE_DRUGS, of(2), drug_claim_date="2026-03-20"),
+        # S2's nebules (line 1) are one line: a course drug moved alone would also break its days
+        lambda d: edit(d, TABLE_DRUGS, drug(2, 1), drug_claim_date="2026-03-20"),
         label="drug_line_after_the_claim",
-        n=5,  # S2 has five drug lines
         at=f"{CLAIM[2]} drug_claim_lines[{drug_claim_line_id(CLAIM[2], 1)}]",
         says="dated 2026-03-20 outside the claim window 2026-03-09..2026-03-15",
     ),
@@ -1819,7 +1850,7 @@ CASES: list[Case] = [
     Case(
         "price.drug_in_force",
         lambda d: edit(d, TABLE_DRUGS, drug(6, 1), drug_claim_date="2019-01-01"),
-        also=(DATES,),  # a drug line dated years before the claim
+        also=(DATES, DAILY),  # a drug line dated years before the claim, away from the rest of its course
         label="dated_before_the_row_starts",
         at=f"{CLAIM[6]} drug_claim_lines[{drug_claim_line_id(CLAIM[6], 1)}]",
         says="(barcode 8697637690128) dated 2019-01-01 has no EK-4A row in force on that day",
@@ -2990,7 +3021,7 @@ PAIRS: list[Pair] = [
         "path: the scenario tag of another story (every code that is not in its pathway)",
         _tag_of(6, 2),
         (PATHWAY,),
-        11,
+        19,
         only=PATHWAY,
     ),
     Pair(
@@ -3348,7 +3379,7 @@ PAIRS: list[Pair] = [
             claim_end_date="2026-03-09",
         ),
         (BED, COMP, DATES),
-        52,
+        71,
     ),
     Pair(
         "bed: a stay without an admission date has no days to cover (the beds are not outside it)",
@@ -3401,7 +3432,7 @@ PAIRS: list[Pair] = [
         "dates: a stay that ends one day before discharge",
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(2), claim_end_date="2026-03-14"),
         (DATES,),
-        2,
+        3,
     ),
     Pair(
         "dates: a stay that starts one day after admission",
@@ -3420,7 +3451,7 @@ PAIRS: list[Pair] = [
         lambda d: edit(
             d,
             TABLE_DRUGS,
-            of(2) & (pl.col("barkod") == "8699508270224"),
+            of(2) & (pl.col("barkod") == "8699508270224") & (pl.col("drug_claim_date") == "2026-03-09"),
             drug_claim_date="2026-03-08",
         ),
         (DATES,),
@@ -3455,13 +3486,13 @@ PAIRS: list[Pair] = [
         "dates: a claim start date that is not a date",
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_start_date="garbage"),
         (DATES, ARITH),
-        36,
+        44,
     ),
     Pair(
         "dates: a start date that is not a date is named in the finding about the claim",
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_start_date="garbage"),
         (DATES,),
-        35,  # the claim, and the 34 lines and diagnoses that are outside a window with no start
+        43,  # the claim, and the 42 lines and diagnoses that are outside a window with no start
         only=DATES,
         at=CLAIM[4],
         says="admission 2026-05-11, discharge 2026-05-16, start none, end 2026-05-16",
@@ -3470,7 +3501,7 @@ PAIRS: list[Pair] = [
         "dates: an end date that is not a date is named in the finding about the claim",
         lambda d: edit(d, TABLE_CLAIM_HEADERS, of(4), claim_end_date="garbage"),
         (DATES,),
-        35,  # the claim, and the same 34 lines and diagnoses outside a window with no end
+        43,  # the claim, and the same 42 lines and diagnoses outside a window with no end
         only=DATES,
         at=CLAIM[4],
         says="admission 2026-05-11, discharge 2026-05-16, start 2026-05-11, end none",
@@ -3709,7 +3740,7 @@ PAIRS: list[Pair] = [
             edit_patient(d, 4, TANI_YASI=1),
         ),
         (ARITH, COMP, DATES),
-        40,
+        48,
     ),
     Pair(
         "robust: a procedure line with no code",

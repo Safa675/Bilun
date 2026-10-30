@@ -250,8 +250,10 @@ def lab(
 
 
 def rx(story: int, name: str) -> pl.Expr:
-    """The prescription row of a story's bill whose billed name starts with `name`."""
-    return (pl.col("RF_EPISODE") == EPISODE[story]) & pl.col("ilac_adi").str.starts_with(name)
+    """The prescription row of a story's bill whose billed name starts with `name`: a course drug has a
+    row a day (review of 2026-10-30, A3), and this is the one of its first day."""
+    drug = (pl.col("RF_EPISODE") == EPISODE[story]) & pl.col("ilac_adi").str.starts_with(name)
+    return drug & (pl.col("RECETE_TARIH") == pl.col("RECETE_TARIH").filter(drug).min())
 
 
 _EPISODE_COLUMN = {TABLE_ANADATA: "SQ_EPISODE", TABLE_LAB: "basvuru_id", TABLE_RECETE: "RF_EPISODE"}
@@ -897,9 +899,9 @@ CASES: list[Case] = [
     # --- rx.matches_billed_line. The changed rows keep their dose text consistent with miktar.
     Case(
         MATCHES,
-        _recete(2, "PREDNOL-L", miktar=6, dozaj_ham="6 ampul"),
+        _recete(2, "PREDNOL-L", miktar=2, dozaj_ham="2 ampul"),
         where=PATIENT[2],
-        says=("(miktar 6) has no billed drug line", "(quantity 5) has no prescription row"),
+        says=("(miktar 2) has no billed drug line", "(quantity 1) has no prescription row"),
         n=2,
         label="quantity_changed",
     ),
@@ -916,7 +918,7 @@ CASES: list[Case] = [
         MATCHES,
         lambda d: drop(d, TABLE_RECETE, rx(6, "MADOPAR")),
         where=f"{PATIENT[6]} drug_claim_lines[ILC-",
-        says="billed drug line MADOPAR 125 MG 30 TB on 2026-06-10 (quantity 20) has no prescription row",
+        says="billed drug line MADOPAR 125 MG 30 TB on 2026-06-10 (quantity 4) has no prescription row",
         label="row_deleted",
     ),
     Case(
@@ -960,7 +962,7 @@ CASES: list[Case] = [
             drug_claim_line_id="ILC-F-SENTETIK-HASTA-0002-001-099",
         ),
         where=f"{PATIENT[2]} drug_claim_lines[ILC-F-SENTETIK-HASTA-0002-001-099]",
-        says=f"billed drug line {IESEF} on {DAY_2} (quantity 7) has no prescription row",
+        says=f"billed drug line {IESEF} on {DAY_2} (quantity 1) has no prescription row",
         label="drug_line_billed_twice",
     ),
     # --- rx.route_vs_product
@@ -1046,7 +1048,7 @@ CASES: list[Case] = [
         DOSE,
         _recete(2, "IESEF", dozaj_ham="8 flakon"),
         where=rx_where(2, "2026-03-09") + "IESEF",
-        says="the count 8 differs from miktar 7",
+        says="the count 8 differs from miktar 1",
         label="count_differs_from_miktar",
     ),
     Case(
@@ -1336,7 +1338,7 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_s10_an
 ) -> None:
     """S1's fault bills two lab lines and three drug lines on a package claim, S10's a third lab line (the manual
     haematocrit beside the hemogram), S49's a fourth (the CRP beside the green-area examination), S33's the count of
-    one drug line (4000 enoxaparin syringes for 4); the clean tables mirror them."""
+    each line of one course (4000 enoxaparin syringes for 1, on each of 4 days); the clean tables mirror them."""
     only_faulty_labs = faulty_only_labs(built, twins)
     assert sorted(only_faulty_labs["procedure_code"]) == ["L101850", "L101850", "L103120", "L107020"]
     assert set(only_faulty_labs["patient_id"]) == {PATIENT[1], PATIENT[8], PATIENT[12]}
@@ -1345,13 +1347,13 @@ def test_the_twin_claims_differ_from_the_faulty_ones_only_by_the_lines_s1_s10_an
     )
     assert only_faulty_drugs.height == 3
     assert set(only_faulty_drugs["patient_id"]) == {PATIENT[1]}
-    assert twins[TABLE_DRUGS].height == 22 and built.tables[TABLE_DRUGS].height == 25  # S44's romosozumab: a flag, not a line
-    # S33: the same line, another count
+    assert twins[TABLE_DRUGS].height == 75 and built.tables[TABLE_DRUGS].height == 78  # S44's romosozumab: a flag, not a line
+    # S33: the same lines, another count
     counts = built.tables[TABLE_DRUGS].join(
         twins[TABLE_DRUGS].select("drug_claim_line_id", pl.col("quantity").alias("twin_quantity")),
         on="drug_claim_line_id",
     ).filter(pl.col("quantity") != pl.col("twin_quantity"))
-    assert counts.select("claim_id", "quantity", "twin_quantity").rows() == [("F-SENTETIK-HASTA-0002-003", 4000, 4)]
+    assert counts.select("claim_id", "quantity", "twin_quantity").rows() == [("F-SENTETIK-HASTA-0002-003", 4000, 1)] * 4
 
 
 _DRUG_KEYS = ["claim_id", "drug_claim_date", "drug_name", "quantity"]
@@ -1448,11 +1450,12 @@ def test_with_the_twin_claims_ten_ids_still_raise_nothing_and_two_name_the_lines
         "ILC-F-SENTETIK-HASTA-0001-001-001",  # NEOFLEKS metronidazole
         "ILC-F-SENTETIK-HASTA-0001-001-002",  # IESEF
         "ILC-F-SENTETIK-HASTA-0001-001-003",  # PARTEMOL
-        "ILC-F-SENTETIK-HASTA-0002-003-001",  # S33's prescription row of 4000 syringes
-        "twin ILC-F-SENTETIK-HASTA-0002-003-001",  # S33's twin line of 4 syringes
+        # S33's prescription rows of 4000 syringes and its twin lines of 1, one for each of the 4 days
+        *[f"ILC-F-SENTETIK-HASTA-0002-003-00{n}" for n in (1, 2, 3, 4)],
+        *[f"twin ILC-F-SENTETIK-HASTA-0002-003-00{n}" for n in (1, 2, 3, 4)],
     ]
     assert drugs == dict(expected_drugs.values())
-    assert len(found) == len(expected_labs) + len(expected_drugs) == 9
+    assert len(found) == len(expected_labs) + len(expected_drugs) == 15
 
 
 def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
@@ -1467,10 +1470,10 @@ def test_the_twin_world_is_clean_for_every_id(twins, clean, context) -> None:
         & ~((pl.col("basvuru_id") == episode_id(PATIENT[8], 2)) & (pl.col("SUB_CODE") == "L101850"))
     )
     s33 = (pl.col("RF_EPISODE") == "B-SENTETIK-HASTA-0002-003") & (pl.col("miktar") == 4000)
-    assert twin_clean[TABLE_RECETE].filter(s33).height == 1
+    assert twin_clean[TABLE_RECETE].filter(s33).height == 4
     twin_clean[TABLE_RECETE] = twin_clean[TABLE_RECETE].with_columns(
-        pl.when(s33).then(pl.lit(4, dtype=pl.Int64)).otherwise(pl.col("miktar")).alias("miktar"),
-        pl.when(s33).then(pl.lit("4 enjektör")).otherwise(pl.col("dozaj_ham")).alias("dozaj_ham"),
+        pl.when(s33).then(pl.lit(1, dtype=pl.Int64)).otherwise(pl.col("miktar")).alias("miktar"),
+        pl.when(s33).then(pl.lit("1 enjektör")).otherwise(pl.col("dozaj_ham")).alias("dozaj_ham"),
     )
     # S1 has 16 lab rows; S10's bill and S49's bill one set of one row each that only the faulty bill bills
     assert twin_clean[TABLE_LAB].height == LAB_ROWS - 16 - 1 - 1
@@ -1579,12 +1582,12 @@ def test_every_committed_lab_row_is_looked_at_by_the_row_checks(
 
 
 RECETE_ROW_BREAKS = {
-    # a row without a line and a line without a row, for each of the 25 rows
-    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 25 * 2),
-    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 25),
-    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 24),  # all but the nebule
-    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 24),  # all but the tablet
-    **{f"null_{column}": (REQUIRED, {column: None}, 25) for column in REQUIRED_RECETE_COLUMNS},
+    # a row without a line and a line without a row, for each of the 78 rows
+    "miktar_matches": (MATCHES, {"miktar": pl.col("miktar") + 1}, 78 * 2),
+    "miktar_dose": (DOSE, {"miktar": pl.col("miktar") + 1}, 78),
+    "inhalation": (ROUTE, {"verilis_yolu": pl.lit("İnhalasyon")}, 77),  # all but the nebule
+    "oral": (ROUTE, {"verilis_yolu": pl.lit("Ağızdan (Oral)")}, 73),  # all but the five tablet rows
+    **{f"null_{column}": (REQUIRED, {column: None}, 78) for column in REQUIRED_RECETE_COLUMNS},
 }
 
 
@@ -3650,13 +3653,14 @@ def test_the_committed_units_fit_their_products_by_the_classes_of_the_review(cle
     pairs = rows.group_by("class", "unit").len().sort("class", "unit").rows()
     assert pairs == [
         ("inhaled", "kutu", 1),
-        ("injected", "ampul", 1),
-        ("injected", "enjektör", 6),  # S44's romosozumab is the sixth
-        ("injected", "flakon", 11),
+        # a course drug has a row a day (review of 2026-10-30, A3)
+        ("injected", "ampul", 5),
+        ("injected", "enjektör", 23),
+        ("injected", "flakon", 33),
         ("injected", "kutu", 1),
-        ("injected", "torba", 1),
-        ("injected", "şişe", 3),  # S18's albumin is the third bottle
-        ("swallowed", "tablet", 1),
+        ("injected", "torba", 3),
+        ("injected", "şişe", 7),
+        ("swallowed", "tablet", 5),
     ]
     for cls, unit, _ in pairs:
         assert unit not in DOSE_CLASSES[cls][1], (cls, unit)

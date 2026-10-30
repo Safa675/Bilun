@@ -798,11 +798,13 @@ def test_the_albumin_of_s18_is_supplied_during_the_stay_and_the_fault_takes_its_
     pathway = pathways["decompensated_cirrhosis_gi_bleed_albumin"]
     pid = patient_id(15)
     ctx = EncounterContext(patient_id=pid, claim_id=claim_id(pid, 1), episode_id=episode_id(pid, 1), scenario_tag=pathway.id)
-    (clean_albumin,) = compose_claim(expand(pathway, annotate=True), ctx, catalogs).drugs
-    assert (clean_albumin.drug_claim_date, clean_albumin.quantity, clean_albumin.billed_amount_try) == (
-        date(2026, 6, 16), 3, Decimal("0.00")
-    )
-    assert (clean_albumin.drug_specialty_board_report_present, clean_albumin.drug_inpatient_supply) == (True, True)
-    assert clean_albumin.drug_name.startswith("HUMAN ALBUMIN")
-    (faulty_albumin,) = compose_claim(apply_fault(faults_by_story["S18"], pathway, annotate=True), ctx, catalogs).drugs
-    assert faulty_albumin == replace(clean_albumin, drug_specialty_board_report_present=False)
+    clean_lines = compose_claim(expand(pathway, annotate=True), ctx, catalogs).drugs
+    # one line a day (review of 2026-10-30, A3)
+    assert [(d.drug_claim_date, d.quantity, d.billed_amount_try) for d in clean_lines] == [
+        (date(2026, 6, day), 1, Decimal("0.00")) for day in (16, 17, 18)
+    ]
+    for clean_albumin in clean_lines:
+        assert (clean_albumin.drug_specialty_board_report_present, clean_albumin.drug_inpatient_supply) == (True, True)
+        assert clean_albumin.drug_name.startswith("HUMAN ALBUMIN")
+    faulty_lines = compose_claim(apply_fault(faults_by_story["S18"], pathway, annotate=True), ctx, catalogs).drugs
+    assert list(faulty_lines) == [replace(d, drug_specialty_board_report_present=False) for d in clean_lines]

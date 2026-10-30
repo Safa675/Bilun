@@ -1649,8 +1649,10 @@ def test_s18_bills_three_days_of_albumin_from_day_two_on_the_report(catalogs: Ca
     (albumin,) = pathway.drugs
     assert (albumin.flags.drug_specialty_board_report_present, albumin.flags.drug_inpatient_supply) == (True, True)
     assert (albumin.indication, albumin.per_day, albumin.day) == ("K74.6", 1, "admit+1")
-    (row,) = expand(pathway)["drugs"]
-    assert (row["date"], row["qty"], row["unit"]) == ("2026-06-16", 3, "bottle")
+    rows = expand(pathway)["drugs"]  # one line a day (review of 2026-10-30, A3)
+    assert [(row["date"], row["qty"], row["unit"]) for row in rows] == [
+        ("2026-06-16", 1, "bottle"), ("2026-06-17", 1, "bottle"), ("2026-06-18", 1, "bottle"),
+    ]  # fmt: skip
     labs = [(p.id, [i.code for i in p.items or []]) for p in pathway.procedures if p.kind == "lab"]
     assert labs == [("admission_labs", ["L107020", "L100320"])]  # the albumin level the SUT asks for, on the admission day
     assert run_all(pathway, catalogs) == []

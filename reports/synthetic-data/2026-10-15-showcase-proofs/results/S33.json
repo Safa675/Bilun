@@ -88,7 +88,40 @@
     "date": "2026-04-20",
     "code": "8699809950696",
     "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
-    "qty": 4,
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
+   },
+   {
+    "date": "2026-04-21",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
+   },
+   {
+    "date": "2026-04-22",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
+   },
+   {
+    "date": "2026-04-23",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
     "source": "EK-4A A10398 from 2025-04-26",
@@ -214,6 +247,39 @@
     "source": "EK-4A A10398 from 2025-04-26",
     "ingredient": "enoksaparin sodyum",
     "qty_unit": "syringe (box of 10)"
+   },
+   {
+    "date": "2026-04-21",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 4000,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
+   },
+   {
+    "date": "2026-04-22",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 4000,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
+   },
+   {
+    "date": "2026-04-23",
+    "code": "8699809950696",
+    "name": "CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ",
+    "qty": 4000,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A10398 from 2025-04-26",
+    "ingredient": "enoksaparin sodyum",
+    "qty_unit": "syringe (box of 10)"
    }
   ],
   "diagnoses": [
@@ -238,7 +304,7 @@
     "quantity": 4000,
     "severity": "error",
     "sut_section_id": "tablo_15",
-    "detail": "İlaç CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ () için adet miktarı geçersiz: 4000 — adet sınırı aşımı (4000 > 999) (Tablo 15 #11)."
+    "detail": "İlaç CLEXANE 4000 ANTI-XA IU/0.4 ML 10 KULL HAZIR ENJ () için adet miktarı geçersiz: 4000 — adet sınırı aşımı (4000 > 999) (Tablo 15 #11). Aynı ilacın 4 fatura satırı."
    }
   ],
   "report": {

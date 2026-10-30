@@ -391,12 +391,12 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         assert p7_row[col] == expected_str, f"Patient 7 {col}"
 
 
-def test_recete_clean_content_rules_for_all_25_billed_drug_lines(
+def test_recete_clean_content_rules_for_all_78_billed_drug_lines(
     built_showcase: BuildResult,
 ) -> None:
     rec_df = built_showcase.clean_tables["recete_clean.parquet"]
     drugs_df = built_showcase.tables["drug_claim_lines.parquet"]
-    assert rec_df.height == drugs_df.height == 25
+    assert rec_df.height == drugs_df.height == 78
 
     cw_df = pl.read_parquet(_REPO / "data/synthetic/reference/drug_crosswalk.parquet").filter(
         pl.col("titck_product_name").is_not_null()
@@ -617,14 +617,14 @@ def test_product_routes_come_from_the_titck_name_or_from_drug_routes(
     assert rec_df["verilis_yolu"].null_count() == 0
 
     clexane = rec_df.filter(pl.col("ilac_adi_ham").str.contains("CLEXANE"))
-    assert clexane["verilis_yolu"].to_list() == ["Subkütan"] * 4
+    assert clexane["verilis_yolu"].to_list() == ["Subkütan"] * 21  # a row a day (review of 2026-10-30, A3)
     neofleks_saline = rec_df.filter(pl.col("ilac_adi_ham").str.contains("NEOFLEKS %0,9"))
-    assert neofleks_saline["verilis_yolu"].to_list() == ["Intravenöz"]
+    assert neofleks_saline["verilis_yolu"].to_list() == ["Intravenöz"] * 3
 
-    # The declared routes serve exactly the seven rows whose TITCK name states no route.
+    # The declared routes serve exactly the rows whose TITCK name states no route.
     names = rec_df["ilac_adi_ham"].to_list()
     without_route_in_name = [name for name in names if derive_route_from_titck(name) is None]
-    assert len(without_route_in_name) == 7
+    assert len(without_route_in_name) == 26
     products = ("CLEXANE", "NEOFLEKS %0,9", "ARANESP", "EVENİTY")  # the TİTCK name writes EVENİTY with a dotted İ
     assert all(any(p in name for p in products) for name in without_route_in_name)
     aranesp = rec_df.filter(pl.col("ilac_adi_ham").str.contains("ARANESP"))
