@@ -94,6 +94,7 @@ CHECKS: dict[str, str] = {
     # stay: beds, companions and dates
     "stay.bed_coverage": "one bed line a day, admission..discharge (ICU: ..discharge-1; none on the day an ICU bill ends); no day bed on a stay",
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
+    "stay.drug_daily_lines": "a course drug not billed as one line a day of its daily quantity: a whole course on one line, a gap, a repeat",
     "stay.dates_in_window": "a header whose dates contradict the claim type (a session claim may span dates), or a line date outside the window",
     # bill: performed against billed
     "bill.performed_billed": "a performed procedure with no billed line of the same code on the same day",
@@ -1516,6 +1517,66 @@ def check_companion_coverage(bill: _Bill) -> list[Problem]:
     return _problems("stay.companion_coverage", pl.concat([quantity, twice, outside]))
 
 
+def _course_drugs(ctx: PlausibilityContext) -> pl.DataFrame:
+    """scenario_tag, barkod, daily: the course drugs (`per_day` or `per_night`) of each pathway.
+
+    A fault sibling's course drugs count for the pathway of its story (the claim keeps that tag).
+    """
+    tag_of_story = {pathway.showcase.story: tag for tag, pathway in ctx.pathways.items()}
+    rows = [
+        {"scenario_tag": tag_of_story.get(source.showcase.story, tag), "barkod": d.barcode, "daily": float(d.per_day or d.per_night)}
+        for tag, source in [*ctx.pathways.items(), *ctx.siblings.items()]
+        for d in source.drugs
+        if d.per_day is not None or d.per_night is not None
+    ]
+    schema = {"scenario_tag": pl.String, "barkod": pl.String, "daily": pl.Float64}
+    return pl.DataFrame(rows, schema=schema).unique()
+
+
+def check_drug_daily_lines(bill: _Bill) -> list[Problem]:
+    """stay.drug_daily_lines: a course drug is billed one line a day, each of its daily quantity.
+
+    The practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A3):
+    a drug given over several days is entered on every day it is given, not once with the whole course.
+    A drug is a course drug when the claim's pathway (or a sibling of its story) gives it `per_day` or
+    `per_night`; a `qty` drug (one dose) is not checked.
+    """
+    lines = (
+        bill.table(TABLE_DRUGS)
+        .join(bill.headers.select("claim_id", "scenario_tag"), on="claim_id", how="left")
+        .join(_course_drugs(bill.ctx), on=["scenario_tag", "barkod"], how="inner")
+        .with_columns(_date("drug_claim_date").alias("day"))
+    )
+    quantity = lines.filter(pl.col("quantity").fill_null(0) != pl.col("daily")).select(
+        _where("claim_id", "drug_claim_lines", "drug_claim_line_id").alias("where"),
+        _format(
+            "drug {} has the quantity {} on one line; its daily quantity is {}",
+            pl.col("barkod"),
+            pl.col("quantity"),
+            pl.col("daily"),
+        ).alias("message"),
+    )
+    spans = lines.group_by("claim_id", "barkod").agg(
+        pl.len().alias("n"),
+        pl.col("day").n_unique().alias("days"),
+        ((pl.col("day").max() - pl.col("day").min()).dt.total_days() + 1).alias("span"),
+    )
+    repeat = spans.filter(pl.col("n") > pl.col("days")).select(
+        _claim_text().alias("where"),
+        _format("drug {} has more than one line on a day", pl.col("barkod")).alias("message"),
+    )
+    gap = spans.filter(pl.col("span") > pl.col("days")).select(
+        _claim_text().alias("where"),
+        _format(
+            "drug {} is billed on {} of the {} days from its first line to its last",
+            pl.col("barkod"),
+            pl.col("days"),
+            pl.col("span"),
+        ).alias("message"),
+    )
+    return _problems("stay.drug_daily_lines", pl.concat([quantity, repeat, gap]))
+
+
 def check_dates_in_window(bill: _Bill) -> list[Problem]:
     """stay.dates_in_window: the header fits the claim type; every line date is in the window.
 
@@ -2462,6 +2523,7 @@ CHECK_FUNCTIONS: dict[str, Callable[[_Bill], list[Problem]]] = {
     "fit.operation_setting": check_operation_setting,
     "fit.visit_code": check_visit_code,
     "stay.bed_coverage": check_bed_coverage,
+    "stay.drug_daily_lines": check_drug_daily_lines,
     "stay.companion_coverage": check_companion_coverage,
     "stay.dates_in_window": check_dates_in_window,
     "bill.performed_billed": check_performed_billed,

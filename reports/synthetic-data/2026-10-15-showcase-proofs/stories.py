@@ -69,6 +69,16 @@ def _companion(b: Bill, a, d, spec: str) -> None:
         b.proc("510121", day, specialty=spec)
 
 
+def _course(b: Bill, barkod: str, first, days: int, per_day: int, **line) -> None:
+    """A drug given on ``days`` days from ``first``: one line a day of ``per_day`` units.
+
+    The practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A3):
+    a drug is entered on each day it is given, not once with the whole course.
+    """
+    for k in range(days):
+        b.drug(barkod, first + timedelta(days=k), qty=per_day, **line)
+
+
 def _labs(b: Bill, day, codes, spec: str) -> None:
     for code in codes:
         b.proc(code, day, specialty=spec)
@@ -124,11 +134,11 @@ def s2(variant: str) -> Bill:
         b.proc("530360", day, qty=16, specialty=GOGUS)
     _labs(b, a + timedelta(days=3), ("L107020", "L101850", "L103900"), GOGUS)
     b.proc("801720", a + timedelta(days=4), specialty=RAD)
-    b.drug(IESEF, a, qty=7, unit="vial")
-    b.drug(KLACID_IV, a, qty=10, unit="vial")       # 500 mg bid x 5 days (ATS/IDSA 2019)
-    b.drug(PREDNOL_L, a, qty=5, unit="ampoule")     # 40 mg/day x 5 days (GOLD)
+    _course(b, IESEF, a, 7, 1, unit="vial")
+    _course(b, KLACID_IV, a, 5, 2, unit="vial")     # 500 mg bid x 5 days (ATS/IDSA 2019)
+    _course(b, PREDNOL_L, a, 5, 1, unit="ampoule")  # 40 mg/day x 5 days (GOLD)
     b.drug(IPRAVENT, a, qty=1)
-    b.drug(CLEXANE, a, qty=6, unit="syringe", per_box=10)  # 40 mg/day, 6 days
+    _course(b, CLEXANE, a, 6, 1, unit="syringe", per_box=10)  # 40 mg/day, 6 days
     return b
 
 
@@ -146,7 +156,7 @@ def s3(variant: str) -> Bill:
     _companion(b, a, d, BEYIN)                      # post-op fall risk, doctor's order + belge
     _labs(b, op + timedelta(days=1), ("L107020", "L104780"), BEYIN)
     b.drug(EQIZOLIN, op, qty=2, unit="vial")        # cefazolin 2 g once before incision (ASHP 2013)
-    b.drug(PARTEMOL, op, qty=6, unit="vial")
+    _course(b, PARTEMOL, op, 2, 3, unit="vial")     # 1 g three times a day, two nights
     return b
 
 
@@ -165,9 +175,9 @@ def s4(variant: str) -> Bill:
     b.proc("906020", a, qty=2, specialty=DAHILIYE)  # two blood-culture sets
     b.proc("803580", a, specialty=RAD)              # urinary system ultrasound
     _labs(b, a + timedelta(days=2), ("L107020", "L101850", "L104780"), DAHILIYE)
-    b.drug(IESEF, a, qty=10, unit="vial")           # ceftriaxone 2 g/day x 5 days (EAU)
+    _course(b, IESEF, a, 5, 2, unit="vial")         # ceftriaxone 2 g/day x 5 days (EAU)
     b.drug(PARACEROL, a, qty=1)
-    b.drug(CLEXANE, a, qty=5, unit="syringe", per_box=10)
+    _course(b, CLEXANE, a, 5, 1, unit="syringe", per_box=10)
     return b
 
 
@@ -207,13 +217,13 @@ def s6(variant: str) -> Bill:
     b.proc("530340", a + timedelta(days=2), specialty=DAHILIYE)  # NG tube, day 3
     _labs(b, a + timedelta(days=3), ("L107020", "L101850"), DAHILIYE)
     b.proc("801720", a + timedelta(days=4), specialty=RAD)
-    b.drug(IESEF, a, qty=7, unit="vial")
-    b.drug(NACL_1000, a, qty=3, unit="bag")         # 1000 ml a day, days 1-3 (nil by mouth)
-    b.drug(CLEXANE, a, qty=6, unit="syringe", per_box=10)
-    b.drug(PKMERZ, a + timedelta(days=1), qty=3, unit="bottle", per_box=2,
-           drug_specialty_board_report_present=True, prescriber_specialty="İç Hastalıkları",
-           drug_inpatient_supply=True)              # one 500 ml bottle a day, days 2-4
-    b.drug(MADOPAR, a + timedelta(days=2), qty=20, unit="tablet", per_box=30)  # via NG, days 3-7
+    _course(b, IESEF, a, 7, 1, unit="vial")
+    _course(b, NACL_1000, a, 3, 1, unit="bag")      # 1000 ml a day, days 1-3 (nil by mouth)
+    _course(b, CLEXANE, a, 6, 1, unit="syringe", per_box=10)
+    _course(b, PKMERZ, a + timedelta(days=1), 3, 1, unit="bottle", per_box=2,
+            drug_specialty_board_report_present=True, prescriber_specialty="İç Hastalıkları",
+            drug_inpatient_supply=True)             # one 500 ml bottle a day, days 2-4
+    _course(b, MADOPAR, a + timedelta(days=2), 5, 4, unit="tablet", per_box=30)  # via NG, days 3-7
     return b
 
 
@@ -282,7 +292,7 @@ def s9(variant: str) -> Bill:
     _companion(b, a, d, BEYIN)                      # post-op fall risk, doctor's order + belge
     _labs(b, op + timedelta(days=1), ("L107020",), BEYIN)
     b.drug(EQIZOLIN, op, qty=2, unit="vial")        # cefazolin 2 g once before incision (ASHP 2013)
-    b.drug(PARTEMOL, op, qty=6, unit="vial")
+    _course(b, PARTEMOL, op, 2, 3, unit="vial")     # 1 g three times a day, two nights
     return b
 
 
@@ -491,8 +501,8 @@ def s18(variant: str) -> Bill:
     _beds(b, a, d, DAHILIYE)                              # 5 lines, 15-19 June
     _companion(b, a, d, DAHILIYE)                         # 4 nights
     _labs(b, a, ("L107020", "L100320"), DAHILIYE)          # the blood count and the albumin of the admission day
-    b.drug(ALBUMIN, a + timedelta(days=1), qty=3, unit="bottle", per_box=1,
-           drug_specialty_board_report_present=(variant == "clean"), drug_inpatient_supply=True)
+    _course(b, ALBUMIN, a + timedelta(days=1), 3, 1, unit="bottle", per_box=1,
+            drug_specialty_board_report_present=(variant == "clean"), drug_inpatient_supply=True)
     return b
 
 
@@ -606,7 +616,8 @@ def s33(variant: str) -> Bill:
     b.proc("520010", a, specialty=GOGUS)            # the chest-disease consultation that admits him
     _beds(b, a, d, GOGUS)                           # 4 lines, 20-23 April
     _companion(b, a, d, GOGUS)                      # 3 nights
-    b.drug(CLEXANE, a, qty=4 if variant == "clean" else 4000, unit="syringe", per_box=10)
+    # the fault keys the strength (4000 IU) as the count on each day of the course
+    _course(b, CLEXANE, a, 4, 1 if variant == "clean" else 4000, unit="syringe", per_box=10)
     return b
 
 

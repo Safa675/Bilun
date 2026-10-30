@@ -647,8 +647,9 @@ def test_set_quantity_sets_the_count_of_the_drug_line_and_nothing_else(
     assert isinstance(op, SetQuantity) and (op.section, op.entry_id, op.qty) == ("drugs", "enoxaparin", 4000)
     pathway = pathways[fault.target_pathway]
     clean, faulty = expand(pathway), apply_fault(fault, pathway)
-    assert [d["qty"] for d in clean["drugs"]] == [4]  # one syringe a day for the four days of the stay
-    assert [d["qty"] for d in faulty["drugs"]] == [4000]
+    # one line a day for the four days of the stay (review of 2026-10-30, A3), one syringe each
+    assert [d["qty"] for d in clean["drugs"]] == [1, 1, 1, 1]
+    assert [d["qty"] for d in faulty["drugs"]] == [4000, 4000, 4000, 4000]  # the strength on every day
     assert {**faulty, "drugs": clean["drugs"]} == clean  # every other row and the header are the clean bill's
     assert [{k: v for k, v in d.items() if k != "qty"} for d in faulty["drugs"]] == [
         {k: v for k, v in d.items() if k != "qty"} for d in clean["drugs"]
@@ -734,9 +735,11 @@ def test_set_flag_takes_the_report_off_the_albumin_and_nothing_else(
     )
     pathway = pathways[fault.target_pathway]
     clean, faulty = expand(pathway), apply_fault(fault, pathway)
-    (clean_albumin,), (faulty_albumin,) = clean["drugs"], faulty["drugs"]
-    assert clean_albumin["flags"] == {"drug_specialty_board_report_present": True, "drug_inpatient_supply": True}
-    assert faulty_albumin["flags"] == {**clean_albumin["flags"], "drug_specialty_board_report_present": False}
+    # one albumin line a day for its three days (review of 2026-10-30, A3); the flag is off on each of them
+    assert len(clean["drugs"]) == len(faulty["drugs"]) == 3
+    for clean_albumin, faulty_albumin in zip(clean["drugs"], faulty["drugs"], strict=True):
+        assert clean_albumin["flags"] == {"drug_specialty_board_report_present": True, "drug_inpatient_supply": True}
+        assert faulty_albumin["flags"] == {**clean_albumin["flags"], "drug_specialty_board_report_present": False}
     assert {**faulty, "drugs": clean["drugs"]} == clean
 
 

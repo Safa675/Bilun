@@ -164,6 +164,10 @@ def _resolve_target_line_id(fault: FaultSpec, faulty_claim: ComposedClaim) -> st
             f"line_type {finding.line_type!r} requires target_entry_id"
         )
     matches = faulty_claim.entry_line_ids.get(target_entry, ())
+    # A course drug is one line a day (review of 2026-10-30, A3): a fault on it touches every day, and
+    # the answer key names the first day's line. Any other target must be exactly one line.
+    if finding.line_type == "ilac" and len(matches) > 1:
+        return matches[0]
     if len(matches) != 1:
         raise BuildError(
             f"fault {fault.fault_id} on {faulty_claim.header.claim_id}: "

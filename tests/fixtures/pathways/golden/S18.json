@@ -20,7 +20,29 @@
         "drug_specialty_board_report_present": true
       },
       "per_box": 1,
-      "qty": 3,
+      "qty": 1,
+      "unit": "bottle"
+    },
+    {
+      "barcode": "8699686690029",
+      "date": "2026-06-17",
+      "flags": {
+        "drug_inpatient_supply": true,
+        "drug_specialty_board_report_present": true
+      },
+      "per_box": 1,
+      "qty": 1,
+      "unit": "bottle"
+    },
+    {
+      "barcode": "8699686690029",
+      "date": "2026-06-18",
+      "flags": {
+        "drug_inpatient_supply": true,
+        "drug_specialty_board_report_present": true
+      },
+      "per_box": 1,
+      "qty": 1,
       "unit": "bottle"
     }
   ],

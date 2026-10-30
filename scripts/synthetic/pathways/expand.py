@@ -73,13 +73,18 @@ def _copay(line) -> dict[str, str]:
     return {"copay_rate": format(line.copay.rate, ".2f")} if line.copay is not None else {}
 
 
-def _drug_qty(drug: Drug, pins: Pins) -> int:
-    """Units for the whole course: fixed, per night of stay, or per day times the pinned days."""
+def _drug_days(drug: Drug, pins: Pins) -> list[tuple[int, int]]:
+    """(day offset from the drug's first day, units) of each bill line of a drug.
+
+    A `qty` drug is one line. A course drug is one line on every day it is given, each with the daily
+    units: `per_night` on each night of the stay, `per_day` on each of the pinned course days (the
+    practitioner review of 2026-10-30, plans/data/2026-10-30-synthetic-billing-realism-plan.md, A3).
+    """
     if drug.qty is not None:
-        return drug.qty
+        return [(0, drug.qty)]
     if drug.per_night is not None:
-        return drug.per_night * pins.nights
-    return drug.per_day * pins.course_days[drug.id]
+        return [(n, drug.per_night) for n in range(pins.nights)]
+    return [(n, drug.per_day) for n in range(pins.course_days[drug.id])]
 
 
 def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False) -> dict:
@@ -164,8 +169,8 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
     drugs = [
         {
             "barcode": d.barcode,
-            "date": day(d.day),
-            "qty": _drug_qty(d, pins),
+            "date": (date.fromisoformat(day(d.day)) + timedelta(days=offset)).isoformat(),
+            "qty": units,
             "unit": d.unit,
             "per_box": d.per_box,
             "flags": d.flags.model_dump(exclude_none=True),
@@ -173,6 +178,7 @@ def expand(pathway: Pathway, pins: Pins | None = None, *, annotate: bool = False
         }
         for d in pathway.drugs
         if included(d, pins)
+        for offset, units in _drug_days(d, pins)
     ]
 
     performed = [

@@ -24,6 +24,30 @@
       "per_box": 10,
       "qty": 4000,
       "unit": "syringe"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-04-21",
+      "flags": {},
+      "per_box": 10,
+      "qty": 4000,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-04-22",
+      "flags": {},
+      "per_box": 10,
+      "qty": 4000,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-04-23",
+      "flags": {},
+      "per_box": 10,
+      "qty": 4000,
+      "unit": "syringe"
     }
   ],
   "format_version": 1,
