@@ -1,7 +1,7 @@
 # Synthetic billing realism: the practitioner review of 2026-10-30
 
 Date: 2026-10-30
-Status: **plan only.** No code, data or check was changed. Every "confirmed" below is file:line evidence read on `main` 3723c885; everything else is marked as Ahmet Bey's statement, a question, or unverified.
+Status: **implemented except what waits for answers (see §7, 2026-10-30).** When written, no code, data or check was changed. Every "confirmed" below is file:line evidence read on `main` 3723c885; everything else is marked as Ahmet Bey's statement, a question, or unverified.
 Branch: `claude/synthetic-billing-realism-plan` (base `main` 3723c885).
 Ask (Safa, 2026-10-30): Safa reviewed the bills of three showcase patients with Ahmet Bey (billing practitioner). The same mistakes recur on every bill, so fix them where they are made: in the generator, guarded by cohort-wide checks, then the pathway contents, then check whether the engine shares the same assumptions.
 
@@ -119,13 +119,27 @@ Stop conditions: a check that cannot be shown failing on today's data is not mer
 
 ## 6. Answers (to fill in)
 
-| Q | Answer | Date | Source |
-|---|---|---|---|
-| S1 | | | |
-| S2 | | | |
-| S3 | | | |
-| S4 | | | |
-| S5 | | | |
-| S6 | | | |
-| S7 | | | |
-| SUT text on the discharge-day bed | | | |
+| Q | Issue | Answer | Date | Source |
+|---|---|---|---|---|
+| S1 IV access | #386 | | | |
+| S2 EHU | #387 | | | |
+| S3 L1 L2 L3 | #388 | | | |
+| S4 acil diagnosis | #389 | | | |
+| S5 discharge-day bed | #390 | | | |
+| S6 entry-visit exceptions | #391 | | | |
+| S7 control period | #392 | Partly: SUT 2.2.2.B-3.(1) (C000714), 10 days after the discharge from a package; the windows A 15, B 10, C 8, D 5, E 3 are the package's. His confirmation of "the end of the window counts as the discharge" is open | 2026-10-30 | SUT, read in the repo |
+| S8 catheter, labs, treatment note | #396 | | | |
+
+## 7. Where it stands (2026-10-30)
+
+| WP | State | Where |
+|---|---|---|
+| WP0 | Issues open; the text on the discharge-day bed is the El Kitabı sentence, not found in the repo or on the web with its context | #386-#392, #396 |
+| WP1 complaints | Done | #393 |
+| Engine: one drug finding per claim and drug | Done (Safa's decision, 2026-10-30) | #394 |
+| WP2 daily drugs | Done, on #393 and #394 | #395 |
+| WP3 entry visits | Done, provisional exceptions | branch `claude/synthetic-wp3-entry-visits`, on #395 |
+| WP4 discharge-day bed | Waits for #390. Nothing changed | |
+| WP5 ER | A6, A7 done (in the WP3 branch; 803570 "Abdomen US, tüm"). A5 waits for #389 | |
+| WP6 | A8 done (S31 moved after the period, check added). A9, A10, A11 wait for #386, #387, #388, #396 | branch `claude/synthetic-wp6-control-period`, on WP3 |
+| WP7 engine audit | Drug rows per line: fixed by #394. Bed day: measured, 222.35 TL per stay, 1,778.80 TL on the cohort, filed as #397 and blocked by #390. C000714 has no detector: #337. Copay and discount rows stay per line on purpose (they carry money per line) | |
