@@ -240,4 +240,5 @@ def test_the_cache_reads_the_chronic_report_from_the_patients_profile(flag, kind
     assert summary["n_exempt_patients"] == (1 if flag else 0)
     assert summary["n_exempt_ek1a_patients"] == (1 if flag else 0)
     assert summary["n_exempt_bills"] == (bills if flag else er_bills)
-    assert summary["n_exempt_ek1a_bills"] == (bills if flag else 0)
+    # an exempt ER bill also lists the patient's EK-1/A match among its sources, report known or not
+    assert summary["n_exempt_ek1a_bills"] == (bills if flag else er_bills)
