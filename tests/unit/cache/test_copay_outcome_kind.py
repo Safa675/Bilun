@@ -207,6 +207,7 @@ def test_the_cache_reads_the_chronic_report_from_the_patients_profile(flag, kind
     with_flag = dataclasses.replace(dataset, copay_profiles_by_patient=profiles)
     diagnoses = [diag.icd10_code for diag in dataset.diagnoses_by_patient[patient]]
     bills = len(dataset.claims_by_patient[patient])
+    er_bills = sum(claim.claim_type == "acil" for claim in dataset.claims_by_patient[patient])  # exempt on their own (S52, S53)
 
     context = assemble_sut_context(
         lab_df=pl.DataFrame(),
@@ -238,5 +239,5 @@ def test_the_cache_reads_the_chronic_report_from_the_patients_profile(flag, kind
     summary = context["optimization_summary"]["copay_exemptions"]
     assert summary["n_exempt_patients"] == (1 if flag else 0)
     assert summary["n_exempt_ek1a_patients"] == (1 if flag else 0)
-    assert summary["n_exempt_bills"] == (bills if flag else 0)
+    assert summary["n_exempt_bills"] == (bills if flag else er_bills)
     assert summary["n_exempt_ek1a_bills"] == (bills if flag else 0)
