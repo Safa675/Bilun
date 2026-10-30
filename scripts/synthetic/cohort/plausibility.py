@@ -96,6 +96,7 @@ CHECKS: dict[str, str] = {
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
     "stay.drug_daily_lines": "a course drug not billed as one line a day of its daily quantity: a whole course on one line, a gap, a repeat",
     "stay.entry_visit": "a stay with no acil bill on its admission day or the day before and no poliklinik bill in the 30 days before it",
+    "stay.control_in_package_period": "an examination of the operating branch within 10 days after the discharge from a package (C000714)",
     "stay.dates_in_window": "a header whose dates contradict the claim type (a session claim may span dates), or a line date outside the window",
     # bill: performed against billed
     "bill.performed_billed": "a performed procedure with no billed line of the same code on the same day",
@@ -1628,6 +1629,66 @@ def check_entry_visit(bill: _Bill) -> list[Problem]:
     return _problems("stay.entry_visit", found)
 
 
+# stay.control_in_package_period: SUT 2.2.2.B-3.(1) (C000714), and the practitioner review of 2026-10-30 (A8): an
+# outpatient examination of the same branch within 10 days after the discharge from a diagnosis-based package is
+# inside the package. The end of a package's window counts as the discharge when the stay ends before it. An
+# operation billed outside a package has no such period.
+PACKAGE_WINDOW_DAYS = {"A1": 15, "A2": 15, "A3": 15, "B": 10, "C": 8, "D": 5, "E": 3}
+CONTROL_PERIOD_DAYS = 10
+
+
+def check_control_in_package_period(bill: _Bill) -> list[Problem]:
+    """stay.control_in_package_period: no examination of the branch inside its package's control period."""
+    ctx = bill.ctx
+    # the package a stay's pathway bills: a fault may bill it itemized, and the period is the package's
+    packages = pl.DataFrame(
+        [
+            {"scenario_tag": tag, "department": p.department.name, "code": line.code}
+            for tag, p in ctx.pathways.items()
+            if p.claim_type == "yatis" and p.billing_mode == "package"
+            for line in p.procedures[:]
+            if line.kind == "package"
+        ],
+        schema={"scenario_tag": pl.String, "department": pl.String, "code": pl.String},
+    ).join(ctx.catalogs.ek2c.sort("valid_from").select("code", "group").unique("code", keep="last"), on="code", how="inner")
+    windows = packages.with_columns(
+        pl.col("group").replace_strict(PACKAGE_WINDOW_DAYS, default=None, return_dtype=pl.Int64).alias("window")
+    ).filter(pl.col("window").is_not_null())
+    stays = bill.headers.join(windows, on="scenario_tag", how="inner").select(
+        "patient_id",
+        "department",
+        pl.max_horizontal("dis", pl.col("adm") + pl.duration(days=pl.col("window") - 1)).alias("counts_as_discharge"),
+    )
+    examinations = (
+        bill.lines.filter(pl.col("procedure_code") == "520030")
+        .join(
+            bill.headers.filter(pl.col("claim_type") == "poliklinik").select("claim_id", "patient_id", "start"),
+            on="claim_id",
+            how="inner",
+            suffix="_header",
+        )
+    )
+    departments = bill.table(TABLE_CLAIM_HEADERS).select("claim_id", pl.col("department").alias("visit_department"))
+    found = (
+        examinations.join(departments, on="claim_id", how="left")
+        .join(stays, left_on=["patient_id_header", "visit_department"], right_on=["patient_id", "department"], how="inner")
+        .filter(
+            (pl.col("start") > pl.col("counts_as_discharge"))
+            & (pl.col("start") <= pl.col("counts_as_discharge") + pl.duration(days=CONTROL_PERIOD_DAYS))
+        )
+        .select(
+            _where("claim_id", "procedure_claim_lines", "procedure_line_id").alias("where"),
+            _format(
+                "examination of {} on {}, inside the 10 days after the package's discharge of {} (C000714)",
+                pl.col("visit_department"),
+                pl.col("start").cast(pl.String),
+                pl.col("counts_as_discharge").cast(pl.String),
+            ).alias("message"),
+        )
+    )
+    return _problems("stay.control_in_package_period", found)
+
+
 def check_dates_in_window(bill: _Bill) -> list[Problem]:
     """stay.dates_in_window: the header fits the claim type; every line date is in the window.
 
@@ -2576,6 +2637,7 @@ CHECK_FUNCTIONS: dict[str, Callable[[_Bill], list[Problem]]] = {
     "stay.bed_coverage": check_bed_coverage,
     "stay.drug_daily_lines": check_drug_daily_lines,
     "stay.entry_visit": check_entry_visit,
+    "stay.control_in_package_period": check_control_in_package_period,
     "stay.companion_coverage": check_companion_coverage,
     "stay.dates_in_window": check_dates_in_window,
     "bill.performed_billed": check_performed_billed,

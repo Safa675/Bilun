@@ -101,7 +101,7 @@ _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, in
     (8, 3): (128, 78, 96, 97, 163, 77.5),  # S50, readmitted with colic and jaundice from a common-bile-duct stone
     (8, 4): (122, 76, 76, 98, 163, 77.5),  # S51, the gastroenterology control the day after the discharge
     (1, 2): (130, 80, 98, 98, 178, 82.0),  # S30, the ER visit on the day of the appendectomy of S1
-    (1, 3): (122, 76, 72, 99, 178, 80.5),  # S31, the control six days after the discharge
+    (1, 3): (122, 76, 72, 99, 178, 80.5),  # S31, the control after the period of C000714
     (11, 2): (66, 38, 142, 98, 46, 2.4),  # S15, the newborn of S12 in a cot on the ward (infant ranges)
 }
 

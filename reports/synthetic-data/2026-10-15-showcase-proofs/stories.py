@@ -1067,7 +1067,7 @@ def _s30() -> Bill:
 
 
 def _s31() -> Bill:
-    day = D("2026-07-22")
+    day = D("2026-08-03")
     b = Bill("SH-01", "C-SH31", "poliklinik", "Genel Cerrahi", None, None, "K35.9", start=day, end=day)
     b.diag("K35.9", primary=True, on=day)
     b.proc("520030", day, specialty=GENCER)               # the control, in the branch of the package (C000714)
@@ -1095,11 +1095,10 @@ def s30(variant: str) -> Bill:
 
 
 def s31(variant: str) -> Bill:
-    """34 M, the patient of S1: the general-surgery control on 2026-07-22, six days after his discharge.
+    """34 M, the patient of S1: the general-surgery control on 2026-08-03, after the period of C000714 (A8).
 
-    Clean by its recipe, wrong by the SUT: an examination of the same branch within 10 days of S1's package discharge
-    (the end of its group C window, 07-21, counting as the discharge) is inside the package (C000714). The engine has no
-    detector for it (#337), so the bill carries no fault record (CLEAN_ONLY): a dormant fault.
+    A clean bill (CLEAN_ONLY). An examination of the same branch within 10 days of S1's package discharge (the end of its
+    group C window, 07-21, counting as the discharge) would be inside the package (C000714), so the control comes after.
     """
     if variant != "clean":
         raise ValueError("S31 is a clean bill: it has no faulty variant")
