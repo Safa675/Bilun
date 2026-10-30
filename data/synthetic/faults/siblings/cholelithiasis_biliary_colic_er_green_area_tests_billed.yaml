@@ -54,8 +54,8 @@ procedures:
     source: "The faulty line: a CRP of the colic billed beside the flat-fee green-area visit (El Kitabı Tablo 15 #7). Emergency physician to confirm."
   - id: abdominal_ultrasound
     kind: imaging
-    code: "803602"
-    name: "Ultrason, genel"
+    code: "803570"
+    name: "Abdomen US, tüm"
     days: admit
     specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
     basis: judgment

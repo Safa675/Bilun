@@ -52,6 +52,15 @@ procedures:
     basis: sut
     source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
 
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "2600"
+    basis: judgment
+    source: "Review of 2026-10-30 (A6): the admitting branch (Ortopedi ve Travmatoloji) is consulted in the ER before the admission."
+
   # --- the work-up of a suspected hip fracture before the orthopaedic admission
   - id: pelvis_xray
     kind: imaging

@@ -1,0 +1,50 @@
+# The outpatient visit through which the patient of story S9 reaches the stay: a clean bill, story S59.
+# Practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is not billed directly.
+# Minimal on purpose: no test, so nothing repeats inside the seven days of the duplicate-test rule. Grammar: README.md next to this file.
+schema_version: 1
+id: lumbar_stenosis_decompression_foraminoplasty_itemized_entry_visit
+title: "The outpatient visit before the admission of story S9, billed on its own takip"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Beyin ve Sinir Cerrahisi"
+  specialty: "2400"
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S59 is the patient of story S9, on the way to that stay."
+  age:
+    min: 77
+    max: 77
+    basis: judgment
+    source: "Story S59 patient is 77, like story S9."
+
+complaint:
+  text: "Aylardır bel ağrısı; yürürken iki bacağına yayılan ağrı ve uyuşma, yüz metre yürüyünce durup dinlenmek zorunda kalıyor."
+  basis: judgment
+  source: "Story S59: the complaint of story S9, said on arrival. Clinician to confirm."
+
+diagnoses:
+  - icd10: M48.06
+    name: "SPİNAL STENOZ, LOMBER BÖLGE"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "The primary of story S9. Whether an acil bill carries it is question #389."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application, as one EK-2B 520030."
+
+showcase:
+  story: S59
+  sex: F
+  age: 77
+  admit: "2026-09-07"

@@ -4,7 +4,7 @@
 # Grammar: README.md next to this file. ER only: no nights and no stay; `admit` is the visit day and the only day.
 schema_version: 1
 id: appendicitis_er_visit_ultrasound
-title: "Acute appendicitis seen in the ER, billed as the ER examination and an abdominal ultrasound"
+title: "Acute appendicitis seen in the ER, billed as the ER examination, a general surgery consultation and an abdominal ultrasound"
 claim_type: acil
 billing_mode: itemized
 department:
@@ -44,10 +44,18 @@ procedures:
     days: admit
     basis: sut
     source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2) a): ER services of 2nd/3rd tier providers are billed hizmet başı; EK-2A amounts cannot be billed."
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "1900"
+    basis: judgment
+    source: "Review of 2026-10-30 (A6): the admitting branch (Genel Cerrahi) is consulted in the ER before the admission."
   - id: abdominal_ultrasound
     kind: imaging
-    code: "803602"
-    name: "Ultrason, genel"
+    code: "803570"
+    name: "Abdomen US, tüm"
     days: admit
     specialty: "3300"                  # EK-2A: Radyoloji (overrides the department's branch)
     basis: guideline

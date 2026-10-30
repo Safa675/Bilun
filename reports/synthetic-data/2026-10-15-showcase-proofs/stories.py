@@ -738,6 +738,7 @@ def _s41() -> Bill:
     for i, icd in enumerate(("S72.00", "W19")):
         b.diag(icd, primary=(i == 0), on=day)
     b.proc("520020", day, specialty=ACIL)               # the ER examination
+    b.proc("520010", day, specialty=ORTO)               # the admitting branch is consulted (review of 2026-10-30, A6)
     b.proc("801880", day, specialty=RAD)                # pelvis film: the femoral neck fracture
     b.proc("530100", day, specialty=ACIL)               # pre-operative ECG
     b.proc("L107020", day, specialty=ACIL)              # blood count
@@ -950,7 +951,7 @@ def _s49(variant: str) -> Bill:
     b.diag("K80.2", primary=True, on=day)
     b.proc("520021", day, specialty=ACIL)               # the green-area examination: a flat-fee visit
     if variant != "clean":                              # the fault: a test and an imaging billed beside the flat fee
-        b.proc("803602", day, specialty=RAD)            # abdominal ultrasound: the gallstones (the bill's line order)
+        b.proc("803570", day, specialty=RAD)            # abdominal ultrasound: the gallstones (the bill's line order)
         b.proc("L101850", day, specialty=ACIL)          # CRP
     return b
 
@@ -1060,7 +1061,8 @@ def _s30() -> Bill:
     b = Bill("SH-01", "C-SH30", "acil", "Acil Tıp", None, None, "K35.9", start=day, end=day)
     b.diag("K35.9", primary=True, on=day)
     b.proc("520020", day, specialty=ACIL)                 # the ER examination
-    b.proc("803602", day, specialty=RAD)                  # abdominal ultrasound: the inflamed appendix
+    b.proc("520010", day, specialty=GENCER)               # the admitting branch is consulted (review of 2026-10-30, A6)
+    b.proc("803570", day, specialty=RAD)                  # abdominal ultrasound: the inflamed appendix
     return b
 
 
@@ -1155,7 +1157,39 @@ def s21(variant: str) -> Bill:
     return b
 
 
-# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
-CLEAN_ONLY: tuple[str, ...] = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")
+# ── S52-S64 ─ the visit through which a patient reaches a stay (clean bills) ──
+def _entry_visit(story: str, patient: str, kind: str, department: str, on: str, icd: str, exam_spec: str, consult: str | None = None):
+    """The review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is billed after an
+    acil or poliklinik visit, on its own takip. Minimal: the examination and the admitting branch's consultation."""
+    def build(variant: str) -> Bill:
+        if variant != "clean":
+            raise ValueError(f"{story} is a clean bill: it has no faulty variant")
+        day = D(on)
+        b = Bill(patient, f"C-SH{story[1:]}", kind, department, None, None, icd, start=day, end=day)
+        b.diag(icd, primary=True, on=day)
+        b.proc("520020" if kind == "acil" else "520030", day, specialty=exam_spec)
+        if consult:
+            b.proc("520010", day, specialty=consult)
+        return b
+    return build
 
-STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S15": s15, "S17": s17, "S18": s18, "S20": s20, "S21": s21, "S22": s22, "S23": s23, "S24": s24, "S30": s30, "S31": s31, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51}
+
+s52 = _entry_visit("S52", "SH-02", "acil", "Acil Tıp", "2026-03-09", "J44.0", ACIL, GOGUS)
+s53 = _entry_visit("S53", "SH-02", "acil", "Acil Tıp", "2026-04-20", "J44.1", ACIL)
+s54 = _entry_visit("S54", "SH-04", "acil", "Acil Tıp", "2026-05-11", "N10", ACIL, DAHILIYE)
+s55 = _entry_visit("S55", "SH-05", "acil", "Acil Tıp", "2026-09-16", "T84.5", ACIL, ORTO)
+s56 = _entry_visit("S56", "SH-06", "acil", "Acil Tıp", "2026-06-08", "J69.0", ACIL, DAHILIYE)
+s57 = _entry_visit("S57", "SH-08", "poliklinik", "Genel Cerrahi", "2026-09-08", "K80.2", GENCER)
+s58 = _entry_visit("S58", "SH-08", "acil", "Acil Tıp", "2026-09-27", "K80.5", ACIL, GENCER)
+s59 = _entry_visit("S59", "SH-09", "poliklinik", "Beyin ve Sinir Cerrahisi", "2026-09-07", "M48.06", BEYIN)
+s60 = _entry_visit("S60", "SH-10", "acil", "Acil Tıp", "2026-06-02", "A41.9", ACIL, DAHILIYE)
+s61 = _entry_visit("S61", "SH-12", "poliklinik", "Genel Cerrahi", "2026-05-11", "K92.2", GENCER)
+s62 = _entry_visit("S62", "SH-14", "acil", "Acil Tıp", "2026-06-12", "N18.0", ACIL, NEFROLOJI)
+s63 = _entry_visit("S63", "SH-15", "acil", "Acil Tıp", "2026-06-15", "K74.6", ACIL, DAHILIYE)
+s64 = _entry_visit("S64", "SH-15", "acil", "Acil Tıp", "2026-07-13", "I85.0", ACIL, DAHILIYE)
+
+
+# Stories without a fault: a clean bill has a clean golden, no faulty golden and no proof.
+CLEAN_ONLY: tuple[str, ...] = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51", "S52", "S53", "S54", "S55", "S56", "S57", "S58", "S59", "S60", "S61", "S62", "S63", "S64")
+
+STORIES = {"S1": s1, "S2": s2, "S3": s3, "S4": s4, "S5": s5, "S6": s6, "S7": s7, "S8": s8, "S9": s9, "S10": s10, "S11": s11, "S12": s12, "S14": s14, "S15": s15, "S17": s17, "S18": s18, "S20": s20, "S21": s21, "S22": s22, "S23": s23, "S24": s24, "S30": s30, "S31": s31, "S32": s32, "S33": s33, "S34": s34, "S36": s36, "S37": s37, "S38": s38, "S39": s39, "S40": s40, "S41": s41, "S42": s42, "S43": s43, "S44": s44, "S45": s45, "S46": s46, "S47": s47, "S48": s48, "S49": s49, "S50": s50, "S51": s51, "S52": s52, "S53": s53, "S54": s54, "S55": s55, "S56": s56, "S57": s57, "S58": s58, "S59": s59, "S60": s60, "S61": s61, "S62": s62, "S63": s63, "S64": s64}

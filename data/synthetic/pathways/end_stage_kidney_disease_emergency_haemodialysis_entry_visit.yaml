@@ -1,0 +1,58 @@
+# The ER visit through which the patient of story S23 reaches the stay: a clean bill, story S62.
+# Practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is not billed directly.
+# Minimal on purpose: no test, so nothing repeats inside the seven days of the duplicate-test rule. Grammar: README.md next to this file.
+schema_version: 1
+id: end_stage_kidney_disease_emergency_haemodialysis_entry_visit
+title: "The ER visit before the admission of story S23, billed on its own takip"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"
+
+patient:
+  sex:
+    values: [M]
+    basis: judgment
+    source: "Story S62 is the patient of story S23, on the way to that stay."
+  age:
+    min: 71
+    max: 71
+    basis: judgment
+    source: "Story S62 patient is 71, like story S23."
+
+complaint:
+  text: "İki gündür nefes darlığı, bacaklarda şişlik ve halsizlik; son diyaliz seansına gidemedi."
+  basis: judgment
+  source: "Story S62: the complaint of story S23, said on arrival. Clinician to confirm."
+
+diagnoses:
+  - icd10: N18.0
+    name: "SON DÖNEM BÖBREK HASTALIĞI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "The primary of story S23. Whether an acil bill carries it is question #389."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı."
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "1062"
+    basis: judgment
+    source: "Review of 2026-10-30 (A6): the admitting branch (Nefroloji) is consulted before the admission."
+
+showcase:
+  story: S62
+  sex: M
+  age: 71
+  admit: "2026-06-12"

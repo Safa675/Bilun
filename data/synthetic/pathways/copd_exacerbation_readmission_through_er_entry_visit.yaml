@@ -1,0 +1,51 @@
+# The ER visit through which the patient of story S33 reaches the stay: a clean bill, story S53.
+# Practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is not billed directly.
+# Minimal on purpose: no test, so nothing repeats inside the seven days of the duplicate-test rule. Grammar: README.md next to this file.
+schema_version: 1
+id: copd_exacerbation_readmission_through_er_entry_visit
+title: "The ER visit before the admission of story S33, billed on its own takip"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"
+
+patient:
+  sex:
+    values: [M]
+    basis: judgment
+    source: "Story S53 is the patient of story S33, on the way to that stay."
+  age:
+    min: 81
+    max: 81
+    basis: judgment
+    source: "Story S53 patient is 81, like story S33."
+
+complaint:
+  text: "İki gündür hızla artan nefes darlığı, konuşurken nefes nefese kalıyor, uykuya meyilli; balgamı arttı (eşinin ifadesi)."
+  basis: judgment
+  source: "Story S53: the complaint of story S33, said on arrival. Clinician to confirm."
+
+diagnoses:
+  - icd10: J44.1
+    name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALEVLENMELERLE, TANIMLANMAMIŞ"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "The primary of story S33. Whether an acil bill carries it is question #389."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı."
+
+showcase:
+  story: S53
+  sex: M
+  age: 81
+  admit: "2026-04-20"
+  chronic_health_report: true
