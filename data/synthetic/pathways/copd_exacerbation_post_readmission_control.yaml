@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S34 patient is 81, like story S2; the bounds are those of story S2 (the author's judgment)."
 
+complaint:
+  text: "Son yatışından sonra kontrol; eforla nefes darlığı sürüyor, balgamı azaldı."
+  basis: judgment
+  source: "Story S34: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: J44.1
     name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALEVLENMELERLE, TANIMLANMAMIŞ"

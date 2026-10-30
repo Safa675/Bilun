@@ -33,6 +33,11 @@ nights:
 
 op_day: admit                        # elective, operated on the day of admission
 
+complaint:
+  text: "Aylardır yağlı yemekten sonra tekrarlayan sağ üst karın ağrısı; göbekte ayakta büyüyen, yatınca kaybolan şişlik."
+  basis: judgment
+  source: "Story S8: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K80.2
     name: "SAFRA KESESİ TAŞI, KOLESİSTİT OLMADAN"

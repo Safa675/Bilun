@@ -24,6 +24,11 @@ patient:
     basis: judgment
     source: "Story S46 patient is 79, like story S6; the bounds are those of story S6 (the author's judgment)."
 
+complaint:
+  text: "Yürürken dengesini kaybediyor, adımları küçüldü; son bir ayda iki kez düştü."
+  basis: judgment
+  source: "Story S46: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: G20
     name: "PARKİNSON HASTALIĞI"

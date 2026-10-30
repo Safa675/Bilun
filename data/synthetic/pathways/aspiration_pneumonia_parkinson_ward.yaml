@@ -29,6 +29,11 @@ nights:
   basis: judgment
   source: "Story S6 has 6 nights. Min 4 because the day-5 control chest X-ray is fixed (admit+4); max is the author's judgment."
 
+complaint:
+  text: "Üç gündür öksürük, balgam, ateş ve nefes darlığı; yemek yerken sık sık öksürüp boğuluyor (oğlunun ifadesi)."
+  basis: judgment
+  source: "Story S6: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: J69.0
     name: "PNÖMONİT, GIDA VE KUSMUĞA BAĞLI"

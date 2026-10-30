@@ -32,6 +32,11 @@ nights:
 
 op_day: admit+1                      # admitted with the pain and the jaundice on day 0, the ERCP on the day after
 
+complaint:
+  text: "Safra kesesi ameliyatından sonra tekrarlayan sağ üst karın ağrısı; gözlerinde sararma, idrar renginde koyulaşma."
+  basis: judgment
+  source: "Story S50: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K80.5
     name: "SAFRA YOLU TAŞI, KOLANJİT VEYA KOLESİSTİT OLMADAN"

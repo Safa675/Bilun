@@ -20,6 +20,11 @@ patient:
     basis: judgment
     source: "Story S20 patient is 41 (born 1985). Adults fit for a day case; the upper bound is the author's judgment."
 
+complaint:
+  text: "Göbekte ıkınınca ve ayakta büyüyen, yatınca kaybolan şişlik; ara ara hafif ağrı."
+  basis: judgment
+  source: "Story S20: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K42.9
     name: "UMBİLİKAL HERNİ, OBSTRÜKSİYONSUZ, GANGRENSİZ"

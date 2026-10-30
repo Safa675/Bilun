@@ -28,6 +28,11 @@ nights:
   basis: sut
   source: "C000648 (SUT 2.2.2.(3)): a stay shorter than 24 hours bills the day bed; the observation is admitted and discharged on one date."
 
+complaint:
+  text: "Ayakta dururken aniden başı dönüp birkaç saniye bayıldı; öncesinde terleme ve bulantı, sonra kendine geldi."
+  basis: judgment
+  source: "Story S47: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: R55
     name: "SENKOP VE BAYILMA"

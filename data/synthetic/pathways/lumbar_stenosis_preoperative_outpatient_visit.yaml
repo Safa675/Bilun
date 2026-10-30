@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S36 patient is 77, like story S3; the bounds are those of story S3 (the author's judgment)."
 
+complaint:
+  text: "Aylardır bel ağrısı; sol bacağına yayılan ağrı ve uyuşma, yürüme mesafesi giderek kısalıyor."
+  basis: judgment
+  source: "Story S36: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: M48.06
     name: "SPİNAL STENOZ, LOMBER BÖLGE"

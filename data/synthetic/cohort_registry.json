@@ -5,7 +5,7 @@
     "recete_clean.parquet": 25
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "fae27148a2d6ff01ed3b8e672a8e523ad9f5af8b7ae84073eddb575e13127bdd",
+    "anadata_clean.parquet": "eb64773ab7993500ae80b35e597238cdb36986a6160dbaef36ec6066f3315e75",
     "lab_clean.parquet": "f70f048fdd3861a85ca840df2753b14888b3898650bee989be2886f4fd3f0a44",
     "recete_clean.parquet": "c73f82b66a8e6de6b9bb9e71edd34ad64feaf3846217d37ab8f02b7480fc3131"
   },

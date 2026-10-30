@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S30 patient is 34, like story S1; the bounds are those of story S1 (the author's judgment)."
 
+complaint:
+  text: "Dün akşamdan beri göbek çevresinde başlayıp bugün sağ alt karına yerleşen, giderek artan karın ağrısı; bulantı, bir kez kusma, iştahsızlık."
+  basis: judgment
+  source: "Story S30: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K35.9
     name: "AKUT APANDİSİT, TANIMLANMAMIŞ"

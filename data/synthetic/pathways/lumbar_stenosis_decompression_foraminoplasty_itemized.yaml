@@ -39,6 +39,11 @@ nights:
 
 op_day: admit                        # elective admission, operated the day of admission
 
+complaint:
+  text: "Aylardır bel ağrısı; yürürken iki bacağına yayılan ağrı ve uyuşma, yüz metre yürüyünce durup dinlenmek zorunda kalıyor."
+  basis: judgment
+  source: "Story S9: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: M48.06
     name: "SPİNAL STENOZ, LOMBER BÖLGE"

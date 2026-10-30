@@ -32,6 +32,11 @@ nights:
 
 op_day: admit+1                      # admitted with the wound infection on day 0, operated on the day after
 
+complaint:
+  text: "Kalça ameliyatından iki hafta sonra ameliyat yerinde kızarıklık ve akıntı; ağrısı arttı, ateşi var."
+  basis: judgment
+  source: "Story S42: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: T84.5
     name: "İNTERNAL EKLEM PROTEZİNDEN DOLAYI ENFEKSİYON VE ENFLAMATUVAR REAKSİYON"

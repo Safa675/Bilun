@@ -24,6 +24,11 @@ patient:
     basis: judgment
     source: "Story S31 patient is 34, like story S1; the bounds are those of story S1 (the author's judgment)."
 
+complaint:
+  text: "Ameliyat sonrası kontrol için geldi; yara yerinde hafif sızı var, ateşi ve karın ağrısı yok."
+  basis: judgment
+  source: "Story S31: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K35.9
     name: "AKUT APANDİSİT, TANIMLANMAMIŞ"
