@@ -232,8 +232,8 @@ def test_the_encounter_number_defaults_to_one_and_a_block_with_nothing_in_it_ove
     # and S46, patient 7: S47 and S48, patient 8: S49 to S51, patient 10: S14, patient 11: S15, patient 12: S22,
     # patient 14: S23, patient 15: S24) write it
     assert [(r.patient_no, r.encounter_no) for r in committed if r.encounter_no != 1] == [
-        (1, 2), (1, 3), (2, 2), (2, 3), (2, 4), (3, 2), (3, 3), (3, 4), (4, 2), (4, 3), (5, 2), (5, 3), (5, 4), (5, 5),
-        (6, 2), (6, 3), (7, 2), (7, 3), (8, 2), (8, 3), (8, 4), (10, 2), (11, 2), (12, 2), (14, 2), (15, 2),
+        (1, 2), (1, 3), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (3, 2), (3, 3), (3, 4), (4, 2), (4, 3), (4, 4), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6),
+        (6, 2), (6, 3), (6, 4), (7, 2), (7, 3), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (9, 2), (10, 2), (10, 3), (11, 2), (12, 2), (12, 3), (14, 2), (14, 3), (15, 2), (15, 3), (15, 4),
     ]  # fmt: skip
     assert all("encounter_no" not in _recipe(raw, r.patient_no) for r in committed if r.encounter_no == 1 and r.patient_no < 12)
     _recipe(raw, 2)["pins"] = {}

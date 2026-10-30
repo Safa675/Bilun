@@ -1212,19 +1212,19 @@ CASES: list[Case] = [
     ),
     Case(
         VITALS,
-        # patient 9 (S9), one bill: with several bills one row of "?" would also contradict the others
-        _vital(9, CINSIYET="?"),
-        where=f"{PATIENT[9]} anadata_clean[{EPISODE[9]}]",
+        # patient 13 (S20), one bill: with several bills one row of "?" would also contradict the others
+        _vital(13, CINSIYET="?"),
+        where=f"{PATIENT[13]} anadata_clean[{EPISODE[13]}]",
         says="CINSIYET ? is neither E nor K",
         label="sex_neither_e_nor_k",
     ),
     Case(
         VITALS,
-        # a second episode of S9 that says she is a man: both rows name the contradiction (patient 9 has one bill)
+        # a second episode of S20 that says he is a woman: both rows name the contradiction (patient 13 has one bill)
         lambda d: add_row(
-            d, TABLE_ANADATA, bill_row(9, TABLE_ANADATA), SQ_EPISODE="B-SENTETIK-HASTA-0009-002", CINSIYET="E"
+            d, TABLE_ANADATA, bill_row(13, TABLE_ANADATA), SQ_EPISODE="B-SENTETIK-HASTA-0013-003", CINSIYET="K"
         ),
-        where=f"{PATIENT[9]} anadata_clean[",
+        where=f"{PATIENT[13]} anadata_clean[",
         says="CINSIYET differs between the episodes of the patient",
         n=2,
         label="sex_differs_between_episodes",

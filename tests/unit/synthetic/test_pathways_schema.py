@@ -170,6 +170,8 @@ def test_only_the_pathways_of_patient_2_pin_the_chronic_report() -> None:
         S32: True,
         S33: True,
         S34: True,
+        "copd_exacerbation_pneumonia_ward_entry_visit": True,  # S52
+        "copd_exacerbation_readmission_through_er_entry_visit": True,  # S53
     }
 
 

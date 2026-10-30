@@ -131,7 +131,7 @@ patients:
       height_cm: 170
       weight_kg: 68.0
     basis: judgment
-    source: "Story S52: the vitals of story S2 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S52: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 2
     encounter_no: 6
@@ -143,7 +143,7 @@ patients:
       height_cm: 170
       weight_kg: 66.5
     basis: judgment
-    source: "Story S53: the vitals of story S33 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S53: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 3
     vitals:
@@ -264,7 +264,7 @@ patients:
       height_cm: 155
       weight_kg: 58.0
     basis: judgment
-    source: "Story S54: the vitals of story S4 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S54: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 5
     vitals:
@@ -335,7 +335,7 @@ patients:
       height_cm: 156
       weight_kg: 60.5
     basis: judgment
-    source: "Story S55: the vitals of story S42 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S55: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 6
     vitals:
@@ -392,7 +392,7 @@ patients:
       height_cm: 172
       weight_kg: 63.0
     basis: judgment
-    source: "Story S56: the vitals of story S6 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S56: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 7
     vitals:
@@ -496,7 +496,7 @@ patients:
       height_cm: 163
       weight_kg: 79.0
     basis: judgment
-    source: "Story S57: the vitals of story S8 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S57: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 8
     encounter_no: 6
@@ -508,7 +508,7 @@ patients:
       height_cm: 163
       weight_kg: 77.5
     basis: judgment
-    source: "Story S58: the vitals of story S50 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S58: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 9
     vitals:
@@ -536,7 +536,7 @@ patients:
       height_cm: 161
       weight_kg: 69.0
     basis: judgment
-    source: "Story S59: the vitals of story S9 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S59: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 10
     vitals:
@@ -579,7 +579,7 @@ patients:
       height_cm: 158
       weight_kg: 66.0
     basis: judgment
-    source: "Story S60: the vitals of story S11 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S60: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 11
     vitals:
@@ -650,7 +650,7 @@ patients:
       height_cm: 176
       weight_kg: 83.5
     basis: judgment
-    source: "Story S61: the vitals of story S22 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S61: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 13
     vitals:
@@ -696,7 +696,7 @@ patients:
       height_cm: 172
       weight_kg: 72.5
     basis: judgment
-    source: "Story S62: the vitals of story S23 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S62: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 15
     vitals:
@@ -746,7 +746,7 @@ patients:
       height_cm: 174
       weight_kg: 79.0
     basis: judgment
-    source: "Story S63: the vitals of story S18 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S63: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 15
     encounter_no: 4
@@ -758,7 +758,7 @@ patients:
       height_cm: 174
       weight_kg: 77.5
     basis: judgment
-    source: "Story S64: the vitals of story S24 on arrival, the same day or shortly before it; clinician review in issue #309."
+    source: "Story S64: the vitals on arrival, as at the admission this visit leads to; clinician review in issue #309."
 
   - patient_no: 16
     vitals:

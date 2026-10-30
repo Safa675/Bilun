@@ -1477,11 +1477,11 @@ def test_every_bill_has_its_own_anadata_row_with_its_own_vitals_pins_and_date(tw
         # the visit counters are constants (no engine reader needs them): see plan 7.3, row 8
         assert (row["TOPLAM_GELIS_SAYISI"], row["GELIS_SAYISI"]) == (1, 1)
     # the fixture gives each second bill its own pulse (+3), so a patient's rows differ
-    assert pulses["F-SENTETIK-HASTA-0004-004"] == pulses["F-SENTETIK-HASTA-0004-001"] + 3
+    assert pulses["F-SENTETIK-HASTA-0004-005"] == pulses["F-SENTETIK-HASTA-0004-001"] + 3
     assert pulses["F-SENTETIK-HASTA-0007-004"] == pulses["F-SENTETIK-HASTA-0007-001"] + 3
     # the first bills' rows are the committed rows
     committed = pl.read_parquet(_CLEAN_DIR / "anadata_clean.parquet")
-    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-004", "B-SENTETIK-HASTA-0007-004"])).equals(committed)
+    assert ana.filter(~pl.col("SQ_EPISODE").is_in(["B-SENTETIK-HASTA-0004-005", "B-SENTETIK-HASTA-0007-004"])).equals(committed)
 
 
 def test_the_prescription_rows_follow_the_drug_lines_of_every_bill(two_bills: BuildResult) -> None:
@@ -1552,7 +1552,7 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
     recipes, clinical = with_encounters(
         Extra(
             2,
-            5,
+            7,
             "copd_exacerbation_pneumonia_ward",
             {
                 "admit": "2026-05-11",
@@ -1565,8 +1565,8 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
     )
     built = build_showcase(recipes=recipes, clinical=clinical)
     headers = built.tables["claim_headers.parquet"].filter(pl.col("patient_id") == "SENTETIK-HASTA-0002")
-    # 6 nights, the visit, the readmission of 3 nights, the visit, then 8
-    assert headers["discharge_date"].to_list() == ["2026-03-15", None, "2026-04-23", None, "2026-05-19"]
+    # 6 nights and its ER visit (S52), the control, the readmission of 3 nights and its ER visit (S53), the control, then 8
+    assert headers["discharge_date"].to_list() == ["2026-03-15", None, None, "2026-04-23", None, None, "2026-05-19"]
     rec = built.clean_tables["recete_clean.parquet"].filter(pl.col("HASTA_ID") == "SENTETIK-HASTA-0002")
 
     def days(episode: str) -> dict[str, int | None]:
@@ -1577,7 +1577,7 @@ def test_the_days_of_a_prescription_follow_the_pins_of_its_bill() -> None:
     assert days(_episode_of(2, 2)) == {}  # the control visit bills no drug
     assert days(_episode_of(2, 3)) == {"CLEXANE": 4}  # one syringe a day, the days of its own pins
     assert days(_episode_of(2, 4)) == {}
-    assert days(_episode_of(2, 5)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
+    assert days(_episode_of(2, 7)) == {"IPRAVENT": None, "IESEF": 6, "PREDNOL-L": 5, "KLACID": 5, "CLEXANE": 8}
 
 
 def test_a_later_bill_of_another_pathway_has_the_age_and_sex_of_its_pins() -> None:

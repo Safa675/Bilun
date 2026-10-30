@@ -196,7 +196,7 @@ def test_the_s49_sibling_bills_a_crp_and_an_ultrasound_beside_the_green_area_exa
     assert [p for p in clean["procedures"] if p not in faulty["procedures"]] == []
     extra = [p for p in faulty["procedures"] if p not in clean["procedures"]]
     assert [(p["code"], p["date"], p["qty"], p["billed_ratio"]) for p in extra] == [
-        ("803602", "2026-08-25", 1, "1.0000"),
+        ("803570", "2026-08-25", 1, "1.0000"),
         ("L101850", "2026-08-25", 1, "1.0000"),
     ]  # the ultrasound and the CRP of the visit, on its day
     assert [p["code"] for p in clean["procedures"]] == ["520021"]

@@ -684,7 +684,7 @@ def test_the_ward_bill_is_found_through_the_icu_bill_that_is_its_history(
     icu_claim = cohort.scenario("S11").claim_ids[0]
     assert b.record.claim_id == cohort.scenario("S14").claim_ids[0] != icu_claim
     assert [c.claim_id for c in b.faulty_ctx.claims] == [b.record.claim_id]  # one bill is active
-    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {icu_claim, b.record.claim_id}
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {icu_claim, b.record.claim_id, cohort.scenario("S60").claim_ids[0]}
     # the rule reads the history: the bed line of the active bill, on the day the other bill ends
     assert len(b.direct_faulty) == 1
     row = b.direct_faulty[0]
@@ -718,8 +718,9 @@ def test_the_other_bills_of_a_patient_are_canonicalized_longest_id_first(
 ) -> None:
     b = story_bundles["S14"]
     icu_claim = cohort.scenario("S11").claim_ids[0]
-    assert _other_claim_ids(b.faulty_ctx, b.record.claim_id) == (icu_claim,)
-    assert _other_claim_ids(b.faulty_ctx, icu_claim) == (b.record.claim_id,)
+    er_visit = cohort.scenario("S60").claim_ids[0]
+    assert _other_claim_ids(b.faulty_ctx, b.record.claim_id) == (icu_claim, er_visit)
+    assert _other_claim_ids(b.faulty_ctx, icu_claim) == (b.record.claim_id, er_visit)
     assert _other_claim_ids(None, "x") == ()
     text = f"{b.record.claim_id} after {icu_claim}"
     assert canonicalize_text(text, b.record.claim_id, None, (icu_claim,)) == "<claim> after <claim>"
@@ -743,7 +744,8 @@ def test_the_second_visit_is_found_through_the_control_that_is_its_history(
     control = cohort.scenario("S39").claim_ids[0]
     assert b.record.claim_id == cohort.scenario("S40").claim_ids[0] not in (stay, control)
     assert [c.claim_id for c in b.faulty_ctx.claims] == [b.record.claim_id]  # one bill is active
-    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {stay, control, b.record.claim_id}
+    er_visit = cohort.scenario("S54").claim_ids[0]
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {stay, control, b.record.claim_id, er_visit}
     # the rule reads the history: the exam line of the active bill and the one of the control a week before
     (row,) = b.direct_faulty
     assert (row["rule_id"], row["procedure_code"], row["procedure_specialty_code"]) == (
@@ -909,8 +911,8 @@ def test_s42_finds_the_red_cells_billed_in_full_and_its_clean_share_is_silent(
     assert not any("blood_component_partial_bill" in str(s) for s in b.c_counter)
     # the units carry their ISBT 128 numbers on both bills: the ISBT rule is silent, the bill has one planted fault
     assert not any("isbt128" in str(s) for s in (*b.f_counter, *b.c_counter))
-    # the patient's history holds all five bills: the stay, the ER visit, this one, the walker visit, the geriatrics visit
-    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {f"F-SENTETIK-HASTA-0005-00{n}" for n in range(1, 6)}
+    # the history holds all six bills: the stay, its ER visit, this one, the walker visit, the geriatrics visit, the ER visit before this one
+    assert {c.claim_id for c in b.faulty_ctx.history.claims} == {f"F-SENTETIK-HASTA-0005-00{n}" for n in range(1, 7)}
     assert [c.claim_id for c in b.faulty_ctx.claims] == ["F-SENTETIK-HASTA-0005-003"]
 
 
@@ -1080,7 +1082,7 @@ def test_s49_proof_rows_read_the_bill_and_not_the_patients_other_bills(story_bun
     assert elsewhere.claim_id in {c.claim_id for c in with_other.history.claims}
     assert direct_rows("S49", with_other) == []
     faulty = direct_rows("S49", replace(b.faulty_ctx, patient_history=history))
-    assert [r["procedure_code"] for r in faulty] == ["803602", "L101850"]
+    assert [r["procedure_code"] for r in faulty] == ["803570", "L101850"]
 
 
 def test_s44_finds_the_romosozumab_report_of_twelve_months(story_bundles: dict[str, _StoryBundle]) -> None:
