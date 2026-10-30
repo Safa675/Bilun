@@ -1162,7 +1162,11 @@
         },
         "source_authority": {
           "$ref": "ClinicalSourceAuthorityEvidence"
-        }
+        },
+        "drug_claim_line_ids": {
+          "$list": true
+        },
+        "line_count": true
       }
     },
     "findings": {
@@ -1251,7 +1255,11 @@
     },
     "source_authority": {
       "$ref": "ClinicalSourceAuthorityEvidence"
-    }
+    },
+    "drug_claim_line_ids": {
+      "$list": true
+    },
+    "line_count": true
   },
   "DrugIndicationRouteEvidence": {
     "rule_id": true,

@@ -972,6 +972,9 @@ export interface DrugIndicationFinding {
   patient_id?: string | null;
   claim_id?: string | null;
   drug_claim_line_id?: string | null;
+  /** Every bill line of this drug with this finding; drug_claim_line_id is the first. */
+  drug_claim_line_ids?: string[];
+  line_count?: number;
   drug_name?: string | null;
   drug_code?: string | null;
   finding_kind?: string | null;
