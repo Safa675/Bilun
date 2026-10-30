@@ -220,7 +220,7 @@ def test_the_committed_demo_reads_every_drug_quantity_as_the_whole_count_it_hold
 def test_s6s_pk_merz_keyed_as_medula_s_1_5_boxes_is_read_as_1_5_and_not_flagged(
     committed_claims_dir: Path, tmp_path: Path
 ) -> None:
-    """S6 bills 3 bottles of PK-Merz, a box of 2 (the issue's example): MEDULA keys 1.5 boxes. Patient 1's first
+    """S6 bills PK-Merz, a box of 2 (the issue's example), a bottle a day: a line keyed as 1.5 boxes. Patient 1's first
     PARTEMOL keyed as half a box. On a copy of the committed claims, both load as decimals, no Tablo 15 #11 row
     names them, and S33's 4000 (the strength keyed as the count) is still the one quantity error."""
     from src.bilun.cache.build_streaming import json_ready
@@ -236,7 +236,8 @@ def test_s6s_pk_merz_keyed_as_medula_s_1_5_boxes_is_read_as_1_5_and_not_flagged(
         if source.is_file():
             claims.joinpath(spec.filename).write_bytes(source.read_bytes())
     drugs = pl.read_parquet(claims / "drug_claim_lines.parquet")
-    pk_merz = drugs.filter(pl.col("drug_name").str.starts_with("PK-MERZ"))["drug_claim_line_id"].item()
+    # a course drug has a line a day (review of 2026-10-30, A3): the first day's line is the one keyed in boxes
+    pk_merz = drugs.filter(pl.col("drug_name").str.starts_with("PK-MERZ"))["drug_claim_line_id"].sort()[0]
     partemol = drugs.filter(
         pl.col("drug_name").str.starts_with("PARTEMOL") & pl.col("patient_id").eq("SENTETIK-HASTA-0001")
     )["drug_claim_line_id"].item()

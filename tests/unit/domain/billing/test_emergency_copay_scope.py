@@ -279,9 +279,9 @@ def demo() -> dict[str, Any]:
     }
 
 
-def test_the_demos_er_patients_are_the_five_with_an_er_visit(demo: dict[str, Any]) -> None:
-    """S7 (patient 7), S10 (patient 12), S30 (patient 1), S41 (patient 5), S49 (patient 8): each has other bills."""
-    stories = ("S10", "S30", "S41", "S49")
+def test_the_demos_er_patients_are_those_with_an_er_visit(demo: dict[str, Any]) -> None:
+    """S7, S10, S30, S41, S49 and the ER visits before a stay (review of 2026-10-30, A1): each has other bills."""
+    stories = ("S10", "S30", "S41", "S49", "S52", "S53", "S54", "S55", "S56", "S58", "S60", "S62", "S63", "S64")
     expected = {cohort.role("showcase_S7").patient_id} | {cohort.scenario(story).patient_id for story in stories}
     assert set(demo["er_patients"]) == expected
     assert all(len(demo["dataset"].claims_by_patient[pid]) > 1 for pid in expected)
@@ -291,9 +291,10 @@ def test_on_the_demo_an_er_visit_exempts_its_own_bill_and_no_other_bill_of_the_p
     """Patient 5 (EK-1/A matches, report not known) is partial on its stays, its visits and as a whole; patients 1, 7, 8
     and 12 (no other ground) are not exempt; every ER bill is. S49 is patient 8's green-area visit (520021 with other
     codes): still exempt, the green-area question of WP17 is left as it is."""
-    fifth = cohort.role("showcase_S5").patient_id
+    # patient 2 has its chronic report; 4, 5, 6, 14 and 15 match EK-1/A with no report known; the others have no ground
+    own_of = {2: "exempt", 4: "partial_exempt", 5: "partial_exempt", 6: "partial_exempt", 14: "partial_exempt", 15: "partial_exempt"}
     for pid in demo["er_patients"]:
-        own = "partial_exempt" if pid == fifth else "none"
+        own = own_of.get(int(pid[-4:]), "none")
         assert demo["exemption"][pid]["outcome_kind"] == own, pid
         assert demo["patient"][pid].copay_primary_outcome == own, pid
         for claim in demo["dataset"].claims_by_patient[pid]:
