@@ -8,7 +8,7 @@ legacy dictionaries for older analyzer and API consumers.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 from urllib.parse import quote
 
@@ -151,6 +151,8 @@ class DrugIndicationFinding:
     clinical_restrictions: tuple[DrugClinicalRestriction, ...] = ()
     runtime_coverage: dict[str, Any] | None = None
     source_authority: dict[str, Any] | None = None
+    # Every bill line of this drug with this finding; `drug_claim_line_id` is the first of them.
+    drug_claim_line_ids: tuple[str, ...] = ()
     _legacy_base: Mapping[str, Any] = field(
         default_factory=dict,
         repr=False,
@@ -164,6 +166,8 @@ class DrugIndicationFinding:
             "patient_id": self.patient_id,
             "claim_id": self.claim_id,
             "drug_claim_line_id": self.drug_claim_line_id,
+            "drug_claim_line_ids": list(self.drug_claim_line_ids or (self.drug_claim_line_id,)),
+            "line_count": len(self.drug_claim_line_ids) or 1,
             "drug_name": self.drug_name,
             "drug_code": self.drug_code,
             "finding_kind": self.finding_kind,
@@ -199,6 +203,8 @@ class DrugIndicationFinding:
                 "patient_id": self.patient_id,
                 "claim_id": self.claim_id,
                 "drug_claim_line_id": self.drug_claim_line_id,
+                "drug_claim_line_ids": list(self.drug_claim_line_ids or (self.drug_claim_line_id,)),
+                "line_count": len(self.drug_claim_line_ids) or 1,
                 "drug_name": self.drug_name,
                 "drug_code": self.drug_code,
                 "rule": "drug_indication",
@@ -578,6 +584,62 @@ def _make_unavailable_evaluation(
     )
 
 
+def _drug_identity(line: Any) -> str:
+    """The drug of a bill line: its barcode, else its code, else its name."""
+    return str(getattr(line, "barkod", "") or line.drug_code or line.drug_name or "")
+
+
+def _line_evaluation(
+    patient_id: str,
+    claim: Any,
+    line: Any,
+    detailed: Mapping[str, Any],
+    finding_id: str | None,
+    finding_kind: str | None,
+    observed_codes: tuple[str, ...],
+    matched_codes: tuple[str, ...],
+    unmatched_codes: tuple[str, ...],
+    routes: tuple[DrugIndicationRouteEvidence, ...],
+    routes_truncated: bool,
+    route_rules: list[Any],
+    applicability_status: str,
+    evaluation_status: str,
+    selected_rule_id: str | None,
+    clinical_restrictions: tuple[DrugClinicalRestriction, ...],
+    runtime_coverage: dict[str, Any] | None,
+    source_authority: dict[str, Any] | None,
+) -> DrugIndicationLineEvaluation:
+    return DrugIndicationLineEvaluation(
+        temporal_evidence=detailed.get("temporal_evidence"),
+        ingredient_scope=detailed.get("ingredient_scope"),
+        patient_id=patient_id,
+        claim_id=claim.claim_id,
+        drug_claim_line_id=line.drug_claim_line_id,
+        drug_name=line.drug_name,
+        drug_code=line.drug_code or None,
+        applicability_status=applicability_status,
+        evaluation_status=evaluation_status,
+        observed_icd10_codes=observed_codes,
+        matched_icd10_codes=matched_codes,
+        unmatched_icd10_codes=unmatched_codes,
+        eligible_routes=routes,
+        clinical_restrictions=clinical_restrictions,
+        runtime_coverage=runtime_coverage,
+        source_authority=source_authority,
+        selected_rule_id=selected_rule_id,
+        finding_id=finding_id,
+        finding_kind=finding_kind,
+        required_inputs=_codes(detailed.get("required_inputs")),
+        missing_inputs=_codes(detailed.get("missing_inputs")),
+        eligible_route_count=len(route_rules),
+        eligible_routes_truncated=routes_truncated,
+        observed_icd10_count=len(detailed.get("observed_icd10_codes") or ()),
+        observed_icd10_truncated=(
+            len(detailed.get("observed_icd10_codes") or ()) > len(observed_codes)
+        ),
+    )
+
+
 def evaluate_drug_indication_findings(
     patient_id: str,
     ctx: PatientClaimContext | None,
@@ -585,7 +647,12 @@ def evaluate_drug_indication_findings(
     rules: list[dict[str, Any]] | None = None,
     runtime_sink: RequestDrugRuntimeSink | None = None,
 ) -> DrugIndicationEvaluationBatch:
-    """Evaluate every drug line once and return all pure family projections."""
+    """Evaluate every drug line once and return all pure family projections.
+
+    A drug given over several days is several bill lines, each evaluated on its own (`evaluations` stays
+    per line). The same finding on those lines is one finding of the drug, not one per day: the lines
+    with the same claim, drug, kind, rule, applicability and severity share the finding of the first.
+    """
     if runtime_sink is not None and (
             not isinstance(runtime_sink, RequestDrugRuntimeSink) or not runtime_sink.fresh
             or ctx is None or not runtime_sink.matches_context(ctx.drug_lines)):
@@ -600,7 +667,8 @@ def evaluate_drug_indication_findings(
     diagnoses = list(ctx.diagnoses or ())
     findings: list[DrugIndicationFinding] = []
     evaluations: list[DrugIndicationLineEvaluation] = []
-    legacy_violations: list[dict[str, Any]] = []
+    finding_of_group: dict[tuple[Any, ...], int] = {}
+    lines_of_finding: list[list[str]] = []
 
     ordered_lines = sorted(
         ctx.drug_lines,
@@ -649,6 +717,29 @@ def evaluate_drug_indication_findings(
         finding_kind: str | None = None
         if isinstance(violation, Mapping):
             finding_kind = str(violation.get("violation_kind") or "drug_indication")
+            group = (
+                claim.claim_id,
+                _drug_identity(line),
+                finding_kind,
+                selected_rule_id,
+                applicability_status,
+                str(violation.get("severity") or "review"),
+            )
+            known = finding_of_group.get(group)
+            if known is not None:
+                lines_of_finding[known].append(line.drug_claim_line_id)
+                finding_id = findings[known].finding_id
+                evaluations.append(
+                    _line_evaluation(
+                        patient_id, claim, line, detailed, finding_id, finding_kind,
+                        observed_codes, matched_codes, unmatched_codes, routes, routes_truncated,
+                        route_rules, applicability_status, evaluation_status, selected_rule_id,
+                        clinical_restrictions, runtime_coverage, source_authority,
+                    )
+                )
+                continue
+            finding_of_group[group] = len(findings)
+            lines_of_finding.append([line.drug_claim_line_id])
             finding_id = drug_indication_finding_id(
                 patient_id=patient_id,
                 claim_id=claim.claim_id,
@@ -701,42 +792,30 @@ def evaluate_drug_indication_findings(
                 ),
             )
             findings.append(finding)
-            legacy_violations.append(finding.to_legacy_violation())
 
         evaluations.append(
-            DrugIndicationLineEvaluation(
-                temporal_evidence=detailed.get("temporal_evidence"),
-                ingredient_scope=detailed.get("ingredient_scope"),
-                patient_id=patient_id,
-                claim_id=claim.claim_id,
-                drug_claim_line_id=line.drug_claim_line_id,
-                drug_name=line.drug_name,
-                drug_code=line.drug_code or None,
-                applicability_status=applicability_status,
-                evaluation_status=evaluation_status,
-                observed_icd10_codes=observed_codes,
-                matched_icd10_codes=matched_codes,
-                unmatched_icd10_codes=unmatched_codes,
-                eligible_routes=routes,
-                clinical_restrictions=clinical_restrictions,
-                runtime_coverage=runtime_coverage,
-                source_authority=source_authority,
-                selected_rule_id=selected_rule_id,
-                finding_id=finding_id,
-                finding_kind=finding_kind,
-                required_inputs=_codes(detailed.get("required_inputs")),
-                missing_inputs=_codes(detailed.get("missing_inputs")),
-                eligible_route_count=len(route_rules),
-                eligible_routes_truncated=routes_truncated,
-                observed_icd10_count=len(detailed.get("observed_icd10_codes") or ()),
-                observed_icd10_truncated=(
-                    len(detailed.get("observed_icd10_codes") or ()) > len(observed_codes)
-                ),
+            _line_evaluation(
+                patient_id, claim, line, detailed, finding_id, finding_kind,
+                observed_codes, matched_codes, unmatched_codes, routes, routes_truncated,
+                route_rules, applicability_status, evaluation_status, selected_rule_id,
+                clinical_restrictions, runtime_coverage, source_authority,
             )
         )
 
+    grouped = tuple(
+        replace(
+            finding,
+            drug_claim_line_ids=tuple(line_ids),
+            explanation_tr=(
+                f"{finding.explanation_tr} Bu bulgu aynı ilacın {len(line_ids)} fatura satırını kapsar."
+                if len(line_ids) > 1
+                else finding.explanation_tr
+            ),
+        )
+        for finding, line_ids in zip(findings, lines_of_finding, strict=True)
+    )
     return DrugIndicationEvaluationBatch(
-        findings=tuple(findings),
+        findings=grouped,
         evaluations=tuple(evaluations),
-        legacy_violations=tuple(legacy_violations),
+        legacy_violations=tuple(finding.to_legacy_violation() for finding in grouped),
     )

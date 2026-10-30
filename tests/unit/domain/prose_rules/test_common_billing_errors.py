@@ -408,3 +408,12 @@ def test_missing_drug_barcode_negative() -> None:
     violations = detect_missing_drug_barcode([claim], (line,))
 
     assert violations == []
+
+
+def test_missing_drug_barcode_on_each_day_of_a_course_is_one_row_naming_every_line() -> None:
+    claim = _make_claim_header(claim_id="C1")
+    lines = tuple(_make_drug_line(drug_claim_line_id=f"D{n}", claim_id="C1", barkod="") for n in (1, 2))
+    (row,) = detect_missing_drug_barcode([claim], lines)
+    assert row["drug_claim_line_id"] == "D1"
+    assert row["drug_claim_line_ids"] == ["D1", "D2"] and row["line_count"] == 2
+    assert "2 fatura satırı" in row["detail"]

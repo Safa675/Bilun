@@ -410,6 +410,8 @@ class DrugIndicationFindingResponse(BaseModel):
     patient_id: str = Field(...)
     claim_id: str = Field(...)
     drug_claim_line_id: str = Field(...)
+    drug_claim_line_ids: list[str] = Field(default_factory=list)
+    line_count: int = Field(default=1)
     drug_name: str = Field(...)
     drug_code: str | None = None
     finding_kind: str = Field(...)
