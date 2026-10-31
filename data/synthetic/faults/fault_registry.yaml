@@ -459,7 +459,7 @@ faults:
 
   - fault_id: F_S33_ENOXAPARIN_STRENGTH_KEYED_AS_QUANTITY
     story: S33
-    title: "Enoxaparin strength keyed as the quantity: 4000 syringes instead of 4 (the readmission of the patient of story S2)"
+    title: "Enoxaparin strength keyed as the quantity: 4000 syringes instead of 1 on each day (the readmission of the patient of story S2)"
     target_pathway: copd_exacerbation_readmission_through_er
     mutations:
       - op: set_quantity

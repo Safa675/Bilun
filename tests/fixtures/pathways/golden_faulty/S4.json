@@ -27,7 +27,7 @@
       "date": "2026-05-11",
       "flags": {},
       "per_box": 1,
-      "qty": 10,
+      "qty": 2,
       "unit": "vial"
     },
     {
@@ -43,7 +43,71 @@
       "date": "2026-05-11",
       "flags": {},
       "per_box": 10,
-      "qty": 5,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-05-12",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-05-12",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-05-13",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-05-13",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-05-14",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-05-14",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-05-15",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-05-15",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
       "unit": "syringe"
     }
   ],

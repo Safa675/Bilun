@@ -25,7 +25,15 @@
       "date": "2026-08-18",
       "flags": {},
       "per_box": 1,
-      "qty": 6,
+      "qty": 3,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699844770716",
+      "date": "2026-08-19",
+      "flags": {},
+      "per_box": 1,
+      "qty": 3,
       "unit": "vial"
     }
   ],

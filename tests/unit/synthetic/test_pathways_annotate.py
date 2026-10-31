@@ -116,7 +116,7 @@ def test_drug_rows_carry_indication_s6_pk_merz_is_g20_s17_darbepoetin_is_n18_s18
 
     named = [item for item in indications if item[2] is not None]
     others = [item for item in indications if item[2] is None]
-    assert sorted(named) == [
+    assert sorted(set(named)) == [  # a course drug has a row a day, each with the indication
         ("S17", "darbepoetin", "N18.0"),
         ("S18", "albumin", "K74.6"),
         ("S44", "romosozumab", "M81.09"),

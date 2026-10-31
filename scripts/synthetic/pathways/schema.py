@@ -502,7 +502,7 @@ class Material(Sourced):
 
 
 class Drug(Sourced):
-    """An EK-4A line: one bill line on the first day of the course with the whole quantity."""
+    """An EK-4A drug: one bill line for a `qty` drug; a course drug one line a day from `day` (expand)."""
 
     id: Slug
     barcode: Barcode

@@ -1430,12 +1430,12 @@ def _event(entry_id: str, **changes: str) -> MedulaEvent:
 @pytest.fixture(scope="module")
 def built_with_events() -> BuildResult:
     """The committed recipes with three more rejections: a second one on S10's bill, one on a material of S5 and one
-    on a drug of S6 (a material and a drug line are billed lines too)."""
+    on a drug of S4, its one-line paracetamol (a material and a drug line are billed lines too)."""
     recipes = load_recipes()
     extra = {
         (12, 1): (_event("hemogram", sonuc_kodu="1205", medula_stage="hizmet_kayit", hata_kodu="E-1205"),),
         (5, 1): (_event("femoral_stem", sonuc_kodu="0704"),),
-        (6, 1): (_event("pk_merz", sonuc_kodu="0411"),),
+        (4, 1): (_event("paracetamol", sonuc_kodu="0411"),),
     }
     changed = [
         r.model_copy(update={"medula_events": [*r.medula_events, *extra[(r.patient_no, r.encounter_no)]]})
@@ -1452,8 +1452,8 @@ def test_events_are_numbered_per_claim_dated_with_their_line_and_name_any_billed
     events = built_with_events.tables["medula_rejection_events.parquet"]
     rows = {row["rejection_event_id"]: row for row in events.iter_rows(named=True)}
     assert list(rows) == sorted(rows) == [
+        "RED-F-SENTETIK-HASTA-0004-001-01",
         "RED-F-SENTETIK-HASTA-0005-001-01",
-        "RED-F-SENTETIK-HASTA-0006-001-01",
         "RED-F-SENTETIK-HASTA-0012-001-01",
         "RED-F-SENTETIK-HASTA-0012-001-02",  # the second event of the claim, in the order of the recipe
     ]
@@ -1462,7 +1462,7 @@ def test_events_are_numbered_per_claim_dated_with_their_line_and_name_any_billed
         "material", "", ""
     )  # fmt: skip
     assert MATERIAL_LINE_ID_RE.fullmatch(material["related_line_id"])
-    drug = rows["RED-F-SENTETIK-HASTA-0006-001-01"]
+    drug = rows["RED-F-SENTETIK-HASTA-0004-001-01"]
     assert drug["related_line_type"] == "drug" and DRUG_CLAIM_LINE_ID_RE.fullmatch(drug["related_line_id"])
     assert drug["related_procedure_code"] == "" and drug["related_procedure_line_id"] == ""
     second = rows["RED-F-SENTETIK-HASTA-0012-001-02"]

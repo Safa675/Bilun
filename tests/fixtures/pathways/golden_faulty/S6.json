@@ -22,7 +22,7 @@
       "date": "2026-06-08",
       "flags": {},
       "per_box": 1,
-      "qty": 3,
+      "qty": 1,
       "unit": "bag"
     },
     {
@@ -30,7 +30,7 @@
       "date": "2026-06-08",
       "flags": {},
       "per_box": 1,
-      "qty": 7,
+      "qty": 1,
       "unit": "vial"
     },
     {
@@ -38,8 +38,24 @@
       "date": "2026-06-08",
       "flags": {},
       "per_box": 10,
-      "qty": 6,
+      "qty": 1,
       "unit": "syringe"
+    },
+    {
+      "barcode": "8697637690128",
+      "date": "2026-06-09",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "bag"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-06-09",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
     },
     {
       "barcode": "8699708690525",
@@ -50,15 +66,159 @@
         "prescriber_specialty": "İç Hastalıkları"
       },
       "per_box": 2,
-      "qty": 3,
+      "qty": 1,
       "unit": "bottle"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-06-09",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8697637690128",
+      "date": "2026-06-10",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "bag"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-06-10",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
     },
     {
       "barcode": "8699525094841",
       "date": "2026-06-10",
       "flags": {},
       "per_box": 30,
-      "qty": 20,
+      "qty": 4,
+      "unit": "tablet"
+    },
+    {
+      "barcode": "8699708690525",
+      "date": "2026-06-10",
+      "flags": {
+        "drug_inpatient_supply": true,
+        "drug_specialty_board_report_present": true,
+        "prescriber_specialty": "İç Hastalıkları"
+      },
+      "per_box": 2,
+      "qty": 1,
+      "unit": "bottle"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-06-10",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-06-11",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699525094841",
+      "date": "2026-06-11",
+      "flags": {},
+      "per_box": 30,
+      "qty": 4,
+      "unit": "tablet"
+    },
+    {
+      "barcode": "8699708690525",
+      "date": "2026-06-11",
+      "flags": {
+        "drug_inpatient_supply": true,
+        "drug_specialty_board_report_present": true,
+        "prescriber_specialty": "İç Hastalıkları"
+      },
+      "per_box": 2,
+      "qty": 1,
+      "unit": "bottle"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-06-11",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-06-12",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699525094841",
+      "date": "2026-06-12",
+      "flags": {},
+      "per_box": 30,
+      "qty": 4,
+      "unit": "tablet"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-06-12",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-06-13",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699525094841",
+      "date": "2026-06-13",
+      "flags": {},
+      "per_box": 30,
+      "qty": 4,
+      "unit": "tablet"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-06-13",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-06-14",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699525094841",
+      "date": "2026-06-14",
+      "flags": {},
+      "per_box": 30,
+      "qty": 4,
       "unit": "tablet"
     }
   ],

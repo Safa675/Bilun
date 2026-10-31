@@ -30,7 +30,7 @@
       "date": "2026-03-09",
       "flags": {},
       "per_box": 1,
-      "qty": 7,
+      "qty": 1,
       "unit": "vial"
     },
     {
@@ -38,7 +38,7 @@
       "date": "2026-03-09",
       "flags": {},
       "per_box": 1,
-      "qty": 5,
+      "qty": 1,
       "unit": "ampoule"
     },
     {
@@ -46,7 +46,7 @@
       "date": "2026-03-09",
       "flags": {},
       "per_box": 1,
-      "qty": 10,
+      "qty": 2,
       "unit": "vial"
     },
     {
@@ -54,8 +54,160 @@
       "date": "2026-03-09",
       "flags": {},
       "per_box": 10,
-      "qty": 6,
+      "qty": 1,
       "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-03-10",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699541791007",
+      "date": "2026-03-10",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "ampoule"
+    },
+    {
+      "barcode": "8699548270482",
+      "date": "2026-03-10",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-03-10",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-03-11",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699541791007",
+      "date": "2026-03-11",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "ampoule"
+    },
+    {
+      "barcode": "8699548270482",
+      "date": "2026-03-11",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-03-11",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-03-12",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699541791007",
+      "date": "2026-03-12",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "ampoule"
+    },
+    {
+      "barcode": "8699548270482",
+      "date": "2026-03-12",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-03-12",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-03-13",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699541791007",
+      "date": "2026-03-13",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "ampoule"
+    },
+    {
+      "barcode": "8699548270482",
+      "date": "2026-03-13",
+      "flags": {},
+      "per_box": 1,
+      "qty": 2,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-03-13",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-03-14",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
+    },
+    {
+      "barcode": "8699809950696",
+      "date": "2026-03-14",
+      "flags": {},
+      "per_box": 10,
+      "qty": 1,
+      "unit": "syringe"
+    },
+    {
+      "barcode": "8699508270224",
+      "date": "2026-03-15",
+      "flags": {},
+      "per_box": 1,
+      "qty": 1,
+      "unit": "vial"
     }
   ],
   "format_version": 1,

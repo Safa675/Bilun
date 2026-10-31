@@ -106,7 +106,29 @@
     "date": "2026-06-16",
     "code": "8699686690029",
     "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
-    "qty": 3,
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A03665 from 2025-04-26",
+    "ingredient": "albumin",
+    "qty_unit": "bottle"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "8699686690029",
+    "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A03665 from 2025-04-26",
+    "ingredient": "albumin",
+    "qty_unit": "bottle"
+   },
+   {
+    "date": "2026-06-18",
+    "code": "8699686690029",
+    "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
     "source": "EK-4A A03665 from 2025-04-26",
@@ -126,6 +148,48 @@
   ],
   "performed": [],
   "direct": [
+   {
+    "fn": "evaluate_drug_indication_line_detailed",
+    "applicability_status": "eligible",
+    "selected_rule_id": "4.2.27.C.albumin_inpatient_3day_report",
+    "eligible_icd10": [
+     "E86",
+     "E87.0",
+     "K70",
+     "K74",
+     "N04",
+     "R63",
+     "R77"
+    ],
+    "observed_icd10": [
+     "K74.6",
+     "K92.2"
+    ],
+    "violation_kind": null,
+    "severity": null,
+    "message_tr": null
+   },
+   {
+    "fn": "evaluate_drug_indication_line_detailed",
+    "applicability_status": "eligible",
+    "selected_rule_id": "4.2.27.C.albumin_inpatient_3day_report",
+    "eligible_icd10": [
+     "E86",
+     "E87.0",
+     "K70",
+     "K74",
+     "N04",
+     "R63",
+     "R77"
+    ],
+    "observed_icd10": [
+     "K74.6",
+     "K92.2"
+    ],
+    "violation_kind": null,
+    "severity": null,
+    "message_tr": null
+   },
    {
     "fn": "evaluate_drug_indication_line_detailed",
     "applicability_status": "eligible",
@@ -262,7 +326,29 @@
     "date": "2026-06-16",
     "code": "8699686690029",
     "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
-    "qty": 3,
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A03665 from 2025-04-26",
+    "ingredient": "albumin",
+    "qty_unit": "bottle"
+   },
+   {
+    "date": "2026-06-17",
+    "code": "8699686690029",
+    "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "qty": 1,
+    "unit": "0.00",
+    "billed": "0.00",
+    "source": "EK-4A A03665 from 2025-04-26",
+    "ingredient": "albumin",
+    "qty_unit": "bottle"
+   },
+   {
+    "date": "2026-06-18",
+    "code": "8699686690029",
+    "name": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
+    "qty": 1,
     "unit": "0.00",
     "billed": "0.00",
     "source": "EK-4A A03665 from 2025-04-26",
@@ -304,6 +390,48 @@
     "message_tr": "Uzmanlık sağlık kurulu raporu eksik (§4.2)."
    },
    {
+    "fn": "evaluate_drug_indication_line_detailed",
+    "applicability_status": "eligible",
+    "selected_rule_id": "4.2.27.C.albumin_inpatient_3day_report",
+    "eligible_icd10": [
+     "E86",
+     "E87.0",
+     "K70",
+     "K74",
+     "N04",
+     "R63",
+     "R77"
+    ],
+    "observed_icd10": [
+     "K74.6",
+     "K92.2"
+    ],
+    "violation_kind": "missing_board_report",
+    "severity": "error",
+    "message_tr": "Uzmanlık sağlık kurulu raporu eksik (§4.2)."
+   },
+   {
+    "fn": "evaluate_drug_indication_line_detailed",
+    "applicability_status": "eligible",
+    "selected_rule_id": "4.2.27.C.albumin_inpatient_3day_report",
+    "eligible_icd10": [
+     "E86",
+     "E87.0",
+     "K70",
+     "K74",
+     "N04",
+     "R63",
+     "R77"
+    ],
+    "observed_icd10": [
+     "K74.6",
+     "K92.2"
+    ],
+    "violation_kind": "missing_board_report",
+    "severity": "error",
+    "message_tr": "Uzmanlık sağlık kurulu raporu eksik (§4.2)."
+   },
+   {
     "fn": "evaluate_drug_indication_findings",
     "drug": "HUMAN ALBUMIN OCTAPHARMA %20 IV INFUZYONLUK COZELTI, 100 ML",
     "finding_kind": "missing_board_report",
@@ -316,10 +444,24 @@
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
-   "action_count": 4
+   "action_count": 6
   }
  },
  "only_in_faulty": [
+  [
+   "action",
+   "claim_checklist",
+   "submission_check",
+   "",
+   0.0
+  ],
+  [
+   "action",
+   "claim_checklist",
+   "submission_check",
+   "",
+   0.0
+  ],
   [
    "action",
    "claim_checklist",
