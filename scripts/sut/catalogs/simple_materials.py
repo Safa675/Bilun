@@ -218,20 +218,20 @@ def extract_ek4a(df: pd.DataFrame, *, as_of: dt.date | None = None) -> pd.DataFr
 def ek4a_records(df: pd.DataFrame) -> pd.DataFrame:
     """Parse the drug rows of any raw EK-4A list, current or MÜLGA, without admission checks."""
     cols = _data_cols(df)
-    body = df.iloc[1:]
+    positions = [df.columns.get_loc(column) for column in cols]
 
     records: list[dict[str, Any]] = []
 
-    for _, row in body.iterrows():
-        key = row.iloc[df.columns.get_loc(cols[0])]
-        kamu_no = "" if pd.isna(key) else _safe_str(key)
-        drug_name = _safe_str(row.iloc[df.columns.get_loc(cols[2])])
+    for raw in df.iloc[1:].itertuples(index=False, name=None):
+        row = [raw[position] for position in positions]
+        kamu_no = "" if pd.isna(row[0]) else _safe_str(row[0])
+        drug_name = _safe_str(row[2])
 
         if drug_name and not kamu_no:
             if len(cols) == 16:
                 summary = [""] * 16
                 summary[2], summary[9], summary[15] = "ZZZ MAJISTRAL ILAC", "MAJİSTRAL", "0-2,5%"
-                if [_safe_str(row[column]) for column in cols] == summary:
+                if [_safe_str(value) for value in row] == summary:
                     continue
             raise ValueError("EK-4A drug row is missing kamu_no")
         if not kamu_no or not drug_name:
@@ -241,26 +241,22 @@ def ek4a_records(df: pd.DataFrame) -> pd.DataFrame:
 
         rec = {
             "kamu_no": kamu_no,
-            "barcode": _safe_str(row.iloc[df.columns.get_loc(cols[1])]),
+            "barcode": _safe_str(row[1]),
             "drug_name": drug_name,
-            "old_barcodes": _safe_str(row.iloc[df.columns.get_loc(cols[3])]),
-            "equivalence_group": _safe_str(row.iloc[df.columns.get_loc(cols[4])]),
-            "therapeutic_group": _safe_str(row.iloc[df.columns.get_loc(cols[5])]),
-            "entry_date": _safe_str(row.iloc[df.columns.get_loc(cols[6])]),
-            "activation_date": _safe_str(row.iloc[df.columns.get_loc(cols[7])]),
-            "passivation_date": _safe_str(row.iloc[df.columns.get_loc(cols[8])]),
-            "discount_status": _safe_str(row.iloc[df.columns.get_loc(cols[9])]),
+            "old_barcodes": _safe_str(row[3]),
+            "equivalence_group": _safe_str(row[4]),
+            "therapeutic_group": _safe_str(row[5]),
+            "entry_date": _safe_str(row[6]),
+            "activation_date": _safe_str(row[7]),
+            "passivation_date": _safe_str(row[8]),
+            "discount_status": _safe_str(row[9]),
         }
         for i in range(10, min(14, len(cols))):
-            rec[f"discount_tier_{i - 9}"] = _safe_str(
-                row.iloc[df.columns.get_loc(cols[i])]
-            )
+            rec[f"discount_tier_{i - 9}"] = _safe_str(row[i])
         if len(cols) > 14:
-            rec["special_discount"] = _safe_str(row.iloc[df.columns.get_loc(cols[14])])
+            rec["special_discount"] = _safe_str(row[14])
         if len(cols) > 15:
-            rec["pharmacist_discount"] = _safe_str(
-                row.iloc[df.columns.get_loc(cols[15])]
-            )
+            rec["pharmacist_discount"] = _safe_str(row[15])
 
         records.append(rec)
 
