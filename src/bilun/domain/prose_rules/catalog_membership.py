@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import bisect
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 
@@ -69,18 +70,44 @@ def normalize_procedure_code(raw: str) -> str:
     return code
 
 
+@lru_cache(maxsize=1)
+def _catalog_period_starts() -> tuple[str, ...]:
+    """The days, in order, on which a row of the EK-2B or EK-2C history starts or stops applying."""
+    days: set[date] = set()
+    for path in (EK2B_CURATED_HISTORY_PATH, EK2C_CURATED_HISTORY_PATH):
+        if not path.exists():
+            continue
+        df = pd.read_parquet(path)
+        if "effective_date" not in df.columns:
+            continue
+        start = df["valid_from"] if "valid_from" in df.columns else df["effective_date"]
+        days.update(pd.to_datetime(start, errors="coerce").dropna().dt.date)
+        if "valid_to" in df.columns:
+            ends = pd.to_datetime(df["valid_to"], errors="coerce").dropna().dt.date
+            days.update(end + timedelta(days=1) for end in ends.unique())
+    return tuple(sorted(day.isoformat() for day in days))
+
+
 def _coerce_asof_key(as_of_date: date | str | None) -> str:
+    """The cache key of a date: the first day of its catalog period.
+
+    The rows in force change only on the days of ``_catalog_period_starts``, so every day of a period has
+    the same rows, and the as-of caches below hold one entry per period instead of one per service date.
+    """
     if as_of_date is None:
-        return date.today().isoformat()
-    if isinstance(as_of_date, date):
-        return as_of_date.isoformat()
-    text = str(as_of_date).strip()
-    if not text:
-        return date.today().isoformat()
-    try:
-        return datetime.strptime(text[:10], "%Y-%m-%d").date().isoformat()
-    except ValueError:
-        return date.today().isoformat()
+        day = date.today().isoformat()
+    elif isinstance(as_of_date, date):
+        day = as_of_date.isoformat().removesuffix("T00:00:00")
+        if len(day) > 10:  # a time of day: a row that ends on this day no longer applies
+            return day
+    else:
+        try:
+            day = datetime.strptime(str(as_of_date).strip()[:10], "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            day = date.today().isoformat()
+    starts = _catalog_period_starts()
+    index = bisect.bisect_right(starts, day)
+    return starts[index - 1] if index else day
 
 
 def _eligible_history_rows(

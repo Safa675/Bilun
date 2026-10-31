@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import unicodedata
 from enum import Enum
+from functools import lru_cache
 
 from .utils import turkish_lower
 
@@ -53,9 +54,14 @@ _FOLDS = {
 }
 
 
+@lru_cache(maxsize=65536)
+def _fold(value: str, how: TurkishFold) -> str:
+    return _FOLDS[how](value)
+
+
 def fold_turkish(text: object, how: TurkishFold, *, strip: bool = False) -> str:
     """``str(text)``, trimmed when ``strip``, folded as ``how`` says (see the module docstring)."""
     value = str(text)
     if strip:
         value = value.strip()
-    return _FOLDS[how](value)
+    return _fold(value, how)

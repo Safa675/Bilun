@@ -17,6 +17,7 @@ Track A3 resolve policy for ``gate_b_sources`` (compile assert):
 
 from __future__ import annotations
 
+from functools import cached_property
 import hashlib
 import re
 import unicodedata
@@ -235,6 +236,67 @@ def _format_match_candidates(matched: pl.DataFrame) -> str:
     return ", ".join(parts[:8]) + ("…" if len(parts) > 8 else "")
 
 
+class _ClauseIndex:
+    """What a cite needs to know of a clauses frame, by row number in frame order.
+
+    A compile resolves tens of thousands of cites against the same few frames; a filter per cite is what it spent
+    its time on. The columns a cite may not need (and a minimal frame may lack) are read when they are first asked for.
+    """
+
+    def __init__(self, clauses: pl.DataFrame) -> None:
+        self.frame = clauses  # keeps the frame alive, so its id stays its own
+        self.by_coordinate: dict[str, list[int]] = {}
+        self.by_key: dict[tuple[str, str], list[int]] = {}
+        self.by_hash: dict[str, list[int]] = {}
+        # Row hashes: prefer the stored ``content_hash`` column; fall back to
+        # computing from ``in_force_text`` so minimal frames (tests) still resolve.
+        if "content_hash" in clauses.columns:
+            hashes = clauses["content_hash"].cast(pl.Utf8).to_list()
+        elif "in_force_text" in clauses.columns:
+            hashes = [content_hash(t) for t in clauses["in_force_text"]]
+        else:
+            hashes = [None] * clauses.height
+        coordinates = clauses["clause_coordinate"].cast(pl.Utf8).to_list()
+        for row, (coordinate, digest) in enumerate(zip(coordinates, hashes, strict=True)):
+            if coordinate is not None:
+                self.by_coordinate.setdefault(coordinate, []).append(row)
+            if digest is not None:
+                self.by_hash.setdefault(digest, []).append(row)
+                if coordinate is not None:
+                    self.by_key.setdefault((coordinate, digest), []).append(row)
+
+    @cached_property
+    def clause_ids(self) -> list[Any]:
+        return self.frame["clause_id"].to_list()
+
+    @cached_property
+    def in_force(self) -> list[bool]:
+        return [value is True for value in self.frame["is_in_force"].to_list()]
+
+    @cached_property
+    def encode_eligible(self) -> list[bool]:
+        return [value is True for value in self.frame.select(encode_eligible_mask(self.frame)).to_series().to_list()]
+
+    def narrowed(self, rows: list[int], *, in_force_only: bool) -> list[int]:
+        """The in-force rows among `rows`, or `rows` when none is in force."""
+        if in_force_only and "is_in_force" in self.frame.columns:
+            return [row for row in rows if self.in_force[row]] or rows
+        return rows
+
+
+_clause_indexes: dict[int, _ClauseIndex] = {}
+
+
+def _clause_index(clauses: pl.DataFrame) -> _ClauseIndex:
+    index = _clause_indexes.get(id(clauses))
+    if index is None:
+        index = _ClauseIndex(clauses)
+        if len(_clause_indexes) >= 4:
+            del _clause_indexes[next(iter(_clause_indexes))]
+        _clause_indexes[id(clauses)] = index
+    return index
+
+
 def _resolve_clause_key(
     coord: str | None,
     chash: str,
@@ -251,47 +313,29 @@ def _resolve_clause_key(
     """
     if "clause_coordinate" not in clauses.columns:
         raise ValueError("clauses frame missing clause_coordinate column")
-    # Row hashes: prefer the stored ``content_hash`` column; fall back to
-    # computing from ``in_force_text`` so minimal frames (tests) still resolve.
-    if "content_hash" in clauses.columns:
-        row_hashes = clauses["content_hash"].cast(pl.Utf8)
-    elif "in_force_text" in clauses.columns:
-        row_hashes = pl.Series(
-            "content_hash", [content_hash(t) for t in clauses["in_force_text"]]
-        )
-    else:
+    if "content_hash" not in clauses.columns and "in_force_text" not in clauses.columns:
         raise ValueError("clauses frame missing content_hash/in_force_text column")
 
-    if coord is not None:
-        mask = (clauses["clause_coordinate"].cast(pl.Utf8) == coord) & (
-            row_hashes == chash
-        )
-    else:
-        mask = row_hashes == chash
-    matched = clauses.filter(mask)
-    if matched.is_empty():
+    index = _clause_index(clauses)
+    rows = index.by_key.get((coord, chash)) if coord is not None else index.by_hash.get(chash)
+    if not rows:
         raise UnknownClauseCiteError(
             f"clause_key content mismatch for {coord!r}#{chash}: clause text "
             "changed since the key was authored (amendment) — re-triage."
         )
-
-    if in_force_only and "is_in_force" in matched.columns:
-        forced = matched.filter(pl.col("is_in_force") == True)  # noqa: E712
-        if not forced.is_empty():
-            matched = forced
-
-    pre_eligible = matched
+    candidates = index.narrowed(rows, in_force_only=in_force_only)
+    rows = candidates
     if encode_eligible_only:
-        matched = filter_encode_eligible(matched)
-        if matched.is_empty():
+        rows = [row for row in candidates if index.encode_eligible[row]]
+        if not rows:
             raise NonEncodeEligibleCiteError(
                 f"clause_key {coord!r}#{chash} matches only non-encode-eligible "
-                f"rows (candidates: {_format_match_candidates(pre_eligible)})."
+                f"rows (candidates: {_format_match_candidates(clauses[candidates])})."
             )
 
     # All rows sharing a content_hash are semantically identical, so returning
     # several ids for an identical-content collision is correct (not ambiguous).
-    return sorted({str(x) for x in matched["clause_id"].to_list() if x})
+    return sorted({str(index.clause_ids[row]) for row in rows if index.clause_ids[row]})
 
 
 def resolve_gate_b_ref_to_clause_ids(
@@ -483,32 +527,29 @@ def resolve_gate_b_ref_to_clause_ids(
     if "clause_coordinate" not in clauses.columns:
         raise ValueError("clauses frame missing clause_coordinate column")
 
-    matched = clauses.filter(pl.col("clause_coordinate").cast(pl.Utf8) == text)
-    if matched.is_empty():
+    index = _clause_index(clauses)
+    rows = index.by_coordinate.get(text)
+    if not rows:
         raise UnknownClauseCiteError(f"unknown clause_coordinate cite: {text}")
 
-    if in_force_only and "is_in_force" in matched.columns:
-        forced = matched.filter(pl.col("is_in_force") == True)  # noqa: E712
-        if not forced.is_empty():
-            matched = forced
-
-    pre_eligible = matched
+    candidates = index.narrowed(rows, in_force_only=in_force_only)
+    rows = candidates
     if encode_eligible_only:
-        matched = filter_encode_eligible(matched)
-        if matched.is_empty():
+        rows = [row for row in candidates if index.encode_eligible[row]]
+        if not rows:
             raise NonEncodeEligibleCiteError(
                 f"clause_coordinate cite {text!r} matches only non-encode-eligible "
-                f"rows (candidates: {_format_match_candidates(pre_eligible)}). "
+                f"rows (candidates: {_format_match_candidates(clauses[candidates])}). "
                 "Headings/chapter/section-only must not appear in gate_b_sources."
             )
 
-    ids = sorted({str(x) for x in matched["clause_id"].to_list() if x})
+    ids = sorted({str(index.clause_ids[row]) for row in rows if index.clause_ids[row]})
     if not ids:
         raise UnknownClauseCiteError(f"unknown clause_coordinate cite: {text}")
     if len(ids) > 1 and not allow_ambiguous:
         raise AmbiguousClauseCiteError(
             f"ambiguous clause_coordinate cite {text!r} matches {len(ids)} "
-            f"encode-eligible rows: {_format_match_candidates(matched)}. "
+            f"encode-eligible rows: {_format_match_candidates(clauses[rows])}. "
             "Use an explicit C###### clause_id for this collision."
         )
     return ids

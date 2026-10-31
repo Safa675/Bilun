@@ -2000,7 +2000,7 @@
     "scripts/sut/build_sut_coverage.py": "d644f706227198eefe3f8f10871458038b9de983ef013738178c0207fd35a140",
     "scripts/sut/prose/__init__.py": "0f5eb017b24dd60cf2b8b31fc958ae2b6b192d355b52cf5328d078aec7ed90da",
     "scripts/sut/prose/classify.py": "3d961fc5fab486a384fe6a3d251e1cbd21a5e3f2e4d39ad027d836d97757de07",
-    "scripts/sut/prose/clause_identity.py": "020f6c1918977496031c2c7b5f4bc169e8d794c3c175a2bccf2ec6b23bb14b6a",
+    "scripts/sut/prose/clause_identity.py": "7c8550a64e2f9393432ce00ab3f63a29c7c286af8f61c19ed822b21e3d285fd8",
     "scripts/sut/prose/clause_type_overrides.py": "c67aec2a7879737ae63ee275dae5e229b8527aa1aaec14817f16c05a0c0edd94",
     "scripts/sut/prose/copay_compositor_traces.py": "9d1b3b27b8d92735ad4ad29298777060f1c1f37610aa545e0ca0b2d3109051a9",
     "scripts/sut/prose/coverage.py": "604f940954a9014d3adf0ddf1911d40f63009749a2276fc6444a8870dac3cb11",
@@ -2055,7 +2055,7 @@
     "src/bilun/domain/sut/coverage_evidence.py": "dcec41420d43cf1bf649095115f874eddacf93c27073194f911694bf7c1a8721",
     "src/bilun/domain/sut/rule_registry.py": "6de6e627692e63f23539c6e3a6dd48526db81d682afd145b5391d2ebe0248a65",
     "src/bilun/domain/sut/source_authority_schema.py": "4241d3dd268f5847da94c6abb6a24e5c6306cb34a5b8929deddd72085e461748",
-    "src/bilun/domain/turkish_fold.py": "6eeb1a0b696330bca4945e1864c2c407e1ccb97cb2184fb10fa87901d22e14cf"
+    "src/bilun/domain/turkish_fold.py": "2c9c084576b6166fd31c70364240ae06dd6cd1b305d2527bac1b01f7c80b8ec7"
   },
   "input_sha256": "db2f8dd718bd3b1d926ba72b462eab51ffc5eb2e04dcbb3b73a8bf0a2c734dd4",
   "inputs_available_count": null,

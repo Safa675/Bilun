@@ -38,22 +38,30 @@ def _compute_annex_temporal_stats(df: pd.DataFrame, code_col: str) -> dict[str, 
     dates = sorted(work["effective_date"].unique().tolist())
     n_codes = work[code_col].nunique()
 
-    grouped = work.groupby(code_col)
+    # `rows` is sorted by code and date: a code's rows are adjacent, its first and last are its old and new price.
+    rows = work[work[code_col].notna()]
+    codes = rows[code_col].to_numpy()
+    prices = rows["price_try"].to_numpy()
+    names = rows["name"].to_numpy() if "name" in rows.columns else None
+    effective = rows["effective_date"].to_numpy()
     codes_with_changes = 0
     all_deltas: list[dict[str, Any]] = []
 
-    for code, group in grouped:
-        if len(group) < 2:
+    first = 0
+    for last, code in enumerate(codes):
+        if last + 1 < len(codes) and codes[last + 1] == code:
             continue
-        g = group.sort_values("effective_date").reset_index(drop=True)
-        old_price = g.iloc[0]["price_try"]
-        new_price = g.iloc[-1]["price_try"]
+        oldest, first = first, last + 1
+        if oldest == last:
+            continue
+        old_price = prices[oldest]
+        new_price = prices[last]
         if pd.isna(old_price) or pd.isna(new_price) or old_price == 0:
             continue
         delta_pct = round(((new_price - old_price) / old_price) * 100, 2)
         if abs(delta_pct) > 0.01:
             codes_with_changes += 1
-        name = g.iloc[-1].get("name", str(code))
+        name = names[last] if names is not None else str(code)
         if pd.isna(name):
             name = str(code)
         all_deltas.append(
@@ -63,8 +71,8 @@ def _compute_annex_temporal_stats(df: pd.DataFrame, code_col: str) -> dict[str, 
                 "old_price": round(float(old_price), 2),
                 "new_price": round(float(new_price), 2),
                 "delta_pct": delta_pct,
-                "old_date": str(g.iloc[0]["effective_date"]),
-                "new_date": str(g.iloc[-1]["effective_date"]),
+                "old_date": str(effective[oldest]),
+                "new_date": str(effective[last]),
             }
         )
 
