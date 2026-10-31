@@ -1,7 +1,7 @@
 {
   "diagnoses": [
     {
-      "date": "2026-07-22",
+      "date": "2026-08-03",
       "icd10": "K35.9",
       "role": "primary"
     }
@@ -10,8 +10,8 @@
   "format_version": 1,
   "header": {
     "admission_date": null,
-    "claim_end_date": "2026-07-22",
-    "claim_start_date": "2026-07-22",
+    "claim_end_date": "2026-08-03",
+    "claim_start_date": "2026-08-03",
     "claim_type": "poliklinik",
     "department": "Genel Cerrahi",
     "discharge_date": null,
@@ -23,7 +23,7 @@
     {
       "billed_ratio": "1.0000",
       "code": "520030",
-      "date": "2026-07-22",
+      "date": "2026-08-03",
       "flags": {},
       "qty": 1,
       "specialty": "1900"

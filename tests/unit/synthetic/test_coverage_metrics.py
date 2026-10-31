@@ -1042,7 +1042,7 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
         cohort.scenario("S45").patient_id,
         cohort.scenario("S48").patient_id,
         cohort.scenario("S51").patient_id,
-        cohort.scenario("S31").patient_id,  # patient 1's control, inside the package period of S1 (C000714, dormant)
+        cohort.scenario("S31").patient_id,  # patient 1's control, after the package period of S1 (C000714)
         cohort.scenario("S20").patient_id,
         cohort.scenario("S17").patient_id,  # the month of haemodialysis, a day-case claim of EK-2C sessions
         cohort.scenario("S21").patient_id,  # the radiotherapy course, a day-case claim of EK-2B lines

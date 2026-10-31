@@ -5,7 +5,7 @@
     "recete_clean.parquet": 78
   },
   "clean_tables_digest": {
-    "anadata_clean.parquet": "47799b3efe95f4ef5c12d6d9a6ac820b7f0e58975a7afdbb0508933110a24107",
+    "anadata_clean.parquet": "b273ccc7c57035e51dd3aba66c639b752d4d848ffc761f4269302022b74ea4ba",
     "lab_clean.parquet": "f70f048fdd3861a85ca840df2753b14888b3898650bee989be2886f4fd3f0a44",
     "recete_clean.parquet": "9d5ab4eb2f521a3b26289fda4325896c060ef35b7b47ff7b3dcdfd5f7f5631fe"
   },
@@ -1387,14 +1387,14 @@
   "schema_version": 1,
   "seed": null,
   "tables_digest": {
-    "claim_diagnoses.parquet": "2ff68becca87aba28a2c601b57644c8be44f430d321ee772658b6dc96bcbf0a5",
-    "claim_headers.parquet": "afc7713dc4edd826d4c9f1e61eae728ba695b68f5cd2f133b0abaa9c0948afc7",
+    "claim_diagnoses.parquet": "5300dfae6d2b10662d047f5f7b118fdb6cd72da2598896fc7e75d7fbe2fa9789",
+    "claim_headers.parquet": "2d23a833af2d593af60da4eef8bd85f098b29b651e52e575a582f61cd0ac1bcb",
     "drug_claim_lines.parquet": "a1b59974e95c867c6418f56931730c348065f674515438b494e18fa0e342ba6d",
     "expected_rule_outputs.parquet": "0ac537d7555657186f9478bed9fdb312d9837e216f86626e10375bc6aae8cb41",
     "material_claim_lines.parquet": "2bcd0c9087dfcdf591dd5efc30115ef39f6fcb950be8c0bb945aa6440a567e95",
     "medula_rejection_events.parquet": "aac97ec1ff254d65291058d0f8d524e3f21b7dd39499c9faf1ee100c95bd409c",
     "patient_copay_profiles.parquet": "b30ce0fa844fbabeab9e1a1541b1c0859f1aed6278bcc86a296741b31749c5e4",
     "performed_procedure_lines.parquet": "bc1e6a6bd6a08ff3328bcec87140312cd8920f05a04abe5d9acb2d47d2fceb29",
-    "procedure_claim_lines.parquet": "f998fad38237e1c58027674571e57f849c00389f3820ac8f18877a028469a02b"
+    "procedure_claim_lines.parquet": "8d15ace9b833f907b22626e7e72c3c09b78f28e3f0a828a34d65f6ca46f1a17c"
   }
 }

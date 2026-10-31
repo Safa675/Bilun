@@ -105,7 +105,7 @@ _EXPECTED_AMOUNTS_BY_STORY: dict[str, str] = {
 }
 
 # The stories after the eighth, as the committed registry names them: a patient and the claims of its bills.
-# S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 and S51 are clean bills (no fault, no record; S31 is the dormant
+# S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 and S51 are clean bills (no fault, no record; S31 was a dormant
 # fault of C000714, which no detector reads), the others carry one.
 _COMMITTED_SCENARIOS: dict[str, dict[str, Any]] = {
     "S9": {"patient_id": "SENTETIK-HASTA-0009", "claim_ids": ["F-SENTETIK-HASTA-0009-001"]},
@@ -1081,7 +1081,7 @@ def test_the_ids_follow_the_encounter_number_and_the_tables_follow_the_dates(two
     assert headers["claim_id"].to_list() == [
         "F-SENTETIK-HASTA-0001-001",
         "F-SENTETIK-HASTA-0001-002",  # the committed ER visit of patient 1 (S30), on the day of his stay: the id breaks the tie
-        "F-SENTETIK-HASTA-0001-003",  # his control (S31), six days after the discharge
+        "F-SENTETIK-HASTA-0001-003",  # his control (S31), after the period of C000714
         "F-SENTETIK-HASTA-0002-001",
         "F-SENTETIK-HASTA-0002-005",  # the ER visit of its day (S52)
         "F-SENTETIK-HASTA-0002-002",  # the committed control of patient 2 (S32), three weeks after the stay

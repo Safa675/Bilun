@@ -1500,6 +1500,18 @@ CASES: list[Case] = [
         at=f"{CLAIM[5]} material_claim_lines[{material_line_id(CLAIM[5], 1)}]",
         says="dated 2026-09-20 outside the claim window 2026-09-03..2026-09-08",
     ),
+    # --- stay.control_in_package_period (S1's package, group C: the period runs to 2026-07-31; S31 is its control)
+    Case(
+        "stay.control_in_package_period",
+        lambda d: (
+            edit(d, TABLE_CLAIM_HEADERS, pl.col("claim_id") == "F-SENTETIK-HASTA-0001-003", claim_start_date="2026-07-31", claim_end_date="2026-07-31"),
+            edit(d, TABLE_PROCEDURES, pl.col("claim_id") == "F-SENTETIK-HASTA-0001-003", procedure_date="2026-07-31"),
+            edit(d, TABLE_DIAGNOSES, pl.col("claim_id") == "F-SENTETIK-HASTA-0001-003", diagnosis_date="2026-07-31"),
+        ),
+        label="the_control_inside_the_period",
+        at="F-SENTETIK-HASTA-0001-003 procedure_claim_lines[",
+        says="inside the 10 days after the package's discharge of 2026-07-21 (C000714)",
+    ),
     # --- stay.entry_visit (S4's stay and its ER visit S54; review of 2026-10-30, A1)
     Case(
         "stay.entry_visit",
