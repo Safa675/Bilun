@@ -220,3 +220,71 @@ def test_observed_diagnosis_truncation_is_explicit() -> None:
     assert finding.observed_icd10_count == 71
     assert finding.observed_icd10_truncated is True
     assert finding.to_dict()["observed_icd10_truncated"] is True
+
+
+def _course_context(*, days: int = 3, other_report_line: bool = False):
+    """One claim, one drug given on `days` days: a line per day, as a course is billed."""
+    ctx = _context(primary_icd10="E66.9", primary_available=True)
+    first = ctx.drug_lines[0]
+    lines = tuple(replace(first, drug_claim_line_id=f"D{n}") for n in range(1, days + 1))
+    if other_report_line:
+        lines = (*lines, replace(first, drug_claim_line_id="D9", drug_name="BASKA ILAC", barkod="111", drug_code="X"))
+    return replace(ctx, drug_lines=lines)
+
+
+def test_the_same_finding_on_each_day_of_a_course_is_one_finding_naming_every_line() -> None:
+    ctx = _course_context(days=3)
+    batch = evaluate_drug_indication_findings(ctx.patient_id, ctx)
+
+    (finding,) = batch.findings
+    assert finding.finding_id == "drug_indication:P-ORENCIA:C-ORENCIA:D1:indication_mismatch"  # the first line's id
+    assert finding.drug_claim_line_id == "D1"
+    assert finding.drug_claim_line_ids == ("D1", "D2", "D3")
+    assert finding.to_dict()["drug_claim_line_ids"] == ["D1", "D2", "D3"]
+    assert finding.to_dict()["line_count"] == 3
+    assert "3 fatura satırını" in finding.explanation_tr
+    (legacy,) = batch.legacy_violations
+    assert legacy["drug_claim_line_ids"] == ["D1", "D2", "D3"] and legacy["line_count"] == 3
+    # every line is still evaluated, and each evaluation points at the one finding
+    assert [e.drug_claim_line_id for e in batch.evaluations] == ["D1", "D2", "D3"]
+    assert {e.finding_id for e in batch.evaluations} == {finding.finding_id}
+
+
+def test_a_single_line_finding_is_unchanged() -> None:
+    ctx = _context(primary_icd10="E66.9", primary_available=True)
+    (finding,) = evaluate_drug_indication_findings(ctx.patient_id, ctx).findings
+    assert finding.drug_claim_line_ids == ("D1",) and finding.to_dict()["line_count"] == 1
+    assert "fatura satırını" not in finding.explanation_tr
+
+
+def test_another_drug_on_the_claim_stays_its_own_finding() -> None:
+    ctx = _course_context(days=2, other_report_line=True)
+    batch = evaluate_drug_indication_findings(ctx.patient_id, ctx)
+    same_drug = [f for f in batch.findings if f.drug_claim_line_id == "D1"]
+    assert len(same_drug) == 1 and same_drug[0].drug_claim_line_ids == ("D1", "D2")
+    assert all("D9" not in f.drug_claim_line_ids or f.drug_claim_line_ids == ("D9",) for f in batch.findings)
+
+
+def test_the_same_drug_on_two_claims_is_two_findings() -> None:
+    ctx = _context(primary_icd10="E66.9", primary_available=True)
+    claim, line = ctx.claims[0], ctx.drug_lines[0]
+    other_claim = replace(claim, claim_id="C-OTHER")
+    other_line = replace(line, drug_claim_line_id="D2", claim_id="C-OTHER")
+    batch = evaluate_drug_indication_findings(
+        ctx.patient_id, replace(ctx, claims=(claim, other_claim), drug_lines=(line, other_line))
+    )
+    assert sorted(f.claim_id for f in batch.findings) == ["C-ORENCIA", "C-OTHER"]
+    assert all(len(f.drug_claim_line_ids) == 1 for f in batch.findings)
+
+
+def test_the_public_billing_report_keeps_every_line_of_a_grouped_finding() -> None:
+    # The public contract drops a list it does not declare as a list.
+    from src.bilun.api.public_responses import project_public_response
+
+    ctx = _course_context(days=2)
+    batch = evaluate_drug_indication_findings(ctx.patient_id, ctx)
+    payload = {"drug_indication": {"findings": [f.to_dict() for f in batch.findings], "violations": list(batch.legacy_violations)}}
+    review = project_public_response(payload, "/api/billing-report/{patient_id}")["drug_indication"]
+    for row in (review["findings"][0], review["violations"][0]):
+        assert row["drug_claim_line_ids"] == ["D1", "D2"]
+        assert row["line_count"] == 2

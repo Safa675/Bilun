@@ -418,7 +418,7 @@ def detect_missing_drug_barcode(
                 "drug_name": line.drug_name,
             }
         )
-    return violations
+    return _one_row_per_drug(violations)
 
 
 # ===========================================================================
@@ -705,6 +705,28 @@ def detect_unreported_lab_result(
     return violations
 
 
+def _one_row_per_drug(rows: list[dict[str, Any]], *extra_key: str) -> list[dict[str, Any]]:
+    """One row per claim and drug (and `extra_key` fields), naming every bill line it covers.
+
+    A drug given over several days is several bill lines; the same error on them is one error of the drug,
+    not one per day. The row keeps the first line as `drug_claim_line_id`; a different value of `extra_key`
+    (another wrong quantity) stays a row of its own.
+    """
+    grouped: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for row in rows:
+        key = (row["claim_id"], row.get("barkod") or row["drug_code"] or row["drug_name"], *(row[k] for k in extra_key))
+        kept = grouped.get(key)
+        if kept is None:
+            grouped[key] = {**row, "drug_claim_line_ids": [row["drug_claim_line_id"]], "line_count": 1}
+            continue
+        kept["drug_claim_line_ids"].append(row["drug_claim_line_id"])
+        kept["line_count"] += 1
+    for row in grouped.values():
+        if row["line_count"] > 1:
+            row["detail"] = f"{row['detail']} Aynı ilacın {row['line_count']} fatura satırı."
+    return list(grouped.values())
+
+
 def detect_drug_quantity_error(
     claims: list[ClaimHeader],
     drug_lines: tuple,
@@ -759,10 +781,11 @@ def detect_drug_quantity_error(
                 "drug_claim_line_id": line.drug_claim_line_id,
                 "drug_code": line.drug_code,
                 "drug_name": line.drug_name,
+                "barkod": getattr(line, "barkod", "") or "",
                 "quantity": _json_number(quantity),
             }
         )
-    return violations
+    return _one_row_per_drug(violations, "quantity")
 
 
 def _json_number(quantity: Any) -> Any:

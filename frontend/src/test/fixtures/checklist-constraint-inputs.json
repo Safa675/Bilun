@@ -11,6 +11,10 @@
         "patient_id": "P1",
         "claim_id": "C1",
         "drug_claim_line_id": "D1",
+        "drug_claim_line_ids": [
+          "D1"
+        ],
+        "line_count": 1,
         "drug_name": "OZURDEX (DEKSAMETAZON)",
         "drug_code": "SYN-OZURDEX",
         "finding_kind": "needs_dose_verification",
@@ -358,6 +362,10 @@
         ],
         "finding_id": "drug_indication:P1:C1:D1:needs_dose_verification",
         "patient_id": "P1",
+        "drug_claim_line_ids": [
+          "D1"
+        ],
+        "line_count": 1,
         "material_name": "OZURDEX (DEKSAMETAZON)",
         "message": "OZURDEX (DEKSAMETAZON) için doz protokolü doğrulanamadı veya aşıldı.",
         "savings_try": 0.0,

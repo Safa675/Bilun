@@ -833,3 +833,29 @@ def test_donor_prep_category_on_other_claim_does_not_mark_exam() -> None:
     assert detect_donor_prep_as_exam(
         [exam_claim, donor_claim], [exam, donor_prep]
     ) == []
+
+
+def test_drug_quantity_error_on_each_day_of_a_course_is_one_row_naming_every_line() -> None:
+    lines = tuple(_make_drug_line(drug_claim_line_id=f"D{n}", quantity=4000) for n in (1, 2, 3))
+    (row,) = detect_drug_quantity_error([], lines)
+    assert row["drug_claim_line_id"] == "D1"
+    assert row["drug_claim_line_ids"] == ["D1", "D2", "D3"] and row["line_count"] == 3
+    assert "3 fatura satırı" in row["detail"]
+
+
+def test_drug_quantity_errors_with_different_counts_or_drugs_stay_separate_rows() -> None:
+    lines = (
+        _make_drug_line(drug_claim_line_id="D1", quantity=4000),
+        _make_drug_line(drug_claim_line_id="D2", quantity=5000),
+        _make_drug_line(drug_claim_line_id="D3", quantity=4000, barkod="8690000000002"),
+        _make_drug_line(drug_claim_line_id="D4", quantity=4000, claim_id="C2"),
+    )
+    rows = detect_drug_quantity_error([], lines)
+    assert sorted(r["drug_claim_line_id"] for r in rows) == ["D1", "D2", "D3", "D4"]
+    assert all(r["line_count"] == 1 for r in rows)
+
+
+def test_a_valid_day_beside_a_wrong_one_is_not_named() -> None:
+    lines = (_make_drug_line(drug_claim_line_id="D1", quantity=1), _make_drug_line(drug_claim_line_id="D2", quantity=4000))
+    (row,) = detect_drug_quantity_error([], lines)
+    assert row["drug_claim_line_ids"] == ["D2"]
