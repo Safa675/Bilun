@@ -29,6 +29,11 @@ nights:
   basis: judgment
   source: "Story S18 has 4 nights (2026-06-15 to 06-19). Min 3: the albumin is given on three days after the admission day. A hepatologist to confirm."
 
+complaint:
+  text: "Karnında giderek artan şişlik; son iki gündür siyah renkli dışkı, halsizlik ve baş dönmesi."
+  basis: judgment
+  source: "Story S18: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K74.6
     name: "KARACİĞERİN DİĞER VE TANIMLANMAMIŞ SİROZU"

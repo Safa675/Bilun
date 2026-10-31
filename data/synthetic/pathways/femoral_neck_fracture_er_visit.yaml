@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S41 patient is 84, like story S5; the bounds are those of story S5 (the author's judgment)."
 
+complaint:
+  text: "Evde düştükten sonra sağ kalçada şiddetli ağrı; sağ bacağına basamıyor, bacak dışa dönük duruyor."
+  basis: judgment
+  source: "Story S41: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: S72.00
     name: "FEMUR BOYUN KIRIĞI, KAPALI"

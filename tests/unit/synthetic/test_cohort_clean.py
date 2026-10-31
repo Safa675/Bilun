@@ -163,7 +163,7 @@ _CURRENCY_RE = re.compile(
 
 # Hard-coded literal narrative strings for Patient 6 (S6, PK-Merz story) and Patient 7 (S7, ER).
 _PATIENT_6_NARRATIVES: dict[str, str] = {
-    "YAKINMA": "Başvuru tanısı: Pnömonit, gıda ve kusmuğa bağlı (J69.0).",
+    "YAKINMA": "Üç gündür öksürük, balgam, ateş ve nefes darlığı; yemek yerken sık sık öksürüp boğuluyor (oğlunun ifadesi).",
     "OYKU": (
         "79 yaşında erkek hasta, 08.06.2026 tarihinde Ic Hastaliklari bölümüne "
         "yatarak tedavi için başvurdu. Kayıtlı tanılar: Pnömonit, gıda ve kusmuğa bağlı; "
@@ -183,7 +183,7 @@ _PATIENT_6_NARRATIVES: dict[str, str] = {
 }
 
 _PATIENT_7_NARRATIVES: dict[str, str] = {
-    "YAKINMA": "Başvuru tanısı: Solunumda göğüs ağrısı (R07.1).",
+    "YAKINMA": "Bugün başlayan, derin nefes alınca artan sağ yan göğüs ağrısı ve nefes darlığı.",
     "OYKU": (
         "58 yaşında kadın hasta, 19.02.2026 tarihinde Acil Tip bölümüne "
         "acil olarak başvurdu. Kayıtlı tanılar: Solunumda göğüs ağrısı; Dispne."
@@ -265,6 +265,7 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
     claims_by_id = {c.header.claim_id: c for c in built_showcase.claims}
     icd_df = pl.read_parquet(_REPO / "data/synthetic/reference/icd10_tr.parquet")
     icd_map = dict(zip(icd_df["code"].to_list(), icd_df["name_tr"].to_list(), strict=True))
+    complaints = {pid: pathway.complaint.text for pid, pathway in load_all().items()}
 
     how_map = {
         "yatis": "yatarak tedavi için",
@@ -341,7 +342,9 @@ def test_clean_row_counts_and_anadata_field_rules_for_every_patient(
         prim_name = sentence_case_tr(icd_map[hdr["primary_icd10"]])
         all_names = "; ".join(sentence_case_tr(icd_map[c]) for c in claim_dxs)
         sex_word = "erkek" if exp_sex == "E" else "kadın"
-        exp_yakinma = f"Başvuru tanısı: {prim_name} ({hdr['primary_icd10']})."
+        # YAKINMA is the pathway's complaint, never the diagnosis (review of 2026-10-30, A4)
+        exp_yakinma = complaints[hdr["scenario_tag"]]
+        assert prim_name not in exp_yakinma and hdr["primary_icd10"] not in exp_yakinma
         exp_oyku = (
             f"{pins.age} yaşında {sex_word} hasta, {exp_dt.strftime('%d.%m.%Y')} tarihinde "
             f"{hdr['department']} bölümüne {how_map[hdr['claim_type']]} başvurdu. "

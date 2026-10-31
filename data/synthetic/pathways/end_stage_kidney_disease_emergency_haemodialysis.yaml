@@ -28,6 +28,11 @@ nights:
   basis: judgment
   source: "One emergency session, admitted and discharged on 2026-06-12 (card S17 b2): a stay of one date."
 
+complaint:
+  text: "İki gündür nefes darlığı, bacaklarda şişlik ve halsizlik; son diyaliz seansına gidemedi."
+  basis: judgment
+  source: "Story S23: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: N18.0
     name: "SON DÖNEM BÖBREK HASTALIĞI"

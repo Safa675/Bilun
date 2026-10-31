@@ -28,6 +28,11 @@ nights:
   basis: judgment
   source: "Story S22 has 2 nights. Min 2: the colonoscopy is on day 2 and a night follows it. Max 4 is the author's judgment for a bleeding patient."
 
+complaint:
+  text: "İki gündür siyah, yapışkan dışkılama sürüyor; halsizlik, çarpıntı ve eforla nefes darlığı."
+  basis: judgment
+  source: "Story S22: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K92.2
     name: "GASTROİNTESTİNAL HEMORAJİ, TANIMLANMAMIŞ"

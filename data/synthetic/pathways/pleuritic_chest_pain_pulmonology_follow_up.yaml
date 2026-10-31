@@ -22,6 +22,11 @@ patient:
     basis: judgment
     source: "Story S48 patient is 58, like story S7; the bounds are the author's judgment."
 
+complaint:
+  text: "Acil başvurusundan sonra kontrol; göğüs ağrısı azaldı, derin nefeste hafif batma sürüyor."
+  basis: judgment
+  source: "Story S48: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: R07.1
     name: "SOLUNUMDA GÖĞÜS AĞRISI"

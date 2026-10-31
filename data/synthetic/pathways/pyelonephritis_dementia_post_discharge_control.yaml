@@ -22,6 +22,11 @@ patient:
     basis: judgment
     source: "Story S39 patient is 86, like story S4. Dementia of late onset is a disease of the elderly; the bounds are those of story S4 (the author's judgment)."
 
+complaint:
+  text: "Taburculuk sonrası kontrol; ateşi yok, idrarda yanması geçti, iştahı düzeliyor (kızının ifadesi)."
+  basis: judgment
+  source: "Story S39: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: N10
     name: "AKUT TÜBÜLO-İNTERSTİSYEL NEFRİT"

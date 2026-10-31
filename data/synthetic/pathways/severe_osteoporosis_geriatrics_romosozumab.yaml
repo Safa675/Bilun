@@ -23,6 +23,11 @@ patient:
     basis: sut
     source: "C006166 (SUT 4.2.17.D.(1)): romosozumab is paid above the age of 65; story S44 patient is 84, like story S5."
 
+complaint:
+  text: "Kalça kırığından sonra kemik erimesi tedavisi için geldi; sırt ağrısı var, yeniden düşmekten korkuyor."
+  basis: judgment
+  source: "Story S44: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: M81.09
     name: "POSTMENAPOZAL OSTEOPOROZ, YER TANIMLANMAMIŞ"

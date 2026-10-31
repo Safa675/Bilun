@@ -31,6 +31,11 @@ nights:
   basis: judgment
   source: "Story S2 has 6 nights. Min 4 because the day-5 chest X-ray is fixed (admit+4); max is the author's judgment."
 
+complaint:
+  text: "Bir haftadır artan nefes darlığı, öksürük, koyulaşan sarı-yeşil balgam ve ateş; evdeki oksijen yetmiyor."
+  basis: judgment
+  source: "Story S2: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: J44.0
     name: "KRONİK OBSTRÜKTİF AKCİĞER HASTALIĞI, AKUT ALT SOLUNUM YOLU ENFEKSİYON İLE"

@@ -30,6 +30,11 @@ nights:
   basis: judgment
   source: "Story S12 has 5 nights. A late-preterm baby with jaundice stays a few days; 3 and 10 are the author's judgment. Neonatologist to confirm."
 
+complaint:
+  text: "Erken doğan bebekte ikinci gün ciltte ve gözlerde sararma, emmede isteksizlik (annesinin ifadesi)."
+  basis: judgment
+  source: "Story S12: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: P07.3
     name: "MİAD ÖNCESİ DİĞER İNFANTLAR"

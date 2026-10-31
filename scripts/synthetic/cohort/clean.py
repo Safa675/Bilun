@@ -362,6 +362,7 @@ def _find_drug_entry_and_pins(
 def _build_narratives(
     claim: ComposedClaim,
     *,
+    complaint: str,
     age: int,
     cinsiyet: str,
     vitals: Vitals,
@@ -376,8 +377,8 @@ def _build_narratives(
         raise CleanTableError(
             f"anadata_clean.parquet for {pid}: primary_icd10 {primary_code!r} not found in icd10_tr.parquet"
         )
-    primary_name = sentence_case_tr(icd_names[primary_code])
-    yakinma = f"Başvuru tanısı: {primary_name} ({primary_code})."
+    # The patient's own words from the pathway, never the diagnosis (review of 2026-10-30, A4).
+    yakinma = complaint
 
     all_names: list[str] = []
     for dx in claim.diagnoses:
@@ -496,6 +497,7 @@ def build_clean_tables(
         comorbidity = derive_comorbidity_flags(dx_codes)
         yakinma, oyku, muayene_notu, tedavi_notu = _build_narratives(
             claim,
+            complaint=pathway.complaint.text,
             age=age,
             cinsiyet=cinsiyet,
             vitals=vitals,

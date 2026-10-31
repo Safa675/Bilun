@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S10 patient is 58 (born 1968). Adults with melena; the bounds are the author's judgment. Clinician to confirm."
 
+complaint:
+  text: "Dünden beri katran renginde dışkılama; halsizlik ve baş dönmesi."
+  basis: judgment
+  source: "Story S10: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K92.1
     name: "MELANA"

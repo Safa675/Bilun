@@ -30,6 +30,11 @@ nights:
   basis: judgment
   source: "Story S11 has 5 nights. Min 3: 510090, one package day, 510090 (C001243). Max 10 is the author's judgment. Intensivist to confirm."
 
+complaint:
+  text: "İki gündür yüksek ateş, titreme ve idrarda yanma; bugün çok halsiz, bilinci bulanık, tansiyonu düşük (eşinin ifadesi)."
+  basis: judgment
+  source: "Story S11: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: A41.9
     name: "SEPTİSEMİ, TANIMLANMAMIŞ"

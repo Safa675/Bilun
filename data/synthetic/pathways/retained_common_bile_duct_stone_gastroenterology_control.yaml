@@ -23,6 +23,11 @@ patient:
     basis: judgment
     source: "Story S51 patient is 47, like story S8; the bounds are those of story S8 (the author's judgment)."
 
+complaint:
+  text: "ERCP sonrası kontrol; karın ağrısı ve sararma geçti, iştahı yerinde."
+  basis: judgment
+  source: "Story S51: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: K80.5
     name: "SAFRA YOLU TAŞI, KOLANJİT VEYA KOLESİSTİT OLMADAN"

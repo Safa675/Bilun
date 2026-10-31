@@ -29,6 +29,11 @@ span:
   basis: judgment
   source: "Simulation on day 0, 25 sessions Monday to Friday on days 7-39, four HDR fractions on days 42-52: the course ends on admit+52."
 
+complaint:
+  text: "Radyoterapi için yönlendirildi; ara ara vajinal kanama ve kasık ağrısı oluyor."
+  basis: judgment
+  source: "Story S21: what the patient (or a relative) says on arrival; the author's reading of the story. Clinician to confirm."
+
 diagnoses:
   - icd10: C53.9
     name: "SERVİKS UTERİ MALİGN NEOPLAZMI, TANIMLANMAMIŞ"
