@@ -9,17 +9,18 @@ Bilun is pre-revenue and runs on synthetic data: a failure breaks the demo for m
 3. Build bills with the helper the module already has, and read catalog prices through the catalog-price oracle (`tests/unit/_helpers/catalog_prices.py`); never hand-type a catalog price.
 4. No mutation-testing ritual: at most 6 mutation tests, and only on request, for money-computing logic.
 5. A change that makes a test obsolete deletes it in the same PR.
+6. Demo-data tooling (`scripts/synthetic`, checks of the demo cohort): the tests that read the committed cohort, and one seeded defect per check id. No boundary tables, no variants of one check, no pins of what a golden or proof file already holds.
 
 ## Running tests
 
-6. No full-suite run inside a work package; the PR's CI is the full gate. Run the tests of the files you touch.
+7. No full-suite run inside a work package; the PR's CI is the full gate. Run the tests of the files you touch. A PR runs the jobs its change needs (`scripts/ci/ci_scope.py`: docs need none); main runs them all.
 
 ## Briefs and reviews
 
-7. Every brief states the stakes in one sentence ("pre-revenue, synthetic data; a failure breaks the demo for minutes") and does not call the demo "production".
-8. Every brief carries a size budget (lines and PRs). Going over it means stop and ask, not finish.
-9. "Fail closed" review only for money-computing logic. Every other review also answers: is this proportionate, and what can be deleted?
+8. Every brief states the stakes in one sentence ("pre-revenue, synthetic data; a failure breaks the demo for minutes") and does not call the demo "production".
+9. Every brief carries a size budget (lines and PRs). Going over it means stop and ask, not finish.
+10. "Fail closed" review only for money-computing logic. Every other review also answers: is this proportionate, and what can be deleted?
 
 ## Watching size
 
-10. `python tools/size_report.py` prints the lines added per area over the last 7 days (`--days N` for more) and the test/code ratio against the 2:1 budget. It runs weekly; a week over budget is raised in the next brief.
+11. `python tools/size_report.py` prints the lines added per area over the last 7 days (`--days N` for more) and the test/code ratio against the 2:1 budget. It runs weekly; a week over budget is raised in the next brief.
