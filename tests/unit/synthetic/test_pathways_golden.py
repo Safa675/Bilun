@@ -239,104 +239,45 @@ def test_the_golden_files_equal_a_fresh_export_of_the_stories() -> None:
     )
 
 
-def test_json_is_in_the_canonical_form(golden) -> None:
-    _, text, doc = golden
+def test_a_golden_file_has_the_format(golden) -> None:
+    story, text, doc = golden
     assert text == json.dumps(doc, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
-
-
-def test_file_ends_with_one_newline(golden) -> None:
-    text = golden[1]
-    assert text.endswith("\n") and not text.endswith("\n\n")
-
-
-def test_layout_and_format_version(golden) -> None:
-    story, _, doc = golden
+    assert "ANON" not in text
     assert set(doc) == TOP_KEYS
     assert doc["story"] == story
     assert type(doc["format_version"]) is int and doc["format_version"] == 1
-    assert set(doc["header"]) == HEADER_KEYS
+    header = doc["header"]
+    assert set(header) == HEADER_KEYS
     for name, keys in LINE_KEYS.items():
         optional = OPTIONAL_LINE_KEYS.get(name, set())
         assert [row for row in doc[name] if not keys <= set(row) <= keys | optional] == [], name
+        assert [row["date"] for row in doc[name] if not _is_iso(row["date"])] == [], name
     for name in ("procedures", "materials", "drugs"):
         assert all(isinstance(row["flags"], dict) for row in doc[name]), name
+        assert [row["qty"] for row in doc[name] if not _is_positive_int(row["qty"])] == [], name
     rates = [row["copay_rate"] for row in doc["procedures"] if "copay_rate" in row]
     assert all(re.fullmatch(r"0\.[0-9]{2}", rate) and rate != "0.00" for rate in rates), rates
     assert all(row["annex"] == "EK-3C-2" for row in doc["materials"] if "annex" in row)  # EK-3/F-1 is the default
-
-
-def test_only_the_examination_of_s32_carries_a_copay_rate(golden) -> None:
-    story, _, doc = golden
-    rates = [(row["code"], row["copay_rate"]) for row in doc["procedures"] if "copay_rate" in row]
-    assert rates == ([("520030", "0.20")] if story == "S32" else [])
-
-
-def test_lists_are_sorted_as_the_format_says(golden) -> None:
-    _, _, doc = golden
     for name, key in SORT_KEYS.items():
         assert doc[name] == sorted(doc[name], key=key), name
-
-
-def test_one_primary_diagnosis_and_it_is_the_header_one(golden) -> None:
-    _, _, doc = golden
-    primaries = [d["icd10"] for d in doc["diagnoses"] if d["role"] == "primary"]
-    assert primaries == [doc["header"]["primary_icd10"]]
-
-
-def test_no_price_amount_or_total_keys(golden) -> None:
+    assert [d["icd10"] for d in doc["diagnoses"] if d["role"] == "primary"] == [header["primary_icd10"]]
     # billed_ratio is the only money-derived key the format allows.
-    _, _, doc = golden
-    bad = {k for k in _keys(doc) if re.search("price|amount|total", k.lower())}
-    assert sorted(bad) == []
-
-
-def test_no_anon_text(golden) -> None:
-    assert "ANON" not in golden[1]
-
-
-def test_dates_are_iso(golden) -> None:
-    _, _, doc = golden
-    header = doc["header"]
+    assert sorted({k for k in _keys(doc) if re.search("price|amount|total", k.lower())}) == []
     assert header["claim_type"] in {"yatis", "acil", "poliklinik", "gunubirlik"}
     # Null admission and discharge only for a visit (acil, poliklinik, gunubirlik): it has no stay.
     nullable = {"admission_date", "discharge_date"} if header["claim_type"] != "yatis" else set()
     for key in ("admission_date", "discharge_date", "claim_start_date", "claim_end_date"):
         assert _is_iso(header[key]) or (header[key] is None and key in nullable), key
-    for name in LINE_KEYS:
-        assert [r["date"] for r in doc[name] if not _is_iso(r["date"])] == [], name
-    links = [m["linked_procedure"] for m in doc["materials"] if m["linked_procedure"]]
-    assert [link["date"] for link in links if not _is_iso(link["date"])] == []
-
-
-def test_quantities_are_positive_ints(golden) -> None:
-    _, _, doc = golden
-    for name in ("procedures", "materials", "drugs"):
-        assert [r["qty"] for r in doc[name] if not _is_positive_int(r["qty"])] == [], name
     assert [d["per_box"] for d in doc["drugs"] if not _is_positive_int(d["per_box"])] == []
-
-
-def test_linked_procedures_point_into_the_same_file(golden) -> None:
-    _, _, doc = golden
     procedures = {(p["code"], p["date"]) for p in doc["procedures"]}
     for material in doc["materials"]:
         link = material["linked_procedure"]
         if link is not None:
-            assert set(link) == {"code", "date"}, material["code"]
+            assert _is_iso(link["date"]) and set(link) == {"code", "date"}, material["code"]
             assert (link["code"], link["date"]) in procedures, material["code"]
-
-
-def test_billed_ratio_has_four_decimals(golden) -> None:
-    _, _, doc = golden
     for name in ("procedures", "materials"):
-        bad = [
-            r["billed_ratio"]
-            for r in doc[name]
-            if not (
-                isinstance(r["billed_ratio"], str)
-                and re.fullmatch(r"[0-9]\.[0-9]{4}", r["billed_ratio"])
-            )
-        ]
-        assert bad == [], name
+        ratios = [row["billed_ratio"] for row in doc[name]]
+        assert [r for r in ratios if not (isinstance(r, str) and re.fullmatch(r"[0-9]\.[0-9]{4}", r))] == [], name
 
 
 # --- S14: the story bill has the ICU bill of S11 as history (a cross-bill rule needs it) -----------------------

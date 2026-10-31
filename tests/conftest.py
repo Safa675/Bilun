@@ -91,14 +91,6 @@ def _committed_showcase():
     return build_showcase()
 
 
-def _two_bill_showcase():
-    from scripts.synthetic.cohort import build_showcase
-    from tests.fixtures.synthetic_encounters import STANDARD_EXTRAS, with_encounters
-
-    recipes, clinical = with_encounters(*STANDARD_EXTRAS)
-    return build_showcase(recipes=recipes, clinical=clinical)
-
-
 def _demo_build_context():
     from scripts.synthetic.cohort import DEFAULT_OUT_DIR
     from src.bilun.cache.context import load_sut_build_context
@@ -115,12 +107,6 @@ def _demo_build_context():
 def committed_showcase(session_cache: SessionCache):
     """`build_showcase()`: the committed demo cohort built from its recipes, in memory."""
     return session_cache.get("committed_showcase", _committed_showcase)
-
-
-@pytest.fixture(scope="module")
-def two_bill_showcase(session_cache: SessionCache):
-    """The showcase with `STANDARD_EXTRAS` (a fourth bill of patient 4, an earlier visit of patient 7), in memory."""
-    return session_cache.get("two_bill_showcase", _two_bill_showcase)
 
 
 @pytest.fixture(scope="module")
