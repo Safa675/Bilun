@@ -59,6 +59,13 @@ def _parse_validity(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _period_start(df: pd.DataFrame, asof_date: str) -> str:
+    """The first day of the date's period: a row starts or stops applying only between periods, so every day of one has the same rows."""
+    days = pd.concat([df["valid_from_parsed"], df["valid_to_parsed"] + pd.Timedelta(days=1)]).dropna()
+    earlier = days[days <= pd.to_datetime(asof_date)]
+    return earlier.max().date().isoformat() if len(earlier) else asof_date
+
+
 def _history_rows_as_of(df: pd.DataFrame, key: str, asof_date: str) -> pd.DataFrame:
     """One row per key in force on the date; before the whole history, each key's first row.
 
@@ -96,7 +103,12 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
     # so every date-variant reuses the parsed columns instead of re-parsing.
     df = _parse_validity(df)
     _ek2b_raw_cache = df
-    eligible = _history_rows_as_of(df, "code", asof_date)
+    period = _period_start(df, asof_date)
+    cached = _ek2b_by_asof_cache.get(period)
+    if cached is not None:
+        _ek2b_by_asof_cache[asof_date] = cached
+        return cached
+    eligible = _history_rows_as_of(df, "code", period)
 
     # Vectorized dict construction (to_dict) — ~6.5× faster than iterrows for
     # 62k rows, and avoids per-row Series allocation.
@@ -124,7 +136,7 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
         if new_code in by_code and old_code not in by_code:
             by_code[old_code] = by_code[new_code]
 
-    _ek2b_by_asof_cache[asof_date] = by_code
+    _ek2b_by_asof_cache[asof_date] = _ek2b_by_asof_cache[period] = by_code
     return by_code
 
 
@@ -155,7 +167,12 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
 
     df = _parse_validity(df)
     _ek2c_raw_cache = df
-    eligible = _history_rows_as_of(df, "package_code", asof_date)
+    period = _period_start(df, asof_date)
+    cached = _ek2c_by_asof_cache.get(period)
+    if cached is not None:
+        _ek2c_by_asof_cache[asof_date] = cached
+        return cached
+    eligible = _history_rows_as_of(df, "package_code", period)
 
     records = eligible.to_dict(orient="records")
     packages: list[dict[str, Any]] = []
@@ -208,7 +225,7 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
         "group_stats": group_stats,
         "stats": stats,
     }
-    _ek2c_by_asof_cache[asof_date] = result
+    _ek2c_by_asof_cache[asof_date] = _ek2c_by_asof_cache[period] = result
     return result
 
 
@@ -291,7 +308,12 @@ def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any
 
     df = _parse_validity(df)
     _ek2c_dental_raw_cache = df
-    eligible = _history_rows_as_of(df, "code", asof_date)
+    period = _period_start(df, asof_date)
+    cached = _ek2c_dental_by_asof_cache.get(period)
+    if cached is not None:
+        _ek2c_dental_by_asof_cache[asof_date] = cached
+        return cached
+    eligible = _history_rows_as_of(df, "code", period)
 
     records = eligible.to_dict(orient="records")
     by_code: dict[str, dict[str, Any]] = {}
@@ -318,7 +340,7 @@ def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any
             "annex": "EK-2Ç",
         }
 
-    _ek2c_dental_by_asof_cache[asof_date] = by_code
+    _ek2c_dental_by_asof_cache[asof_date] = _ek2c_dental_by_asof_cache[period] = by_code
     return by_code
 
 
