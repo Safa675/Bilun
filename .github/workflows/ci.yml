@@ -27,10 +27,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           persist-credentials: false
 
+      - name: Does this change need the job?
+        id: scope
+        run: python scripts/ci/ci_scope.py backend >> "$GITHUB_OUTPUT"
+
       - name: Check isolated runtime and frozen dependencies
+        if: steps.scope.outputs.run == 'true'
         run: |
           test "$(python -c 'import platform; print(platform.python_version())')" = "3.13.15"
           test "$(node --version)" = "v22.16.0"
@@ -46,6 +51,7 @@ jobs:
           PY
 
       - name: Install dependencies
+        if: steps.scope.outputs.run == 'true'
         run: |
           python -m venv "$RUNNER_TEMP/venv"
           "$RUNNER_TEMP/venv/bin/python" -m pip install --no-index --find-links=/opt/wheels --require-hashes -r requirements-ci.lock
@@ -53,18 +59,22 @@ jobs:
           echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
 
       - name: Lint (ruff)
+        if: steps.scope.outputs.run == 'true'
         run: ruff check src/ scripts/
 
       - name: Run Python tests
+        if: steps.scope.outputs.run == 'true'
         run: |
           basetemp="$HOME/.cache/bilun-ci-pytest"
           trap 'rm -rf -- "$basetemp"' EXIT
           python -m pytest -q -n auto --durations=20 --basetemp="$basetemp"
 
       - name: Check generated SUT rule artifacts
+        if: steps.scope.outputs.run == 'true'
         run: python scripts/sut/compile_rules.py --check
 
       - name: Audit manifest bucket/trace parity
+        if: steps.scope.outputs.run == 'true'
         run: python scripts/sut/audit_manifest_parity.py --drug-only
 
   frontend:
@@ -81,25 +91,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           persist-credentials: false
 
+      - name: Does this change need the job?
+        id: scope
+        run: python ../scripts/ci/ci_scope.py frontend >> "$GITHUB_OUTPUT"
+
       - name: Check isolated Node runtime
+        if: steps.scope.outputs.run == 'true'
         run: |
           test "$(node --version)" = "v22.16.0"
           test "$(google-chrome --product-version)" = "155.0.8059.39"
 
       - name: Install dependencies
+        if: steps.scope.outputs.run == 'true'
         run: npm ci
 
       - name: Type check
+        if: steps.scope.outputs.run == 'true'
         run: npx tsc --noEmit
 
       - name: Run tests
+        if: steps.scope.outputs.run == 'true'
         run: npx vitest run
 
       - name: Build
+        if: steps.scope.outputs.run == 'true'
         run: npm run build
 
       - name: Check public assets for private files and source maps
+        if: steps.scope.outputs.run == 'true'
         run: python ../scripts/ci/verify_public_assets.py --frontend .
