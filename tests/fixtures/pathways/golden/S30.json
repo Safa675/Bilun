@@ -22,6 +22,14 @@
   "procedures": [
     {
       "billed_ratio": "1.0000",
+      "code": "520010",
+      "date": "2026-07-14",
+      "flags": {},
+      "qty": 1,
+      "specialty": "1900"
+    },
+    {
+      "billed_ratio": "1.0000",
       "code": "520020",
       "date": "2026-07-14",
       "flags": {},
@@ -30,7 +38,7 @@
     },
     {
       "billed_ratio": "1.0000",
-      "code": "803602",
+      "code": "803570",
       "date": "2026-07-14",
       "flags": {},
       "qty": 1,

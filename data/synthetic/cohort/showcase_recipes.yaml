@@ -34,6 +34,14 @@ recipes:
     pathway: copd_exacerbation_post_readmission_control
     fault: F_S34_CONTROL_EXAM_FLAGGED_AS_PACKAGE_COMPONENT
 
+  - patient_no: 2
+    encounter_no: 5
+    pathway: copd_exacerbation_pneumonia_ward_entry_visit
+
+  - patient_no: 2
+    encounter_no: 6
+    pathway: copd_exacerbation_readmission_through_er_entry_visit
+
   - patient_no: 3
     pathway: lumbar_stenosis_decompression_itemized
     fault: F_S3_ANAESTHESIA_LINE_MISSING
@@ -64,6 +72,10 @@ recipes:
     pathway: pyelonephritis_dementia_second_visit_ultrasound
     fault: F_S40_SECOND_VISIT_EXAM_WITHIN_10_DAYS
 
+  - patient_no: 4
+    encounter_no: 4
+    pathway: pyelonephritis_dementia_delirium_ward_entry_visit
+
   - patient_no: 5
     pathway: femoral_neck_fracture_cemented_hemiarthroplasty_package
     fault: F_S5_IMPLANT_UTS_INCOMPLETE
@@ -86,6 +98,10 @@ recipes:
     pathway: severe_osteoporosis_geriatrics_romosozumab
     fault: F_S44_ROMOSOZUMAB_REPORT_OF_TWELVE_MONTHS
 
+  - patient_no: 5
+    encounter_no: 6
+    pathway: infected_hemiarthroplasty_removal_package_entry_visit
+
   - patient_no: 6
     pathway: aspiration_pneumonia_parkinson_ward
     fault: F_S6_DRUG_INDICATION_NOT_CODED
@@ -98,6 +114,10 @@ recipes:
     encounter_no: 3
     pathway: parkinson_physiatry_visit
     fault: F_S46_SECOND_WALKER_INSIDE_MIAT
+
+  - patient_no: 6
+    encounter_no: 4
+    pathway: aspiration_pneumonia_parkinson_ward_entry_visit
 
   - patient_no: 7
     pathway: pleuritic_chest_pain_er_pulmonary_embolism_ruled_out
@@ -130,9 +150,21 @@ recipes:
     encounter_no: 4
     pathway: retained_common_bile_duct_stone_gastroenterology_control
 
+  - patient_no: 8
+    encounter_no: 5
+    pathway: cholelithiasis_umbilical_hernia_two_packages_entry_visit
+
+  - patient_no: 8
+    encounter_no: 6
+    pathway: retained_common_bile_duct_stone_ercp_package_entry_visit
+
   - patient_no: 9
     pathway: lumbar_stenosis_decompression_foraminoplasty_itemized
     fault: F_S9_SECOND_OPERATION_UNDERBILLED
+
+  - patient_no: 9
+    encounter_no: 2
+    pathway: lumbar_stenosis_decompression_foraminoplasty_itemized_entry_visit
 
   - patient_no: 10
     pathway: urosepsis_septic_shock_icu_stay
@@ -142,6 +174,10 @@ recipes:
     encounter_no: 2
     pathway: urosepsis_ward_stay_after_icu_transfer
     fault: F_S14_WARD_BED_ON_ICU_TRANSFER_DAY
+
+  - patient_no: 10
+    encounter_no: 3
+    pathway: urosepsis_septic_shock_icu_stay_entry_visit
 
   - patient_no: 11
     pathway: late_preterm_newborn_incubator_stay
@@ -168,6 +204,10 @@ recipes:
     pathway: gi_bleed_admission_colonoscopy
     fault: F_S22_COLONOSCOPY_POLYPECTOMY_ADDON_OMITTED
 
+  - patient_no: 12
+    encounter_no: 3
+    pathway: gi_bleed_admission_colonoscopy_entry_visit
+
   - patient_no: 13
     pathway: umbilical_hernia_day_case_package
     fault: F_S20_DAY_CASE_PACKAGE_BILLED_ITEMIZED
@@ -180,6 +220,10 @@ recipes:
     encounter_no: 2
     pathway: end_stage_kidney_disease_emergency_haemodialysis
 
+  - patient_no: 14
+    encounter_no: 3
+    pathway: end_stage_kidney_disease_emergency_haemodialysis_entry_visit
+
   - patient_no: 15
     pathway: decompensated_cirrhosis_gi_bleed_albumin
     fault: F_S18_ALBUMIN_WITHOUT_SPECIALIST_REPORT
@@ -188,6 +232,14 @@ recipes:
     encounter_no: 2
     pathway: decompensated_cirrhosis_variceal_rebleed_transfusion
     fault: F_S24_RED_CELLS_WITHOUT_ISBT128_NUMBERS
+
+  - patient_no: 15
+    encounter_no: 3
+    pathway: decompensated_cirrhosis_gi_bleed_albumin_entry_visit
+
+  - patient_no: 15
+    encounter_no: 4
+    pathway: decompensated_cirrhosis_variceal_rebleed_transfusion_entry_visit
 
   - patient_no: 16
     pathway: cervical_cancer_radiotherapy_course

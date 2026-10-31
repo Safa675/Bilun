@@ -4313,17 +4313,17 @@ def test_every_numeric_parameter_state_and_sex_is_drawn_by_the_documented_formul
 _COPD = "copd_exacerbation_pneumonia_ward"
 _PYELO = "pyelonephritis_dementia_delirium_ward"
 _ALL_NORMAL = {"blood_gas": "arterial", "states": {}, "basis": "judgment", "source": "Test fixture only."}
-_CLAIM_2_5, _CLAIM_3_5 = "F-SENTETIK-HASTA-0002-005", "F-SENTETIK-HASTA-0003-005"
+_CLAIM_2_5, _CLAIM_3_5 = "F-SENTETIK-HASTA-0002-007", "F-SENTETIK-HASTA-0003-005"
 # patient 4 has three committed bills (the stay, the control S39, the second visit S40): the extra stay is its fourth
-_CLAIM_4_2, _CLAIM_4_4 = "F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0004-004"
+_CLAIM_4_2, _CLAIM_4_4 = "F-SENTETIK-HASTA-0004-002", "F-SENTETIK-HASTA-0004-005"
 
 
 @pytest.fixture(scope="module")
 def extra_bills() -> BuildResult:
     recipes, clinical = with_encounters(
-        Extra(2, 5, _COPD, {"admit": "2026-05-11", "story": "S92"}, labs=_ALL_NORMAL),
+        Extra(2, 7, _COPD, {"admit": "2026-05-11", "story": "S92"}, labs=_ALL_NORMAL),
         Extra(3, 5, _PYELO, {"story": "S93", "age": 77, "sex": "F"}),
-        Extra(4, 4, _PYELO, {"admit": "2026-05-12", "story": "S90"}),
+        Extra(4, 5, _PYELO, {"admit": "2026-05-12", "story": "S90"}),
     )
     return build_showcase(recipes=recipes, clinical=clinical)
 
@@ -4345,12 +4345,12 @@ def _record_salts(monkeypatch: pytest.MonkeyPatch) -> list[int]:
     ("claim_id", "base"),
     [
         pytest.param("F-SENTETIK-HASTA-0002-001", 0, id="2.1_blood_gas_first_bill"),
-        pytest.param(_CLAIM_2_5, 4000, id="2.5_blood_gas"),
+        pytest.param(_CLAIM_2_5, 6000, id="2.7_blood_gas"),
         pytest.param("F-SENTETIK-HASTA-0003-001", 0, id="3.1"),
         pytest.param(_CLAIM_3_5, 4000, id="3.5_creatinine"),
         pytest.param("F-SENTETIK-HASTA-0004-001", 0, id="4.1"),
         pytest.param(_CLAIM_4_2, 1000, id="4.2_the_committed_control"),
-        pytest.param(_CLAIM_4_4, 3000, id="4.4"),
+        pytest.param(_CLAIM_4_4, 4000, id="4.5"),
     ],
 )
 def test_the_draws_of_a_claim_use_the_salts_of_its_sequence_and_no_others(
@@ -4432,7 +4432,7 @@ def test_the_lab_values_of_a_second_bill_differ_from_the_first_and_the_first_sta
     extra_bills: BuildResult, lab: pl.DataFrame
 ) -> None:
     lab_table = extra_bills.clean_tables["lab_clean.parquet"]
-    for patient_no, second in ((3, "B-SENTETIK-HASTA-0003-005"), (4, "B-SENTETIK-HASTA-0004-004")):
+    for patient_no, second in ((3, "B-SENTETIK-HASTA-0003-005"), (4, "B-SENTETIK-HASTA-0004-005")):
         mine = lab_table.filter(pl.col("HASTA_ID") == _pid(patient_no))
         first = mine.filter(pl.col("basvuru_id") != second)
         committed = lab.filter(pl.col("HASTA_ID") == _pid(patient_no))
@@ -4454,11 +4454,11 @@ def test_a_bill_has_the_lab_states_of_its_own_entry(extra_bills: BuildResult, la
     by_bill = {
         episode: rows["anormal_mi"].to_list() for (episode,), rows in wbc.group_by("basvuru_id", maintain_order=True)
     }
-    assert any(by_bill["B-SENTETIK-HASTA-0002-001"]) and not any(by_bill["B-SENTETIK-HASTA-0002-005"])
+    assert any(by_bill["B-SENTETIK-HASTA-0002-001"]) and not any(by_bill["B-SENTETIK-HASTA-0002-007"])
     for later in ("002", "003", "004"):  # the control (S32), the readmission (S33) and its control (S34) bill no test
         assert f"B-SENTETIK-HASTA-0002-{later}" not in by_bill
     # blood gas: the entry says arterial for the second stay too, so the set is there
-    assert lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0002-005")["SUB_CODE"].is_in(["L103900"]).any()
+    assert lab_table.filter(pl.col("basvuru_id") == "B-SENTETIK-HASTA-0002-007")["SUB_CODE"].is_in(["L103900"]).any()
 
 
 def test_a_later_bill_of_another_pathway_is_judged_at_the_age_of_its_pins(extra_bills: BuildResult) -> None:

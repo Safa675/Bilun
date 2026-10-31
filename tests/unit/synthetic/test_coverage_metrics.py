@@ -783,7 +783,7 @@ def test_the_eight_showcase_patients_are_the_plans_per_patient_table_and_what_th
     fifth, sixth = cohort.role("showcase_S5").patient_id, cohort.role("showcase_S6").patient_id
     seventh, eighth = cohort.role("showcase_S7").patient_id, cohort.role("showcase_S8").patient_id
     several = (first, second, third, fourth, fifth, sixth, seventh, eighth)
-    assert [showcase_eight[p]["claims"] for p in several] == [3, 4, 4, 3, 5, 3, 3, 4]
+    assert [showcase_eight[p]["claims"] for p in several] == [3, 6, 4, 4, 6, 4, 3, 6]
     # the plan's table is the first bill of each patient (since WP18 every one of the eight has later bills): each row
     # below is the plan's first-bill row plus what the later bills add
     assert PLAN_BASELINE_PER_PATIENT[0] == (6, 256, 7, 4, 3)
@@ -809,7 +809,7 @@ def test_the_eight_showcase_patients_are_the_plans_per_patient_table_and_what_th
     # patient 6 is read over its stay, its neurology control (S45) and its physiatry visit (S46): the materials block
     # (the walkers of slice G7b), 90 more rules evaluated (the outpatient rules and the Fatura İnceleme rules an
     # outpatient bill evaluates, all evaluated elsewhere already), 1 more matched with a row (ORTAK-20, a review)
-    assert _row(showcase_eight[sixth]) == (6 + 1, 192 + 90, 10 + 1, 7 + 1, 3)
+    assert _row(showcase_eight[sixth]) == (6 + 1, 192 + 91, 10 + 1, 7 + 1, 3)  # one more with the ER visit S56
     # patient 7 is read over its ER visit, its observation of one date (S47) and its follow-up (S48): the blocks of a
     # stay (claim checklist, companion, bed days), 48 more rules evaluated, 8 more matched (the duplicate test, the
     # inpatient itemized basis, ORTAK-19/20/22/25)
@@ -819,9 +819,9 @@ def test_the_eight_showcase_patients_are_the_plans_per_patient_table_and_what_th
     # matched with a row (ORTAK-13 and ORTAK-20, reviews); 2 more evaluated with S33 and S34 (the drug count, the vakabaşı
     # examination), 2 more matched (the two), 1 of them with a row (the drug count, a review); GÖĞÜS-6 names no billed
     # evidence and is unavailable on S33 since WP21 (EI-24)
-    assert _row(showcase_eight[second]) == (6, 191 + 86 + 2, 9 + 2 + 2, 6 + 2 + 1, 3)
+    assert _row(showcase_eight[second]) == (6, 191 + 86 + 3, 9 + 2 + 2, 6 + 2 + 1, 3)  # one more with the ER visits S52, S53
     # patient 4 is read over its stay, its control and its second visit: 14 more rules evaluated, 3 more matched
-    assert _row(showcase_eight[fourth]) == (6, 191 + 14, 9 + 3, 6 + 2, 3)
+    assert _row(showcase_eight[fourth]) == (6, 191 + 15, 9 + 3, 6 + 2, 3)  # one more with the ER visit S54
 
 
 def test_a_measured_document_survives_json(measured: dict[str, dict[str, Any]]) -> None:
@@ -906,7 +906,7 @@ def test_the_whole_cohort_has_the_first_wave_a_financial_row_and_the_first_outpa
     the four cardiology and cardiac-surgery rules of the kind matched no demo bill.
     """
     summary = cm.summarize(measured)
-    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (16, 42)
+    assert (summary["patients"], summary["claims"]) == (cohort.patient_count(), cohort.claim_count()) == (16, 55)
     assert summary["blocks"]["with_output"] == 15  # neither the ward bill nor the outpatient bills light a block; patient 12 lights three
     wavea = summary["wavea"]
     assert (wavea["evaluated"], wavea["matched"], wavea["with_row"]) == (292, 25, 28)
@@ -1001,26 +1001,16 @@ def test_a_patient_with_two_bills_is_measured_over_both_and_s14_has_the_one_fina
     patient = cohort.scenario("S14").patient_id
     assert cohort.scenario("S11").patient_id == patient
     entry = measured[patient]
-    assert entry["claims"] == 2
+    assert entry["claims"] == 3  # the ICU bill, its ER visit (S60), the ward bill
     assert entry["wavea"]["financial_ids"] == ["yatak_icu_overlap_510010"]
     # the other financial rows are S21's radiotherapy reviews (patient 16, one bill)
     assert {pid for pid, e in measured.items() if e["wavea"]["financial"]} == {patient, cohort.scenario("S21").patient_id}
     # the other patients with several bills: patient 4 (the stay, the control, the second visit), patient 2 (the stay,
     # its control, its readmission and the control after it) and patient 12 (the ER visit and the admission)
     assert {pid: e["claims"] for pid, e in measured.items() if e["claims"] > 1} == {
-        patient: 2,
-        cohort.role("showcase_S2").patient_id: 4,  # the stay, the control S32, the readmission S33 and its control S34
-        cohort.role("showcase_S7").patient_id: 3,  # the ER visit, the observation S47 and the follow-up S48
-        cohort.role("showcase_S4").patient_id: 3,
-        cohort.role("showcase_S6").patient_id: 3,  # the stay, the neurology control S45 and the physiatry visit S46
-        cohort.role("showcase_S5").patient_id: 5,  # the stay, its ER visit S41, readmission S42, walker S43, geriatrics S44
-        cohort.role("showcase_S3").patient_id: 4,  # the stay, its pre-operative visit S36, control S37, instrumentation S38
-        cohort.role("showcase_S8").patient_id: 4,  # the stay, its ER visit S49, its ERCP admission S50 and its control S51
-        cohort.role("showcase_S1").patient_id: 3,  # the stay, its ER visit S30 and its control S31
-        cohort.scenario("S15").patient_id: 2,  # patient 11: the incubator stay and the ward stay after it
-        cohort.scenario("S10").patient_id: 2,  # patient 12: the ER visit and the admission
-        cohort.scenario("S17").patient_id: 2,  # patient 14: the month of haemodialysis and the emergency session
-        cohort.scenario("S18").patient_id: 2,  # patient 15: the cirrhosis stay and the variceal rebleed
+        f"SENTETIK-HASTA-{no:04d}": bills
+        # the visit before a stay (review of 2026-10-30, A1) is a bill of its own on patients 2, 4, 5, 6, 8, 9, 10, 12, 14 and 15
+        for no, bills in {1: 3, 2: 6, 3: 4, 4: 4, 5: 6, 6: 4, 7: 3, 8: 6, 9: 2, 10: 3, 11: 2, 12: 3, 14: 3, 15: 4}.items()
     }
     assert "icu_puani" in entry["blocks_with_output"]  # the ICU bill's block is still there beside the ward bill
 
@@ -1032,7 +1022,7 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
     patient = cohort.role("showcase_S4").patient_id
     assert cohort.scenario("S39").patient_id == cohort.scenario("S40").patient_id == patient
     entry = measured[patient]
-    assert entry["claims"] == 3
+    assert entry["claims"] == 4  # the stay, its ER visit (S54), the control, the second visit
     duplicate, ortak20, ortak13 = (
         "tablo15_2_duplicate_exam_10day",
         "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
@@ -1059,6 +1049,10 @@ def test_patient_4_is_measured_over_its_three_bills_and_only_it_has_the_duplicat
         # patient 12's ER visit (S10): an ER bill is outpatient since #335 (SUT 2.2.1.B-2(2)(a)); the other ER bills'
         # patients (1, 5, 7, 8) are in the set through their other visits already
         cohort.scenario("S10").patient_id,
+        # the ER and outpatient visits before a stay (review of 2026-10-30, A1) on the patients that had no other visit
+        cohort.scenario("S59").patient_id,
+        cohort.scenario("S60").patient_id,
+        cohort.scenario("S63").patient_id,
     }
     assert ortak13 in cm.summarize({p: e for p, e in measured.items() if p != patient})["wavea"]["matched_ids"]  # 2, 6, 7, 11, 12
     assert ortak20 in entry["wavea"]["review_ids"] and duplicate not in entry["wavea"]["review_ids"]  # no row for the duplicate
@@ -1082,7 +1076,7 @@ def test_patient_12_is_measured_over_its_two_bills_and_alone_lights_the_three_bl
     patient = cohort.scenario("S10").patient_id
     assert cohort.scenario("S22").patient_id == patient
     entry = measured[patient]
-    assert entry["claims"] == 2
+    assert entry["claims"] == 3  # the ER visit, the admission, the outpatient visit of the admission day (S61)
     new_blocks = {"lab", "procedure_addon_uplift", "medula_rejection_playbook"}
     new_ids = {"GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling", "tablo15_12_duplicate_test"}
     assert new_blocks <= set(entry["blocks_with_output"])

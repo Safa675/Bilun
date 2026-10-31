@@ -30,7 +30,7 @@
   }
  },
  "faulty": {
-  "total_billed": "180.66",
+  "total_billed": "281.42",
   "rows": [
    {
     "date": "2026-08-25",
@@ -43,11 +43,11 @@
    },
    {
     "date": "2026-08-25",
-    "code": "803602",
-    "name": "Ultrason, genel",
+    "code": "803570",
+    "name": "Abdomen US, tüm",
     "qty": 1,
-    "unit": "55.95",
-    "billed": "55.95",
+    "unit": "156.71",
+    "billed": "156.71",
     "source": "EK-2B valid_from 2026-07-07"
    },
    {
@@ -70,11 +70,11 @@
   "direct": [
    {
     "rule_id": "tablo15_7_green_area_bundled_extra",
-    "procedure_code": "803602",
+    "procedure_code": "803570",
     "green_area_exam_code": "520021",
     "severity": "warning",
     "sut_section_id": "tablo_15",
-    "detail": "Yeşil alan muayenesi (520021) ile aynı takipte ek işlem faturalandırılmış: 803602 (Ultrason, genel) — yeşil alan vizitinde ayrı faturalama yapılamaz (Tablo 15 #7)."
+    "detail": "Yeşil alan muayenesi (520021) ile aynı takipte ek işlem faturalandırılmış: 803570 (Abdomen US, tüm) — yeşil alan vizitinde ayrı faturalama yapılamaz (Tablo 15 #7)."
    },
    {
     "rule_id": "tablo15_7_green_area_bundled_extra",
@@ -112,7 +112,7 @@
    "validate",
    null,
    "tablo15_7_green_area_bundled_extra",
-   "803602",
+   "803570",
    0.0
   ],
   [

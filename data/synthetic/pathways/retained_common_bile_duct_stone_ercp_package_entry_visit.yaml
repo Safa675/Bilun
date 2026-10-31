@@ -1,0 +1,58 @@
+# The ER visit through which the patient of story S50 reaches the stay: a clean bill, story S58.
+# Practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is not billed directly.
+# Minimal on purpose: no test, so nothing repeats inside the seven days of the duplicate-test rule. Grammar: README.md next to this file.
+schema_version: 1
+id: retained_common_bile_duct_stone_ercp_package_entry_visit
+title: "The ER visit before the admission of story S50, billed on its own takip"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S58 is the patient of story S50, on the way to that stay."
+  age:
+    min: 47
+    max: 47
+    basis: judgment
+    source: "Story S58 patient is 47, like story S50."
+
+complaint:
+  text: "Safra kesesi ameliyatından sonra tekrarlayan sağ üst karın ağrısı; gözlerinde sararma, idrar renginde koyulaşma."
+  basis: judgment
+  source: "Story S58: the complaint of story S50, said on arrival. Clinician to confirm."
+
+diagnoses:
+  - icd10: K80.5
+    name: "SAFRA YOLU TAŞI, KOLANJİT VEYA KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "The primary of story S50. Whether an acil bill carries it is question #389."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı."
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "1900"
+    basis: judgment
+    source: "Review of 2026-10-30 (A6): the admitting branch (Genel Cerrahi) is consulted before the admission."
+
+showcase:
+  story: S58
+  sex: F
+  age: 47
+  admit: "2026-09-27"

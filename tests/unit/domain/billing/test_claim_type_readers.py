@@ -370,10 +370,10 @@ def demo_er() -> dict[str, Any]:
     return {"claims": er, "evaluations": evaluations}
 
 
-def test_the_demo_has_five_er_bills(demo_er: dict[str, Any]) -> None:
+def test_the_demo_has_its_er_bills(demo_er: dict[str, Any]) -> None:
     from tests.fixtures import synthetic_cohort as cohort
 
-    stories = {"S10", "S30", "S41", "S49"}
+    stories = {"S10", "S30", "S41", "S49", "S52", "S53", "S54", "S55", "S56", "S58", "S60", "S62", "S63", "S64"}  # the visits before a stay since the review of 2026-10-30
     expected = {cohort.role("showcase_S7").claim_id} | {cohort.scenario(s).claim_ids[0] for s in stories}
     assert set(demo_er["claims"]) == expected
     assert {infer_care_setting(claim) for claim in demo_er["claims"].values()} == {"outpatient"}

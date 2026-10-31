@@ -383,11 +383,11 @@ def demo() -> dict[str, Any]:
     return {"dataset": dataset, "claims": claims, "rows": rows}
 
 
-def test_on_the_demo_the_five_er_bills_move_and_no_other_bill_does(demo: dict[str, Any]) -> None:
+def test_on_the_demo_the_er_bills_move_and_no_other_bill_does(demo: dict[str, Any]) -> None:
     from tests.fixtures import synthetic_cohort as cohort
 
     er = {cohort.role("showcase_S7").claim_id} | {
-        cohort.scenario(s).claim_ids[0] for s in ("S10", "S30", "S41", "S49")
+        cohort.scenario(s).claim_ids[0] for s in ("S10", "S30", "S41", "S49", "S52", "S53", "S54", "S55", "S56", "S58", "S60", "S62", "S63", "S64")
     }
     assert {cid for cid, claim in demo["claims"].items() if claim.claim_type == "acil"} == er
     assert {cid for cid, _ in demo["rows"]} == set(demo["claims"])

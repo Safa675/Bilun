@@ -1,0 +1,41 @@
+{
+  "diagnoses": [
+    {
+      "date": "2026-09-16",
+      "icd10": "T84.5",
+      "role": "primary"
+    }
+  ],
+  "drugs": [],
+  "format_version": 1,
+  "header": {
+    "admission_date": null,
+    "claim_end_date": "2026-09-16",
+    "claim_start_date": "2026-09-16",
+    "claim_type": "acil",
+    "department": "Acil Tıp",
+    "discharge_date": null,
+    "primary_icd10": "T84.5"
+  },
+  "materials": [],
+  "performed": [],
+  "procedures": [
+    {
+      "billed_ratio": "1.0000",
+      "code": "520010",
+      "date": "2026-09-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "2600"
+    },
+    {
+      "billed_ratio": "1.0000",
+      "code": "520020",
+      "date": "2026-09-16",
+      "flags": {},
+      "qty": 1,
+      "specialty": "4400"
+    }
+  ],
+  "story": "S55"
+}

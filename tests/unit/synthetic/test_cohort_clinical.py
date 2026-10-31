@@ -64,6 +64,19 @@ _EXPECTED_VITALS: dict[int, tuple[int, int, int, int, int, float]] = {
 # S40 (her second visit a week later, a little feverish), of S14, on the ward after the ICU, and of S22, the admission
 # of patient 12 two days after his ER visit
 _EXPECTED_SECOND_BILL_VITALS: dict[tuple[int, int], tuple[int, int, int, int, int, float]] = {
+    (2, 5): (142, 84, 108, 88, 170, 68.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (2, 6): (152, 88, 112, 85, 170, 66.5),  # the visit before a stay (review of 2026-10-30, A1)
+    (4, 4): (108, 62, 104, 94, 155, 58.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (5, 6): (104, 62, 108, 94, 156, 60.5),  # the visit before a stay (review of 2026-10-30, A1)
+    (6, 4): (118, 70, 102, 90, 172, 63.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (8, 5): (124, 76, 74, 98, 163, 79.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (8, 6): (128, 78, 96, 97, 163, 77.5),  # the visit before a stay (review of 2026-10-30, A1)
+    (9, 2): (134, 78, 72, 97, 161, 69.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (10, 3): (84, 46, 124, 91, 158, 66.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (12, 3): (118, 70, 92, 98, 176, 83.5),  # the visit before a stay (review of 2026-10-30, A1)
+    (14, 3): (164, 94, 58, 94, 172, 72.5),  # the visit before a stay (review of 2026-10-30, A1)
+    (15, 3): (104, 62, 98, 96, 174, 79.0),  # the visit before a stay (review of 2026-10-30, A1)
+    (15, 4): (86, 52, 124, 95, 174, 77.5),  # the visit before a stay (review of 2026-10-30, A1)
     (2, 2): (136, 80, 86, 93, 170, 67.0),
     (2, 3): (152, 88, 112, 85, 170, 66.5),
     (2, 4): (134, 78, 88, 92, 170, 66.0),
@@ -301,13 +314,13 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     assert check_clinical(clinical, recipes=recipes) == []
     pairs = [(p.patient_no, p.encounter_no) for p in clinical.patients]
     start = pairs.index((4, 1))
-    assert pairs[start - 4 : start + 13] == [
+    assert pairs[start - 4 : start + 16] == [
         (3, 1), (3, 2), (3, 3), (3, 4),
-        (4, 1), (4, 2), (4, 3), (4, 4), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (6, 1), (6, 2), (6, 3), (7, 1)
-    ]  # fmt: skip  # (3, 2)-(3, 4) are S36-S38, (4, 2) and (4, 3) S39 and S40, (4, 4) the test extra, (5, 2)-(5, 5) S41-S44, (6, 2) and (6, 3) S45, S46
+        (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (6, 1), (6, 2), (6, 3), (6, 4), (7, 1)
+    ]  # fmt: skip  # (3, 2)-(3, 4) are S36-S38, (4, 2) and (4, 3) S39 and S40, (4, 4) S54, (4, 5) the test extra, (5, 2)-(5, 5) S41-S44, (6, 2) and (6, 3) S45, S46
     by_encounter = clinical.by_encounter()
     assert set(by_encounter) == {(r.patient_no, r.encounter_no) for r in recipes.recipes}
-    assert by_encounter[(4, 4)].vitals.pulse == by_encounter[(4, 1)].vitals.pulse + 3
+    assert by_encounter[(4, 5)].vitals.pulse == by_encounter[(4, 1)].vitals.pulse + 3
     # by patient number only the first encounter answers
     assert clinical.by_patient_no()[4] is by_encounter[(4, 1)]
     assert len(clinical.by_patient_no()) == cohort.patient_count()
@@ -324,7 +337,7 @@ def test_a_second_encounter_has_its_own_clinical_entry() -> None:
     for entry in load_clinical(CLINICAL_PATH).patients:
         numbers.setdefault(entry.patient_no, []).append(entry.encounter_no)
     assert all(found == list(range(1, len(found) + 1)) for found in numbers.values())
-    assert {no: found for no, found in numbers.items() if len(found) > 1} == {1: [1, 2, 3], 2: [1, 2, 3, 4], 3: [1, 2, 3, 4], 4: [1, 2, 3], 5: [1, 2, 3, 4, 5], 6: [1, 2, 3], 7: [1, 2, 3], 8: [1, 2, 3, 4], 10: [1, 2], 11: [1, 2], 12: [1, 2], 14: [1, 2], 15: [1, 2]}
+    assert {no: found for no, found in numbers.items() if len(found) > 1} == {1: [1, 2, 3], 2: [1, 2, 3, 4, 5, 6], 3: [1, 2, 3, 4], 4: [1, 2, 3, 4], 5: [1, 2, 3, 4, 5, 6], 6: [1, 2, 3, 4], 7: [1, 2, 3], 8: [1, 2, 3, 4, 5, 6], 9: [1, 2], 10: [1, 2, 3], 11: [1, 2], 12: [1, 2, 3], 14: [1, 2, 3], 15: [1, 2, 3, 4]}
 
 
 @pytest.mark.parametrize(
@@ -348,15 +361,15 @@ def test_the_pairs_of_the_entries_must_be_the_pairs_of_the_recipes(edit) -> None
 def test_an_encounter_is_named_by_its_patient_and_number_in_a_problem() -> None:
     # patient 9 (never extended) gets a COPD stay as its second bill, with the patient's own sex and age
     recipes, clinical = with_encounters(
-        Extra(9, 2, "copd_exacerbation_pneumonia_ward", {"admit": "2026-06-01", "story": "S94", "sex": "F", "age": 77})
+        Extra(9, 3, "copd_exacerbation_pneumonia_ward", {"admit": "2026-06-01", "story": "S94", "sex": "F", "age": 77})
     )
-    # the second bill bills a blood gas (L103900) and its entry has no labs block: the entry is named 9.2
+    # the second bill bills a blood gas (L103900) and its entry has no labs block: the entry is named 9.3
     found = check_clinical(clinical, recipes=recipes)
-    assert [(p.check, p.where) for p in found] == [("labs.blood_gas", "patients[9.2].labs")]
-    assert "patient 9.2 has an L103900 blood gas line" in found[0].message
+    assert [(p.check, p.where) for p in found] == [("labs.blood_gas", "patients[9.3].labs")]
+    assert "patient 9.3 has an L103900 blood gas line" in found[0].message
     # a first encounter keeps the plain number, a later one carries the dot
     pairs = [(p.patient_no, p.encounter_no) for p in clinical.patients]
-    for index, where in ((pairs.index((9, 1)), "patients[9].vitals.sbp"), (pairs.index((9, 2)), "patients[9.2].vitals.sbp")):
+    for index, where in ((pairs.index((9, 1)), "patients[9].vitals.sbp"), (pairs.index((9, 3)), "patients[9.3].vitals.sbp")):
         entries = list(clinical.patients)
         entries[index] = entries[index].model_copy(
             update={"vitals": entries[index].vitals.model_copy(update={"sbp": 300})}

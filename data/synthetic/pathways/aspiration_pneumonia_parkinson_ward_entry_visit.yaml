@@ -1,0 +1,58 @@
+# The ER visit through which the patient of story S6 reaches the stay: a clean bill, story S56.
+# Practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is not billed directly.
+# Minimal on purpose: no test, so nothing repeats inside the seven days of the duplicate-test rule. Grammar: README.md next to this file.
+schema_version: 1
+id: aspiration_pneumonia_parkinson_ward_entry_visit
+title: "The ER visit before the admission of story S6, billed on its own takip"
+claim_type: acil
+billing_mode: itemized
+department:
+  name: "Acil Tıp"
+  specialty: "4400"
+
+patient:
+  sex:
+    values: [M]
+    basis: judgment
+    source: "Story S56 is the patient of story S6, on the way to that stay."
+  age:
+    min: 79
+    max: 79
+    basis: judgment
+    source: "Story S56 patient is 79, like story S6."
+
+complaint:
+  text: "Üç gündür öksürük, balgam, ateş ve nefes darlığı; yemek yerken sık sık öksürüp boğuluyor (oğlunun ifadesi)."
+  basis: judgment
+  source: "Story S56: the complaint of story S6, said on arrival. Clinician to confirm."
+
+diagnoses:
+  - icd10: J69.0
+    name: "PNÖMONİT, GIDA VE KUSMUĞA BAĞLI"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "The primary of story S6. Whether an acil bill carries it is question #389."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520020"
+    name: "Acil poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000604, C000607, C000617 (SUT 2.2.1.B-2(2)): ER services of 2nd/3rd tier providers are billed hizmet başı."
+  - id: consultation
+    kind: exam
+    code: "520010"
+    name: "Konsültasyon (Her bir branş için)"
+    days: admit
+    specialty: "1000"
+    basis: judgment
+    source: "Review of 2026-10-30 (A6): the admitting branch (İç Hastalıkları) is consulted before the admission."
+
+showcase:
+  story: S56
+  sex: M
+  age: 79
+  admit: "2026-06-08"

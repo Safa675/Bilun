@@ -27,8 +27,8 @@ _REPO = Path(__file__).resolve().parents[3]
 _CLAIMS = cohort.REGISTRY_PATH.parent / "sut" / "claims"
 _CLEAN = cohort.REGISTRY_PATH.parent / "sut" / "clean"
 _STORIES = tuple(f"S{n}" for n in range(1, 9))  # the stories named by roles
-_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S20", "S21", "S22", "S23", "S24", "S30", "S31", "S32", "S33", "S34", "S36", "S37", "S38", "S39", "S40", "S41", "S42", "S43", "S44", "S45", "S46", "S47", "S48", "S49", "S50", "S51")  # the stories after the eighth, named by scenarios
-_CLEAN_STORIES = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51")  # the bills without a fault: a story and a claim, no fault record
+_SCENARIO_STORIES = ("S9", "S10", "S11", "S12", "S14", "S15", "S17", "S18", "S20", "S21", "S22", "S23", "S24", "S30", "S31", "S32", "S33", "S34", "S36", "S37", "S38", "S39", "S40", "S41", "S42", "S43", "S44", "S45", "S46", "S47", "S48", "S49", "S50", "S51", "S52", "S53", "S54", "S55", "S56", "S57", "S58", "S59", "S60", "S61", "S62", "S63", "S64")  # the stories after the eighth, named by scenarios
+_CLEAN_STORIES = ("S23", "S30", "S31", "S32", "S36", "S37", "S39", "S41", "S43", "S45", "S48", "S51", "S52", "S53", "S54", "S55", "S56", "S57", "S58", "S59", "S60", "S61", "S62", "S63", "S64")  # the bills without a fault: a story and a claim, no fault record
 _FAULT_STORIES = tuple(s for s in (*_STORIES, *_SCENARIO_STORIES) if s not in _CLEAN_STORIES)
 _ROLE_NAMES = ("default_landing", *(f"showcase_{story}" for story in _STORIES))
 

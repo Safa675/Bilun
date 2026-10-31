@@ -95,6 +95,7 @@ CHECKS: dict[str, str] = {
     "stay.bed_coverage": "one bed line a day, admission..discharge (ICU: ..discharge-1; none on the day an ICU bill ends); no day bed on a stay",
     "stay.companion_coverage": "a companion line of quantity not 1, twice on a day, or outside admission..discharge-1",
     "stay.drug_daily_lines": "a course drug not billed as one line a day of its daily quantity: a whole course on one line, a gap, a repeat",
+    "stay.entry_visit": "a stay with no acil bill on its admission day or the day before and no poliklinik bill in the 30 days before it",
     "stay.dates_in_window": "a header whose dates contradict the claim type (a session claim may span dates), or a line date outside the window",
     # bill: performed against billed
     "bill.performed_billed": "a performed procedure with no billed line of the same code on the same day",
@@ -1304,6 +1305,8 @@ def check_visit_code(bill: _Bill) -> list[Problem]:
     found = (
         bill.lines.filter(pl.col("procedure_category") == "muayene")
         .join(bill.headers.select("claim_id", "claim_type"), on="claim_id", how="left")
+        # the admitting branch's consultation belongs on an ER bill (review of 2026-10-30, A6): it is no visit code
+        .filter(~((pl.col("claim_type") == "acil") & (pl.col("procedure_code") == "520010")).fill_null(False))
         .join(
             allowed,
             left_on=["claim_type", "procedure_code"],
@@ -1575,6 +1578,54 @@ def check_drug_daily_lines(bill: _Bill) -> list[Problem]:
         ).alias("message"),
     )
     return _problems("stay.drug_daily_lines", pl.concat([quantity, repeat, gap]))
+
+
+# stay.entry_visit: the practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md,
+# A1): a stay is not billed directly, the patient comes through an acil or a poliklinik visit, a bill of its own.
+# The windows and the exceptions (a transfer out of intensive care, a newborn's stay, an ER observation) are the
+# author's reading until the practitioner answers issue #391.
+ENTRY_ACIL_DAYS = 1
+ENTRY_POLIKLINIK_DAYS = 30
+
+
+def check_entry_visit(bill: _Bill) -> list[Problem]:
+    """stay.entry_visit: every stay has the visit it enters through, unless it is one of the exceptions."""
+    headers = bill.headers
+    exempt = [
+        tag
+        for tag, p in bill.ctx.pathways.items()
+        if p.arrives_from_icu
+        or p.department.name.lower().startswith("acil")
+        or any(d.role == "primary" and d.icd10.startswith("P") for d in p.diagnoses)
+    ]
+    stays = headers.filter(
+        (pl.col("claim_type") == "yatis")
+        & pl.col("adm").is_not_null()
+        & ~pl.col("scenario_tag").is_in(exempt).fill_null(False)
+    ).select("claim_id", "patient_id", "adm")
+    visits = headers.filter(pl.col("claim_type").is_in(["acil", "poliklinik"])).select(
+        "patient_id",
+        pl.col("claim_type").alias("visit_type"),
+        pl.col("start").alias("visit_day"),
+    )
+    days_before = (pl.col("adm") - pl.col("visit_day")).dt.total_days()
+    entered = (
+        stays.join(visits, on="patient_id", how="inner")
+        .filter(
+            ((pl.col("visit_type") == "acil") & days_before.is_between(0, ENTRY_ACIL_DAYS))
+            | ((pl.col("visit_type") == "poliklinik") & days_before.is_between(0, ENTRY_POLIKLINIK_DAYS))
+        )
+        .select("claim_id")
+        .unique()
+    )
+    found = stays.join(entered, on="claim_id", how="anti").select(
+        _claim_text().alias("where"),
+        _format(
+            "the stay admitted on {} has no acil bill that day or the day before and no poliklinik bill in the 30 days before it",
+            pl.col("adm").cast(pl.String),
+        ).alias("message"),
+    )
+    return _problems("stay.entry_visit", found)
 
 
 def check_dates_in_window(bill: _Bill) -> list[Problem]:
@@ -2524,6 +2575,7 @@ CHECK_FUNCTIONS: dict[str, Callable[[_Bill], list[Problem]]] = {
     "fit.visit_code": check_visit_code,
     "stay.bed_coverage": check_bed_coverage,
     "stay.drug_daily_lines": check_drug_daily_lines,
+    "stay.entry_visit": check_entry_visit,
     "stay.companion_coverage": check_companion_coverage,
     "stay.dates_in_window": check_dates_in_window,
     "bill.performed_billed": check_performed_billed,

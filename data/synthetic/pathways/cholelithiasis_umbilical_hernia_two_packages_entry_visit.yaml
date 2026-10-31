@@ -1,0 +1,50 @@
+# The outpatient visit through which the patient of story S8 reaches the stay: a clean bill, story S57.
+# Practitioner review of 2026-10-30 (plans/data/2026-10-30-synthetic-billing-realism-plan.md, A1): a stay is not billed directly.
+# Minimal on purpose: no test, so nothing repeats inside the seven days of the duplicate-test rule. Grammar: README.md next to this file.
+schema_version: 1
+id: cholelithiasis_umbilical_hernia_two_packages_entry_visit
+title: "The outpatient visit before the admission of story S8, billed on its own takip"
+claim_type: poliklinik
+billing_mode: itemized
+department:
+  name: "Genel Cerrahi"
+  specialty: "1900"
+
+patient:
+  sex:
+    values: [F]
+    basis: judgment
+    source: "Story S57 is the patient of story S8, on the way to that stay."
+  age:
+    min: 47
+    max: 47
+    basis: judgment
+    source: "Story S57 patient is 47, like story S8."
+
+complaint:
+  text: "Aylardır yağlı yemekten sonra tekrarlayan sağ üst karın ağrısı; göbekte ayakta büyüyen, yatınca kaybolan şişlik."
+  basis: judgment
+  source: "Story S57: the complaint of story S8, said on arrival. Clinician to confirm."
+
+diagnoses:
+  - icd10: K80.2
+    name: "SAFRA KESESİ TAŞI, KOLESİSTİT OLMADAN"
+    role: primary
+    day: admit
+    basis: judgment
+    source: "The primary of story S8. Whether an acil bill carries it is question #389."
+
+procedures:
+  - id: exam
+    kind: exam
+    code: "520030"
+    name: "Normal poliklinik muayenesi"
+    days: admit
+    basis: sut
+    source: "C000572 (SUT 2.2.1.B-1.(1)): an outpatient application is paid per application, as one EK-2B 520030."
+
+showcase:
+  story: S57
+  sex: F
+  age: 47
+  admit: "2026-09-08"

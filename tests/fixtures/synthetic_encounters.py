@@ -5,7 +5,7 @@ its control and a second visit), and the tests of the multi-encounter builder (`
 dataset in memory from the committed recipes and clinical entries plus the encounters declared here, numbered after
 the committed bills of their patient. Nothing is committed from it.
 
-    recipes, clinical = with_encounters(Extra(4, 4, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12"}))
+    recipes, clinical = with_encounters(Extra(4, 5, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12"}))
     built = build_showcase(recipes=recipes, clinical=clinical)
 
 `STANDARD_EXTRAS` is the dataset most tests use: patient 4 gets a fourth bill, a stay that starts the day after its
@@ -89,6 +89,6 @@ def with_encounters(*extras: Extra) -> tuple[ShowcaseRecipes, ShowcaseClinical]:
 # A story belongs to one bill, so each extra bill names a story of its own (the program's S39 and up are
 # the real follow-up bills; S90 and S91 exist only here).
 STANDARD_EXTRAS = (
-    Extra(4, 4, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12", "story": "S90"}),
+    Extra(4, 5, "pyelonephritis_dementia_delirium_ward", {"admit": "2026-05-12", "story": "S90"}),
     Extra(7, 4, "pleuritic_chest_pain_er_pulmonary_embolism_ruled_out", {"admit": "2026-02-10", "story": "S91"}),
 )

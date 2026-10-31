@@ -1072,34 +1072,34 @@ CASES: list[Case] = [
     ),
     Case(
         ARITH,
-        # patient 9: one bill (patient 3 has four since WP16: the profile is the patient's, so every bill would say it)
-        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[9], birth_year=1950),
+        # patient 13: one bill (the profile is the patient's, so every bill of a patient with several would say it)
+        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[13], birth_year=1986),
         label="birth_year_one_year_off",
-        at=CLAIM[9],
-        says="TANI_YASI is 77; the claim year is 2026 and the birth year 1950, which makes the age 76",
+        at=CLAIM[13],
+        says="TANI_YASI is 41; the claim year is 2026 and the birth year 1986, which makes the age 40",
     ),
     Case(
         ARITH,
-        # patient 9: one bill, which the program does not extend (patient 5 has five since WP15, one finding each)
-        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[9], birth_year=None),
+        # patient 13: one bill (a patient with several has one finding for each)
+        lambda d: edit(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[13], birth_year=None),
         label="no_birth_year",
-        at=CLAIM[9],
-        says="TANI_YASI is 77; the claim year is 2026 and the birth year missing, which makes the age unknown",
+        at=CLAIM[13],
+        says="TANI_YASI is 41; the claim year is 2026 and the birth year missing, which makes the age unknown",
     ),
     Case(
         ARITH,
-        lambda d: setattr(d, "anadata", d.anadata.filter(pl.col("HASTA_ID") != PATIENT[9])),
+        lambda d: setattr(d, "anadata", d.anadata.filter(pl.col("HASTA_ID") != PATIENT[13])),
         label="no_anadata_row",
-        at=CLAIM[9],
-        says="TANI_YASI is missing; the claim year is 2026 and the birth year 1949, which makes the age 77",
+        at=CLAIM[13],
+        says="TANI_YASI is missing; the claim year is 2026 and the birth year 1985, which makes the age 41",
     ),
     Case(
         ARITH,
-        lambda d: drop(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[9]),
+        lambda d: drop(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[13]),
         label="no_copay_profile_row",
-        at=CLAIM[9],
+        at=CLAIM[13],
         says="the birth year missing, which makes the age unknown",
-    ),  # patient 9 has one bill: a patient with several (patient 4 has three) is found wrong in each of them
+    ),  # patient 13 has one bill: a patient with several (patient 4 has three) is found wrong in each of them
     # --- fit.pathway_membership. The extra lines are valid in themselves.
     Case(
         PATHWAY,
@@ -1499,6 +1499,14 @@ CASES: list[Case] = [
         also_n=3,
         at=f"{CLAIM[5]} material_claim_lines[{material_line_id(CLAIM[5], 1)}]",
         says="dated 2026-09-20 outside the claim window 2026-09-03..2026-09-08",
+    ),
+    # --- stay.entry_visit (S4's stay and its ER visit S54; review of 2026-10-30, A1)
+    Case(
+        "stay.entry_visit",
+        lambda d: edit(d, TABLE_CLAIM_HEADERS, pl.col("claim_id") == "F-SENTETIK-HASTA-0004-004", claim_type="gunubirlik"),
+        label="the_visit_before_the_stay_is_not_a_visit",
+        at=CLAIM[4],
+        says="the stay admitted on 2026-05-11 has no acil bill that day or the day before",
     ),
     # --- stay.drug_daily_lines (S2's ceftriaxone: one vial a day, 2026-03-09..03-15; review of 2026-10-30, A3)
     Case(
@@ -2711,13 +2719,13 @@ PAIRS: list[Pair] = [
         "sex: a patient missing from anadata with a male-gated C61",
         lambda d: (_drop_anadata_row(d, 9), add_diagnosis(d, 9, "C61")),
         (SEX, ARITH, PATHWAY),
-        3,
+        4,
     ),
     Pair(
         "sex: a patient missing from anadata with a male-only name",
         lambda d: (_drop_anadata_row(d, 9), rename(d, 9, "L107020", "Prostat iğne biyopsisi")),
         (SEX, ARITH),
-        2,
+        3,
     ),
     # --- patient.sex_gate: the names of the catalog that the word lists must catch
     Pair(
@@ -2948,10 +2956,10 @@ PAIRS: list[Pair] = [
     ),
     Pair(
         "age: O80.9 on a patient missing from anadata (no sex, no age)",
-        # patient 9 has one bill (patient 8 has four since WP17): one claim without its anadata row
+        # patient 9 has two bills since S59: both are without their anadata row
         lambda d: (_drop_anadata_row(d, 9), add_diagnosis(d, 9, "O80.9")),
         (AGE, ARITH, PATHWAY),
-        3,
+        4,
         at=new_row_at(9, TABLE_DIAGNOSES),
         says="needs sex F, age 10..55; the patient is of unknown sex aged unknown",
     ),
@@ -2964,7 +2972,7 @@ PAIRS: list[Pair] = [
         "age: a perinatal code on a patient missing from anadata cannot be judged",
         lambda d: (add_diagnosis(d, 9, "P07.3"), _drop_anadata_row(d, 9)),
         (ARITH, PATHWAY),
-        2,
+        3,
     ),
     Pair(
         "age: an adult name on a patient missing from anadata cannot be judged",
@@ -2997,7 +3005,7 @@ PAIRS: list[Pair] = [
         "arith: a missing copay profile row",
         lambda d: drop(d, TABLE_COPAY, pl.col("patient_id") == PATIENT[9]),
         (ARITH,),
-        1,
+        2,
         only=ARITH,
     ),
     # --- fit.pathway_membership
@@ -3198,10 +3206,11 @@ PAIRS: list[Pair] = [
         2,
     ),
     Pair(
-        "visit: the consultation 520010 on an acil claim",
+        # the admitting branch's consultation belongs on an ER bill (review of 2026-10-30, A6); S7's pathway does not hold it
+        "visit: the consultation 520010 on an acil claim is no wrong examination",
         lambda d: set_code(d, 7, "520020", "520010"),
-        (VISIT, PATHWAY),
-        2,
+        (PATHWAY,),
+        1,
     ),
     Pair(
         # an examination code of the acil type since S49 (C000370, C000438): only S7's pathway does not hold it
@@ -4314,7 +4323,8 @@ def test_the_band_table_in_force_on_the_day_decides_the_anaesthesia_group(
         moved.tables[table] = moved.tables[table].with_columns([earlier(c) for c in columns])
     assert moved.tables[TABLE_CLAIM_HEADERS].filter(of(1))["claim_start_date"][0] == "2026-03-14"
     found = moved.problems(context)
-    assert trips_by_claim(found)[CLAIM[1]] == {"package.mode", "anaesthesia.group"}
+    # the stay moved a month away from the ER visit of its patient, which this test does not move
+    assert trips_by_claim(found)[CLAIM[1]] == {"package.mode", "anaesthesia.group", "stay.entry_visit"}
     assert "puan 5096.64 are group B" in str(
         next(p for p in found if p.check == "anaesthesia.group")
     )
@@ -5538,7 +5548,7 @@ _S9_PATHWAY = "lumbar_stenosis_decompression_foraminoplasty_itemized"
 def two_bills():
     recipes, clinical = with_encounters(
         *STANDARD_EXTRAS,
-        Extra(9, 2, _S9_PATHWAY, {"admit": "2026-06-01", "story": "S94", "include": ["anaesthesia_single"]}),
+        Extra(9, 3, _S9_PATHWAY, {"admit": "2026-06-01", "story": "S94", "include": ["anaesthesia_single"]}),
     )
     return build_showcase(recipes=recipes, clinical=clinical)
 
@@ -5555,10 +5565,11 @@ def _claims_findings(result, *, tables=None, registry=None, anadata=None, only=N
 def test_more_bills_of_a_patient_raise_no_finding_that_the_cohort_does_not_raise(
     two_bills, built, faulty_problems
 ) -> None:
-    found = _claims_findings(two_bills)
+    # patient 9's extra stay of June has no visit before it: that is the one thing the extra bills add
+    found = [p for p in _claims_findings(two_bills) if (p.check, p.claim_id) != ("stay.entry_visit", "F-SENTETIK-HASTA-0009-003")]
     assert {p.check for p in found} == set().union(*EXPECTED_FAULT_TRIPS.values())
     assert sorted(str(p) for p in found) == sorted(str(p) for p in faulty_problems)  # the same, bill for bill
-    extra = {"F-SENTETIK-HASTA-0004-004", "F-SENTETIK-HASTA-0007-004", "F-SENTETIK-HASTA-0009-002"}
+    extra = {"F-SENTETIK-HASTA-0004-005", "F-SENTETIK-HASTA-0007-004", "F-SENTETIK-HASTA-0009-003"}
     assert not [p for p in found if p.claim_id in extra]
 
 
@@ -5568,13 +5579,13 @@ def test_the_age_of_every_bill_is_the_year_of_its_claim_minus_the_patients_birth
     ana = two_bills.clean_tables[TABLE_ANADATA]
     # a second bill that is a year older than its patient's one birth year
     wrong = ana.with_columns(
-        pl.when(pl.col("SQ_EPISODE") == "B-SENTETIK-HASTA-0004-004")
+        pl.when(pl.col("SQ_EPISODE") == "B-SENTETIK-HASTA-0004-005")
         .then(pl.col("TANI_YASI") + 1)
         .otherwise(pl.col("TANI_YASI"))
         .alias("TANI_YASI")
     )
     found = _claims_findings(two_bills, anadata=wrong, only=check)
-    assert [(p.check, p.claim_id) for p in found] == [("patient.age_arithmetic", "F-SENTETIK-HASTA-0004-004")]
+    assert [(p.check, p.claim_id) for p in found] == [("patient.age_arithmetic", "F-SENTETIK-HASTA-0004-005")]
     # a profile a year off is wrong for every bill of its patient (the stay, S39, S40 and the extra), and for no other
     profiles = two_bills.tables[TABLE_COPAY].with_columns(
         pl.when(pl.col("patient_id") == PATIENT[4])
@@ -5583,31 +5594,31 @@ def test_the_age_of_every_bill_is_the_year_of_its_claim_minus_the_patients_birth
         .alias("birth_year")
     )
     found = _claims_findings(two_bills, tables={**two_bills.tables, TABLE_COPAY: profiles}, only=check)
-    assert sorted(p.claim_id for p in found) == [f"F-SENTETIK-HASTA-0004-00{n}" for n in (1, 2, 3, 4)]
+    assert sorted(p.claim_id for p in found) == [f"F-SENTETIK-HASTA-0004-00{n}" for n in (1, 2, 3, 4, 5)]
 
 
 def test_a_bill_that_overrides_its_pins_is_judged_by_the_expansion_with_those_pins(two_bills) -> None:
     check = ["fit.pathway_membership"]
     assert _claims_findings(two_bills, only=check) == []
-    second = next(e for e in two_bills.registry["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0009-002")
+    second = next(e for e in two_bills.registry["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0009-003")
     assert second["pins"] == {"story": "S94", "admit": "2026-06-01", "include": ["anaesthesia_single"]}
     # a registry that does not say so judges the same bill by the pathway's own pins: its anaesthesia line is foreign
     old = copy.deepcopy(two_bills.registry)
     for encounter in old["encounters"]:
         encounter.pop("pins", None)
     (problem,) = _claims_findings(two_bills, registry=old, only=check)
-    assert problem.claim_id == "F-SENTETIK-HASTA-0009-002"
+    assert problem.claim_id == "F-SENTETIK-HASTA-0009-003"
     assert "procedure code 550160 is not in the expansion of " + _S9_PATHWAY in problem.message
     # pins that do not fit the code still count: another pin on the same bill, a code it does not expand
     wrong = copy.deepcopy(two_bills.registry)
-    next(e for e in wrong["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0009-002")["pins"] = {
+    next(e for e in wrong["encounters"] if e["claim_id"] == "F-SENTETIK-HASTA-0009-003")["pins"] = {
         "story": "S94",
         "include": ["foraminoplasty"],
     }
     (problem,) = _claims_findings(two_bills, registry=wrong, only=check)
     assert "550160" in problem.message
     # the bills with no override are judged as they always were
-    assert all(p.claim_id == "F-SENTETIK-HASTA-0009-002" for p in _claims_findings(two_bills, registry=old, only=check))
+    assert all(p.claim_id == "F-SENTETIK-HASTA-0009-003" for p in _claims_findings(two_bills, registry=old, only=check))
 
 
 def test_a_bill_without_a_fault_has_no_answer_row_and_no_record_and_the_labels_agree(two_bills) -> None:
@@ -5618,10 +5629,10 @@ def test_a_bill_without_a_fault_has_no_answer_row_and_no_record_and_the_labels_a
     assert len(two_bills.tables[TABLE_CLAIM_HEADERS]) == cohort.claim_count() + 3
     # a record for a bill that has none would be an answer row the tables do not hold
     bad = copy.deepcopy(two_bills.registry)
-    bad["faults"].append({**bad["faults"][0], "claim_id": "F-SENTETIK-HASTA-0004-004", "patient_id": PATIENT[4]})
+    bad["faults"].append({**bad["faults"][0], "claim_id": "F-SENTETIK-HASTA-0004-005", "patient_id": PATIENT[4]})
     found = _claims_findings(two_bills, registry=bad, only=labels)
     assert ANSWER_ROWS in {p.check for p in found}
-    assert {p.claim_id for p in found} == {"F-SENTETIK-HASTA-0004-004"}
+    assert {p.claim_id for p in found} == {"F-SENTETIK-HASTA-0004-005"}
 
 
 # --- 6. The first visits of the committed cohort: the control (S39) and the second visit (S40) of patient 4 -----------
@@ -5683,7 +5694,7 @@ def test_each_bill_of_a_patient_with_three_bills_is_judged_by_its_own_age(built,
     assert [p.claim_id for p in found] == [SECOND_VISIT_CLAIM]
     data = Data(dict(built.tables), anadata)
     edit(data, TABLE_COPAY, pl.col("patient_id") == PATIENT[4], birth_year=1941)
-    assert sorted(p.claim_id for p in run_only(data, context, ARITH)) == [CLAIM[4], CONTROL_CLAIM, SECOND_VISIT_CLAIM]
+    assert sorted(p.claim_id for p in run_only(data, context, ARITH)) == [CLAIM[4], CONTROL_CLAIM, SECOND_VISIT_CLAIM, "F-SENTETIK-HASTA-0004-004"]
 
 
 # --- 7. G3: a stay of one date (S47) and the window of a visit (a session claim may span dates) ------------------------
