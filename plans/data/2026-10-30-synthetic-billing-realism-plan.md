@@ -137,9 +137,9 @@ Stop conditions: a check that cannot be shown failing on today's data is not mer
 | WP0 | Issues open; the text on the discharge-day bed is the El Kitabı sentence, not found in the repo or on the web with its context | #386-#392, #396 |
 | WP1 complaints | Done | #393 |
 | Engine: one drug finding per claim and drug | Done (Safa's decision, 2026-10-30) | #394 |
-| WP2 daily drugs | Done, on #393 and #394 | #395 |
-| WP3 entry visits | Done, provisional exceptions | branch `claude/synthetic-wp3-entry-visits`, on #395 |
+| WP2 daily drugs | Done | #395 |
+| WP3 entry visits | Done, provisional exceptions | #398 |
 | WP4 discharge-day bed | Waits for #390. Nothing changed | |
 | WP5 ER | A6, A7 done (in the WP3 branch; 803570 "Abdomen US, tüm"). A5 waits for #389 | |
-| WP6 | A8 done (S31 moved after the period, check added). A9, A10, A11 wait for #386, #387, #388, #396 | branch `claude/synthetic-wp6-control-period`, on WP3 |
+| WP6 | A8 done (S31 moved after the period, check added). A9, A10, A11 wait for #386, #387, #388, #396 | #399 |
 | WP7 engine audit | Drug rows per line: fixed by #394. Bed day: measured, 222.35 TL per stay, 1,778.80 TL on the cohort, filed as #397 and blocked by #390. C000714 has no detector: #337. Copay and discount rows stay per line on purpose (they carry money per line) | |
