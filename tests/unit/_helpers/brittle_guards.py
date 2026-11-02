@@ -147,23 +147,3 @@ def assert_audit_report_consistent(
         assert report["tier_c_deferred_count"] == len(
             manifest["tier_c_deferred_clause_ids"]
         )
-
-
-def parquet_section_count(
-    clauses_path: Path,
-    prefix: str,
-    *,
-    exclude_prefix: str = "",
-    matcher=None,
-) -> int:
-    """Count in-force clause rows for a section prefix (delegates to gate_b_audit)."""
-    from scripts.sut.prose.gate_b_audit import in_force_clause_ids
-
-    return len(
-        in_force_clause_ids(
-            clauses_path,
-            prefix,
-            exclude_prefix=exclude_prefix,
-            matcher=matcher,
-        )
-    )

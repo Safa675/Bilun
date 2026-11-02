@@ -62,13 +62,7 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         run: ruff check src/ scripts/
 
-      - name: Run Python tests
-        if: steps.scope.outputs.run == 'true'
-        run: |
-          basetemp="$HOME/.cache/bilun-ci-pytest"
-          trap 'rm -rf -- "$basetemp"' EXIT
-          python -m pytest -q -n auto --durations=20 --basetemp="$basetemp"
-
+      # Before pytest: its session rewrites the drug manifests from their traces, which would hide a drifted committed file.
       - name: Check generated SUT rule artifacts
         if: steps.scope.outputs.run == 'true'
         run: python scripts/sut/compile_rules.py --check
@@ -76,6 +70,13 @@ jobs:
       - name: Audit manifest bucket/trace parity
         if: steps.scope.outputs.run == 'true'
         run: python scripts/sut/audit_manifest_parity.py --drug-only
+
+      - name: Run Python tests
+        if: steps.scope.outputs.run == 'true'
+        run: |
+          basetemp="$HOME/.cache/bilun-ci-pytest"
+          trap 'rm -rf -- "$basetemp"' EXIT
+          python -m pytest -q -n auto --durations=20 --basetemp="$basetemp"
 
   frontend:
     if: >-
