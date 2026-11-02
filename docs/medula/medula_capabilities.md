@@ -270,7 +270,7 @@ Every service record must pass these checks:
 | Genetic info | `GenBilgisiDVO` with gene code required for molecular genetic procedures |
 | Minimum gene count | Per SUT code minimum gene code count enforced |
 | Ordering doctor | `istemYapanDrTescilNo` and branch required |
-| Blood gas tests | Only submittable via `KanBilgisiDVO`, not as regular tahlil (since 2021) |
+| Blood gas tests | A regular tahlil: `TahlilSonucDVO.tahlilTipi` KGAZ01–KGAZ17 (pH, pCO2, pO2, SO2, Na, K, iCa, tHb, Hct, BEECF, BE, BB, cHCO3, tcO2, niCa, PAO2, Osm; no lactate). Kılavuz 16.02.2026 build p.249–250; v3.1.1 of 18.09.2026 p.253–255. `KanBilgisiDVO` holds ISBT blood products, not blood gas |
 
 ### 2.7 Dental Validation (Diş)
 
