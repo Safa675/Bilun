@@ -218,5 +218,5 @@ Inference, not checked: these are the 2023–2024 WHO ATC revisions. The WHO ATC
 5. **ICD codes.** Answered 2026-10-16 ([review][answers]). SKRS codes only, and leaf codes only for diagnoses: 12,817 of the 14,723 active codes are leaves (`category` or `subcategory`; see the ICD section). Whether MEDULA rejects a parent code is unverified.
 6. **`kind` column.** Answered 2026-10-16 ([review][answers]). `kind` and `is_leaf` are added in the builder (see the ICD section).
 
-[review]: ../../../reports/synthetic-data/2026-10-16-v3-drafts-review.md
-[answers]: ../../../reports/synthetic-data/2026-10-16-v3-drafts-review.md#answers-icddrug-questions-datasyntheticreferenceicd10_drugs_notesmd
+[review]: ../../reports/synthetic-data/2026-10-16-v3-drafts-review.md
+[answers]: ../../reports/synthetic-data/2026-10-16-v3-drafts-review.md#answers-icddrug-questions-datasyntheticreferenceicd10_drugs_notesmd

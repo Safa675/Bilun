@@ -13,7 +13,7 @@ Every other line (matched by an encoded rule) is untouched and carries no `ingre
 
 ## Where the ingredient comes from
 
-The billed `drug_name` is the EK-4/A product name: a brand, sometimes with a salt, rarely the substance (`IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU`). The ingredient therefore comes from `data/synthetic/reference/drug_crosswalk.parquet` (TİTCK lists joined to EK-4/A by barcode, PR #258; `mandated_package_gap.py` already reads it for ATC codes), keyed by the line's `barkod`, then by `drug_code` (kamu no). The Turkish `active_ingredient` text is used; the English ATC substance name only when the Turkish text is missing and the ATC code is at substance level (seven characters). The product name is never read as an ingredient. A barcode the crosswalk does not hold gives `ingredient_unknown`, never "no restriction".
+The billed `drug_name` is the EK-4/A product name: a brand, sometimes with a salt, rarely the substance (`IESEF 1 G IV ENJEKSIYONLUK COZELTI TOZU`). The ingredient therefore comes from `data/reference/drug_crosswalk.parquet` (TİTCK lists joined to EK-4/A by barcode, PR #258; `mandated_package_gap.py` already reads it for ATC codes), keyed by the line's `barkod`, then by `drug_code` (kamu no). The Turkish `active_ingredient` text is used; the English ATC substance name only when the Turkish text is missing and the ATC code is at substance level (seven characters). The product name is never read as an ingredient. A barcode the crosswalk does not hold gives `ingredient_unknown`, never "no restriction".
 
 ## How an ingredient is matched against the SUT
 
