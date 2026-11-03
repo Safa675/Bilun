@@ -5,6 +5,9 @@ These feed the SUT optimization rule engine:
   EK-1A   — chronic-disease ICD-10 exemption ranges
   EK-2G   — procedures where additional fees (ilave ucret) are prohibited
   EK-2C-1 — procedures with explicit additional copayment rate percentages
+
+Each list keeps the amendment marker of a code cell as the row's dates (valid_from /
+valid_to, null = open; scripts/sut/_common.py::_add_list_validity).
 """
 
 from __future__ import annotations
@@ -108,7 +111,7 @@ def curate_ek2g(df: pd.DataFrame) -> pd.DataFrame:
     df = df[data_cols].iloc[2:].reset_index(drop=True)
     df.columns = ["code_raw", "procedure_name_raw"]
 
-    seen: dict[str, str] = {}
+    rows: list[dict[str, str]] = []
 
     for _, row in df.iterrows():
         raw_code = _safe_str(row["code_raw"])
@@ -121,20 +124,23 @@ def curate_ek2g(df: pd.DataFrame) -> pd.DataFrame:
         if extracted is None:
             continue
 
-        normalized = _normalize_procedure_code(extracted)
+        rows.append({"procedure_code": extracted, "procedure_name": name, "_code_cell": raw_code})
 
-        if normalized not in seen:
-            seen[normalized] = name
-
-    rows = [
-        {"procedure_code": code, "procedure_name": name}
-        for code, name in sorted(seen.items())
-    ]
-
+    # "614980 (Mülga: RG- 08/02/2022- 31744/11-b md. Yürürlük: 16/02/2022)": each listed code
+    # is dated by its own marker, then a procedure's 6-digit and P codes are one code. Rows of
+    # one code with the same dates are one row (the first); with other dates they stay apart
+    # (P601100 is undated, 601100 is listed from 05/07/2018).
     result = pd.DataFrame(rows)
+    result = _add_list_validity(result.join(amendment_markers(result.pop("_code_cell"))), ["procedure_code"])
+    result["procedure_code"] = result["procedure_code"].map(_normalize_procedure_code)
+    result = (
+        result.drop_duplicates(subset=["procedure_code", "valid_from", "valid_to"])
+        .sort_values("procedure_code", kind="stable")
+        .reset_index(drop=True)
+    )
     print(
-        f"  EK-2G: {len(result)} no-surcharge procedures curated "
-        f"(deduplicated from {len(df)} raw rows)"
+        f"  EK-2G: {result['procedure_code'].nunique()} no-surcharge procedures curated "
+        f"in {len(result)} dated rows (from {len(df)} raw rows)"
     )
     return result
 
@@ -145,7 +151,7 @@ def curate_ek2c1(df: pd.DataFrame) -> pd.DataFrame:
     df = df[data_cols].iloc[1:].reset_index(drop=True)
     df.columns = ["code_raw", "procedure_name_raw", "rate_raw"]
 
-    records: dict[str, dict] = {}
+    rows: list[dict] = []
 
     for _, row in df.iterrows():
         raw_code = _safe_str(row["code_raw"])
@@ -161,25 +167,21 @@ def curate_ek2c1(df: pd.DataFrame) -> pd.DataFrame:
         except (ValueError, TypeError):
             continue
 
-        records[extracted] = {"procedure_name": name, "copay_rate_pct": rate}
+        rows.append(
+            {"procedure_code": extracted, "procedure_name": name, "copay_rate_pct": rate, "_code_cell": raw_code}
+        )
 
-    rows = [
-        {
-            "procedure_code": code,
-            "procedure_name": rec["procedure_name"],
-            "copay_rate_pct": rec["copay_rate_pct"],
-        }
-        for code, rec in sorted(records.items())
-    ]
-
+    # "P552001 (Değişik: RG- 25/08/2022- 31934/56 md. Yürürlük: 03/09/2022)" at 100 beside the
+    # clean P552001 at 60: the 60 row ends on 02/09/2022 and the 100 row starts on 03/09/2022.
     result = pd.DataFrame(rows)
+    result = _add_list_validity(result.join(amendment_markers(result.pop("_code_cell"))), ["procedure_code"])
+    result = result.sort_values("procedure_code", kind="stable").reset_index(drop=True)
     if not result.empty:
         result["copay_rate_pct"] = result["copay_rate_pct"].astype(float)
 
-    n_dupes = len(df) - len(result)
     print(
-        f"  EK-2C-1: {len(result)} procedures with copayment rates curated "
-        f"({n_dupes} amendment duplicates resolved)"
+        f"  EK-2C-1: {result['procedure_code'].nunique()} procedures with copayment rates curated "
+        f"in {len(result)} dated rows"
     )
     return result
 

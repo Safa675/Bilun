@@ -1,5 +1,5 @@
 """Amendment markers in SUT list cells: EK-2B keeps marked rows (#226) and every
-curated row applies from its own Yürürlük date (#227)."""
+curated row applies from its own Yürürlük date (#227), in every list that has them (#291)."""
 
 from __future__ import annotations
 
@@ -19,7 +19,9 @@ from scripts.sut._common import (
     amendment_markers,
 )
 from scripts.sut.catalogs.hierarchical_materials import extract_ek3o
+from scripts.sut.catalogs.orthopedic_materials import extract_ek3f4
 from scripts.sut.catalogs.price_history import extract_ek2b, extract_ek2c_dental
+from src.bilun.domain.materials.catalog_lookup import lookup_ek3_list_price_try
 
 pytestmark = pytest.mark.unit
 
@@ -347,3 +349,61 @@ def test_curated_ek2c_dental_rows_carry_the_dates_of_their_markers() -> None:
     assert repealed.group_by("code").agg(pl.col("valid_to").max()).sort("code")["valid_to"].to_list() == [
         "2024-12-19"
     ] * 4
+
+
+# #291: the EK-3 material lists, EK-2G and EK-2C-1 keep only the code of a marked code cell and date the row
+# by its marker, as EK-2B and EK-3O do. Their code columns, in every curated list.
+_CODE_COLUMNS = ("sut_code", "procedure_code", "code", "package_code")
+
+
+def test_no_curated_code_cell_carries_an_amendment_marker() -> None:
+    marked = {}
+    for path in sorted(_CURATED.glob("*.parquet")):
+        frame = pl.read_parquet(path)
+        for column in set(_CODE_COLUMNS) & set(frame.columns):
+            cells = frame[column].cast(pl.String)
+            hits = cells.filter(cells.str.contains(r"(?i)RG\s*-|Y[üu]r[üu]rl[üu]k")).to_list()
+            if hits:
+                marked[f"{path.name}:{column}"] = hits
+    assert not marked, marked
+
+
+def test_curated_ek3_rows_apply_from_the_date_of_their_code_cell_marker() -> None:
+    def rows(name: str, code: str) -> list[tuple]:
+        frame = pl.read_parquet(_CURATED / name).filter(pl.col("sut_code") == code)
+        return frame.select("valid_from", "valid_to", "price_try").rows()
+
+    # Değişik RG-29/06/2026 (Yürürlük 07/07/2026): the list keeps the old price beside the new one.
+    assert rows("ek3t_anesthesiology_materials.parquet", "AN1210") == [
+        (None, "2026-07-06", 558.80825),
+        ("2026-07-07", None, 1117.62),
+    ]
+    assert [lookup_ek3_list_price_try("AN1210", day) for day in ("2026-07-06", "2026-07-07")] == [558.80825, 1117.62]
+    # Ek RG-17/01/2026 (Yürürlük 31/01/2026) adds KR4003; Mülga RG-29/06/2026 repeals 102495 from 07/07/2026.
+    assert rows("ek3h_cardiology_materials.parquet", "KR4003") == [("2026-01-31", None, 50450.4)]
+    assert [lookup_ek3_list_price_try("KR4003", day) for day in ("2026-01-30", "2026-01-31")] == [None, 50450.4]
+    assert [day for day, _, _ in rows("ek3e1_spine_surgery_materials.parquet", "102495")] == [None]
+    assert lookup_ek3_list_price_try("102495", "2026-07-06") is not None
+    assert lookup_ek3_list_price_try("102495", "2026-07-07") is None
+
+
+def test_ek3f_degisik_marker_in_a_text_cell_dates_only_a_row_the_list_keeps_an_older_one_of() -> None:
+    changed = "(Değişik:RG-17/01/2026-33140/14 md. Yürürlük:24/01/2026)   CoCr /TİTANYUM CoCr"
+    raw = pd.DataFrame(
+        [
+            ["SUT KODU", "TIBBİ MALZEME ALAN TANIMI", None, None, "FİYAT (TL)"],
+            [None, "OPERASYON BÖLGESİ", "BİÇİM", "MATERYAL", None],
+            [None, "ORTAK KULLANIM", None, None, None],
+            ["TV5680", "ORTAK KULLANIM", "PİNLER", "BİYOÇÖZÜNÜR", "2658.90625"],
+            ["TV5680", "ORTAK KULLANIM", "PİNLER", changed, "2700.00"],
+            ["AP1880", "KALÇA", "FEMORAL BIPOLAR BAŞ", changed, "5391.8865"],
+        ],
+        columns=["SUT KODU", "Unnamed: 1", "Unnamed: 2", "Unnamed: 3", "Unnamed: 4"],
+    )
+    out = extract_ek3f4(raw)
+    assert _rows(out, "sut_code", "valid_from", "valid_to", "price_try") == [
+        ["TV5680", None, "2026-01-23", 2658.90625],
+        ["TV5680", "2026-01-24", None, 2700.0],
+        ["AP1880", None, None, 5391.8865],  # amended, but the list has no older row it replaces
+    ]
+    assert out.loc[2, "description"] == f"FEMORAL BIPOLAR BAŞ | {changed}"  # the text stays as SGK wrote it
