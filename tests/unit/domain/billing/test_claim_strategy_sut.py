@@ -241,7 +241,8 @@ class TestClaimStrategySut:
         higher_amount = params["package_total_try" if higher == "package" else "itemized_total_try"]
         lower_amount = params["itemized_total_try" if higher == "package" else "package_total_try"]
         lower = "itemized" if higher == "package" else "package"
-        assert claim_rec["detail"] == (
+        # A note follows: the itemized side counts the bed, companion and anaesthesia owed.
+        assert claim_rec["detail"].startswith(
             f"Claim CLM1: optional §2.2.2(2) override — {higher} billing "
             f"({higher_amount} TRY) is the higher legal option vs {lower} "
             f"({lower_amount} TRY)."
