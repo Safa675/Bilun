@@ -89,19 +89,6 @@ class TestDrgPackageAdequacy:
         assert rows[0]["primary_icd10"] == "K50.9"
         assert set(rows[0]["clinical_procedure_codes"]) == {"600150", "600160"}
 
-    def test_skips_non_package_candidate_claims(self) -> None:
-        claim = _claim(package_candidate=False)
-        procs = [
-            _proc_line(),
-            _proc_line(
-                procedure_line_id="ISL-3",
-                procedure_code="609270",
-                procedure_category="paket",
-                billed_amount_try=Decimal("3500.00"),
-            ),
-        ]
-        assert detect_drg_package_adequacy_opportunities(claim, procs) == []
-
     def test_skips_unknown_billed_package(self) -> None:
         claim = _claim()
         procs = [

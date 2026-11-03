@@ -1,4 +1,5 @@
-# Public files behind the synthetic-demo reference tables (P1). The files stay outside the repo.
+# Public files behind the reference tables of this folder (synthetic demo v3, P1; the engine reads the
+# crosswalk too, #294). The files stay outside the repo.
 # scripts/synthetic/reference/build_icd10_and_drugs.py reads them from --downloads DIR (one folder
 # per file, at `path`) and refuses any file whose size or sha256 differs from this list.
 

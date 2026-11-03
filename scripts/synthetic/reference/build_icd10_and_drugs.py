@@ -1,7 +1,7 @@
 """Build the ICD-10 table and the EK-4A drug crosswalk from public files kept outside the repo.
 
 The files sit under ``--downloads``, one folder per file, at the paths in
-``data/synthetic/reference/sources.yaml``. The builder refuses a folder inside the repo and any
+``data/reference/sources.yaml``. The builder refuses a folder inside the repo and any
 file whose size or sha256 differs from that list. Workbooks are read with openpyxl in read-only,
 data-only mode and external links are never loaded. Outputs:
 
@@ -34,7 +34,7 @@ import yaml
 from openpyxl import load_workbook
 
 REPO = Path(__file__).resolve().parents[3]
-OUT_DIR = REPO / "data/synthetic/reference"
+OUT_DIR = REPO / "data/reference"
 SOURCES_PATH = OUT_DIR / "sources.yaml"
 ICD10_PATH = OUT_DIR / "icd10_tr.parquet"
 CROSSWALK_PATH = OUT_DIR / "drug_crosswalk.parquet"

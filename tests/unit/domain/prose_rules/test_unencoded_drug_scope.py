@@ -391,7 +391,7 @@ def test_the_crosswalk_is_keyed_by_barcode_and_by_kamu_no() -> None:
     entry = crosswalk["8699508270224"]
     assert entry.active_ingredient == "seftriakson"
     assert entry.atc_code == "J01DD04"
-    kamu = pl.read_parquet("data/synthetic/reference/drug_crosswalk.parquet", columns=["barcode", "kamu_no"])
+    kamu = pl.read_parquet("data/reference/drug_crosswalk.parquet", columns=["barcode", "kamu_no"])
     row = kamu.filter(pl.col("barcode") == "8699508270224").row(0, named=True)
     assert crosswalk[row["kamu_no"]] == entry
 
@@ -408,7 +408,7 @@ def test_the_three_plain_drugs_of_the_first_synthetic_patient_have_no_sut_restri
 
 
 def _barcode_with_ingredient(word: str) -> str:
-    frame = pl.read_parquet("data/synthetic/reference/drug_crosswalk.parquet", columns=["barcode", "active_ingredient"])
+    frame = pl.read_parquet("data/reference/drug_crosswalk.parquet", columns=["barcode", "active_ingredient"])
     hits = frame.filter(pl.col("active_ingredient").str.to_lowercase().str.contains(word, literal=True))
     assert hits.height, f"no crosswalk product carries {word}"
     return hits["barcode"][0]

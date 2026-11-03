@@ -94,7 +94,7 @@ class CohortCatalogs:
     @cached_property
     def icd10_tr(self) -> pl.DataFrame:
         return self._read_parquet(
-            "data/synthetic/reference/icd10_tr.parquet",
+            "data/reference/icd10_tr.parquet",
             ["code", "name_tr"],
         )
 
@@ -106,7 +106,7 @@ class CohortCatalogs:
     @cached_property
     def drug_crosswalk(self) -> pl.DataFrame:
         return self._read_parquet(
-            "data/synthetic/reference/drug_crosswalk.parquet",
+            "data/reference/drug_crosswalk.parquet",
             ["barcode", "titck_product_name"],
         )
 

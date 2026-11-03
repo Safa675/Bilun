@@ -147,8 +147,9 @@ class TestDrgPackageAdequacyForContext:
         ctx = _ctx([claim], procs)
         assert check_drg_package_adequacy_for_context(ctx) == []
 
-    def test_non_package_candidate_claim_skipped(self) -> None:
-        """Claims without package_candidate are not evaluated."""
+    def test_the_package_is_read_from_the_codes_not_the_package_candidate_flag(self) -> None:
+        """#294: a claim without the synthetic-only flag is evaluated; its package is the
+        billed P code (MEDULA has no "paket" category), so 609300 is still flagged."""
         claim = _claim(package_candidate=False)
         procs = [
             _proc_line(),
@@ -159,12 +160,14 @@ class TestDrgPackageAdequacyForContext:
             ),
             _proc_line(
                 procedure_line_id="ISL-3",
-                procedure_code="609270",
+                procedure_code="P609270",
                 procedure_name="Package",
-                procedure_category="paket",
                 billed_amount_try=Decimal("3500.00"),
                 expected_payable_try=Decimal("3500.00"),
             ),
         ]
         ctx = _ctx([claim], procs)
-        assert check_drg_package_adequacy_for_context(ctx) == []
+        violations = check_drg_package_adequacy_for_context(ctx)
+        assert [(v["details"]["current_package_code"], v["material_code"]) for v in violations] == [
+            ("609270", "609300"),
+        ]

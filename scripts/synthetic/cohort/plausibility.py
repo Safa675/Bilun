@@ -432,7 +432,7 @@ class PlausibilityContext:
     @cached_property
     def icd(self) -> pl.DataFrame:
         """code, is_active, is_leaf, sex (M, F or null), created_on, passive_on (Date), known."""
-        path = self.root / "data/synthetic/reference/icd10_tr.parquet"
+        path = self.root / "data/reference/icd10_tr.parquet"
         dates = pl.read_parquet(path, columns=["code", "created_on", "passive_on"])
         base = self.catalogs.icd.select("code", "is_active", "is_leaf", "sex")
         return base.join(dates, on="code", how="left").with_columns(pl.lit(True).alias("known"))

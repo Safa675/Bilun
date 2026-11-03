@@ -34,8 +34,6 @@ def recommend_drg_package_adequacy_from_claims(
 
     opportunities: list[dict] = []
     for claim in ctx.claims:
-        if not claim.package_candidate:
-            continue
         claim_procs = [
             line for line in ctx.procedure_lines if line.claim_id == claim.claim_id
         ]

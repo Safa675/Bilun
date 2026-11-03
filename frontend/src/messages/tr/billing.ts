@@ -283,7 +283,7 @@ const billing = {
   "packageAdequacyReview": {
     "title": "DRG / paket kodu yeterliliği",
     "scopeFootnote": "Faturalanan işlemler gönderilen paket kodunun ayak izinden daha geniş bir EK-2/C paketini destekliyorsa kodlama incelemesi işaretlenir. Yalnızca belge incelemesi — otomatik geçiş yok; paket kodunu değiştirmeden önce ICD-10 ve işlem kanıtını doğrulayın.",
-    "unavailable": "Paket yeterlilik incelemesi için paket adayı meta verili kesin işlem satırları gerekir.",
+    "unavailable": "Paket yeterlilik incelemesi için kesin işlem satırları ve birincil ICD-10 gerekir.",
     "claim": "Fatura",
     "primaryIcd10": "Birincil ICD-10",
     "clinicalProcedures": "Klinik işlemler",

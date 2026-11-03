@@ -13,6 +13,7 @@ from src.bilun.domain.prose_rules.catalog_membership import (
     get_ek2c_entry,
     normalize_procedure_code,
 )
+from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
 
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_PACKAGE_ADEQUACY
 
@@ -45,7 +46,7 @@ def _rules_by_package() -> dict[str, dict[str, Any]]:
 def _clinical_procedure_codes(claim_procs: list[ProcedureClaimLine]) -> set[str]:
     codes: set[str] = set()
     for line in claim_procs:
-        if line.procedure_category == "paket" or line.is_package_included:
+        if line_billed_as_package(line) or line.is_package_included:
             continue
         if float(line.billed_amount_try) <= _BILLING_TOLERANCE:
             continue
@@ -57,7 +58,7 @@ def _clinical_procedure_codes(claim_procs: list[ProcedureClaimLine]) -> set[str]
 
 def _billed_package_code(claim_procs: list[ProcedureClaimLine]) -> str | None:
     for line in claim_procs:
-        if line.procedure_category != "paket":
+        if not line_billed_as_package(line):
             continue
         if float(line.billed_amount_try) <= _BILLING_TOLERANCE:
             continue
@@ -84,7 +85,7 @@ def _package_price_try(
 ) -> tuple[float | None, str]:
     as_of = claim.admission_date or claim.claim_start_date
     for line in claim_procs:
-        if line.procedure_category != "paket":
+        if not line_billed_as_package(line):
             continue
         if normalize_procedure_code(line.procedure_code) != package_code:
             continue
@@ -114,8 +115,12 @@ def detect_drg_package_adequacy_opportunities(
     claim: ClaimHeader,
     claim_procs: list[ProcedureClaimLine],
 ) -> list[dict[str, Any]]:
-    """Flag under-coded EK-2/C packages when clinical procedures support a larger footprint."""
-    if not claim.package_candidate or not claim_procs:
+    """Flag under-coded EK-2/C packages when clinical procedures support a larger footprint.
+
+    The claim is a package claim by its codes, a line billed as a package (``line_billed_as_package``),
+    never by the synthetic-only ``package_candidate`` header flag (#294).
+    """
+    if not claim_procs:
         return []
 
     clinical = _clinical_procedure_codes(claim_procs)
@@ -250,8 +255,6 @@ def check_drg_package_adequacy_for_context(
 
     violations: list[dict[str, Any]] = []
     for claim in ctx.claims:
-        if not claim.package_candidate:
-            continue
         claim_procs = [
             line for line in ctx.procedure_lines if line.claim_id == claim.claim_id
         ]
