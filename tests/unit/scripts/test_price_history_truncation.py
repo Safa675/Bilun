@@ -41,10 +41,12 @@ def test_ek2b_rows_are_cut_at_the_kurus() -> None:
             ("510010", "Standart yatak tarifesi", None, 374.97),
             ("615040", "Tie", None, 11325),
             ("510121", "Refakat", None, "124,95"),
-            ("530000", "Exact", None, 100),
+            ("530000", "Exact", " Günde bir adet faturalandırılır. ", 100),
             ("530010", "No puan", None, None),
         ],
     ))
+    # The Açıklama is kept, trimmed, for the daily caps (#303); an empty cell reads "".
+    assert out["description"].tolist() == ["", "", "", "Günde bir adet faturalandırılır.", ""]
     prices = dict(zip(out["code"], out["price_try"], strict=True))
     assert prices["510010"] == 222.35  # 222.35721
     assert prices["615040"] == 6715.72  # 6,715.725 exactly

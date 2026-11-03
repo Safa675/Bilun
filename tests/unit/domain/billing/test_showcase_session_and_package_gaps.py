@@ -176,8 +176,10 @@ def s2() -> _Bill:
     bill.stay(GOGUS)
     bill.labs(a, (*ADMIT_PANEL, "L103900", "L106240", "906020", "905675"), GOGUS)
     bill.proc("801720", a, specialty=RAD)
-    bill.proc("530350", a, qty=18, specialty=GOGUS)
-    bill.proc("530360", a, qty=48, specialty=GOGUS)
+    for i in range(6):  # "Günde bir adet faturalandırılır": one a day, as stories.py bills it (#303)
+        bill.proc("530350", a + timedelta(days=i), specialty=GOGUS)
+    for i in range(2):  # "Günlük en fazla 16 saat ödenir"
+        bill.proc("530360", a + timedelta(days=i), qty=16, specialty=GOGUS)
     bill.labs(a + timedelta(days=3), ("L107020", "L101850", "L103900"), GOGUS)
     bill.proc("801720", a + timedelta(days=4), specialty=RAD)
     return bill
