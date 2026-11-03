@@ -124,12 +124,10 @@ PROCEDURE_CAPTURE_GAP_UNAVAILABLE_REASON = (
 )
 DRG_PACKAGE_ADEQUACY_REQUIRED_INPUTS = (
     "procedure_claim_lines",
-    "package_candidate",
     "primary_icd10",
 )
 DRG_PACKAGE_ADEQUACY_UNAVAILABLE_REASON = (
-    "Package adequacy review requires exact procedure claim lines with package "
-    "candidate flags and primary ICD-10."
+    "Package adequacy review requires exact procedure claim lines and primary ICD-10."
 )
 MEDULA_PLAYBOOK_REQUIRED_INPUTS = (
     "medula_rejection_events",

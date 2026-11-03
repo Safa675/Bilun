@@ -1061,6 +1061,29 @@ class TestMandatedPackageGap269:
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 0.0
 
+    @pytest.mark.parametrize("package_candidate", [False, None], ids=["false", "absent"])
+    def test_the_package_side_reads_the_codes_not_the_package_candidate_flag(
+        self, package_candidate,
+    ) -> None:
+        # #294: without the flag the clean S8 (two packages billed) and an optional
+        # §2.2.2(2) package billed hizmet başı at a training hospital had no row.
+        clean = s8("clean")
+        clean.package_candidate = package_candidate
+        day = _d("2026-07-14")
+        optional = _Bill("C-OPT", "yatis", day, day + timedelta(days=2),
+                         package_candidate=package_candidate, tier="egitim_arastirma")
+        optional.proc("600170", day, specialty=GENCER)
+        rows = [_claim_row(bill.ctx()) for bill in (clean, optional)]
+        assert [(row["message_code"], row["savings_try"]) for row in rows] == [
+            ("claim_package_ok", 0.0),
+            ("claim_optional_package_higher",
+             round(_listed("P600170", "2026-07-14") - _listed("600170", "2026-07-14"), 2)),
+        ]
+        # An ICU day package (§2.4.4.H) is no package of the stay: no row, as the flag never gave one.
+        icu = _Bill("C-ICU", "yatis", day, day + timedelta(days=2), package_candidate=package_candidate)
+        icu.proc("P552002", day, qty=2)
+        assert _claim_rows(icu.ctx()) == []
+
     def test_a_line_already_at_risk_in_full_adds_no_session_risk(self) -> None:
         # Outside the #269 comparison (the claim bills a package) a must-package
         # line billed hizmet başı stays at risk in full; the session factor on it
@@ -1482,21 +1505,12 @@ class TestC000672:
 
     def test_the_strategy_recommends_no_package(self) -> None:
         # Review: a package_candidate claim fell back to a 3,413.70 compliance row.
-        rows = recommend_billing_strategy_from_claims(
-            self._bill("0.3", package_candidate=True).ctx(),
-        ).recommendations
+        # The session is billed hizmet başı, so its codes give the claim no package
+        # side and the flag adds no claim row (#294; it was a 0-TL itemized row).
+        ctx = self._bill("0.3", package_candidate=True).ctx()
+        rows = recommend_billing_strategy_from_claims(ctx).recommendations
         assert [row for row in rows if row.get("type") == "compliance_violation"] == []
-        claim_row = _only_claim_row(rows)
-        assert (claim_row["payment_method_kind"], claim_row["recommendation"]) == (
-            "ITEMIZED", "itemized",
-        )
-        assert claim_row["savings_try"] == 0.0
-
-
-def _only_claim_row(rows: list[dict]) -> dict:
-    claim_rows = [row for row in rows if row.get("recommendation_kind")]
-    assert len(claim_rows) == 1, claim_rows
-    return claim_rows[0]
+        assert _claim_rows(ctx) == []
 
 
 class TestNoUpliftOnPackageLines:

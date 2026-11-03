@@ -36,7 +36,10 @@ from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INP
 from src.bilun.domain.prose_rules.mandated_package_gap import mandated_package_gap
 from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
 from src.bilun.domain.prose_rules.session_uplift import missing_fact_wording
-from src.bilun.domain.prose_rules.yatak_puani import c000672_hizmet_basi_lines
+from src.bilun.domain.prose_rules.yatak_puani import (
+    billed_package_lines_without_icu,
+    c000672_hizmet_basi_lines,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
     SAVINGS_CATEGORY_COMPLIANCE,
@@ -688,8 +691,6 @@ def recommend_billing_strategy_from_claims(
             drug_lines=ctx.drug_lines,
             material_lines=ctx.material_lines,
         )
-        if gap is None and not claim.package_candidate:
-            continue
 
         care_setting = infer_care_setting(claim)
         line_results = [
@@ -703,6 +704,19 @@ def recommend_billing_strategy_from_claims(
             continue
 
         current_billing = _infer_current_billing(claim_procs)
+        # Without the mandated gap the claim has a package side when its codes give
+        # one (#294), never the package_candidate flag: an optional §2.2.2(2)
+        # package (DRG_OVERRIDABLE, a third-tier hospital), or a package billed
+        # (> 0) other than an ICU day package.
+        if (
+            gap is None
+            and claim_kind != "DRG_OVERRIDABLE"
+            and not any(
+                float(line.billed_amount_try) > 0
+                for line in billed_package_lines_without_icu(claim_procs)
+            )
+        ):
+            continue
         package_mandated_itemized = gap is not None
         lenient_itemized: float | None = None
         missing_facts: list[str] = []

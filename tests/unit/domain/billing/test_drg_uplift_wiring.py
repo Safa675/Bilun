@@ -209,7 +209,11 @@ class TestDrgUpliftWiring:
             claim_context=ctx,
             copay_exemption={"exempt": False},
         )
-        assert report.drg_uplift.confirmed_uplift_try == drg.confirmed_uplift_try
+        # The strategy reads the billed package from the codes, not the flag (#294),
+        # so its optional-override row carries the uplift and drg_uplift de-dupes it.
+        strategy = [r for r in report.billing_strategy.recommendations if r.get("recommendation_kind")]
+        assert [r["savings_try"] for r in strategy] == [drg.confirmed_uplift_try]
+        assert report.drg_uplift.confirmed_uplift_try == 0
         assert report.sgk_uplift_try >= drg.confirmed_uplift_try
         assert report.audit_exposure_try >= 0
 

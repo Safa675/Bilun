@@ -190,15 +190,21 @@ def test_gap_closing_empty_context_returns_empty() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_payment_method_path_diagnosis_from_package_candidate() -> None:
+def test_payment_method_path_diagnosis_from_a_billed_package_line() -> None:
     """W2.5a (HIGH): payment_method must derive the §2.2.2.B path
     (diagnosis_based / fee_for_service), NOT the procedure-level
-    package/itemized decision. A package_candidate=True claim must surface
+    package/itemized decision. A claim that bills a package line must surface
     ``payment_method="diagnosis_based"`` so the 6 §2.2.2.B treatment rules
     that gate on that value can fire. Before the fix this emitted
     ``"package"`` and the rules silently never matched.
+
+    #294: the fallback reads the billed P code (an outpatient EK-2/C package off
+    EK-2/A-2 sets no claim kind), not the synthetic-only package_candidate flag.
     """
-    ctx = _make_ctx(header=_make_header(package_candidate=True))
+    ctx = _make_ctx(
+        header=_make_header(package_candidate=False),
+        procedure_lines=(_make_procedure(code="P609270"),),
+    )
     context = _build_gap_closing_context(ctx)
     assert context.get("payment_method") == "diagnosis_based"
 

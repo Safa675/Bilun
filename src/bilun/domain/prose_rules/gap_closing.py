@@ -289,11 +289,14 @@ def _derive_payment_method_path(
             return "diagnosis_based"
         if kind == "ITEMIZED":
             return "fee_for_service"
-        # MISSING_INPUTS / NOT_IN_SUT / None → fall through to the header signal.
-    # Header-only fallback: package_candidate=True is a weaker but real signal
-    # that a DRG package line is present on the claim (set by the synthetic
-    # generators when an EK-2/C package line exists).
-    if getattr(header, "package_candidate", None) is True:
+        # MISSING_INPUTS / NOT_IN_SUT / None → fall through to the billed lines.
+    # Fallback: a line billed as an EK-2/C package (other than an ICU day
+    # package) puts the claim on the package path. Read from the codes, never
+    # from the synthetic-only package_candidate header flag (#294), which the
+    # generator sets from the same lines.
+    from .yatak_puani import billed_package_lines_without_icu
+
+    if billed_package_lines_without_icu(list(procedures)):
         return "diagnosis_based"
     return None
 
@@ -422,9 +425,9 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
                 sorted(codes), "EK-2/A"
             )
     # Payment method (§2.2.2.B path): derived from the claim-aggregated
-    # PaymentMethodKind, NOT from package_candidate directly. The kind-based
-    # derivation is the canonical SUT §2.2 evaluator's output; package_candidate
-    # is only a header-level fallback. See _derive_payment_method_path.
+    # PaymentMethodKind, never from package_candidate. The kind-based
+    # derivation is the canonical SUT §2.2 evaluator's output; a billed package
+    # line is only the fallback. See _derive_payment_method_path.
     payment_method = _derive_payment_method_path(
         header, procedure_lines, care_setting=context["care_setting"]
     )
