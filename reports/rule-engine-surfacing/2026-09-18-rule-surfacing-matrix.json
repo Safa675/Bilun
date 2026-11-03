@@ -22,12 +22,12 @@
   "counts": {
     "aggregate_only_findings": 1,
     "cohort_visible_findings": 1304,
-    "distinct_emitted_rule_ids_or_kinds": 1944,
+    "distinct_emitted_rule_ids_or_kinds": 1945,
     "duplicate_surfaced_findings": 1398,
-    "financial_findings": 363,
+    "financial_findings": 364,
     "hidden_runtime_findings": 536,
     "nonfinancial_findings": 1581,
-    "patient_visible_findings": 1407,
+    "patient_visible_findings": 1408,
     "registry_rule_families": 46,
     "runtime_detectors_adapters": 85
   },
@@ -8132,6 +8132,7 @@
       "emitted_rule_ids_or_kinds": [
         "kind:blood_component_partial_bill",
         "kind:bundled_line_flag",
+        "kind:ek2b_daily_limit_exceeded",
         "kind:session_point_violation",
         "kind:yatak_newborn_overlap_double_billing"
       ],

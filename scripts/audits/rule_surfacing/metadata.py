@@ -231,6 +231,7 @@ EMISSION_OVERRIDES: dict[str, tuple[str, ...]] = {
         "kind:blood_component_partial_bill",
         "kind:bundled_line_flag",
         "kind:yatak_newborn_overlap_double_billing",
+        "kind:ek2b_daily_limit_exceeded",
     ),
     "recommend_care_setting_review_from_claims": ("kind:care_setting_review",),
     "recommend_medula_rejection_playbook_from_claims": ("kind:medula_rejection_playbook",),

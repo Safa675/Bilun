@@ -120,13 +120,16 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
         lambda x: str(x).strip() if pd.notna(x) else ""
     )
+    # The Açıklama column, as SGK wrote it: its limits ("Günde bir adet faturalandırılır.") are
+    # read by prose_rules/ek2b_daily_limits.py (#303). "" when the list has no such column.
+    out["description"] = _cell_text(body.iloc[:, pos["ACIKLAMA"]]) if "ACIKLAMA" in pos else ""
     out["puan"] = _puan(body.iloc[:, pos["ISLEM PUANI"]])
     out = out.join(amendment_markers(code_cells))
 
     out = out[out["code"].str.match(RE_EK2B_CODE, na=False)]
     out["price_try"] = _price_try(out["puan"])
     out = out.reset_index(drop=True)
-    return out[["code", "name", "puan", "price_try", *MARKER_COLUMNS]]
+    return out[["code", "name", "description", "puan", "price_try", *MARKER_COLUMNS]]
 
 
 def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:

@@ -1,9 +1,10 @@
 """Aggregate audit exposure (over-billing risk) from exact claim lines — display only.
 
-Two sources add into one total and one list of rows: the unbundling findings (session factor, blood component,
-bundled line, mandated-package payment method) and the standard-bed lines billed on a day a newborn bed covers
-(``prose_rules.yatak_newborn_overlap``, the same detector ``analyze_claim`` calls). The risk of one line is
-counted once: a line already at risk under an unbundling bucket keeps only what it billed beyond that.
+Three sources add into one total and one list of rows: the unbundling findings (session factor, blood component,
+bundled line, mandated-package payment method), the standard-bed lines billed on a day a newborn bed covers
+(``prose_rules.yatak_newborn_overlap``, the same detector ``analyze_claim`` calls) and the EK-2/B codes billed on a
+day above the daily cap of their Açıklama (``prose_rules.ek2b_daily_limits``). The risk of one line is counted
+once: a line already at risk under an earlier source keeps only what it billed beyond that.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from src.bilun.domain.prose_rules.drg_unbundling import (
     ClaimUnbundlingFinding,
     analyze_claim_unbundling,
 )
+from src.bilun.domain.prose_rules.ek2b_daily_limits import detect_ek2b_daily_limit_violations
 from src.bilun.domain.prose_rules.yatak_newborn_overlap import detect_yatak_newborn_overlap
 
 # The four buckets of an unbundling finding that add to ``audit_exposure_try``, in the
@@ -167,13 +169,55 @@ def newborn_bed_overlap_rows(
     return rows
 
 
+def daily_limit_rows(
+    ctx: PatientClaimContext, counted_by_line: dict[tuple[str, str], float]
+) -> list[dict[str, Any]]:
+    """The EK-2/B codes of the bill's claims billed on a day above the daily cap of their Açıklama (#303).
+
+    One row per claim and code (``prose_rules.ek2b_daily_limits``). A line is at risk for at most what it billed:
+    money the earlier rows already count on the same line (``counted_by_line``) is taken off.
+    """
+    billed = {(line.claim_id, line.procedure_line_id): float(line.billed_amount_try) for line in ctx.procedure_lines}
+    rows: list[dict[str, Any]] = []
+    for violation in detect_ek2b_daily_limit_violations(list(ctx.procedure_lines)):
+        claim_id = violation["claim_id"]
+        risk = _money(
+            sum(
+                min(line_risk, max(0.0, billed[(claim_id, line_id)] - counted_by_line.get((claim_id, line_id), 0.0)))
+                for line_id, line_risk in violation["line_risks"].items()
+            )
+        )
+        if risk <= 0:
+            continue
+        rows.append(
+            {
+                "kind": violation["type"],
+                "claim_id": claim_id,
+                "procedure_line_id": violation["procedure_line_id"],
+                "procedure_code": violation["procedure_code"],
+                "procedure_name": violation["procedure_name"],
+                "risk_amount_try": risk,
+                "sut_section": violation["sut_section_id"],
+                "rule_id": violation["rule_id"],
+                "detail": violation["detail"],
+            }
+        )
+    return rows
+
+
 def recommend_audit_exposure_from_claims(ctx: PatientClaimContext) -> AuditExposureReview:
-    """One unbundling pass and one bed pass: the exposure total and the rows that explain it."""
+    """One unbundling pass, one bed pass and one daily-cap pass: the exposure total and the rows that explain it."""
     findings = unbundling_findings_from_claims(ctx)
-    bed_rows = newborn_bed_overlap_rows(ctx, _risk_by_line(findings))
+    counted = _risk_by_line(findings)
+    bed_rows = newborn_bed_overlap_rows(ctx, counted)
+    for row in bed_rows:
+        key = (row["claim_id"], str(row["procedure_line_id"]))
+        counted[key] = counted.get(key, 0.0) + row["risk_amount_try"]
+    cap_rows = daily_limit_rows(ctx, counted)
+    extra_rows = [*bed_rows, *cap_rows]
     return AuditExposureReview(
-        total_try=_money(audit_exposure_total(findings) + sum(row["risk_amount_try"] for row in bed_rows)),
-        rows=[*audit_exposure_rows(findings), *bed_rows],
+        total_try=_money(audit_exposure_total(findings) + sum(row["risk_amount_try"] for row in extra_rows)),
+        rows=[*audit_exposure_rows(findings), *extra_rows],
     )
 
 
