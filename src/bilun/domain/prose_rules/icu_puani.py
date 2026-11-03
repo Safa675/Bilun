@@ -167,9 +167,12 @@ def _intermediate_package_price_try(
 
 
 def _resolve_ilave_oran(
-    claim: ClaimHeader, intermediate_code: str | None
+    claim: ClaimHeader, intermediate_code: str | None, as_of_date: date | str | None = None
 ) -> tuple[float, str]:
-    """EK-2/C-1 ilave oran (%) for ICU intermediate days, gated on facility tier."""
+    """EK-2/C-1 ilave oran (%) for ICU intermediate days on as_of_date, gated on facility tier.
+
+    P552001-3 and P552006-8 are 60 until 2022-09-02 and 100 from 2022-09-03.
+    """
     if not intermediate_code:
         return 0.0, "no_intermediate_package"
     tier = normalize_facility_tier(
@@ -179,7 +182,7 @@ def _resolve_ilave_oran(
         return 0.0, "tier_unresolved"
     if not tier.is_third_tier:
         return 0.0, "not_sinif_3"
-    row = get_ek2c1_copay_rates().get(f"P{intermediate_code}")
+    row = get_ek2c1_copay_rates(as_of_date).get(f"P{intermediate_code}")
     if not row:
         return 0.0, "no_ek2c1_entry"
     oran = float(row.get("copay_rate_pct", 0.0))
@@ -311,7 +314,7 @@ def detect_icu_puani_opportunities(
         day_rate_price_try = _day_rate_price_try(as_of_date)
 
         ilave_oran_pct, ilave_oran_reason = _resolve_ilave_oran(
-            claim, intermediate_code
+            claim, intermediate_code, as_of_date
         )
         ilave_oran_eligible = ilave_oran_pct > 0
         uplift_mult = 1 + ilave_oran_pct / 100
@@ -476,7 +479,7 @@ def detect_icu_tier_overbilling(
                 continue
 
             tier2_stripped, tier1_stripped = _TIER_3_PACKAGE_CODES[stripped]
-            ilave_oran_pct, _ = _resolve_ilave_oran(claim, stripped)
+            ilave_oran_pct, _ = _resolve_ilave_oran(claim, stripped, as_of_date)
             uplift_mult = 1.0 + ilave_oran_pct / 100.0
             qty = max(int(getattr(line, "quantity", 1) or 1), 1)
 

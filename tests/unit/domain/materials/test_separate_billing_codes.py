@@ -138,8 +138,9 @@ class TestSut314Items:
         # 345 EK-3/F-1 rows minus 10 instruments and the 8 bone cements (item b),
         # plus the 185 EK-3/F-3 rows.
         assert counts.pop("ç") == 327 + 185
+        # e: KV2052-KV2055 count once; their amended rows were 4 more codes with the marker in them (#291).
         assert counts == {
-            "b": 11, "c": 12, "e": 17, "f": 15, "g": 3, "ğ": 15, "h": 9,
+            "b": 11, "c": 12, "e": 13, "f": 15, "g": 3, "ğ": 15, "h": 9,
             "ı": 5, "k": 31, "l": 2, "m": 10, "o": 10,
         }
 

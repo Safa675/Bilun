@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from datetime import date
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
@@ -154,3 +157,22 @@ def test_an_icu_day_billed_in_full_without_the_copay_flag_is_no_violation(packag
     ) == (1, 3, 1, 1, 2)
     assert {row["code"] for row in exposure["flag_catalog_mismatches"] + exposure["rate_catalog_mismatches"]} == {code}
     assert [row["code"] for row in exposure["procedures_with_rates"]] == [code]
+
+
+def test_ek2g_and_ek2c1_rows_apply_within_the_dates_of_their_markers() -> None:
+    """EK-2/G: 614980 is repealed and 614981 added from 16/02/2022 (RG-08/02/2022). EK-2/C-1: P552001 is 60 until
+    the RG-25/08/2022 amendment of 03/09/2022 and 100 from it; P619410 is repealed from 15/03/2025 (#291)."""
+    from src.bilun.domain.prose_rules.icu_puani import _resolve_ilave_oran
+
+    assert [is_ek2g_surcharge_prohibited(code, "2022-02-15") for code in ("614980", "P614981")] == [True, False]
+    assert [is_ek2g_surcharge_prohibited(code, "2022-02-16") for code in ("614980", "P614981")] == [False, True]
+    claim = SimpleNamespace(facility_tier="3_basamak", provider_type="sozlesmeli")
+    assert [_resolve_ilave_oran(claim, "552001", day)[0] for day in (date(2022, 9, 2), date(2022, 9, 3))] == [60, 100]
+    assert [get_ek2c1_mandated_copay_rate_pct("P619410", day) for day in ("2025-03-14", "2025-03-15")] == [40, None]
+
+
+def test_surcharge_exposure_reads_ek2g_on_each_lines_own_date() -> None:
+    before_repeal = replace(procedure_line("614980", line_id="L1"), procedure_date=date(2022, 2, 15))
+    after_repeal = procedure_line("614980", line_id="L2")
+    exposure = build_exact_surcharge_exposure(build_surcharge_claim_context("P-T2", [before_repeal, after_repeal]))
+    assert [row["procedure_date"] for row in exposure["applicable_rules"]] == ["2022-02-15"]

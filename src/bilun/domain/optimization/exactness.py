@@ -6,6 +6,8 @@ from collections.abc import Iterable, Mapping
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
+from src.bilun.domain.loaders.validity import service_date_of
+
 from .claim_context import (
     CopayRateClaimContext,
     SurchargeClaimContext,
@@ -87,7 +89,8 @@ def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, 
     applicable: list = []
     flag_mismatches: list[dict[str, Any]] = []
     for line in context.procedures:
-        catalog_eligible = catalog_surcharge_eligible(line.procedure_code)
+        day = service_date_of(line.procedure_date)  # EK-2G is read on the line's own date
+        catalog_eligible = catalog_surcharge_eligible(line.procedure_code, day)
         if line.surcharge_applicable != catalog_eligible:
             flag_mismatches.append(
                 {
@@ -97,7 +100,7 @@ def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, 
                     "procedure_date": line.procedure_date.isoformat(),
                 }
             )
-        if is_ek2g_surcharge_prohibited(line.procedure_code):
+        if is_ek2g_surcharge_prohibited(line.procedure_code, day):
             applicable.append(line)
 
     total_procedures = len(context.procedures)
@@ -172,7 +175,8 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
     for line in context.procedures:
         if not copay_rate_evaluable_line(line):
             continue
-        catalog_applicable = catalog_copay_rate_applicable(line.procedure_code)
+        day = service_date_of(line.procedure_date)  # EK-2C-1 is read on the line's own date
+        catalog_applicable = catalog_copay_rate_applicable(line.procedure_code, day)
         if catalog_applicable and not line.copay_rate_applicable:
             flag_mismatches.append(
                 {
@@ -180,7 +184,7 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
                     "claim_flag": line.copay_rate_applicable,
                     "catalog_applicable": catalog_applicable,
                     "mandated_rate_pct": get_ek2c1_mandated_copay_rate_pct(
-                        line.procedure_code
+                        line.procedure_code, day
                     ),
                     "procedure_date": line.procedure_date.isoformat(),
                 }
@@ -188,14 +192,14 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
         if catalog_applicable:
             applicable.append(line)
             implied_copay = procedure_implied_copay_rate_pct(line)
-            if not copay_rate_matches_catalog(implied_copay, line.procedure_code):
+            if not copay_rate_matches_catalog(implied_copay, line.procedure_code, day):
                 rate_mismatches.append(
                     {
                         "code": line.procedure_code,
                         "implied_copay_rate_pct": float(implied_copay),
                         "sgk_share_pct": float(procedure_sgk_share_pct(line)),
                         "mandated_rate_pct": get_ek2c1_mandated_copay_rate_pct(
-                            line.procedure_code
+                            line.procedure_code, day
                         ),
                         "procedure_date": line.procedure_date.isoformat(),
                     }
@@ -219,7 +223,8 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
         # instead and format as a plain string.
         rate_key = f"{rate.quantize(Decimal('0.01'))}%"
         distribution[rate_key] = distribution.get(rate_key, 0) + 1
-        mandated = get_ek2c1_mandated_copay_rate_pct(line.procedure_code)
+        day = service_date_of(line.procedure_date)
+        mandated = get_ek2c1_mandated_copay_rate_pct(line.procedure_code, day)
         procedures.append(
             {
                 "code": line.procedure_code,
@@ -232,7 +237,7 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
                 "expected_payable_try": float(line.expected_payable_try),
                 "rule_trace": line.rule_trace_expected,
                 "catalog_validated": copay_rate_matches_catalog(
-                    rate, line.procedure_code
+                    rate, line.procedure_code, day
                 ),
                 "matched_chapters": [],
             }

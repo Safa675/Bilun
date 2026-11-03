@@ -149,8 +149,9 @@ _EK3C_PARQUET_NAMES = (
 def _in_force(df: pl.DataFrame, day: str) -> pl.DataFrame:
     """Rows of a dated EK-3 list (valid_from / valid_to, null = open) in force on ``day``.
 
-    Lists without the columns are returned whole. EK-3O dates the rows SGK added or
-    amended after the list's own date (HO1034 from 2026-09-05).
+    Lists without the columns are returned whole. The lists date the rows SGK added,
+    amended or repealed after the list's own date (HO1034 from 2026-09-05, AN1210 at
+    1,117.62 from 2026-07-07, 102495 until 2026-07-06).
     """
     if "valid_from" in df.columns:
         df = df.filter(pl.col("valid_from").is_null() | (pl.col("valid_from") <= day))
@@ -308,7 +309,7 @@ def _ek3_definition_frame(day: str) -> pl.DataFrame:
 
     ``text`` is the row's name and description; ``definition`` is the same text
     with the "(1) ..." payment notes cut, i.e. what the material is. Only dated
-    lists (EK-3O) depend on the day: HO1034 is listed from 2026-09-05 (#292).
+    rows depend on the day: HO1034 is listed from 2026-09-05 (#292).
     """
     sources = [("EK-3H", EK3H_PARQUET_PATH), ("EK-3I", EK3I_PARQUET_PATH)]
     sources += [
@@ -527,7 +528,7 @@ def ek3c_material_code_set() -> frozenset[str]:
 def ek3_all_material_code_set(as_of: date | str | None = None) -> frozenset[str]:
     """Union of EK-3/C + specialty annex material codes (EK-3A–T parquets) on ``as_of``.
 
-    ``as_of`` defaults to today; only dated lists (EK-3O) depend on it.
+    ``as_of`` defaults to today; only dated rows depend on it (KR4003 from 2026-01-31).
     """
     return _ek3_all_codes(_ek3_version_day(as_of))
 

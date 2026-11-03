@@ -9,8 +9,8 @@ Three shared helpers:
 
 Covers 22 annexes: EK-3H, EK-3I, EK-3A, EK-3E-1, EK-3E-2, EK-3G, EK-3J, EK-3K,
 EK-3L, EK-3M, EK-3N-1, EK-3N-2, EK-3N-3, EK-3O, EK-3P, EK-3R, EK-3S, EK-3T,
-EK-3C-2, EK-3C-3, EK-3C-4, EK-3C-5. EK-3O is also dated by the amendment markers
-in its cells (valid_from / valid_to, see _date_material_list).
+EK-3C-2, EK-3C-3, EK-3C-4, EK-3C-5. Every 4-col list is also dated by the amendment
+markers in its cells (valid_from / valid_to, see _date_material_list).
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ def _extract_hierarchical_materials(
     out = pd.DataFrame(records)
     out = out[out["price_try"].notna()]
     out = out.reset_index(drop=True)
-    return out
+    return _date_material_list(out)
 
 
 def extract_ek3h(df: pd.DataFrame) -> pd.DataFrame:
@@ -136,7 +136,7 @@ def extract_ek3n3(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def extract_ek3o(df: pd.DataFrame) -> pd.DataFrame:
-    return _date_material_list(_extract_hierarchical_materials(df, "EK-3O"))
+    return _extract_hierarchical_materials(df, "EK-3O")
 
 
 _TEXT_COLUMNS = ("material_name", "description")
@@ -148,11 +148,14 @@ def _date_material_list(out: pd.DataFrame) -> pd.DataFrame:
     """Date a material list by the amendment markers SGK writes into its cells.
 
     The code cell dates the row ("HO1034 (Ek: RG-29/08/2026-… Yürürlük: 05/09/2026)"),
-    see _add_list_validity. An "Ek" marker in the name or description dates the clause
-    written after it ("(2) … (Ek: RG-02/10/2026-33388/5 md. Yürürlük: 08/10/2026) (3) …"):
-    the row with the text before the marker ends the day before. Any other marker in a
-    text cell, or markers in more than one cell of a row, is not interpreted: the build
-    stops so the list is dated by hand.
+    see _add_list_validity, and keeps only the code. An "Ek" marker in the name or
+    description dates the clause written after it ("(2) … (Ek: RG-02/10/2026-33388/5 md.
+    Yürürlük: 08/10/2026) (3) …"): the row with the text before the marker ends the day
+    before. A "Değişik" marker there amends the row from its date as a code-cell marker
+    does; the text stays as SGK wrote it, and without an older row of its code the row
+    stays undated (EK-3F-1 AP1880's MATERYAL cell, 24/01/2026). A Mülga marker in a text
+    cell, or markers in more than one cell of a row, is not interpreted: the build stops
+    so the list is dated by hand.
     """
     code_cells = out["sut_code"]
     out = out.assign(sut_code=strip_amendment_marker(code_cells)).join(amendment_markers(code_cells))
@@ -162,14 +165,15 @@ def _date_material_list(out: pd.DataFrame) -> pd.DataFrame:
     before_rows = []
     for column in _TEXT_COLUMNS:
         markers = amendment_markers(out[column])
-        added = counts[column].eq(1) & markers[MARKER_FROM].notna() & markers[MARKER_ADDED]
-        unsupported = counts[column].gt(0) & (~added | in_code | in_texts.gt(1))
+        dated = counts[column].eq(1) & markers[MARKER_FROM].notna()
+        added = dated & markers[MARKER_ADDED]
+        unsupported = counts[column].gt(0) & (~dated | in_code | in_texts.gt(1))
         if unsupported.any():
             codes = out.loc[unsupported, "sut_code"].tolist()
             raise ValueError(f"EK-3 {column} amendment marker this builder cannot date: {codes}")
         clause_cut = out.loc[added, column].str.replace(_ADDED_CLAUSE, "", regex=True)
         before_rows.append(out[added].assign(**{column: clause_cut}))
-        out.loc[added, MARKER_FROM] = markers.loc[added, MARKER_FROM]
+        out.loc[dated, MARKER_FROM] = markers.loc[dated, MARKER_FROM]
     # The row as it was before the clause comes just before the row that adds it.
     rows = pd.concat([*before_rows, out]).sort_index(kind="stable").reset_index(drop=True)
     return _add_list_validity(rows, ["sut_code"])
