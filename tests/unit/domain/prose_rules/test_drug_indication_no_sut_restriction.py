@@ -41,7 +41,7 @@ def _barcode_of(ingredient: str) -> str:
     import polars as pl
 
     frame = pl.read_parquet(
-        "data/synthetic/reference/drug_crosswalk.parquet", columns=["barcode", "active_ingredient"]
+        "data/reference/drug_crosswalk.parquet", columns=["barcode", "active_ingredient"]
     )
     return frame.filter(pl.col("active_ingredient").str.to_lowercase().str.contains(ingredient, literal=True))["barcode"][0]
 

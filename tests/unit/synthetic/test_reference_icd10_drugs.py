@@ -266,7 +266,7 @@ def test_sources_are_listed_with_their_hashes_and_terms(sources) -> None:
     outputs = sources["outputs"]
     assert set(outputs) == {ICD10_PATH.name, CROSSWALK_PATH.name}
     for name, output in outputs.items():
-        assert (_REPO / "data/synthetic/reference" / name).exists(), name
+        assert (_REPO / "data/reference" / name).exists(), name
         assert output["inputs"] and all(name in entries[key]["used_by"] for key in output["inputs"]), name
         assert all((_REPO / path).exists() for path in output["repo_inputs"]), name
     assert {key for output in outputs.values() for key in output["inputs"]} == set(USED)

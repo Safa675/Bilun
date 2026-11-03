@@ -283,7 +283,7 @@ const billing = {
   "packageAdequacyReview": {
     "title": "DRG / package code adequacy",
     "scopeFootnote": "When billed procedures support a larger EK-2/C package footprint than the package code submitted, a coding review is flagged. Documentation review only — no auto-switch; verify ICD-10 and procedure evidence before changing package codes.",
-    "unavailable": "Package adequacy review requires exact procedure lines with package candidate metadata.",
+    "unavailable": "Package adequacy review requires exact procedure lines and the primary ICD-10.",
     "claim": "Claim",
     "primaryIcd10": "Primary ICD-10",
     "clinicalProcedures": "Clinical procedures",

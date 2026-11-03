@@ -32,7 +32,7 @@ from src.bilun.domain.prose_rules.drug_indication import (
 
 pytestmark = pytest.mark.unit
 
-_ICD10_TR = Path(__file__).resolve().parents[4] / "data/synthetic/reference/icd10_tr.parquet"
+_ICD10_TR = Path(__file__).resolve().parents[4] / "data/reference/icd10_tr.parquet"
 
 # The issue's table: every dotted listed code of the corpus that has SKRS children.
 _PARENTS_BY_RULE = {

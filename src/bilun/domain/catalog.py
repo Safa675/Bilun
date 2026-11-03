@@ -280,22 +280,24 @@ def get_ek1a_exemptions(as_of: Any | None = None) -> pd.DataFrame:
     return _load_ek1a_exemptions(as_of)
 
 
-def get_ek2g_no_surcharge() -> dict[str, str]:
-    """Return EK-2G procedures where additional fees are prohibited.
+def get_ek2g_no_surcharge(as_of: Any | None = None) -> dict[str, str]:
+    """Return EK-2G procedures where additional fees are prohibited, in force on ``as_of`` (default today).
 
     Returns dict: {procedure_code: procedure_name}
-    (213 procedures where surcharges are banned by the gazette.)
+    (212 procedures where surcharges are banned by the gazette; 614980 until 2022-02-15,
+    614981 from 2022-02-16.)
     """
-    return _load_ek2g_no_surcharge()
+    return _load_ek2g_no_surcharge(as_of)
 
 
-def get_ek2c1_copay_rates() -> dict[str, dict[str, Any]]:
-    """Return EK-2C-1 procedures with explicit copayment rate percentages.
+def get_ek2c1_copay_rates(as_of: Any | None = None) -> dict[str, dict[str, Any]]:
+    """Return EK-2C-1 procedures with explicit copayment rate percentages, in force on ``as_of`` (default today).
 
     Returns dict: {procedure_code: {"procedure_name": str, "copay_rate_pct": float}}
-    (465 procedures with gazette-mandated rates ranging from 20% to 100%.)
+    (464 procedures with gazette-mandated rates ranging from 20% to 100%; P552001-3 and
+    P552006-8 are 60 until 2022-09-02, P619410 is listed until 2025-03-14.)
     """
-    return _load_ek2c1_copay_rates()
+    return _load_ek2c1_copay_rates(as_of)
 
 
 # ═══════════════════════════════════════════════════════════════════════════

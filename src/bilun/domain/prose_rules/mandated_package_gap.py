@@ -104,8 +104,8 @@ if TYPE_CHECKING:
         ProcedureClaimLine,
     )
 
-# TİTCK barcode -> ATC (the EK-4/A crosswalk, data/synthetic/reference/sources.yaml).
-_DRUG_CROSSWALK_PATH = _PROJECT_ROOT / "data" / "synthetic" / "reference" / "drug_crosswalk.parquet"
+# TİTCK barcode -> ATC (the EK-4/A crosswalk, data/reference/sources.yaml).
+_DRUG_CROSSWALK_PATH = _PROJECT_ROOT / "data" / "reference" / "drug_crosswalk.parquet"
 # C000690: "kan ürünleri ayrıca faturalandırılır, kanama durdurma, sızdırmazlık
 # sağlama doku yapıştırmada kullanılan ilaçlar bu kapsamda değerlendirilmez".
 # Blood products: albumin and plasma protein fractions (B05AA01/02), coagulation

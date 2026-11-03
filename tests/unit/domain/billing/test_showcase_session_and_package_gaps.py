@@ -18,6 +18,7 @@ import pytest
 from src.bilun.domain.billing.claim_audit_exposure import compute_audit_exposure_from_claims
 from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
+from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
 from src.bilun.domain.claims.models import (
     ClaimHeader,
     DrugClaimLine,
@@ -1063,6 +1064,28 @@ class TestMandatedPackageGap269:
         assert compute_audit_exposure_from_claims(ctx) == 0.0
         assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 0.0
 
+    @pytest.mark.parametrize("package_candidate", [False, None], ids=["false", "absent"])
+    def test_the_package_side_reads_the_codes_not_the_package_candidate_flag(
+        self, package_candidate,
+    ) -> None:
+        # #294: without the flag the clean S8 (two packages billed) and an optional
+        # §2.2.2(2) package billed hizmet başı at a training hospital had no row.
+        clean = s8("clean")
+        clean.package_candidate = package_candidate
+        day = _d("2026-07-14")
+        optional = _Bill("C-OPT", "yatis", day, day + timedelta(days=2),
+                         package_candidate=package_candidate, tier="egitim_arastirma")
+        optional.proc("600170", day, specialty=GENCER)
+        rows = [_claim_row(bill.ctx()) for bill in (clean, optional)]
+        assert [row["message_code"] for row in rows] == [
+            "claim_package_ok", "claim_optional_package_higher",
+        ]
+        assert rows[1]["savings_try"] > 0  # The amounts: TestOptionalOverrideNetting.
+        # An ICU day package (§2.4.4.H) is no package of the stay: no row, as the flag never gave one.
+        icu = _Bill("C-ICU", "yatis", day, day + timedelta(days=2), package_candidate=package_candidate)
+        icu.proc("P552002", day, qty=2)
+        assert _claim_rows(icu.ctx()) == []
+
     def test_a_line_already_at_risk_in_full_adds_no_session_risk(self) -> None:
         # Outside the #269 comparison (the claim bills a package) a must-package
         # line billed hizmet başı stays at risk in full; the session factor on it
@@ -1216,6 +1239,56 @@ class TestMandatedPackageGap269:
         bill = s1("clean")
         bill.proc("610131", bill.start, specialty=GENCER)
         assert compute_audit_exposure_from_claims(bill.ctx()) == list_price("610131", "2026-07-14")
+
+
+class TestOptionalOverrideNetting:
+    """S1's stay with its operation 600170 at a training hospital: P600170 (group D, a 5-day window) is optional
+    (§2.2.2(2)). The package includes the companion of those days (§2.2.2.B-1(1)(h)), so the SGK total takes the
+    package advice or the companion uplift, never both."""
+
+    @staticmethod
+    def _bill(nights: int) -> _Bill:
+        a = _d("2026-07-14")
+        bill = _Bill("C-OPT", "yatis", a, a + timedelta(days=nights), tier="egitim_arastirma")
+        bill.proc("600170", a, specialty=GENCER)
+        bill.proc("550170", a, specialty=ANEST)
+        bill.stay(GENCER, companion=False)
+        bill.labs(a, ("L107020", "L101850"), GENCER)
+        bill.proc("910230", a + timedelta(days=1), specialty=GENCER)
+        return bill
+
+    def test_the_package_advice_is_net_of_the_companion_it_includes(self) -> None:
+        # Two nights: the package pays more than the correct itemized bill. Was +493.54 advice and +148.18
+        # companion, 641.72 in the total.
+        bill = self._bill(2)
+        report = compute_patient_billing_report("SH", claim_context=bill.ctx())
+        row = _only_claim_row(report.billing_strategy.recommendations)
+        companion = report.refakatci.confirmed_refakat_try
+        billed = float(sum(line.billed_amount_try for line in bill.procs))
+        assert companion > 0
+        assert (row["recommendation"], row["savings_try"], report.sgk_uplift_try) == (
+            "package", round(_listed("P600170", "2026-07-14") - billed - companion, 2),
+            round(_listed("P600170", "2026-07-14") - billed, 2),
+        )
+        assert "Toplam paket alternatifini varsayar" in row["detail"]
+
+    def test_the_itemized_bill_wins_once_it_counts_the_companion(self) -> None:
+        # Four nights: the bill alone is below the package, the bill with its companion above it. Was +48.84
+        # advice on top of the companion.
+        bill = self._bill(4)
+        report = compute_patient_billing_report("SH", claim_context=bill.ctx())
+        row = _only_claim_row(report.billing_strategy.recommendations)
+        billed = float(sum(line.billed_amount_try for line in bill.procs))
+        assert billed < _listed("P600170", "2026-07-14") < row["itemized_total_try"]
+        assert (row["recommendation"], row["savings_try"]) == ("itemized", 0.0)
+        assert report.sgk_uplift_try == report.refakatci.confirmed_refakat_try > 0
+        assert "Toplam hizmet başı alternatifini varsayar" in row["detail"]
+
+
+def _only_claim_row(rows: list[dict]) -> dict:
+    claim_rows = [row for row in rows if row.get("recommendation_kind")]
+    assert len(claim_rows) == 1, claim_rows
+    return claim_rows[0]
 
 
 class TestWhatThePackageReplaces:
@@ -1484,21 +1557,12 @@ class TestC000672:
 
     def test_the_strategy_recommends_no_package(self) -> None:
         # Review: a package_candidate claim fell back to a 3,413.70 compliance row.
-        rows = recommend_billing_strategy_from_claims(
-            self._bill("0.3", package_candidate=True).ctx(),
-        ).recommendations
+        # The session is billed hizmet başı, so its codes give the claim no package
+        # side and the flag adds no claim row (#294; it was a 0-TL itemized row).
+        ctx = self._bill("0.3", package_candidate=True).ctx()
+        rows = recommend_billing_strategy_from_claims(ctx).recommendations
         assert [row for row in rows if row.get("type") == "compliance_violation"] == []
-        claim_row = _only_claim_row(rows)
-        assert (claim_row["payment_method_kind"], claim_row["recommendation"]) == (
-            "ITEMIZED", "itemized",
-        )
-        assert claim_row["savings_try"] == 0.0
-
-
-def _only_claim_row(rows: list[dict]) -> dict:
-    claim_rows = [row for row in rows if row.get("recommendation_kind")]
-    assert len(claim_rows) == 1, claim_rows
-    return claim_rows[0]
+        assert _claim_rows(ctx) == []
 
 
 class TestNoUpliftOnPackageLines:

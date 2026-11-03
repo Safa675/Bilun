@@ -17,7 +17,7 @@ stable registry of ids; a test requires a mutation case for each id.
 INDEPENDENCE. The checks do not import or reuse the generator they test (`cohort.labs`,
 `cohort.clean`, `cohort.clinical`) nor the claims checks of `cohort.plausibility`. The reference
 limits and units are read from `data/synthetic/reference/lab_reference.csv` and the ATC codes of the
-low-molecular-weight heparins from `data/synthetic/reference/drug_crosswalk.parquet`, both with
+low-molecular-weight heparins from `data/reference/drug_crosswalk.parquet`, both with
 Polars; every judgment (hard bounds, tolerances, word lists, vocabularies) is a named constant below
 with its source. A test scans the imports of this module.
 
@@ -61,8 +61,8 @@ TABLE_PROCEDURES = "procedure_claim_lines.parquet"
 TABLE_DRUGS = "drug_claim_lines.parquet"
 
 LAB_REFERENCE_PATH = "data/synthetic/reference/lab_reference.csv"
-DRUG_CROSSWALK_PATH = "data/synthetic/reference/drug_crosswalk.parquet"
-ICD10_PATH = "data/synthetic/reference/icd10_tr.parquet"
+DRUG_CROSSWALK_PATH = "data/reference/drug_crosswalk.parquet"
+ICD10_PATH = "data/reference/icd10_tr.parquet"
 
 # The columns each table must have; a table without one is reported by name, not by a Polars error.
 # Every column a check reads is listed (a test drops each column of the committed files in turn).

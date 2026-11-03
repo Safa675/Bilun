@@ -1,10 +1,11 @@
 """Service-date filtering of curated lists that carry valid_from / valid_to.
 
-The EK-1A and EK-3O curated lists date the rows SGK added, amended or repealed after the
-list's own date (scripts/sut/_common.py::_add_list_validity); the EK-2/A-2 history dates
-every version's rows (_add_validity_ranges). Both columns hold YYYY-MM-DD strings; null
-means open, so an undated row is in force on every date. A claim line reads them on its
-service date (``service_date_of``); today is the default only where no date exists.
+The EK-1A, EK-2G, EK-2C-1 and EK-3 material lists date the rows SGK added, amended or
+repealed after the list's own date (scripts/sut/_common.py::_add_list_validity); the
+EK-2/A-2 history dates every version's rows (_add_validity_ranges). Both columns hold
+YYYY-MM-DD strings; null means open, so an undated row is in force on every date. A claim
+line reads them on its service date (``service_date_of``); today is the default only where
+no date exists.
 """
 
 from __future__ import annotations

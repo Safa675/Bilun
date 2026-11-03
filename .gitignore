@@ -42,6 +42,7 @@ raw data/Finans.XLSX
 data/*
 !data/synthetic/
 !data/gazette/
+!data/reference/
 data/gazette/coverage/
 !data/legacy/
 !data/medula/

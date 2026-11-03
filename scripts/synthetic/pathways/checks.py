@@ -163,12 +163,12 @@ class Catalogs:
 
     @cached_property
     def crosswalk(self) -> pl.DataFrame:  # barcode, active_ingredient
-        path = "data/synthetic/reference/drug_crosswalk.parquet"
+        path = "data/reference/drug_crosswalk.parquet"
         return self._parquet(path, ["barcode", "active_ingredient"])
 
     @cached_property
     def icd(self) -> pl.DataFrame:  # code, name_tr, is_active, sex, is_leaf
-        path = "data/synthetic/reference/icd10_tr.parquet"
+        path = "data/reference/icd10_tr.parquet"
         columns = ["code", "name_tr", "is_active", "sex", "is_leaf"]
         return self._parquet(path, columns).with_columns(_norm(pl.col("name_tr")))
 

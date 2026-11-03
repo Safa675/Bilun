@@ -45,6 +45,8 @@ class ClaimHeader:
     claim_start_date: date
     claim_end_date: date
     primary_icd10: str
+    # Set by the synthetic generator only; a real export parses it False. Shown, never decided on (#294): the
+    # engine reads package status from the codes (session_scope.line_billed_as_package, yatak_puani).
     package_candidate: bool
     expected_total_billed_try: Money
     expected_total_payable_try: Money

@@ -36,7 +36,10 @@ from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INP
 from src.bilun.domain.prose_rules.mandated_package_gap import mandated_package_gap
 from src.bilun.domain.prose_rules.session_scope import line_billed_as_package
 from src.bilun.domain.prose_rules.session_uplift import missing_fact_wording
-from src.bilun.domain.prose_rules.yatak_puani import c000672_hizmet_basi_lines
+from src.bilun.domain.prose_rules.yatak_puani import (
+    billed_package_lines_without_icu,
+    c000672_hizmet_basi_lines,
+)
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
     SAVINGS_CATEGORY_COMPLIANCE,
@@ -47,6 +50,7 @@ from src.bilun.domain.prose_rules.types import (
 )
 from src.bilun.domain.sut.clause_reference import sut_clause_reference
 
+from .package_included_uplift import INCLUDED_LABELS_TR, package_included_uplift_try
 from .types import EXACTNESS_STATUS_EXACT, EXACTNESS_STATUS_MISSING_INPUTS, BillingStrategyRecommendation
 
 _PROSE_RULE_SOURCE = (
@@ -412,6 +416,35 @@ def _itemized_side_for_money(
     return strict_itemized, package_total > strict_itemized
 
 
+def _package_included_note_tr(
+    included: dict[str, float],
+    *,
+    recommendation: str,
+    savings: float,
+) -> str:
+    """Turkish note on an optional-override row whose itemized side counts uplift the package would include."""
+    if not included:
+        return ""
+    extra = _money(sum(included.values()))
+    parts = ", ".join(
+        f"{INCLUDED_LABELS_TR[name]} {amount:.2f} TRY" for name, amount in included.items()
+    )
+    note = (
+        f"Hizmet başı tutar, faturada eksik olup paketin içereceği kalemleri de sayar "
+        f"({parts}; SUT 2.2.2.B-1(1))."
+    )
+    if recommendation == "package":
+        return (
+            f"{note} Toplam paket alternatifini varsayar: paket faturalanırsa bu kalemler "
+            f"ayrıca faturalanmaz; bu satır ({savings:.2f} TRY) ve o kalemlerin satırları "
+            f"({extra:.2f} TRY) birlikte {_money(savings + extra):.2f} TRY eder."
+        )
+    return (
+        f"{note} Toplam hizmet başı alternatifini varsayar: bu kalemler faturaya eklenir "
+        f"({extra:.2f} TRY), paket faturalanmaz."
+    )
+
+
 def _two_readings_note_tr(
     missing_facts: tuple[str, ...] | list[str],
     *,
@@ -688,8 +721,6 @@ def recommend_billing_strategy_from_claims(
             drug_lines=ctx.drug_lines,
             material_lines=ctx.material_lines,
         )
-        if gap is None and not claim.package_candidate:
-            continue
 
         care_setting = infer_care_setting(claim)
         line_results = [
@@ -703,6 +734,19 @@ def recommend_billing_strategy_from_claims(
             continue
 
         current_billing = _infer_current_billing(claim_procs)
+        # Without the mandated gap the claim has a package side when its codes give
+        # one (#294), never the package_candidate flag: an optional §2.2.2(2)
+        # package (DRG_OVERRIDABLE, a third-tier hospital), or a package billed
+        # (> 0) other than an ICU day package.
+        if (
+            gap is None
+            and claim_kind != "DRG_OVERRIDABLE"
+            and not any(
+                float(line.billed_amount_try) > 0
+                for line in billed_package_lines_without_icu(claim_procs)
+            )
+        ):
+            continue
         package_mandated_itemized = gap is not None
         lenient_itemized: float | None = None
         missing_facts: list[str] = []
@@ -759,6 +803,22 @@ def recommend_billing_strategy_from_claims(
             itemized_price_methodology = (
                 "ek2b_catalog" if catalog_candidates else "claim_lines"
             )
+
+        # An optional §2.2.2(2) package billed hizmet başı: the itemized side is the
+        # correct itemized bill, so it counts the bed, companion and anaesthesia
+        # uplift the bill is owed inside the package's window (§2.2.2.B-1(1)(a),
+        # (g), (h)). Those rows stay; the strategy row is the rest of the
+        # difference, so the two alternatives never add up in the SGK total.
+        included: dict[str, float] = {}
+        if gap is None and claim_kind == "DRG_OVERRIDABLE" and current_billing == "itemized":
+            included = package_included_uplift_try(
+                ctx, claim, claim_procs, recommended_package_code_for_claim(claim, claim_procs),
+            )
+            if included:
+                extra = sum(included.values())
+                itemized_total = _money(itemized_total + extra)
+                if lenient_itemized is not None:
+                    lenient_itemized = _money(lenient_itemized + extra)
 
         review_band = False
         reading_note = ""
@@ -887,7 +947,13 @@ def recommend_billing_strategy_from_claims(
             # A compliance saving is money the bill overstates, not SGK uplift.
             "included_in_sgk_total": savings_category == SAVINGS_CATEGORY_SGK_UPLIFT,
             "current_billing": current_billing,
-            "detail": f"{message['detail']} {reading_note}" if reading_note else message["detail"],
+            "detail": " ".join(
+                part for part in (
+                    message["detail"],
+                    reading_note,
+                    _package_included_note_tr(included, recommendation=recommendation, savings=savings),
+                ) if part
+            ),
             "message_code": message["message_code"],
             "message_params": message["message_params"],
             "catalog_as_of_date": catalog_dates[-1] if catalog_dates else None,

@@ -357,12 +357,22 @@ def claim_bed_package_window(
     newborn bed and mandated-package motors read ``claim_package_window`` (the last three leave an ICU-coded claim,
     or a claim with a billed package, before any window).
     """
-    billed = [
+    return _package_window(claim, claim_procs, billed_package_lines_without_icu(claim_procs))
+
+
+def billed_package_lines_without_icu(claim_procs: list[ProcedureClaimLine]) -> list[ProcedureClaimLine]:
+    """The lines billed as an EK-2/C package (``line_billed_as_package``), the ICU day packages left out.
+
+    The ICU packages (``ICU_PACKAGE_CODES``) are billed for each ICU day (§2.4.4.H.(8)) and have no işlem grubu, so
+    they are no package of a stay (``claim_bed_package_window``). Read from the codes, never from the
+    ``package_candidate`` header flag, which only the synthetic generator sets (from the same lines: a package line
+    that is not an ICU one).
+    """
+    return [
         line
         for line in claim_procs
         if line_billed_as_package(line) and normalize_procedure_code(line.procedure_code) not in ICU_PACKAGE_CODES
     ]
-    return _package_window(claim, claim_procs, billed)
 
 
 def claim_islem_grubu_package_window(

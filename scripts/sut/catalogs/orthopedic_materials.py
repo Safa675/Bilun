@@ -3,7 +3,8 @@ Orthopedic material extractors — wide 2-row-header lists with middle columns
 concatenated into a description string.
 
 Covers EK-3F-1 (arthroplasty), EK-3F-2 (arthroscopy), EK-3F-3 (tumor
-resection), EK-3F-4 (trauma / reconstruction).
+resection), EK-3F-4 (trauma / reconstruction). Each list is dated by the amendment
+markers in its cells (valid_from / valid_to, see hierarchical_materials._date_material_list).
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from typing import Any
 import pandas as pd
 
 from scripts.sut._common import _data_cols, _safe_float, _safe_str
+from scripts.sut.catalogs.hierarchical_materials import _date_material_list
 
 
 def _extract_orthopedic_materials(df: pd.DataFrame, source_label: str) -> pd.DataFrame:
@@ -61,7 +63,7 @@ def _extract_orthopedic_materials(df: pd.DataFrame, source_label: str) -> pd.Dat
     out = pd.DataFrame(records)
     out = out[out["price_try"].notna()]
     out = out.reset_index(drop=True)
-    return out
+    return _date_material_list(out)
 
 
 def extract_ek3f1(df: pd.DataFrame) -> pd.DataFrame:

@@ -241,7 +241,8 @@ class TestClaimStrategySut:
         higher_amount = params["package_total_try" if higher == "package" else "itemized_total_try"]
         lower_amount = params["itemized_total_try" if higher == "package" else "package_total_try"]
         lower = "itemized" if higher == "package" else "package"
-        assert claim_rec["detail"] == (
+        # A note follows: the itemized side counts the bed, companion and anaesthesia owed.
+        assert claim_rec["detail"].startswith(
             f"Claim CLM1: optional §2.2.2(2) override — {higher} billing "
             f"({higher_amount} TRY) is the higher legal option vs {lower} "
             f"({lower_amount} TRY)."
@@ -331,7 +332,10 @@ class TestClaimStrategySut:
         assert violations[0]["message_code"] == "procedure_must_package"
         assert violations[0]["message_params"]["procedure_code"] == "610070"
 
-    def test_ek2b_only_claim_billed_itemized_message(self) -> None:
+    def test_ek2b_only_claim_billed_itemized_has_no_claim_row(self) -> None:
+        # #294: the codes give the claim no package side (none billed, mandated or
+        # optional), so the package_candidate flag (True here) adds no row; it
+        # used to add a 0-TL claim_itemized_ok row.
         from src.bilun.domain.prose_rules.catalog_membership import (
             get_ek2b_codes,
             get_ek2c_codes,
@@ -350,23 +354,7 @@ class TestClaimStrategySut:
             ),
         ]
         result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
-        claim_rec = next(
-            rec
-            for rec in result.recommendations
-            if rec.get("claim_id") == "CLM1" and "recommendation" in rec
-        )
-        assert claim_rec["payment_method_kind"] == "ITEMIZED"
-        assert claim_rec["recommendation"] == "itemized"
-        assert claim_rec["recommendation_kind"] == "mandatory_compliance"
-        # Already billed itemized → claim_itemized_ok structured message.
-        assert claim_rec["message_code"] == "claim_itemized_ok"
-        params = claim_rec["message_params"]
-        assert params["claim_id"] == "CLM1"
-        assert claim_rec["detail"] == (
-            f"Claim CLM1 is billed correctly as itemized per SUT §2.2. "
-            f"Itemized total {params['amount_try']} TRY."
-        )
-        assert claim_rec["clause_ref"]["clause_coordinate"] == claim_rec["sut_section_id"]
+        assert [rec for rec in result.recommendations if "recommendation_kind" in rec] == []
 
     def test_ek2b_only_claim_billed_package_messages(self) -> None:
         from src.bilun.domain.prose_rules.catalog_membership import (

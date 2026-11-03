@@ -50,7 +50,7 @@ SCOPE_CLASS_LEVEL = "class_level_in_sut"
 SCOPE_UNKNOWN = "ingredient_unknown"
 
 CROSSWALK_SOURCE = "drug_crosswalk"
-_CROSSWALK_PATH = _PROJECT_ROOT / "data" / "synthetic" / "reference" / "drug_crosswalk.parquet"
+_CROSSWALK_PATH = _PROJECT_ROOT / "data" / "reference" / "drug_crosswalk.parquet"
 
 MAX_SECTIONS = 5
 _FUZZY_MIN_LENGTH = 7
