@@ -40,8 +40,9 @@ def test_billing_report_uses_exact_copay_from_claim_context() -> None:
 
 
 # The stories whose injected fault is a revenue uplift on the bill. Each one feeds another component
-# of the uplift: billing strategy (S1), bed points (S2), anaesthesia points (S3), companion (S4).
-@pytest.mark.parametrize("story", ["S1", "S2", "S3", "S4"])
+# of the uplift: billing strategy (S1), bed points (S2), anaesthesia points (S3). S4's companion is a
+# 0 TL check, since no 510121 line shows it (#301).
+@pytest.mark.parametrize("story", ["S1", "S2", "S3"])
 def test_total_recoverable_is_the_sum_of_the_uplift_components(story: str) -> None:
     fault = cohort.fault(story)
     assert fault["effect_kind"] == "revenue_uplift"

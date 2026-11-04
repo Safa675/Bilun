@@ -1992,6 +1992,7 @@
           "days": true,
           "katsayi": true,
           "puan": true,
+          "review_kind": true,
           "suppression_notes": {
             "$list": true
           }

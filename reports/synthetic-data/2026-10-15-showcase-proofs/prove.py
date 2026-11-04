@@ -37,7 +37,7 @@ from src.bilun.domain.prose_rules.payment_method import check_payment_method_com
 from src.bilun.domain.prose_rules.procedure_addon_uplift import detect_missing_procedure_addon_opportunities
 from src.bilun.domain.prose_rules.procedure_capture_gap import detect_procedure_capture_gaps
 from src.bilun.domain.prose_rules.radiation_oncology import detect_radiation_oncology_violations
-from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
+from src.bilun.domain.prose_rules.refakatci import REVIEW_KIND_COMPANION, detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.session_uplift import detect_session_underbilling_opportunities
 from src.bilun.domain.prose_rules.yatak_icu_overlap import detect_yatak_icu_overlap
 from src.bilun.domain.prose_rules.yatak_newborn_overlap import detect_yatak_newborn_overlap
@@ -89,7 +89,7 @@ def direct(story: str, ctx) -> list[dict]:
                 for o in detect_anestezi_puani_opportunities(claims, procs)]
     if story == "S4":
         return [_keep(o, ("rule_id", "days", "puan", "expected_try", "actual_billed_try",
-                          "recoverable_uplift_try", "detail"))
+                          "recoverable_uplift_try", "review_kind", "detail"))
                 for o in detect_refakatci_opportunities(claims, procs)]
     if story == "S5":
         return [_keep(v, ("rule_id", "severity", "material_code", "risk_amount", "material_outcome",
@@ -281,8 +281,10 @@ def target_amount(story: str, rows: list[dict]) -> float | None:
         if not any(r.get("compliant") is False for r in rows):
             return None
         return next((r["savings_try"] for r in rows if r.get("current_billing") == "itemized"), 0.0)
-    if story in ("S2", "S3", "S4", "S9", "S11", "S12", "S22", "S47"):
+    if story in ("S2", "S3", "S9", "S11", "S12", "S22", "S47"):
         return total("recoverable_uplift_try")
+    if story == "S4":  # no 510121 line shows the companion (#301): the finding is a 0 TL check row
+        return 0.0 if any(r.get("review_kind") == REVIEW_KIND_COMPANION for r in rows) else None
     if story == "S10":
         return total("savings_try")
     if story in ("S5", "S46"):

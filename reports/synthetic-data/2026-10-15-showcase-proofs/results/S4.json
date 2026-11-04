@@ -753,14 +753,15 @@
     "rule_id": "refakatci_510121",
     "days": 5,
     "puan": 124.95,
-    "expected_try": 370.45,
+    "expected_try": 0.0,
     "actual_billed_try": 0.0,
-    "recoverable_uplift_try": 370.45,
-    "detail": "Refakat (510121): 5 companion day(s) at 124.95 puan × 0.593 katsayı = 74.09 TRY/day → 370.45 TRY (admission IN, discharge OUT)."
+    "recoverable_uplift_try": 0.0,
+    "review_kind": "needs_companion_verification",
+    "detail": "Kontrol et: faturada refakatçi bilgisi yok (510121 satırı yok). Refakatçinin yatak ve yemeği hekimin tıbbi lüzum kararı ve hastanenin refakatçi belgesiyle ödenir (SUT 2.6.3(2)). Belge varsa 5 gece × 74.09 TRY = 370.45 TRY faturalanır; bu tutar toplama girmez."
    }
   ],
   "report": {
-   "sgk_uplift_try": 370.45,
+   "sgk_uplift_try": 0.0,
    "audit_exposure_try": 0.0,
    "capture_gap_try": 0,
    "compliance_adjustment_try": 0.0,
@@ -773,14 +774,7 @@
    "refakatci",
    "refakatci_companion_bed",
    "",
-   370.45
-  ],
-  [
-   "block",
-   "refakatci",
-   "refakatci_510121",
-   "",
-   370.45
+   0.0
   ]
  ],
  "only_in_clean": [],

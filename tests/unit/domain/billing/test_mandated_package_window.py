@@ -105,7 +105,9 @@ class TestMandatedPackageShownOnce:
         assert report.sgk_uplift_try == _strategy_savings(ctx)
 
     def test_days_after_the_window_are_still_expected(self) -> None:
-        ctx = _long_s1(bed_days=8).ctx()  # Beds billed 14–21 July only, no companion.
+        bill = _long_s1(bed_days=8)  # Beds billed 14–21 July only, the companion on its first night only.
+        bill.proc("510121", bill.start, specialty=GENCER)  # The bill shows a companion (#301); in the window.
+        ctx = bill.ctx()
         window = claim_package_window(ctx.claims[0], list(ctx.procedure_lines))
         assert (window.start, window.end, window.mandated) == (
             _d("2026-07-14"), _d("2026-07-21"), True,
@@ -164,15 +166,17 @@ class TestMandateFromTheCodes:
 
     @pytest.mark.parametrize(
         "tier, companion",
-        [("2_3_basamak_ozel", 0.0), ("egitim_arastirma", round(2 * _COMPANION_NIGHT, 2))],
+        [("2_3_basamak_ozel", 0.0), ("egitim_arastirma", _COMPANION_NIGHT)],
         ids=["mandated", "third_tier_may_bill_hizmet_basi"],
     )
     def test_the_mandate_follows_the_facility_tier(self, tier: str, companion: float) -> None:
         # 613730 has no star: a third-tier hospital may bill it hizmet başı
-        # (§2.2.2(2)), so the companion nights stay expected there.
+        # (§2.2.2(2)), so the companion nights stay expected there: the
+        # second of two, the first billed (a companion on the bill, #301).
         a = _d("2026-07-14")
         bill = _Bill("C-ORTO", "yatis", a, a + timedelta(days=2), tier=tier)
         bill.proc("613730", a, specialty=ORTO)
+        bill.proc("510121", a, specialty=ORTO)
         assert _report(bill.ctx()).refakatci.confirmed_refakat_try == companion
 
 
@@ -180,12 +184,12 @@ class TestClaimsWithoutAMandatedPackage:
     def test_s2_bed_s3_anaesthesia_and_s4_companion_still_fire(self) -> None:
         s2_faulty = _without(s2(), "510010", after=_d("2026-03-12"))
         s3_faulty = _without(s3(), "550160")
-        s4_faulty = _without(s4(), "510121")
+        s4_faulty = _without(s4(), "510121", after=_d("2026-05-12"))  # The first two nights show the companion.
         for bill in (s2_faulty, s3_faulty, s4_faulty):
             ctx = bill.ctx()
             assert claim_package_window(ctx.claims[0], list(ctx.procedure_lines)) is None
         # S2's three unbilled bed days (13-15 March), S3's group-B anaesthesia charge (550160's puan × 0.593, its list
-        # price on the operation day) and S4's five companion nights (11-15 May), each at its list price.
+        # price on the operation day) and S4's last three companion nights (13-15 May), each at its list price.
         assert _report(s2_faulty.ctx()).yatak_puani.confirmed_yatak_try == round(3 * list_price("510010", "2026-03-13"), 2)
         assert _report(s3_faulty.ctx()).anestezi_puani.confirmed_anestezi_try == list_price("550160", "2026-08-18")
-        assert _report(s4_faulty.ctx()).refakatci.confirmed_refakat_try == round(5 * list_price("510121", "2026-05-11"), 2)
+        assert _report(s4_faulty.ctx()).refakatci.confirmed_refakat_try == round(3 * list_price("510121", "2026-05-11"), 2)

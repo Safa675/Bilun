@@ -223,7 +223,8 @@ def _sgk_counted_uplift(row: dict[str, Any], fallback_field: str) -> float | Non
 
     Mirrors the block's ``confirmed_*_try``: a row flagged out of the SGK total makes no action
     row, and neither does one without a positive amount (companion days, ICU lines or newborn
-    bed lines already billed; day-case, ICU and package-window suppressions).
+    bed lines already billed; day-case, ICU and package-window suppressions), unless it carries
+    a ``review_kind`` (the companion check, #301): that one is a 0 TL row.
     """
     if not row.get("included_in_sgk_total", True):
         return None
@@ -414,7 +415,10 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
             elif surface_name in _SGK_COUNTED_FALLBACK_FIELD:
                 sgk_uplift = _sgk_counted_uplift(row, _SGK_COUNTED_FALLBACK_FIELD[surface_name])
                 if sgk_uplift is None:
-                    continue
+                    if not row.get("review_kind"):
+                        continue
+                    # A 0 TL "Kontrol et" row (the companion without a 510121 line, #301): shown, never counted.
+                    sgk_uplift = 0.0
                 detail = (
                     _netted_detail(row, _NETTED_LINES_LABEL[surface_name])
                     if surface_name in _NETTED_LINES_LABEL

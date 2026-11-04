@@ -79,30 +79,33 @@ def _make_procedure_line(
     )
 
 
-def test_3day_inpatient_stay_companion_opportunity() -> None:
-    """Inpatient claim Jul 10→13 → 3 companion days at the 510121 list price."""
+def test_a_stay_without_a_companion_line_is_a_0_tl_check() -> None:
+    """#301: no 510121 line, so nothing shows the doctor's order or the refakatçi belgesi (SUT 2.6.3(2)): the
+    3 nights of Jul 10→13 are a 0 TL "Kontrol et" row outside the SGK total, not 3 nights of uplift."""
+    from src.bilun.domain.billing.types import RefakatciReview
     from src.bilun.domain.prose_rules.refakatci import (
+        REVIEW_KIND_COMPANION,
         detect_refakatci_opportunities,
     )
 
     header = _make_claim_header(
         admission=date(2026, 7, 10), discharge=date(2026, 7, 13)
     )
-    procs = [_make_procedure_line(code="510010")]
-    opps = detect_refakatci_opportunities([header], procs)
+    opps = detect_refakatci_opportunities([header], [_make_procedure_line(code="510010")])
 
     assert len(opps) == 1
     opp = opps[0]
     assert opp["days"] == 3
     assert opp["puan"] == pytest.approx(list_puan("510121", "2026-07-10"), abs=0.01)
-    # 3 × the night (puan × 0.593 cut at the kuruş: SUT 2.2.(15))
-    assert opp["expected_try"] == pytest.approx(_THREE_NIGHTS, abs=0.02)
-    assert opp["actual_billed_try"] == 0.0
-    assert opp["recoverable_uplift_try"] == pytest.approx(_THREE_NIGHTS, abs=0.02)
+    assert (opp["expected_try"], opp["actual_billed_try"], opp["recoverable_uplift_try"]) == (0.0, 0.0, 0.0)
+    assert opp["included_in_sgk_total"] is False
+    assert opp["review_kind"] == REVIEW_KIND_COMPANION
     assert opp["rule_id"] == "refakatci_510121"
     assert opp["sut_section_id"] == "2.6.3"
-    assert opp["included_in_sgk_total"] is True
-    assert opp["katsayi"] == pytest.approx(0.593, abs=0.001)
+    # The detail names what the nights would bill with a belge (3 × the night, cut at the kuruş: SUT 2.2.(15)).
+    assert opp["detail"].startswith("Kontrol et:")
+    assert f"= {_THREE_NIGHTS:.2f} TRY" in opp["detail"]
+    assert RefakatciReview(opportunities=opps).confirmed_refakat_try == 0.0
 
 
 def test_same_day_stay_suppressed_day_case() -> None:
@@ -207,7 +210,13 @@ def test_historical_admission_date_pricing(
     )
 
     header = _make_claim_header(admission=admission, discharge=discharge)
-    procs = [_make_procedure_line(code="510010")]
+    # One night billed: the companion is on the bill, so the 3 nights are expected and the night is netted.
+    procs = [
+        _make_procedure_line(code="510010"),
+        _make_procedure_line(
+            code="510121", line_id="L-ref", billed_amount_try=Decimal(f"{expected_daily_rate:.2f}")
+        ),
+    ]
     opps = detect_refakatci_opportunities([header], procs)
 
     assert len(opps) == 1
@@ -215,7 +224,7 @@ def test_historical_admission_date_pricing(
     assert opp["days"] == 3
     assert opp["puan"] == pytest.approx(expected_puan, abs=0.01)
     assert opp["expected_try"] == pytest.approx(expected_total, abs=0.02)
-    assert opp["recoverable_uplift_try"] == pytest.approx(expected_total, abs=0.02)
+    assert opp["recoverable_uplift_try"] == pytest.approx(expected_total - expected_daily_rate, abs=0.02)
     assert f"{expected_daily_rate:.2f} TRY/day" in opp["detail"]
 
 
@@ -273,12 +282,14 @@ def test_outpatient_skipped() -> None:
 
 
 def test_refakatci_opportunities_survive_public_projection() -> None:
-    """expected_try, actual_billed_try, and recoverable_uplift_try survive public projection."""
+    """expected_try, actual_billed_try, recoverable_uplift_try and a check row's review_kind survive public
+    projection."""
     from dataclasses import asdict
 
     from src.bilun.api.public_responses import project_public_response
     from src.bilun.domain.billing.types import EXACTNESS_STATUS_EXACT, RefakatciReview
     from src.bilun.domain.prose_rules.refakatci import (
+        REVIEW_KIND_COMPANION,
         detect_refakatci_opportunities,
     )
 
@@ -291,14 +302,15 @@ def test_refakatci_opportunities_survive_public_projection() -> None:
             code="510121", line_id="L-ref", billed_amount_try=Decimal(_NIGHT_TEXT)
         ),
     ]
-    opps = detect_refakatci_opportunities([header], procs)
+    opps = detect_refakatci_opportunities([header, _make_claim_header(claim_id="C2")], procs)
     review = RefakatciReview(opportunities=opps, exactness_status=EXACTNESS_STATUS_EXACT)
     projected = project_public_response({"refakatci": asdict(review)}, "get_billing_report")
 
-    proj_opp = projected["refakatci"]["opportunities"][0]
+    proj_opp, proj_check = projected["refakatci"]["opportunities"]
     assert proj_opp["expected_try"] == pytest.approx(_THREE_NIGHTS, abs=0.01)
     assert proj_opp["actual_billed_try"] == pytest.approx(_NIGHT, abs=0.01)
     assert proj_opp["recoverable_uplift_try"] == pytest.approx(2 * _NIGHT, abs=0.01)
+    assert proj_check["review_kind"] == REVIEW_KIND_COMPANION  # C2 has no 510121 line (#301).
 
 
 def test_package_window_bundles_companion_days_and_bills_excess() -> None:
@@ -350,12 +362,19 @@ def test_package_window_bundles_companion_days_and_bills_excess() -> None:
         admission=date(2026, 7, 10),
         discharge=date(2026, 7, 21),
     )
+    # One companion night billed: the 2 post-window nights are expected and that night is netted.
     excess_opps = detect_refakatci_opportunities(
         [excess_claim],
-        [_pkg_line("C-OUT", "610130", date(2026, 7, 11))],
+        [
+            _pkg_line("C-OUT", "610130", date(2026, 7, 11)),
+            _make_procedure_line(
+                claim_id="C-OUT", code="510121", line_id="L-ref", billed_amount_try=Decimal(_NIGHT_TEXT)
+            ),
+        ],
     )
     assert len(excess_opps) == 1
     assert excess_opps[0]["days"] == 2
     assert excess_opps[0]["expected_try"] == pytest.approx(2 * _NIGHT, abs=0.01)
+    assert excess_opps[0]["recoverable_uplift_try"] == pytest.approx(_NIGHT, abs=0.01)
     assert excess_opps[0]["included_in_sgk_total"] is True
 

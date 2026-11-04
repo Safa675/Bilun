@@ -89,7 +89,8 @@ class TestBillingActionsBreakdown:
     ) -> None:
         """S4 (companion not billed) has no strategy, material or drug row: its fault row (the companion
         bed it did not bill), the exemption input and the documentation checklist are what reaches
-        `recommended_actions`."""
+        `recommended_actions`. No 510121 line shows a companion, so the fault row is a 0 TL "Kontrol et"
+        row that names the nights' amount and adds nothing to the SGK total (#301)."""
         fault = cohort.fault("S4")
         ctx = _showcase_context(dataset, "showcase_S4")
         report = _report(ctx, _EXEMPT)
@@ -99,7 +100,10 @@ class TestBillingActionsBreakdown:
         surfaces = {row["surface"] for row in report.recommended_actions}
         assert surfaces == {"copay", "refakatci", "claim_checklist"}
         [companion_row] = [row for row in report.recommended_actions if row["surface"] == "refakatci"]
-        assert _try(companion_row["sgk_uplift_try"]) == Decimal(fault["amount_try"])
+        assert _try(companion_row["sgk_uplift_try"]) == Decimal("0.00")
+        assert companion_row["detail"].startswith("Kontrol et:")
+        assert f"= {fault['amount_try']} TRY" in companion_row["detail"]
+        assert report.refakatci.confirmed_refakat_try == 0.0
 
         # The procedures of this bill carry no mandated package: no compliance violation and no
         # package gap row (the S1 bill below is the one that has them).
