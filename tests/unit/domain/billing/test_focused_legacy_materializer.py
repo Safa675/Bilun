@@ -45,7 +45,6 @@ def _header(claim_id: str) -> ClaimHeader:
         claim_start_date=_DAY,
         claim_end_date=_DAY,
         primary_icd10="Z00.0",
-        package_candidate=False,
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("90"),
         expected_denial_reason="",

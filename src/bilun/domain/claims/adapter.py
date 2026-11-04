@@ -144,7 +144,6 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
         claim_start_date=date.today(),
         claim_end_date=date.today(),
         primary_icd10=primary_icd10 or "",
-        package_candidate=None,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

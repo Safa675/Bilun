@@ -26,7 +26,6 @@ def _claim(**overrides) -> ClaimHeader:
         "claim_start_date": date(2024, 6, 1),
         "claim_end_date": date(2024, 6, 1),
         "primary_icd10": "K50.9",
-        "package_candidate": False,
         "expected_total_billed_try": Decimal("1000.00"),
         "expected_total_payable_try": Decimal("900.00"),
         "expected_denial_reason": "",
@@ -153,7 +152,6 @@ def _package_bill(
         discharge_date=discharge,
         claim_start_date=admission,
         claim_end_date=discharge,
-        package_candidate=True,
         scenario_tag=f"showcase_{story}",
     )
     procs = []

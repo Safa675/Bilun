@@ -155,7 +155,6 @@ def _drug_context(*lines: DrugClaimLine):
         claim_start_date=date(2026, 9, 1),
         claim_end_date=date(2026, 9, 1),
         primary_icd10="I10",
-        package_candidate=False,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

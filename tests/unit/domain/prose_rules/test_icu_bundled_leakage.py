@@ -52,7 +52,6 @@ def _make_claim_header(
         claim_start_date=admission or date.today(),
         claim_end_date=discharge or date.today(),
         primary_icd10="J96.0",
-        package_candidate=False,
         expected_total_billed_try=Decimal("10000"),
         expected_total_payable_try=Decimal("9000"),
         expected_denial_reason="",

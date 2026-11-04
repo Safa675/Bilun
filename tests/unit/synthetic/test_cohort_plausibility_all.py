@@ -35,7 +35,6 @@ _CLEAN_MODULE = "scripts.synthetic.cohort.plausibility_clean"
 
 #: the checks the committed (faulty) showcase bills trip: one per injected fault that plausibility can see
 FAULT_IDS = {
-    "package.mode",
     "stay.bed_coverage",
     "anaesthesia.operation_pairing",
     "material.stray_flag",
@@ -108,14 +107,14 @@ def test_only_sends_an_id_to_its_family_and_a_family_without_ids_does_not_run(
     assert check_all_plausibility(claims, clean, only="lab.value_bounds") == []
     assert calls == ["clean"]
     calls.clear()
-    got = check_all_plausibility(claims, clean, only=["package.mode"])
-    assert [problem.check for problem in got] == ["package.mode", "package.mode"]  # the faulty bills of S1 and S20
+    got = check_all_plausibility(claims, clean, only=["bill.performed_billed"])
+    assert [problem.check for problem in got] == ["bill.performed_billed"]  # the faulty bill of S7
     assert calls == ["claims"]
     calls.clear()
     both = check_all_plausibility(
-        claims, clean, only=("package.mode", "lab.value_bounds"), registry=registry
+        claims, clean, only=("bill.performed_billed", "lab.value_bounds"), registry=registry
     )
-    assert [problem.check for problem in both] == ["package.mode", "package.mode"]
+    assert [problem.check for problem in both] == ["bill.performed_billed"]
     assert calls == ["claims", "clean"]
     calls.clear()
     assert check_all_plausibility(claims, clean, only=[]) == []

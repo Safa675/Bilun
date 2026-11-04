@@ -46,7 +46,6 @@ def _claim(
         claim_start_date=date(2026, 3, 10),
         claim_end_date=date(2026, 3, 10),
         primary_icd10=primary_icd10,
-        package_candidate=False,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

@@ -64,7 +64,6 @@ def _make_header(
         claim_start_date=date(2026, 7, 10),
         claim_end_date=date(2026, 7, 10),
         primary_icd10="Z00.0",
-        package_candidate=False,
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("90"),
         expected_denial_reason="",
@@ -345,12 +344,12 @@ def test_payment_method_path_itemized_when_fee_for_service() -> None:
     payment path resolves to fee_for_service (EK-2/B), matching the
     payment_method_2_2.json vocabulary used by the §2.2.2.A itemized rules.
 
-    A package_candidate=False claim with only EK-2/B (non-package) procedure
-    lines resolves to fee_for_service. We exercise the path via the
+    A claim with only EK-2/B (non-package) procedure lines resolves to
+    fee_for_service. We exercise the path via the
     payment_method key directly (the builder derives itemized iff the path is
     fee_for_service)."""
     # Build a claim where _derive_payment_method_path yields fee_for_service:
-    # no procedures + package_candidate=False leaves payment_method unset, so
+    # no procedures leaves payment_method unset, so
     # payment_method_path must also be absent (honest). Exercise the mapped
     # value via a direct context + _condition_matches round-trip instead.
     from src.bilun.domain.prose_rules.gap_closing import _build_gap_closing_context

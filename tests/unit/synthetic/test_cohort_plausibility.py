@@ -94,7 +94,7 @@ AMOUNTS = "labels.amounts"
 # (only the engine sees them); S5's flag is the one fault slice E2 sees. A story that trips nothing
 # is a fault only the engine finds, not a hole in the checks.
 EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
-    "S1": {"package.mode"},
+    "S1": set(),  # the mandated package billed hizmet başı: only the engine (claim_strategy, #269) sees it
     "S2": {"stay.bed_coverage"},
     "S3": {"anaesthesia.operation_pairing"},
     "S4": set(),
@@ -119,7 +119,7 @@ EXPECTED_FAULT_TRIPS: dict[str, set[str]] = {
     "S46": set(),  # a second walker inside the MIAT of the first: a listed device at its price on the examination, only the engine (MIAT) sees it
     "S42": set(),  # the red cells billed in full inside the package: the full price is on the ladder, only the engine (blood_component_partial_bill) sees it
     "S44": set(),  # romosozumab on a report of 12 months: no check reads a drug's report, only the engine (drug_indication) sees it
-    "S20": {"package.mode"},  # the day case billed itemized: package_candidate without a package line (as S1)
+    "S20": set(),  # the day case billed itemized: only the engine sees it (as S1)
     "S21": set(),  # the radiotherapy course keyed as totals: listed codes at their price, no check reads a course or a session, only the engine (radiation_oncology) sees it
     "S47": {"stay.bed_coverage"},  # the day bed of a stay of one date is not billed: its one bed day is missing
     "S49": set(),  # the CRP and the ultrasound beside the green-area examination: lines of the sibling pathway, only the engine (tablo15_7) sees it
@@ -681,10 +681,10 @@ CASES: list[Case] = [
     # --- package.mode
     Case(
         PACKAGE,
-        lambda d: edit(d, TABLE_CLAIM_HEADERS, of(1), package_candidate=False),
-        label="candidate_false_on_a_package_claim",
-        at=CLAIM[1],
-        says="package_candidate is false but the claim has 1 package line(s)",
+        lambda d: add_procedure(d, 1, "510010", "2026-07-14"),
+        label="bed_line_on_a_package_claim",
+        at=new_row_at(1, TABLE_PROCEDURES),
+        says="bed line 510010 on a package claim; the beds are inside the package",
     ),
     # --- anaesthesia.operation_pairing (S3: decompression 615931 and anaesthesia 550160 on 08-18)
     Case(

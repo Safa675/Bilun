@@ -61,7 +61,6 @@ def _make_header(
         claim_start_date=date.today(),
         claim_end_date=date.today(),
         primary_icd10=primary_icd10,
-        package_candidate=False,
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("90"),
         expected_denial_reason="",

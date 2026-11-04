@@ -81,7 +81,7 @@ def _newborn_mandated_bill(*, bed_lines: list[tuple[date, int]]) -> PatientClaim
     """The faulty S1 kept 12 days (14-25 July) as a newborn stay: P610131 mandated, window through 21 July,
     4 days after it. `bed_lines` are (day, quantity) of billed 510070."""
     start = _d("2026-07-14")
-    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"), package_candidate=True)
+    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"))
     bill.proc("610131", start, specialty=GENCER)
     for day, quantity in bed_lines:
         bill.proc("510070", day, qty=quantity, specialty=GENCER)

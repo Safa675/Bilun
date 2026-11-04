@@ -92,7 +92,7 @@ NA_K = ("L106910", "L106150")  # not billed with the blood gas L103900 (EK-2B aÃ
 def s1(variant: str) -> Bill:
     """34 M, acute appendicitis; laparoscopic appendectomy after ER admission."""
     a, op, d = D("2026-07-14"), D("2026-07-14"), D("2026-07-16")
-    b = Bill("SH-01", "C-SH01", "yatis", "Genel Cerrahi", a, d, "K35.9", package_candidate=True)
+    b = Bill("SH-01", "C-SH01", "yatis", "Genel Cerrahi", a, d, "K35.9")
     b.diag("K35.9", primary=True)
     if variant == "clean":
         # Package only: bed, anaesthesia, labs, pathology, drugs and companion are
@@ -188,7 +188,7 @@ STEM, HEAD, CEMENT = "AP2000", "AP1880", "AP3220"  # cemented polished steel ste
 def s5(variant: str) -> Bill:
     """84 F, femoral neck fracture after a fall at home; cemented bipolar hemiarthroplasty."""
     a, op, d = D("2026-09-03"), D("2026-09-04"), D("2026-09-08")
-    b = Bill("SH-05", "C-SH05", "yatis", "Ortopedi ve Travmatoloji", a, d, "S72.00", package_candidate=True)
+    b = Bill("SH-05", "C-SH05", "yatis", "Ortopedi ve Travmatoloji", a, d, "S72.00")
     for i, icd in enumerate(("S72.00", "W19", "I10", "M81.09")):
         b.diag(icd, primary=(i == 0))
     pkg = b.proc("P612320", op, specialty=ORTO)
@@ -252,7 +252,7 @@ def s7(variant: str) -> Bill:
 def s8(variant: str) -> Bill:
     """47 F, symptomatic gallstones + umbilical hernia (defect < 1 cm); repair through the umbilical port."""
     a, op, d = D("2026-09-15"), D("2026-09-15"), D("2026-09-16")
-    b = Bill("SH-08", "C-SH08", "yatis", "Genel Cerrahi", a, d, "K80.2", package_candidate=True)
+    b = Bill("SH-08", "C-SH08", "yatis", "Genel Cerrahi", a, d, "K80.2")
     for i, icd in enumerate(("K80.2", "K42.9")):
         b.diag(icd, primary=(i == 0))
     b.proc("P609235", op, specialty=GENCER)
@@ -433,7 +433,7 @@ def s20(variant: str) -> Bill:
     """
     day = D("2026-06-17")
     b = Bill("SH-13", "C-SH20", "gunubirlik", "Genel Cerrahi", None, None, "K42.9",
-             package_candidate=True, start=day, end=day)
+             start=day, end=day)
     b.diag("K42.9", primary=True, on=day)
     if variant == "clean":
         b.proc("P603840", day, specialty=GENCER)
@@ -454,7 +454,7 @@ def s17(variant: str) -> Bill:
     internal medicine, paediatrics or a dialysis-certified physician). Drug prices enter at 0 TL: no money.
     """
     a = D("2026-05-04")
-    b = Bill("SH-14", "C-SH17", "gunubirlik", "Nefroloji", None, None, "N18.0", package_candidate=True,
+    b = Bill("SH-14", "C-SH17", "gunubirlik", "Nefroloji", None, None, "N18.0",
              start=a, end=a + timedelta(days=25))
     for i, icd in enumerate(("N18.0", "D63.8", "E21.1", "Z49.1", "Z99.2")):
         b.diag(icd, primary=(i == 0), on=a)
@@ -476,7 +476,7 @@ def s23(variant: str) -> Bill:
     if variant != "clean":
         raise ValueError("S23 is a clean bill: it has no faulty variant")
     day = D("2026-06-12")
-    b = Bill("SH-14", "C-SH23", "yatis", "Nefroloji", day, day, "N18.0", package_candidate=True)
+    b = Bill("SH-14", "C-SH23", "yatis", "Nefroloji", day, day, "N18.0")
     b.history = (s17("faulty"),)
     for i, icd in enumerate(("N18.0", "E87.5", "Z99.2")):
         b.diag(icd, primary=(i == 0))
@@ -748,7 +748,7 @@ def _s41() -> Bill:
 
 def _s42(variant: str) -> Bill:
     a, op, d = D("2026-09-16"), D("2026-09-17"), D("2026-09-19")
-    b = Bill("SH-05", "C-SH42", "yatis", "Ortopedi ve Travmatoloji", a, d, "T84.5", package_candidate=True)
+    b = Bill("SH-05", "C-SH42", "yatis", "Ortopedi ve Travmatoloji", a, d, "T84.5")
     b.diag("T84.5", primary=True)
     b.diag("D62", on=op)
     b.diag("I10")
@@ -879,7 +879,7 @@ def _s37() -> Bill:
 
 def _s38(variant: str) -> Bill:
     a, d = D("2026-09-15"), D("2026-09-19")
-    b = Bill("SH-03", "C-SH38", "yatis", "Beyin ve Sinir Cerrahisi", a, d, "M53.26", package_candidate=True)
+    b = Bill("SH-03", "C-SH38", "yatis", "Beyin ve Sinir Cerrahisi", a, d, "M53.26")
     for i, icd in enumerate(("M53.26", "M48.06", "I10")):
         b.diag(icd, primary=(i == 0))
     b.proc("P614040", a, specialty=BEYIN)               # posterior instrumentation, six or fewer segments (group A3)
@@ -958,7 +958,7 @@ def _s49(variant: str) -> Bill:
 
 def _s50(variant: str) -> Bill:
     a, op, d = D("2026-09-27"), D("2026-09-28"), D("2026-09-29")
-    b = Bill("SH-08", "C-SH50", "yatis", "Genel Cerrahi", a, d, "K80.5", package_candidate=True)
+    b = Bill("SH-08", "C-SH50", "yatis", "Genel Cerrahi", a, d, "K80.5")
     b.diag("K80.5", primary=True)
     b.diag("K91.5")
     b.proc("P701360", op, specialty=GENCER)             # the ERCP package (group C): bed, sedation, tests inside

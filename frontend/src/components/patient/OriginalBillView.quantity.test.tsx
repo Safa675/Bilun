@@ -35,7 +35,6 @@ const claim: PatientClaimDetail = {
   claim_start_date: "2024-01-14",
   claim_end_date: "2024-01-16",
   primary_icd10: "G20",
-  package_candidate: false,
   expected_total_billed_try: 1240,
   expected_total_payable_try: 992,
   procedures: [

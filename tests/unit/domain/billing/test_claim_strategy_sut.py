@@ -30,7 +30,6 @@ def _claim(**overrides) -> ClaimHeader:
         claim_start_date=date(2026, 1, 10),
         claim_end_date=date(2026, 1, 12),
         primary_icd10="I21.9",
-        package_candidate=True,
         expected_total_billed_try=Decimal("5000"),
         expected_total_payable_try=Decimal("4000"),
         expected_denial_reason="",
@@ -125,7 +124,7 @@ class TestClaimStrategySut:
             "_procedure_point_score",
             lambda code, **kwargs: {"611111": 20, "622222": 10}[code],
         )
-        claim = _claim(facility_tier="egitim_arastirma", package_candidate=True)
+        claim = _claim(facility_tier="egitim_arastirma")
         lines = [
             _proc(
                 procedure_code="611111",
@@ -334,8 +333,7 @@ class TestClaimStrategySut:
 
     def test_ek2b_only_claim_billed_itemized_has_no_claim_row(self) -> None:
         # #294: the codes give the claim no package side (none billed, mandated or
-        # optional), so the package_candidate flag (True here) adds no row; it
-        # used to add a 0-TL claim_itemized_ok row.
+        # optional), so it has no claim row.
         from src.bilun.domain.prose_rules.catalog_membership import (
             get_ek2b_codes,
             get_ek2c_codes,

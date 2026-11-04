@@ -88,7 +88,6 @@ def _make_tablo30_claim(scenario_tag: str = "elkitabi_tablo30") -> ClaimHeader:
         claim_start_date=service_date,
         claim_end_date=service_date,
         primary_icd10="C50.9",  # Malign neoplasm of breast, unspecified
-        package_candidate=False,  # 800xxx are EK-2/B line items, not EK-2/C packages
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

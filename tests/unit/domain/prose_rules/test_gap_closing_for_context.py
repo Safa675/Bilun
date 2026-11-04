@@ -29,7 +29,6 @@ def _make_header(
     facility_tier: str = "ozel",
     provider_type: str = "sozlesmeli",
     department: str = "genel",
-    package_candidate: bool | None = None,
     scenario_tag: str = "test",
 ) -> ClaimHeader:
     from datetime import date
@@ -46,7 +45,6 @@ def _make_header(
         claim_start_date=date.today(),
         claim_end_date=date.today(),
         primary_icd10="Z00.0",
-        package_candidate=package_candidate,
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("90"),
         expected_denial_reason="",
@@ -199,10 +197,10 @@ def test_payment_method_path_diagnosis_from_a_billed_package_line() -> None:
     ``"package"`` and the rules silently never matched.
 
     #294: the fallback reads the billed P code (an outpatient EK-2/C package off
-    EK-2/A-2 sets no claim kind), not the synthetic-only package_candidate flag.
+    EK-2/A-2 sets no claim kind).
     """
     ctx = _make_ctx(
-        header=_make_header(package_candidate=False),
+        header=_make_header(),
         procedure_lines=(_make_procedure(code="P609270"),),
     )
     context = _build_gap_closing_context(ctx)
@@ -210,11 +208,11 @@ def test_payment_method_path_diagnosis_from_a_billed_package_line() -> None:
 
 
 def test_payment_method_path_unset_when_no_signal() -> None:
-    """W2.5a (HIGH): when no payment-path signal exists (no procedure lines,
-    package_candidate=None/False), the key must be ABSENT so
-    _condition_matches honest-skips rather than emitting a wrong value.
+    """W2.5a (HIGH): when no payment-path signal exists (no procedure lines),
+    the key must be ABSENT so _condition_matches honest-skips rather than
+    emitting a wrong value.
     """
-    ctx = _make_ctx(header=_make_header(package_candidate=False))
+    ctx = _make_ctx(header=_make_header())
     context = _build_gap_closing_context(ctx)
     assert "payment_method" not in context
 

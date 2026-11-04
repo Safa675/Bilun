@@ -53,7 +53,6 @@ def test_claim_copay_applies_ek4d_rx_savings() -> None:
                 claim_start_date=date(2026, 1, 1),
                 claim_end_date=date(2026, 1, 5),
                 primary_icd10="A16.9",
-                package_candidate=False,
                 expected_total_billed_try=Decimal("0"),
                 expected_total_payable_try=Decimal("0"),
                 expected_denial_reason="",

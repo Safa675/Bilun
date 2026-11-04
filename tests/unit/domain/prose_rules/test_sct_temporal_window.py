@@ -61,7 +61,6 @@ def _claim(
         claim_start_date=admission,
         claim_end_date=discharge or admission,
         primary_icd10="C92.00",
-        package_candidate=False,
         expected_total_billed_try=Decimal("100000"),
         expected_total_payable_try=Decimal("90000"),
         expected_denial_reason="",

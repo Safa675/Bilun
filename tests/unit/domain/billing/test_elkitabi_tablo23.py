@@ -81,7 +81,6 @@ def _make_tablo23_claim() -> ClaimHeader:
         claim_start_date=admission,
         claim_end_date=discharge,
         primary_icd10="K35.8",  # Acute appendicitis
-        package_candidate=True,  # P610130 is an EK-2C package
         expected_total_billed_try=Decimal("8000"),
         expected_total_payable_try=Decimal("7000"),
         expected_denial_reason="",

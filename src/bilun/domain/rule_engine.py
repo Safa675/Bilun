@@ -136,7 +136,6 @@ def _run_drug_indication_checks(
         claim_start_date=date.today(),
         claim_end_date=date.today(),
         primary_icd10=icd10,
-        package_candidate=None,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

@@ -76,7 +76,6 @@ def _claim(claim_id: str = "C1", claim_type: str = "acil", **changes: Any) -> Cl
         claim_start_date=_DAY,
         claim_end_date=_DAY,
         primary_icd10="R07.1",
-        package_candidate=False,
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("100"),
         expected_denial_reason="",

@@ -713,8 +713,8 @@ def recommend_billing_strategy_from_claims(
             continue
         # A mandated package replaces the hizmet başı bill: compare it with what
         # was billed, not with a legal itemized alternative (#269). The gate reads
-        # the codes, never the synthetic-only package_candidate flag, and audit
-        # exposure and session uplift read the same comparison.
+        # the codes (#294), and audit exposure and session uplift read the same
+        # comparison.
         gap = mandated_package_gap(
             claim,
             claim_procs,
@@ -735,9 +735,8 @@ def recommend_billing_strategy_from_claims(
 
         current_billing = _infer_current_billing(claim_procs)
         # Without the mandated gap the claim has a package side when its codes give
-        # one (#294), never the package_candidate flag: an optional §2.2.2(2)
-        # package (DRG_OVERRIDABLE, a third-tier hospital), or a package billed
-        # (> 0) other than an ICU day package.
+        # one (#294): an optional §2.2.2(2) package (DRG_OVERRIDABLE, a third-tier
+        # hospital), or a package billed (> 0) other than an ICU day package.
         if (
             gap is None
             and claim_kind != "DRG_OVERRIDABLE"

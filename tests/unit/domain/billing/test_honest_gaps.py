@@ -46,7 +46,6 @@ def test_exempt_copay_from_claims_reports_waived_amounts_not_heuristic_savings()
         claim_start_date=date(2026, 1, 1),
         claim_end_date=date(2026, 1, 1),
         primary_icd10="E11.9",
-        package_candidate=False,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

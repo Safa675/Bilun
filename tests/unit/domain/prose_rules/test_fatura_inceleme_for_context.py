@@ -47,7 +47,6 @@ def _make_ctx(
         provider_type=provider_type,
         facility_tier=facility_tier,
         scenario_tag="",
-        package_candidate=False,
         procedure_specialty_code="",
         admission_date=None,
         claim_start_date=None,

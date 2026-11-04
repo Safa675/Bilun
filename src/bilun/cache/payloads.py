@@ -95,7 +95,6 @@ def _build_claim_line_summary(patient_id: str, ctx: dict[str, Any]) -> dict[str,
                 "claim_start_date": _date(claim.claim_start_date),
                 "claim_end_date": _date(claim.claim_end_date),
                 "primary_icd10": claim.primary_icd10,
-                "package_candidate": bool(claim.package_candidate),
                 "total_billed_try": round(_claim_total(claim.claim_id), 2),
             }
             for claim in claims[:10]

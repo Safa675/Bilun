@@ -73,10 +73,9 @@ def _above(code: str, day: str, factor: str, *, billed: float | None = None) -> 
 
 class _Bill:
     def __init__(self, cid: str, claim_type: str, start: date, end: date, *,
-                 inpatient: bool = True, package_candidate: bool = False,
-                 tier: str = "2_3_basamak_ozel") -> None:
+                 inpatient: bool = True, tier: str = "2_3_basamak_ozel") -> None:
         self.cid, self.claim_type, self.start, self.end = cid, claim_type, start, end
-        self.inpatient, self.package_candidate, self.tier = inpatient, package_candidate, tier
+        self.inpatient, self.tier = inpatient, tier
         self.procs: list[ProcedureClaimLine] = []
         self.drugs: list[DrugClaimLine] = []
         self.materials: list[MaterialClaimLine] = []
@@ -141,7 +140,7 @@ class _Bill:
             admission_date=self.start if self.inpatient else None,
             discharge_date=self.end if self.inpatient else None,
             claim_start_date=self.start, claim_end_date=self.end, primary_icd10="R69",
-            package_candidate=self.package_candidate, expected_total_billed_try=total,
+            expected_total_billed_try=total,
             expected_total_payable_try=total, expected_denial_reason="", scenario_tag="",
         )
         return PatientClaimContext(
@@ -154,10 +153,10 @@ def _d(text: str) -> date:
     return date.fromisoformat(text)
 
 
-def s1(variant: str, *, package_candidate: bool = True) -> _Bill:
+def s1(variant: str) -> _Bill:
     """Laparoscopic appendectomy: package P610131, or the stay billed hizmet başı."""
     a, d = _d("2026-07-14"), _d("2026-07-16")
-    bill = _Bill("C-SH01", "yatis", a, d, package_candidate=package_candidate)
+    bill = _Bill("C-SH01", "yatis", a, d)
     if variant == "clean":
         bill.proc("P610131", a, specialty=GENCER)
         return bill
@@ -235,7 +234,7 @@ def s7() -> _Bill:
 def s8(variant: str, *, branches: tuple[str, str] = (GENCER, GENCER)) -> _Bill:
     """Lap chole P609235 + umbilical hernia P603840 through one port (same incision)."""
     op = _d("2026-09-15")
-    bill = _Bill("C-SH08", "yatis", op, _d("2026-09-16"), package_candidate=True)
+    bill = _Bill("C-SH08", "yatis", op, _d("2026-09-16"))
     bill.proc("P609235", op, specialty=branches[0])
     bill.proc("P603840", op, specialty=branches[1], factor="0.25" if variant == "clean" else "1")
     return bill
@@ -362,7 +361,7 @@ class TestSessionScope261:
         )
 
         day = _d("2026-07-14")
-        bill = _Bill("C-NM", "yatis", day, day, package_candidate=True)
+        bill = _Bill("C-NM", "yatis", day, day)
         for code in codes:
             bill.proc(code, day, specialty=branch)
         ctx = bill.ctx()
@@ -422,7 +421,7 @@ class TestMixedSessions:
     @staticmethod
     def _bill(third: str, factor: str, *, second_factor: str = "1") -> _Bill:
         day = _d("2026-07-14")
-        bill = _Bill("C-MIX", "yatis", day, day, package_candidate=True)
+        bill = _Bill("C-MIX", "yatis", day, day)
         bill.proc("P609235", day, specialty=GENCER)
         bill.proc("P603840", day, specialty=GENCER, factor=second_factor)
         bill.proc(third, day, specialty=GENCER, factor=factor)
@@ -768,7 +767,7 @@ class TestBilledAsPackage:
 
     @pytest.mark.parametrize(
         "build",
-        [lambda: s8("clean"), lambda: s1("clean", package_candidate=False)],
+        [lambda: s8("clean"), lambda: s1("clean")],
         ids=["S8-clean", "S1-clean"],
     )
     def test_correct_packages_without_a_category_have_no_exposure(self, build) -> None:
@@ -801,7 +800,7 @@ class TestRepeatedCodes:
         self, code, risk, exposure,
     ) -> None:
         day = _d("2026-07-14")
-        bill = _Bill("C-REP", "yatis", day, day, package_candidate=True)
+        bill = _Bill("C-REP", "yatis", day, day)
         bill.proc(code, day, specialty=GENCER)
         bill.proc(code, day, specialty=GENCER)
         ctx = bill.ctx()
@@ -943,7 +942,7 @@ class TestCrossSpecialty264:
         # Review: 1900 and 2600 establish "farklı uzmanlık dallarında"; the third
         # line's missing branch leaves the 25 points in place (was 3,769.86 TL).
         op = _d("2026-09-15")
-        bill = _Bill("C-SH08", "yatis", op, op, package_candidate=True)
+        bill = _Bill("C-SH08", "yatis", op, op)
         bill.proc("P609235", op, specialty=GENCER)
         bill.proc("P603840", op, specialty=ORTO, factor="0.5")
         bill.proc("P603830", op, factor="0.5")
@@ -1046,43 +1045,19 @@ class TestMandatedPackageGap269:
         )
         assert _payment_risk(ctx) == [("610131", 0.0)]
 
-    @pytest.mark.parametrize("package_candidate", [False, None], ids=["false", "absent"])
-    def test_the_gap_reads_the_codes_not_the_package_candidate_flag(
-        self, package_candidate,
-    ) -> None:
-        # Review item 3: package_candidate is set by the synthetic generator only;
-        # a parsed export without the column reads False (was: no strategy row,
-        # 3,022.30 at risk).
-        ctx = s1("faulty").ctx()
-        ctx = replace(ctx, claims=(replace(ctx.claims[0], package_candidate=package_candidate),))
-        row = _claim_row(ctx)
-        assert (row["package_total_try"], row["itemized_total_try"], row["savings_try"]) == (
-            _S1_PACKAGE, _S1_ITEMIZED, _S1_GAP,
-        )
-        assert (row["savings_category"], row["included_in_sgk_total"]) == ("sgk_uplift", True)
-        assert _payment_risk(ctx) == [("610131", 0.0)]
-        assert compute_audit_exposure_from_claims(ctx) == 0.0
-        assert detect_drg_unbundling(set(), ctx)["total_sourced_savings"] == 0.0
-
-    @pytest.mark.parametrize("package_candidate", [False, None], ids=["false", "absent"])
-    def test_the_package_side_reads_the_codes_not_the_package_candidate_flag(
-        self, package_candidate,
-    ) -> None:
-        # #294: without the flag the clean S8 (two packages billed) and an optional
-        # §2.2.2(2) package billed hizmet başı at a training hospital had no row.
-        clean = s8("clean")
-        clean.package_candidate = package_candidate
+    def test_the_package_side_comes_from_the_codes(self) -> None:
+        # #294: the clean S8 (two packages billed) and an optional §2.2.2(2)
+        # package billed hizmet başı at a training hospital each get a row.
         day = _d("2026-07-14")
-        optional = _Bill("C-OPT", "yatis", day, day + timedelta(days=2),
-                         package_candidate=package_candidate, tier="egitim_arastirma")
+        optional = _Bill("C-OPT", "yatis", day, day + timedelta(days=2), tier="egitim_arastirma")
         optional.proc("600170", day, specialty=GENCER)
-        rows = [_claim_row(bill.ctx()) for bill in (clean, optional)]
+        rows = [_claim_row(bill.ctx()) for bill in (s8("clean"), optional)]
         assert [row["message_code"] for row in rows] == [
             "claim_package_ok", "claim_optional_package_higher",
         ]
         assert rows[1]["savings_try"] > 0  # The amounts: TestOptionalOverrideNetting.
-        # An ICU day package (§2.4.4.H) is no package of the stay: no row, as the flag never gave one.
-        icu = _Bill("C-ICU", "yatis", day, day + timedelta(days=2), package_candidate=package_candidate)
+        # An ICU day package (§2.4.4.H) is no package of the stay: no row.
+        icu = _Bill("C-ICU", "yatis", day, day + timedelta(days=2))
         icu.proc("P552002", day, qty=2)
         assert _claim_rows(icu.ctx()) == []
 
@@ -1527,9 +1502,9 @@ class TestC000672:
     """
 
     @staticmethod
-    def _bill(factor: str, *, package_candidate: bool = False) -> _Bill:
+    def _bill(factor: str) -> _Bill:
         day = _d("2026-07-14")
-        bill = _Bill("C-EXC", "yatis", day, day, package_candidate=package_candidate)
+        bill = _Bill("C-EXC", "yatis", day, day)
         bill.proc("615931", day, specialty=BEYIN)
         bill.proc("612070", day, specialty=BEYIN, factor=factor)
         return bill
@@ -1556,10 +1531,10 @@ class TestC000672:
         ] == uplift
 
     def test_the_strategy_recommends_no_package(self) -> None:
-        # Review: a package_candidate claim fell back to a 3,413.70 compliance row.
-        # The session is billed hizmet başı, so its codes give the claim no package
-        # side and the flag adds no claim row (#294; it was a 0-TL itemized row).
-        ctx = self._bill("0.3", package_candidate=True).ctx()
+        # Review: the claim fell back to a 3,413.70 compliance row. The session is
+        # billed hizmet başı, so its codes give the claim no package side and no
+        # claim row (#294; it was a 0-TL itemized row).
+        ctx = self._bill("0.3").ctx()
         rows = recommend_billing_strategy_from_claims(ctx).recommendations
         assert [row for row in rows if row.get("type") == "compliance_violation"] == []
         assert _claim_rows(ctx) == []
