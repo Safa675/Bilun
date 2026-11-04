@@ -3,7 +3,7 @@
 #   scripts/staging/update.sh [SHA]        (default: the head of main)
 # It waits for a running CI job (never builds beside one), builds into a new release folder,
 # switches `current`, restarts only the two staging units, rolls back if they do not come up,
-# and keeps the last 3 releases. The old frozen pair (port 8001) must stay healthy and unrestarted.
+# and keeps the last 3 releases. bilun-deploy-main.timer runs it through deploy-main.sh when main moves.
 set -Eeuo pipefail
 ROOT=/opt/bilun-staging
 GIT=(git --git-dir="$ROOT/repository.git")
@@ -11,7 +11,6 @@ UNITS=(bilun-staging-backend.service bilun-staging-frontend.service)
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 healthy() { curl -fsS --max-time 3 "$1" | python3 -c 'import json,sys; sys.exit(json.load(sys.stdin).get("status") != "ok")' 2>/dev/null; }
 ram_ok() { (( $(awk '$1 == "MemAvailable:" {print $2}' /proc/meminfo) >= 4194304 )); }
-old_pair() { systemctl show bilun-backend.service bilun-frontend.service -p MainPID --value | tr '\n' ' '; }
 [[ $(id -u) == 0 ]] || die 'run as root on the VPS'
 
 exec 9>"$ROOT/update.lock"; flock -n 9 || die 'another staging update is running'
@@ -27,8 +26,7 @@ CI=$(gh run list -R Safa675/Bilun --workflow ci.yml --commit "$SHA" --json concl
 OLD_RELEASE=$(realpath -e "$ROOT/current"); OLD_CACHE=$(realpath -e "$ROOT/cache-current.duckdb")
 OLD_SHA=$(cat "$OLD_RELEASE/STAGING_SOURCE_SHA")
 [[ $OLD_SHA != "$SHA" ]] || { echo "staging already runs $SHA"; exit 0; }
-OLD_PAIR=$(old_pair)
-ram_ok && healthy http://127.0.0.1:8001/health || die 'old pair unhealthy or RAM below 4 GiB; nothing changed'
+ram_ok || die 'RAM below 4 GiB; nothing changed'
 
 STAMP=$SHA-$(date -u +%Y%m%dT%H%M%S)
 RELEASE=$ROOT/releases/$STAMP CACHE=$OLD_CACHE REBUILD=0
@@ -56,7 +54,6 @@ if ! up; then
   switch "$OLD_RELEASE" "$OLD_CACHE"
   die "new staging did not come up; restored $OLD_SHA (release $RELEASE kept for inspection)"
 fi
-[[ $(old_pair) == "$OLD_PAIR" ]] && healthy http://127.0.0.1:8001/health || die 'old pair restarted or unhealthy after the switch'
 
 for old in $(ls -1dt "$ROOT"/releases/* | tail -n +4); do "${GIT[@]}" worktree remove --force "$old"; done
 keep=$(for r in "$ROOT"/releases/*; do basename "$r"; done)
