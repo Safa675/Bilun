@@ -357,10 +357,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
             continue
         message_code = row.get("message_code")
         savings = row.get("savings_try") or row.get("recoverable_uplift_try")
-        if (
-            message_code in ("claim_package_ok", "claim_itemized_ok")
-            and not (savings and savings > 0)
-        ):
+        if message_code == "claim_package_ok" and not (savings and savings > 0):
             continue
         code = row.get("procedure_code")
         claim_id = row.get("claim_id")

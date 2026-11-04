@@ -144,8 +144,6 @@ const api = {
       "Marked as package component and billed separately — invoice/package flag, not EK-3B-1 regulatory annex",
     claimPackageOk:
       "Claim {claimId} is billed correctly as package per SUT §2.2.2(1). Package total {amount} TRY.",
-    claimItemizedOk:
-      "Claim {claimId} is billed correctly as itemized per SUT §2.2. Itemized total {amount} TRY.",
     claimMandatePackage:
       "SUT §2.2 mandates package billing for claim {claimId} (EK-2/C procedure present). Package total {packageTotal} TRY vs itemized {itemizedTotal} TRY.",
     claimMandateItemized:

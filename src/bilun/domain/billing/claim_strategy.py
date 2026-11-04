@@ -543,18 +543,8 @@ def _claim_recommendation_message(
         }
 
     if claim_kind == "ITEMIZED":
-        if current_billing == "itemized":
-            return {
-                "detail": (
-                    f"Claim {claim_id} is billed correctly as itemized per SUT §2.2. "
-                    f"Itemized total {itemized_amount} TRY."
-                ),
-                "message_code": "claim_itemized_ok",
-                "message_params": {
-                    "claim_id": claim_id,
-                    "amount_try": itemized_amount,
-                },
-            }
+        # An ITEMIZED claim enters the strategy only when it bills a package
+        # (#294), so it is never billed correctly as itemized here.
         return {
             "detail": (
                 f"SUT §2.2 mandates itemized billing for claim {claim_id}. "
