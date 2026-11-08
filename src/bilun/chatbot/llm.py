@@ -44,11 +44,11 @@ def _get_llm_endpoint() -> str:
         if base_url.endswith("/chat/completions"):
             return base_url
         return f"{base_url}/chat/completions"
-    return "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+    return "https://openrouter.ai/api/v1/chat/completions"
 
 
 def _get_model() -> str:
-    return os.getenv("LLM_MODEL", "").strip() or "deepseek-v4-flash-0731"
+    return os.getenv("LLM_MODEL", "").strip() or "minimax/minimax-m3.1-flash"
 
 
 
