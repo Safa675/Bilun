@@ -493,3 +493,10 @@ def test_tools_path_final_stream_with_an_answer_has_no_fallback(monkeypatch):
     items, _ = _run_tools(monkeypatch, _reasoning(1) + _content(2) + [DONE])
     assert FALLBACK not in items
     assert ("content", "word0 ") in items and ("content", "word1 ") in items
+
+
+def test_defaults_are_the_paid_minimax_model_on_openrouter(monkeypatch):
+    for name in ("LLM_MODEL", "LLM_ENDPOINT", "LLM_BASE_URL"):
+        monkeypatch.delenv(name, raising=False)
+    assert llm._get_model() == "minimax/minimax-m3.1-flash"
+    assert llm._get_llm_endpoint() == "https://openrouter.ai/api/v1/chat/completions"
