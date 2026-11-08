@@ -53,7 +53,28 @@ gh api -X PUT "repos/Safa675/Bilun/pulls/$pr_number/merge" -f merge_method=squas
 
 Then verify main contains the tested tree and finish its push workflows before cleanup. The CI workflow name must remain unchanged.
 
-## Staging: one operator command
+## Staging: updated from main automatically
+
+`bilun-deploy-main.timer` (root, every 5 minutes) runs `scripts/staging/deploy-main.sh`. When `main` has moved and its CI is green, the script runs that commit's own `scripts/staging/update.sh`, so staging follows `main` within minutes of a green CI run.
+- A commit whose CI is still running is tried on the next run.
+- A commit whose CI failed is never deployed.
+- A commit whose update failed 3 times is left alone until `main` moves on (`/opt/bilun-staging/deploy-main.failed`), so staging stays on the last good commit.
+
+Look at what it did:
+
+```bash
+journalctl -u bilun-deploy-main -n 50
+```
+
+Install or update the timer from a checkout of a reviewed commit, as root. The unit runs the installed copy, never a working tree.
+
+```bash
+install -m 0755 scripts/staging/deploy-main.sh /usr/local/sbin/bilun-deploy-main
+install -m 0644 scripts/staging/systemd/bilun-deploy-main.service scripts/staging/systemd/bilun-deploy-main.timer /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now bilun-deploy-main.timer
+```
+
+To update by hand (an older commit, or while the timer is stopped):
 
 ```bash
 ssh contabo-vps 'git -C /opt/Bilun pull -q --ff-only && /opt/Bilun/scripts/staging/update.sh'   # optional SHA argument
