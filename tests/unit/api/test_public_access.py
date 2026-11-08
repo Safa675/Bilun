@@ -163,19 +163,27 @@ def test_public_errors_do_not_expose_source_context(client):
     assert "SECRET_SOURCE" not in unexpected.text
 
 
-def test_developer_only_login_secure_cookie_and_logout(client, monkeypatch):
+def test_shared_login_is_billing_only_unless_username_is_listed_as_developer(client, monkeypatch):
+    monkeypatch.setenv("BILUN_PUBLIC_BILLING_ENABLED", "false")
+    assert client.get("/api/patients").status_code == 401
     denied = client.post("/api/auth/login", json={"username": "developer", "password": "wrong"})
     assert denied.status_code == 401
     monkeypatch.setenv("BILUN_DEV_USERNAMES", "different-account")
-    assert client.post("/api/auth/login", json={"username": "developer", "password": "test-password"}).status_code == 403
-    monkeypatch.setenv("BILUN_DEV_USERNAMES", "developer")
     response = client.post("/api/auth/login", json={"username": "developer", "password": "test-password"})
     assert response.status_code == 200
     cookie = response.headers["set-cookie"].lower()
     assert "secure" in cookie and "httponly" in cookie and "samesite=lax" in cookie
-    assert client.get("/api/auth/me").json()["capabilities"] == ["billing", "developer", "repository"]
+    assert client.get("/api/auth/me").json()["capabilities"] == ["billing"]
+    assert client.get("/api/patients").status_code == 200
+    assert client.get("/api/rules").status_code == 403
     assert client.post("/api/auth/logout").status_code == 200
     assert client.get("/api/auth/me").json()["authenticated"] is False
+    assert client.get("/api/patients").status_code == 401
+    monkeypatch.setenv("BILUN_DEV_USERNAMES", "developer")
+    assert client.post("/api/auth/login", json={"username": "developer", "password": "test-password"}).status_code == 200
+    assert client.get("/api/auth/me").json()["capabilities"] == ["billing", "developer", "repository"]
+    assert client.get("/api/rules").status_code == 200
+    assert client.post("/api/auth/logout").status_code == 200
     assert client.get("/api/rules").status_code == 401
 
 

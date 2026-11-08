@@ -103,9 +103,11 @@ def test_llm_tool_loop_executes_at_most_three_total_calls(monkeypatch):
     assert "private reasoning" not in results
 
 
-def test_public_sse_ignores_claimed_developer_role_and_reasoning(monkeypatch):
+def test_public_sse_ignores_claimed_developer_role_and_reasoning(monkeypatch, tmp_path):
     monkeypatch.setattr(chat, "_check_rate_limit", lambda _ip: True)
     monkeypatch.delenv("BILUN_PUBLIC_BILLING_ENABLED", raising=False)
+    monkeypatch.setenv("BILUN_PUBLIC_CHAT_DAILY_TOKEN_BUDGET", "1000000")
+    monkeypatch.setenv("BILUN_PUBLIC_CHAT_BUDGET_DB", str(tmp_path / "budget.sqlite3"))
     monkeypatch.setattr(chat, "_fetch_runtime_data", lambda *args, **kwargs: {})
     seen = []
     async def fake_model(*args, **kwargs):

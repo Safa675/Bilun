@@ -21,7 +21,6 @@ from src.bilun.api.auth import (
     check_credentials,
     is_auth_configured,
     issue_session_token,
-    resolve_user_role,
 )
 from src.bilun.api.access import identity_from_request, is_public_billing_enabled
 
@@ -88,7 +87,11 @@ def _secure_cookie() -> bool:
 
 @router.post("/login")
 def login(body: LoginRequest, request: Request, response: Response) -> dict:
-    """Validate shared credentials and set the session cookie on success."""
+    """Validate shared credentials and set the session cookie on success.
+
+    Any valid shared credential gets a billing session. Developer capability
+    still comes only from BILUN_DEV_USERNAMES, resolved on every request.
+    """
     ip = _client_ip(request)
     if _check_login_lockout(ip):
         response.status_code = 429
@@ -103,10 +106,6 @@ def login(body: LoginRequest, request: Request, response: Response) -> dict:
         _record_login_failure(ip)
         response.status_code = 401
         return {"ok": False, "error": "Invalid username or password."}
-    if resolve_user_role(body.username) != "dev":
-        _record_login_failure(ip)
-        response.status_code = 403
-        return {"ok": False, "error": "This account is not authorized for developer access."}
     _clear_login_failures(ip)
     token = issue_session_token(body.username)
     response.set_cookie(
