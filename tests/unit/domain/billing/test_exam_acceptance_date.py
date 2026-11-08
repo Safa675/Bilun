@@ -33,7 +33,6 @@ def _claim(claim_id: str) -> ClaimHeader:
         claim_start_date=date(2026, 7, 10),
         claim_end_date=date(2026, 7, 13),
         primary_icd10="K35.8",
-        package_candidate=False,
         expected_total_billed_try=Decimal("1000"),
         expected_total_payable_try=Decimal("900"),
         expected_denial_reason="",

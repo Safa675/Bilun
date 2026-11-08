@@ -843,7 +843,7 @@ def _claim_ctx(
             facility_tier="2_3_basamak_ozel", provider_type="Ozel",
             department="Ortopedi ve Travmatoloji", admission_date=day, discharge_date=day,
             claim_start_date=day, claim_end_date=day, primary_icd10="S72.0",
-            package_candidate=True, expected_total_billed_try=amount,
+            expected_total_billed_try=amount,
             expected_total_payable_try=amount, expected_denial_reason="", scenario_tag="",
         )
         for claim in claims

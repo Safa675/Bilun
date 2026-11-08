@@ -34,7 +34,6 @@ def _claim(**overrides) -> ClaimHeader:
         "claim_start_date": date(2024, 6, 1),
         "claim_end_date": date(2024, 6, 5),
         "primary_icd10": "K50.9",
-        "package_candidate": True,
         "expected_total_billed_try": Decimal("10000.00"),
         "expected_total_payable_try": Decimal("9000.00"),
         "expected_denial_reason": "",
@@ -147,10 +146,10 @@ class TestDrgPackageAdequacyForContext:
         ctx = _ctx([claim], procs)
         assert check_drg_package_adequacy_for_context(ctx) == []
 
-    def test_the_package_is_read_from_the_codes_not_the_package_candidate_flag(self) -> None:
-        """#294: a claim without the synthetic-only flag is evaluated; its package is the
-        billed P code (MEDULA has no "paket" category), so 609300 is still flagged."""
-        claim = _claim(package_candidate=False)
+    def test_the_package_is_read_from_the_billed_p_code(self) -> None:
+        """#294: the claim's package is the billed P code (MEDULA has no "paket"
+        category), so 609300 is still flagged."""
+        claim = _claim()
         procs = [
             _proc_line(),
             _proc_line(

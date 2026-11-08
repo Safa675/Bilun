@@ -101,7 +101,7 @@ CHECKS: dict[str, str] = {
     # bill: performed against billed
     "bill.performed_billed": "a performed procedure with no billed line of the same code on the same day",
     # package: the billing mode
-    "package.mode": "package_candidate that disagrees with the package lines, or a package claim with a bed or anaesthesia line",
+    "package.mode": "a package claim with a bed or anaesthesia line",
     # anaesthesia: one per operation date, in the right group
     "anaesthesia.operation_pairing": "an operation date without exactly one anaesthesia line, or an anaesthesia line without an operation",
     "anaesthesia.group": "an anaesthesia code that is not the code of the puan band of the day's operations",
@@ -867,7 +867,6 @@ class _Bill:
                 "patient_id",
                 "episode_id",
                 "claim_type",
-                "package_candidate",
                 "scenario_tag",
                 "admission_date",
                 "discharge_date",
@@ -1799,17 +1798,7 @@ def check_performed_billed(bill: _Bill) -> list[Problem]:
 
 
 def check_package_mode(bill: _Bill) -> list[Problem]:
-    """package.mode: package_candidate = has a package line; a package claim: no bed, no anaesthesia."""
-    mismatch = bill.headers.filter(
-        (pl.col("package_candidate") != pl.col("is_package_claim")).fill_null(True)
-    ).select(
-        _claim_text().alias("where"),
-        _format(
-            "package_candidate is {} but the claim has {} package line(s)",
-            pl.col("package_candidate").cast(pl.String).fill_null("missing"),
-            pl.col("package_lines"),
-        ).alias("message"),
-    )
+    """package.mode: a package claim (one with a package line) has no bed and no anaesthesia line."""
     on_package = bill.lines.join(
         bill.headers.filter(pl.col("is_package_claim")).select("claim_id"),
         on="claim_id",
@@ -1829,7 +1818,7 @@ def check_package_mode(bill: _Bill) -> list[Problem]:
             pl.col("procedure_code"),
         ).alias("message"),
     )
-    return _problems("package.mode", pl.concat([mismatch, beds, anaesthesia]))
+    return _problems("package.mode", pl.concat([beds, anaesthesia]))
 
 
 # --- anaesthesia -------------------------------------------------------------------------------

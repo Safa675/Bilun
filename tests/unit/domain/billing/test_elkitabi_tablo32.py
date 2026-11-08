@@ -73,7 +73,6 @@ def _make_claim(claim_id: str) -> ClaimHeader:
         claim_start_date=_ADMISSION,
         claim_end_date=_DISCHARGE,
         primary_icd10=_PRIMARY_ICD10,
-        package_candidate=True,  # P609080 is a package
         expected_total_billed_try=Decimal("908561.20"),
         expected_total_payable_try=Decimal("908561.20"),
         expected_denial_reason="",

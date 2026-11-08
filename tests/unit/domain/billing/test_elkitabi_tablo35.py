@@ -87,7 +87,6 @@ def _make_claim(claim_id: str) -> ClaimHeader:
         claim_start_date=admission,
         claim_end_date=discharge,
         primary_icd10="C71.9",  # Brain, unspecified — malignant neoplasm
-        package_candidate=False,  # subpial insizyon is billed via EK-2/B
         expected_total_billed_try=Decimal("12000"),
         expected_total_payable_try=Decimal("10000"),
         expected_denial_reason="",

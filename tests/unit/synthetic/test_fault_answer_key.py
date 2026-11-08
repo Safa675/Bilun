@@ -235,7 +235,6 @@ def _build_minimal_claims_and_lines(
             claim_start_date=date(2026, 7, 14),
             claim_end_date=date(2026, 7, 16),
             primary_icd10="K35.9",
-            package_candidate=False,
             expected_total_billed_try=sum(claim_lines_billed, Decimal("0.00")),
             expected_total_payable_try=sum(claim_lines_payable, Decimal("0.00")),
             expected_denial_reason="",

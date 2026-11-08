@@ -6,8 +6,7 @@ laparoscopic appendectomy that must be billed as EK-2/C package P610131 (group C
 companion (SUT §2.2.2.B-1(1)(a), (g), (h)) from admission through the window
 (§2.2.2.B-1(3)); days after it are billed separately (§2.2.2.B-1(4)). The billing
 strategy row already reports the package gap, so these components add nothing
-inside the window. The mandate is read from the codes, never from the synthetic-only
-``package_candidate`` header flag.
+inside the window. The mandate is read from the codes.
 """
 
 from __future__ import annotations
@@ -67,7 +66,7 @@ def _without(bill: _Bill, code: str, *, after=None) -> _Bill:
 def _long_s1(*, bed_days: int, bed_qty: int = 1) -> _Bill:
     """Faulty S1 kept 12 days (14–25 July): window through 21 July, 4 days after it."""
     a = _d("2026-07-14")
-    bill = _Bill("C-SH01", "yatis", a, _d("2026-07-25"), package_candidate=True)
+    bill = _Bill("C-SH01", "yatis", a, _d("2026-07-25"))
     bill.proc("610131", a, specialty=GENCER)
     bill.proc("550170", a, specialty=ANEST)
     for i in range(bed_days):
@@ -131,20 +130,6 @@ class TestMandatedPackageShownOnce:
         bed = _only(report.yatak_puani.opportunities)
         assert (bed["bed_days"], bed["actual_billed_try"]) == (4, round(12 * _BED_DAY, 2))
         assert bed["recoverable_uplift_try"] == 0.0
-
-    def test_the_package_candidate_flag_is_not_read(self) -> None:
-        # package_candidate comes only from the synthetic generator; the codes alone
-        # say 610131 must be the package, so nothing inside it is expected.
-        bill = _without(s1("faulty", package_candidate=False), "550170")
-        ctx = bill.ctx()
-        assert ctx.claims[0].package_candidate is False
-        assert [line.procedure_code for line in mandated_package_lines(
-            ctx.claims[0], list(ctx.procedure_lines),
-        )] == ["610131"]
-        report = _report(ctx)
-        assert report.refakatci.confirmed_refakat_try == 0.0  # Was 148.20.
-        assert report.anestezi_puani.opportunities == []  # Was 530.33.
-        assert report.yatak_puani.confirmed_yatak_try == 0.0
 
 
 class TestMandateFromTheCodes:

@@ -71,7 +71,6 @@ def _claim(claim_id: str, day: date, *, claim_type: str = "poliklinik") -> Claim
         claim_start_date=day,
         claim_end_date=day,
         primary_icd10="N04",
-        package_candidate=False,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

@@ -50,7 +50,6 @@ def _header(*, claim_id: str = "C1", primary_icd10: str = "Z00.0") -> ClaimHeade
         claim_start_date=date(2026, 1, 1),
         claim_end_date=date(2026, 1, 1),
         primary_icd10=primary_icd10,
-        package_candidate=False,
         expected_total_billed_try=Decimal("0"),
         expected_total_payable_try=Decimal("0"),
         expected_denial_reason="",

@@ -42,7 +42,6 @@ def _make_claim_header(
         claim_start_date=admission or date.today(),
         claim_end_date=discharge or date.today(),
         primary_icd10="Z00.0",
-        package_candidate=False,
         expected_total_billed_try=Decimal("1000"),
         expected_total_payable_try=Decimal("900"),
         expected_denial_reason="",
@@ -476,7 +475,7 @@ def test_a_day_bed_line_inside_a_mandated_package_window_belongs_to_the_package(
     from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d
 
     day = _d("2026-07-14")
-    bill = _Bill("C-SH01", "yatis", day, day, package_candidate=True)
+    bill = _Bill("C-SH01", "yatis", day, day)
     bill.proc("610131", day, specialty=GENCER)
     bill.proc("510120", day, specialty=GENCER)
     ctx = bill.ctx()

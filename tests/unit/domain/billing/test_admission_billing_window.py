@@ -39,7 +39,6 @@ def _claim(
         claim_start_date=admission,
         claim_end_date=claim_end,
         primary_icd10="K35.8",
-        package_candidate=False,
         expected_total_billed_try=Decimal("1000"),
         expected_total_payable_try=Decimal("900"),
         expected_denial_reason="",

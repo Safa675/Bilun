@@ -11,12 +11,15 @@ pytestmark = pytest.mark.unit
 
 
 @pytest.fixture(autouse=True)
-def synthetic_chat_runtime(monkeypatch):
+def synthetic_chat_runtime(monkeypatch, tmp_path):
     """Endpoint tests use their explicit synthetic stubs, never rebuild a cache."""
     async def startup():
         pass
     monkeypatch.setattr("src.bilun.api.startup.startup", startup)
     monkeypatch.setattr("src.bilun.api.routes.chat.get_revenue_recovery", lambda: {})
+    # Every non-developer chat draws on the daily allowance, so the run needs one.
+    monkeypatch.setenv("BILUN_PUBLIC_CHAT_DAILY_TOKEN_BUDGET", "1000000")
+    monkeypatch.setenv("BILUN_PUBLIC_CHAT_BUDGET_DB", str(tmp_path / "budget.sqlite3"))
 
 
 def test_sut_chat_streams_sut_only_context(monkeypatch):

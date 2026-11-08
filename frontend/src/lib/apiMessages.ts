@@ -520,10 +520,6 @@ const STRUCTURED_BILLING_PROSE_CODES: Record<
     key: "api.billingProse.claimPackageOk",
     paramMap: { claim_id: "claimId", amount_try: "amount" },
   },
-  claim_itemized_ok: {
-    key: "api.billingProse.claimItemizedOk",
-    paramMap: { claim_id: "claimId", amount_try: "amount" },
-  },
   claim_mandate_package: {
     key: "api.billingProse.claimMandatePackage",
     paramMap: {

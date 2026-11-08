@@ -49,7 +49,6 @@
           "claim_start_date": true,
           "claim_end_date": true,
           "primary_icd10": true,
-          "package_candidate": true,
           "total_billed_try": true
         }
       },
@@ -2205,7 +2204,6 @@
     "claim_start_date": true,
     "claim_end_date": true,
     "primary_icd10": true,
-    "package_candidate": true,
     "expected_total_billed_try": true,
     "expected_total_payable_try": true,
     "expected_denial_reason": true,

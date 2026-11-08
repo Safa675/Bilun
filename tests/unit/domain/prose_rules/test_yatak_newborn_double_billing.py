@@ -457,7 +457,6 @@ def _context(
             discharge_date=_D + timedelta(days=stay_days - 1),
             claim_start_date=_D,
             claim_end_date=_D + timedelta(days=stay_days - 1),
-            package_candidate=False,
             scenario_tag="newborn_bed_pair",
         )
         for claim_id in claim_ids

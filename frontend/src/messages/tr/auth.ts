@@ -1,10 +1,9 @@
 const auth = {
   login: {
-    title: "Geliştirici girişi",
-    subtitle: "Geliştirici hesabınızla giriş yapın.",
+    title: "Giriş",
+    subtitle: "Bilun kullanıcı adınız ve parolanızla giriş yapın.",
     developerSignIn: "Geliştirici girişi",
     returnToBilling: "Faturalamaya dön",
-    notDeveloper: "Bu hesabın geliştirici erişimi yok.",
     username: "Kullanıcı adı",
     password: "Parola",
     submit: "Giriş yap",

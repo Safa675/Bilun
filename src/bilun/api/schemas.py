@@ -765,7 +765,6 @@ class PatientClaimDetailResponse(BaseModel):
     claim_start_date: date
     claim_end_date: date
     primary_icd10: str
-    package_candidate: bool
     expected_total_billed_try: float
     expected_total_payable_try: float
     expected_denial_reason: str = ""

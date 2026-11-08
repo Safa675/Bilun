@@ -48,7 +48,6 @@ def _make_claim_header(
         claim_start_date=admission or date.today(),
         claim_end_date=discharge or date.today(),
         primary_icd10=primary_icd10,
-        package_candidate=False,
         expected_total_billed_try=Decimal("1000"),
         expected_total_payable_try=Decimal("900"),
         expected_denial_reason="",
@@ -842,7 +841,7 @@ def test_standard_bed_lines_inside_a_mandated_window_do_not_count_as_standard_da
     from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d  # noqa: PLC0415
 
     start = _d("2026-07-14")
-    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"), package_candidate=True)
+    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"))
     bill.proc("610131", start, specialty=GENCER)  # mandated package, window through 21 July
     bill.proc("510070", _d("2026-07-22"), qty=1, specialty=GENCER)
     for i in range(8):  # 14-21 July: inside the window, they pay the package
@@ -913,7 +912,7 @@ def test_billed_cot_lines_inside_a_mandated_window_are_the_bed_statement_but_net
 
     def newborn_ctx(bed_lines):
         start = _d("2026-07-14")
-        bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"), package_candidate=True)
+        bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"))
         bill.proc("610131", start, specialty=GENCER)
         for code, day, quantity in bed_lines:
             bill.proc(code, day, qty=quantity, specialty=GENCER)
@@ -1120,7 +1119,7 @@ def test_newborn_lines_inside_a_mandated_window_do_not_take_days_from_the_standa
     from tests.unit.domain.billing.test_showcase_session_and_package_gaps import GENCER, _Bill, _d
 
     start = _d("2026-07-14")
-    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"), package_candidate=True)
+    bill = _Bill("C-SH01", "yatis", start, _d("2026-07-25"))
     bill.proc("610131", start, specialty=GENCER)
     bill.proc("510070", start, qty=8, specialty=GENCER)
     for offset in range(3):

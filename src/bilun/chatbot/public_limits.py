@@ -142,9 +142,10 @@ class PublicChatLease:
 
 
 def admit_public_chat(request: Request, *, user_role: str) -> PublicChatLease | None:
-    from src.bilun.api.access import is_public_billing_enabled
-
-    if user_role == "dev" or not is_public_billing_enabled():
+    # Every non-developer chat draws on the same daily allowance, whether the
+    # visitor is anonymous under public billing or signed in with the shared
+    # billing login. Only developers are unmetered.
+    if user_role == "dev":
         return None
     path, allowance = _configuration()
     now = time.time()

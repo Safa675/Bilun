@@ -20,7 +20,7 @@ from .schema import CHECKS, Pathway, Problem
 REPO = Path(__file__).resolve().parents[3]
 PATHWAYS_DIR = REPO / "data" / "synthetic" / "pathways"
 
-_FORBIDDEN_KEY = re.compile(r"price|amount|total|package_candidate", re.IGNORECASE)
+_FORBIDDEN_KEY = re.compile(r"price|amount|total", re.IGNORECASE)
 # Text rules (check id, pattern, what it finds), applied to every key, every string and the whole
 # file (comments). A currency amount is a number with a non-zero digit next to TL, TRY or the lira
 # sign: "0 TL" (an engine row without money) is not a price. Barcodes have 13 digits, so an isolated
@@ -68,7 +68,7 @@ class _StrictLoader(yaml.SafeLoader):
 
 
 def hygiene(raw: Any, text: str = "") -> list[Problem]:
-    """No key that names a price, amount, total or package_candidate; no ANON, currency or id-like text."""
+    """No key that names a price, amount or total; no ANON, currency or id-like text."""
     out: list[Problem] = []
 
     def scan(string: str, where: str, label: str) -> None:

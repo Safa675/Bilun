@@ -31,7 +31,6 @@ def _claim(**overrides) -> ClaimHeader:
         claim_start_date=date(2026, 1, 10),
         claim_end_date=date(2026, 1, 12),
         primary_icd10="I21.9",
-        package_candidate=False,
         expected_total_billed_try=Decimal("5000"),
         expected_total_payable_try=Decimal("4000"),
         expected_denial_reason="",
@@ -138,7 +137,7 @@ class TestDrgUpliftWiring:
             "_procedure_point_score",
             lambda code, **kwargs: {"611111": 20, "622222": 10}[code],
         )
-        claim = _claim(package_candidate=False)
+        claim = _claim()
         lines = [
             _proc(
                 procedure_code="611111",
@@ -180,9 +179,9 @@ class TestDrgUpliftWiring:
             assert opportunity["recoverable_uplift_try"] == 30.0
             assert opportunity["itemized_price_methodology"] == "session_adjusted"
 
-    def test_non_package_candidate_uplift_counts_in_sgk_headline(self, monkeypatch) -> None:
+    def test_overridable_claim_uplift_counts_in_sgk_headline(self, monkeypatch) -> None:
         _patch_overridable_payment_methods(monkeypatch)
-        claim = _claim(package_candidate=False)
+        claim = _claim()
         lines = [
             _proc(
                 procedure_code="600150",
@@ -220,7 +219,6 @@ class TestDrgUpliftWiring:
     def test_drg_mandatory_package_billed_excluded_from_uplift(self) -> None:
         claim = _claim(
             facility_tier="2_basamak_kamu",
-            package_candidate=True,
         )
         lines = [
             _proc(
@@ -242,7 +240,7 @@ class TestDrgUpliftWiring:
         assert drg.confirmed_uplift_try == 0.0
 
     def test_skips_when_strategy_already_counts_claim(self) -> None:
-        claim = _claim(package_candidate=True)
+        claim = _claim()
         lines = [
             _proc(
                 procedure_code="600150",
@@ -272,7 +270,7 @@ class TestDrgUpliftWiring:
 
     def test_session_confirmed_deduped_from_drg_uplift(self, monkeypatch) -> None:
         _patch_overridable_payment_methods(monkeypatch)
-        claim = _claim(package_candidate=False)
+        claim = _claim()
         lines = [
             _proc(
                 procedure_code="600150",
@@ -315,7 +313,6 @@ class TestDrgUpliftWiring:
         )
         claim = _claim(
             facility_tier="egitim_arastirma",
-            package_candidate=False,
         )
         lines = [
             _proc(
@@ -341,7 +338,7 @@ class TestDrgUpliftWiring:
         to the billing strategy alone; billed as the package (the clean twin) nothing is left. Neither
         bill puts anything into the DRG or the session uplift, so the headline is the strategy's amount.
 
-        The positive control of the DRG block is `test_non_package_candidate_uplift_counts_in_sgk_headline`
+        The positive control of the DRG block is `test_overridable_claim_uplift_counts_in_sgk_headline`
         above (an overridable claim billed as a package), which goes through the same report."""
         from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 

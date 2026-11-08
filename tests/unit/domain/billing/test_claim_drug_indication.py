@@ -32,7 +32,6 @@ def _ctx(*, report_present: bool | None = False) -> PatientClaimContext:
         claim_start_date=date(2026, 1, 1),
         claim_end_date=date(2026, 1, 5),
         primary_icd10="C34.9",
-        package_candidate=False,
         expected_total_billed_try=Decimal("10000"),
         expected_total_payable_try=Decimal("7200"),
         expected_denial_reason="",

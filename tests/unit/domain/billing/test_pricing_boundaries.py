@@ -108,11 +108,10 @@ def test_real_catalog_ranking_reverses_only_after_tariff_change():
     assert [f.procedure_code for f in new.factors if f.is_primary] == ["609830"]
 
 
-@pytest.mark.parametrize("candidate", [False, True])
-def test_itemized_blood_does_not_create_package_fraction_audit_exposure(candidate):
+def test_itemized_blood_does_not_create_package_fraction_audit_exposure():
     listed = Decimal(list_text("705430", "2026-01-10"))  # billed in full at its list price
     line = _proc(procedure_code="705430", billed_amount_try=listed, expected_payable_try=listed, unit_price_try=listed)
-    ctx = _context([line], claims=[_claim(package_candidate=candidate)])
+    ctx = _context([line], claims=[_claim()])
     assert detect_blood_component_violations([line]) == []
     assert compute_audit_exposure_from_claims(ctx) == 0
 

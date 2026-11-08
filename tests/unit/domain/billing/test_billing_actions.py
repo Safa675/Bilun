@@ -508,26 +508,3 @@ class TestBillingStrategyCompliantClaimFiltering:
         assert actions[0]["kind"] == "mandatory_compliance"
         assert actions[0]["finding_type"] == "compliance"
         assert actions[0]["sgk_uplift_try"] == 12000.0
-
-    def test_already_compliant_itemized_claim_is_excluded_from_recommended_actions(self) -> None:
-        """Claims already billed correctly as itemized with 0 savings should also be excluded."""
-        report = BillingActionReport(
-            patient_id="PT-STRATEGY-2",
-            billing_strategy=BillingStrategyRecommendation(
-                recommendations=[
-                    {
-                        "claim_id": "CLM-ITEM-OK",
-                        "recommendation": "itemized",
-                        "recommendation_kind": "mandatory_compliance",
-                        "payment_method_kind": "ITEMIZED",
-                        "savings_try": 0.0,
-                        "current_billing": "itemized",
-                        "detail": "Claim CLM-ITEM-OK is billed correctly as itemized per SUT §2.2.",
-                        "message_code": "claim_itemized_ok",
-                    },
-                ]
-            ),
-        )
-
-        actions = collect_billing_actions(report)
-        assert len(actions) == 0

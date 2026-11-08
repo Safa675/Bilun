@@ -57,7 +57,6 @@ def _make_claim_header(
     occupational_context: str = "none",
     facility_tier: str = "devlet",
     provider_type: str = "sozlesmeli",
-    package_candidate: bool = False,
 ) -> ClaimHeader:
     return ClaimHeader(
         claim_id=claim_id,
@@ -72,7 +71,6 @@ def _make_claim_header(
         claim_start_date=admission or date.today(),
         claim_end_date=claim_end or discharge or date.today(),
         primary_icd10=primary_icd10,
-        package_candidate=package_candidate,
         expected_total_billed_try=Decimal("1000"),
         expected_total_payable_try=Decimal("900"),
         expected_denial_reason="",
@@ -301,7 +299,6 @@ def _inpatient_bill(
         discharge=discharge,
         facility_tier="2_3_basamak_ozel",
         provider_type="Ozel",
-        package_candidate=True,
     )
     procedure_lines = tuple(
         _make_proc_line(
