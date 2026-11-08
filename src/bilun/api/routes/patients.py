@@ -325,7 +325,6 @@ def get_patient_claim_detail(patient_id: str, claim_id: str):
             "claim_start_date": header.claim_start_date,
             "claim_end_date": header.claim_end_date,
             "primary_icd10": header.primary_icd10,
-            "package_candidate": header.package_candidate,
             "expected_total_billed_try": _money(header.expected_total_billed_try),
             "expected_total_payable_try": _money(header.expected_total_payable_try),
             "expected_denial_reason": header.expected_denial_reason,

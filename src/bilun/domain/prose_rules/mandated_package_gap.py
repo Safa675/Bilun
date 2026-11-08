@@ -9,10 +9,9 @@ One comparison serves three surfaces: the billing strategy shows the gap, audit
 exposure claws back only what the bill overstates, and the session uplift claims
 nothing inside it a second time.
 
-The claim qualifies by its codes, never by the synthetic-only ``package_candidate``
-flag: no line is billed as a package (``line_billed_as_package``) and
-``mandated_package_lines`` (#286) finds a line that must be one, with a package
-price and an işlem grubu on its date.
+The claim qualifies by its codes (#294): no line is billed as a package
+(``line_billed_as_package``) and ``mandated_package_lines`` (#286) finds a line
+that must be one, with a package price and an işlem grubu on its date.
 
 Package side, what the correct bill pays for the replaced part:
 

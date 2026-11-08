@@ -160,14 +160,6 @@ describe("translateStructuredApiMessage (§2.2 message contract)", () => {
     );
     expect(
       translateStructuredApiMessage(enT, {
-        message_code: "claim_itemized_ok",
-        message_params: { claim_id: "C1", amount_try: "900.00" },
-      }),
-    ).toBe(
-      "Claim C1 is billed correctly as itemized per SUT §2.2. Itemized total 900.00 TRY.",
-    );
-    expect(
-      translateStructuredApiMessage(enT, {
         message_code: "claim_mandate_package",
         message_params: {
           claim_id: "C1",
@@ -264,12 +256,6 @@ describe("translateStructuredApiMessage (§2.2 message contract)", () => {
         message_params: { claim_id: "C1", amount_try: "8705.13" },
       }),
     ).toContain("paket olarak doğru faturalandırılmış");
-    expect(
-      translateStructuredApiMessage(trT, {
-        message_code: "claim_itemized_ok",
-        message_params: { claim_id: "C1", amount_try: "900.00" },
-      }),
-    ).toContain("kalemli olarak doğru faturalandırılmış");
     expect(
       translateStructuredApiMessage(trT, {
         message_code: "claim_mandate_package",

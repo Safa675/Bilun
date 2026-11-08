@@ -191,7 +191,7 @@ def _claim(**overrides) -> ClaimHeader:
         "claim_id": "C-W", "patient_id": "P-W", "episode_id": "E-W", "claim_type": "yatis",
         "facility_tier": "2_3_basamak_ozel", "provider_type": "Ozel", "department": "Genel Cerrahi",
         "admission_date": D0, "discharge_date": D0 + timedelta(days=2), "claim_start_date": D0,
-        "claim_end_date": D0 + timedelta(days=2), "primary_icd10": "K40.9", "package_candidate": False,
+        "claim_end_date": D0 + timedelta(days=2), "primary_icd10": "K40.9",
         "expected_total_billed_try": Decimal("0"), "expected_total_payable_try": Decimal("0"),
         "expected_denial_reason": "", "scenario_tag": "",
     }

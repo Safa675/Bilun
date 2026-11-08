@@ -64,7 +64,6 @@ def _make_outpatient_claim(
         claim_start_date=service_date,
         claim_end_date=service_date,
         primary_icd10=primary_icd10,
-        package_candidate=False,
         expected_total_billed_try=Decimal("500"),
         expected_total_payable_try=Decimal("500"),
         expected_denial_reason="",
@@ -309,7 +308,6 @@ def test_tablo15_inpatient_surgery_does_not_trigger_outpatient_exam_rule() -> No
         claim_start_date=admission,
         claim_end_date=discharge,
         primary_icd10="",  # keep a separate real missing-diagnosis finding
-        package_candidate=False,
         expected_total_billed_try=Decimal("5000"),
         expected_total_payable_try=Decimal("5000"),
         expected_denial_reason="",

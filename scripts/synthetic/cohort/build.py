@@ -677,7 +677,6 @@ def build_showcase(
             provider_type="Ozel",
             scenario_tag=pathway.id,
             occupational_context="none",
-            package_candidate=(pathway.billing_mode == "package"),
             pins=pins,
         )
 

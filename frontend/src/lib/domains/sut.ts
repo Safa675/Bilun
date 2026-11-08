@@ -77,7 +77,6 @@ export interface SutPatientOutcomeData extends SUTDataSourceCarrier {
       claim_start_date: string | null;
       claim_end_date: string | null;
       primary_icd10: string;
-      package_candidate: boolean;
       total_billed_try: number;
     }>;
     top_procedures: Array<{
@@ -1359,7 +1358,6 @@ export interface PatientClaimDetail extends SUTDataSourceCarrier {
   claim_start_date: string;
   claim_end_date: string;
   primary_icd10: string;
-  package_candidate: boolean;
   expected_total_billed_try: number;
   expected_total_payable_try: number;
   expected_denial_reason?: string;

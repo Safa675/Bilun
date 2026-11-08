@@ -147,8 +147,6 @@ const api = {
       "Paket bileşeni olarak işaretlenmiş ve ayrı faturalandırılmış — fatura/paket bayrağı, EK-3B-1 düzenleyici ek değil",
     claimPackageOk:
       "{claimId} talebi SUT §2.2.2(1)'e göre paket olarak doğru faturalandırılmış. Paket toplamı {amount} ₺.",
-    claimItemizedOk:
-      "{claimId} talebi SUT §2.2'ye göre kalemli olarak doğru faturalandırılmış. Kalemli toplam {amount} ₺.",
     claimMandatePackage:
       "SUT §2.2, {claimId} talebi için paket faturalandırmayı zorunlu kılar (EK-2/C işlem mevcut). Paket toplamı {packageTotal} ₺, kalemli {itemizedTotal} ₺.",
     claimMandateItemized:

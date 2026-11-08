@@ -291,9 +291,7 @@ def _derive_payment_method_path(
             return "fee_for_service"
         # MISSING_INPUTS / NOT_IN_SUT / None → fall through to the billed lines.
     # Fallback: a line billed as an EK-2/C package (other than an ICU day
-    # package) puts the claim on the package path. Read from the codes, never
-    # from the synthetic-only package_candidate header flag (#294), which the
-    # generator sets from the same lines.
+    # package) puts the claim on the package path, read from the codes (#294).
     from .yatak_puani import billed_package_lines_without_icu
 
     if billed_package_lines_without_icu(list(procedures)):
@@ -425,9 +423,8 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
                 sorted(codes), "EK-2/A"
             )
     # Payment method (§2.2.2.B path): derived from the claim-aggregated
-    # PaymentMethodKind, never from package_candidate. The kind-based
-    # derivation is the canonical SUT §2.2 evaluator's output; a billed package
-    # line is only the fallback. See _derive_payment_method_path.
+    # PaymentMethodKind, the canonical SUT §2.2 evaluator's output; a billed
+    # package line is only the fallback. See _derive_payment_method_path.
     payment_method = _derive_payment_method_path(
         header, procedure_lines, care_setting=context["care_setting"]
     )

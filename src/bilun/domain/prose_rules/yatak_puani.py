@@ -285,8 +285,7 @@ def mandated_package_lines(
 ) -> list[ProcedureClaimLine]:
     """Lines billed hizmet başı that must be billed as an EK-2/C package (§2.2.2(1)).
 
-    Read from the codes, never from the ``package_candidate`` header flag,
-    which only the synthetic generator sets. A line qualifies when:
+    Read from the codes (#294). A line qualifies when:
 
     - it is billed (> 0) and not as a package (``line_billed_as_package``: the
       ``paket`` category or a ``P`` code), and no package line for its code is on
@@ -364,9 +363,7 @@ def billed_package_lines_without_icu(claim_procs: list[ProcedureClaimLine]) -> l
     """The lines billed as an EK-2/C package (``line_billed_as_package``), the ICU day packages left out.
 
     The ICU packages (``ICU_PACKAGE_CODES``) are billed for each ICU day (§2.4.4.H.(8)) and have no işlem grubu, so
-    they are no package of a stay (``claim_bed_package_window``). Read from the codes, never from the
-    ``package_candidate`` header flag, which only the synthetic generator sets (from the same lines: a package line
-    that is not an ICU one).
+    they are no package of a stay (``claim_bed_package_window``). Read from the codes (#294).
     """
     return [
         line

@@ -329,18 +329,6 @@ def test_effects_match_showcase_proof_results(built_showcase: BuildResult) -> No
     assert s7_rec.line_id == ""
     assert s7_rec.line_ids == ("EMR-F-SENTETIK-HASTA-0007-001-004",)
 
-    # S1, S5, S8, S20, S42 (the removal package of patient 5's readmission), S38 (the instrumentation package of patient
-    # 3's second operation), S50 (the ERCP package of patient 8's readmission) and the haemodialysis bills S17 and S23
-    # (EK-2C session packages) have package_candidate=True in both clean and faulty composed headers; others False. The
-    # story of a bill comes from its encounter (a clean bill, S23, S30, S31, S32, S36, S37, S39, S41, S43, S45, S48 or S51,
-    # has no record).
-    story_of_claim = {e["claim_id"]: e["story"] for e in built_showcase.registry["encounters"]}
-    for clean_c, faulty_c in zip(built_showcase.clean_claims, built_showcase.claims, strict=True):
-        story = story_of_claim[faulty_c.header.claim_id]
-        expected_pkg_cand = story in {"S1", "S5", "S8", "S17", "S20", "S23", "S38", "S42", "S50"}
-        assert clean_c.header.package_candidate is expected_pkg_cand
-        assert faulty_c.header.package_candidate is expected_pkg_cand
-
 
 # --- 6. Registry consistency -------------------------------------------------------------------
 
@@ -408,18 +396,6 @@ def test_registry_consistency_against_committed_tables(built_showcase: BuildResu
 # --- 7. Hygiene on the committed files ---------------------------------------------------------
 
 
-def _collect_json_keys(node: Any) -> set[str]:
-    keys: set[str] = set()
-    if isinstance(node, dict):
-        for k, v in node.items():
-            keys.add(str(k))
-            keys.update(_collect_json_keys(v))
-    elif isinstance(node, list):
-        for item in node:
-            keys.update(_collect_json_keys(item))
-    return keys
-
-
 def test_hygiene_and_id_formats_on_committed_files() -> None:
     # 1. Text hygiene on showcase_recipes.yaml, cohort_registry.json, and README.md.
     recipes_text = RECIPES_PATH.read_text(encoding="utf-8")
@@ -431,12 +407,7 @@ def test_hygiene_and_id_formats_on_committed_files() -> None:
         assert not _ANON_RE.search(content), f"ANON text found in {text_path}"
         assert not _CURRENCY_RE.search(content), f"Currency text found in {text_path}"
 
-    # 2. No `package_candidate` key in any JSON file.
-    reg_data = json.loads(_REGISTRY_JSON_PATH.read_text(encoding="utf-8"))
-    all_json_keys = _collect_json_keys(reg_data)
-    assert "package_candidate" not in {k.lower() for k in all_json_keys}
-
-    # 3. No ANON_ or currency text in any string column of the 9 Parquet tables, and all IDs match ids.py.
+    # 2. No ANON_ or currency text in any string column of the 9 Parquet tables, and all IDs match ids.py.
     tables = {name: pl.read_parquet(_CLAIMS_DIR / name) for name in TABLE_FILES}
     for name, df in tables.items():
         for col, dtype in df.schema.items():
@@ -487,6 +458,7 @@ def test_hygiene_and_id_formats_on_committed_files() -> None:
     out = tables["expected_rule_outputs.parquet"]
     assert all(CLAIM_ID_RE.fullmatch(v) for v in out["claim_id"].to_list())
     assert all(PATIENT_ID_RE.fullmatch(v) for v in out["patient_id"].to_list())
+    reg_data = json.loads(_REGISTRY_JSON_PATH.read_text(encoding="utf-8"))
     for enc in reg_data["encounters"]:
         assert PATIENT_ID_RE.fullmatch(enc["patient_id"])
         assert CLAIM_ID_RE.fullmatch(enc["claim_id"])

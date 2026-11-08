@@ -36,7 +36,7 @@ SCHEMA_VERSION = 1
 CHECKS: dict[str, str] = {
     # loader.py: the file and the raw document
     "yaml.invalid": "unreadable YAML, a repeated key, or a document that is not a mapping",
-    "hygiene.forbidden_key": "a key named price, amount, total or package_candidate",
+    "hygiene.forbidden_key": "a key named price, amount or total",
     "hygiene.anon_text": "text that looks like an ANON identifier (ANON_7, anon-7, ANON 7), in any case",
     "hygiene.price_text": "a non-zero currency amount in any string (12 TL, 12 TRY, 12 or lira sign 12)",
     "hygiene.id_like_number": "an 11-digit number in free text (a national id has 11 digits; a barcode 13)",

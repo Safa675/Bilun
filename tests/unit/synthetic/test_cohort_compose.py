@@ -77,7 +77,6 @@ def _context_for(story: str, variant: str, pathway: Pathway) -> EncounterContext
         provider_type="Ozel",
         scenario_tag=pathway.id,
         occupational_context="none",
-        package_candidate=(pathway.billing_mode == "package"),
     )
 
 
@@ -274,11 +273,9 @@ def test_compose_claim_matches_showcase_golden_results(
 ) -> None:
     bill, pathway = _annotated_bill(story, variant, pathways, siblings, faults_by_story)
     ctx = _context_for(story, variant, pathway)
-    assert ctx.package_candidate is (story in {"S1", "S5", "S8"})
     assert ctx.scenario_tag == pathway.id
 
     composed = compose_claim(bill, ctx, catalogs)
-    assert composed.header.package_candidate is (story in {"S1", "S5", "S8"})
     assert composed.header.scenario_tag == pathway.id
 
     golden_doc = json.loads((_RESULTS_DIR / f"{story}.json").read_text(encoding="utf-8"))

@@ -30,7 +30,6 @@ def _claim(**overrides) -> ClaimHeader:
         claim_start_date=date(2026, 1, 10),
         claim_end_date=date(2026, 1, 12),
         primary_icd10="D64.9",
-        package_candidate=True,
         expected_total_billed_try=Decimal("500"),
         expected_total_payable_try=Decimal("500"),
         expected_denial_reason="",

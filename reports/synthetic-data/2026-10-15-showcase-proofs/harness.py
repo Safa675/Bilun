@@ -143,7 +143,6 @@ class Bill:
     admission: date | None
     discharge: date | None
     primary_icd10: str
-    package_candidate: bool = False
     start: date | None = None
     end: date | None = None
     occupational_context: str = "none"
@@ -258,7 +257,7 @@ class Bill:
             facility_tier=FACILITY_TIER, provider_type=PROVIDER_TYPE, department=self.department,
             admission_date=self.admission, discharge_date=self.discharge,
             claim_start_date=self.start or self.admission, claim_end_date=self.end or self.discharge,
-            primary_icd10=self.primary_icd10, package_candidate=self.package_candidate,
+            primary_icd10=self.primary_icd10,
             expected_total_billed_try=total, expected_total_payable_try=payable,
             expected_denial_reason="", scenario_tag="", occupational_context=self.occupational_context,
         )
@@ -286,7 +285,7 @@ class Bill:
 
     def copy(self, cid_suffix: str = "") -> Bill:
         b = Bill(**{k: getattr(self, k) for k in ("pid", "cid", "claim_type", "department", "admission",
-                                                  "discharge", "primary_icd10", "package_candidate",
+                                                  "discharge", "primary_icd10",
                                                   "start", "end", "occupational_context")})
         b.procs, b.mats, b.drugs = list(self.procs), list(self.mats), list(self.drugs)
         b.dx, b.performed, b.medula = list(self.dx), list(self.performed), list(self.medula)

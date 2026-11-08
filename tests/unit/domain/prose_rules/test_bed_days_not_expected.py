@@ -47,7 +47,7 @@ def _claim(*, days: int = 3, claim_type: str = "yatis", claim_id: str = "C1") ->
     return ClaimHeader(
         claim_id=claim_id, patient_id="P1", episode_id="E1", claim_type=claim_type, facility_tier="devlet",
         provider_type="sozlesmeli", department="genel", admission_date=D0, discharge_date=end,
-        claim_start_date=D0, claim_end_date=end, primary_icd10="I10", package_candidate=False,
+        claim_start_date=D0, claim_end_date=end, primary_icd10="I10",
         expected_total_billed_try=Decimal("1000"), expected_total_payable_try=Decimal("900"),
         expected_denial_reason="", scenario_tag="test",
     )

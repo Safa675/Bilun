@@ -57,7 +57,7 @@ def detect_drg_unbundling(
             line for line in claim_context.procedure_lines if line.claim_id == claim.claim_id
         ]
         # Package claims by their codes: a line billed as an EK-2/C package, or
-        # one that must be (#286); never the synthetic-only package_candidate flag.
+        # one that must be (#286, #294).
         if not claim_procs or claim_package_window(claim, claim_procs) is None:
             continue
 

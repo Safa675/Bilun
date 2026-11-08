@@ -182,7 +182,6 @@ def composed_showcase_bundle(
                 provider_type="Ozel",
                 scenario_tag=pathway.id,
                 occupational_context="none",
-                package_candidate=(pathway.billing_mode == "package"),
             )
             bill = (
                 expand(pathway, annotate=True)

@@ -1388,7 +1388,7 @@
   "seed": null,
   "tables_digest": {
     "claim_diagnoses.parquet": "5300dfae6d2b10662d047f5f7b118fdb6cd72da2598896fc7e75d7fbe2fa9789",
-    "claim_headers.parquet": "2d23a833af2d593af60da4eef8bd85f098b29b651e52e575a582f61cd0ac1bcb",
+    "claim_headers.parquet": "b0536053b472c2e45fb946be84b895025ace9bf096f13769a8ee899e116506e6",
     "drug_claim_lines.parquet": "a1b59974e95c867c6418f56931730c348065f674515438b494e18fa0e342ba6d",
     "expected_rule_outputs.parquet": "0ac537d7555657186f9478bed9fdb312d9837e216f86626e10375bc6aae8cb41",
     "material_claim_lines.parquet": "2bcd0c9087dfcdf591dd5efc30115ef39f6fcb950be8c0bb945aa6440a567e95",

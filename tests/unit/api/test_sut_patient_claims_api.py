@@ -27,7 +27,6 @@ def _fake_dataset():
         claim_start_date=date(2024, 1, 15),
         claim_end_date=date(2024, 1, 15),
         primary_icd10="I10",
-        package_candidate=False,
         expected_total_billed_try=Decimal("1200.00"),
         expected_total_payable_try=Decimal("960.00"),
         expected_denial_reason="",

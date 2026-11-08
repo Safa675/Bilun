@@ -85,7 +85,6 @@ def _make_ctx(materials: list[MaterialClaimLine]) -> PatientClaimContext:
         claim_start_date="2026-01-01",
         claim_end_date="2026-01-02",
         primary_icd10="Z00.0",
-        package_candidate=False,
         expected_total_billed_try=100.0,
         expected_total_payable_try=90.0,
         expected_denial_reason="",

@@ -53,7 +53,6 @@ class EncounterContext:
     provider_type: str = "Ozel"
     scenario_tag: str = ""
     occupational_context: str = "none"
-    package_candidate: bool = False
     # The pins the bill was expanded with (the pathway's own `showcase` block, or the recipe's overrides of
     # it). The clean-table builders read the age, sex, nights and course days of the encounter from the
     # claim, not from the pathway; None: the pathway's own pins.
@@ -346,7 +345,6 @@ def compose_claim(
         claim_start_date=date.fromisoformat(hdr["claim_start_date"]),
         claim_end_date=date.fromisoformat(hdr["claim_end_date"]),
         primary_icd10=hdr["primary_icd10"],
-        package_candidate=ctx.package_candidate,
         expected_total_billed_try=total,
         expected_total_payable_try=total_payable,
         expected_denial_reason="",

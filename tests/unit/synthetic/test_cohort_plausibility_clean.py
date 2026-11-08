@@ -35,7 +35,6 @@ from scripts.synthetic.cohort.plausibility_clean import (
     LAB_STRIP_PARAMETERS,
     TABLE_ANADATA,
     TABLE_DRUGS,
-    TABLE_HEADERS,
     TABLE_LAB,
     TABLE_PROCEDURES,
     TABLE_RECETE,
@@ -441,8 +440,8 @@ def test_the_package_bills_of_patients_5_and_8_have_no_lab_rows(built, clean) ->
     labs = clean[TABLE_LAB]
     stays = ((5, 1), (5, 3), (8, 1), (8, 3))
     package_claims = [claim_id(PATIENT[n], k) for n, k in stays]
-    headers = built.tables[TABLE_HEADERS].filter(pl.col("claim_id").is_in(package_claims))
-    assert headers["package_candidate"].to_list() == [True, True, True, True]
+    packages = built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_category") == "paket")
+    assert set(packages.filter(pl.col("claim_id").is_in(package_claims))["claim_id"]) == set(package_claims)
     billed = built.tables[TABLE_PROCEDURES].filter(pl.col("procedure_category") == "laboratuvar")
     assert billed.filter(pl.col("claim_id").is_in(package_claims)).height == 0
     assert labs.filter(pl.col("basvuru_id").is_in([episode_id(PATIENT[n], k) for n, k in stays])).height == 0

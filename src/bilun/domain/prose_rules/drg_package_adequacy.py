@@ -117,8 +117,7 @@ def detect_drg_package_adequacy_opportunities(
 ) -> list[dict[str, Any]]:
     """Flag under-coded EK-2/C packages when clinical procedures support a larger footprint.
 
-    The claim is a package claim by its codes, a line billed as a package (``line_billed_as_package``),
-    never by the synthetic-only ``package_candidate`` header flag (#294).
+    The claim is a package claim by its codes: a line billed as a package (``line_billed_as_package``, #294).
     """
     if not claim_procs:
         return []

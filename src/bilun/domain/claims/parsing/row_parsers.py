@@ -116,7 +116,6 @@ def parse_claim_header(row: RowDict, errors: list[str]) -> ClaimHeader | None:
                 else ""
             ),
             primary_icd10_available=isinstance(primary_icd10_raw, str),
-            package_candidate=parse_bool(row.get("package_candidate")),
             expected_total_billed_try=expected_total_billed_try,
             expected_total_payable_try=expected_total_payable_try,
             expected_denial_reason=parse_text(row, "expected_denial_reason"),

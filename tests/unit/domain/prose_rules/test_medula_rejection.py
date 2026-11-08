@@ -33,7 +33,6 @@ def _claim(scenario_tag: str = "medula_rejection_1688_molecular_microbiology") -
         claim_start_date=date(2024, 7, 15),
         claim_end_date=date(2024, 7, 15),
         primary_icd10="A49.9",
-        package_candidate=False,
         expected_total_billed_try=Decimal("100"),
         expected_total_payable_try=Decimal("100"),
         expected_denial_reason="",

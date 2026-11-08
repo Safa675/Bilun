@@ -212,7 +212,6 @@ def build_validation_provenance(
                 department="",
                 claim_start_date=None,
                 claim_end_date=None,
-                package_candidate=None,
                 primary_icd10=primary_icd10,
             ),
         ),

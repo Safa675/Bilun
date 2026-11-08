@@ -127,7 +127,6 @@ def _make_ctx(
         claim_start_date="2026-01-01",
         claim_end_date="2026-01-02",
         primary_icd10="Z00.0",
-        package_candidate=False,
         expected_total_billed_try=Decimal("600"),
         expected_total_payable_try=Decimal("500"),
         expected_denial_reason="",

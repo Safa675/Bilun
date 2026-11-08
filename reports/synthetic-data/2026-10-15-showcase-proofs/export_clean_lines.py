@@ -12,7 +12,7 @@ Run from the repo root, like prove.py (--write is the default):
     ... --check   export in memory, list the stories whose committed file differs or is
                   missing in either directory, exit 1 if there are any (0 otherwise)
 
-Not written: ids, names, prices, amounts, the synthetic-only package_candidate header flag.
+Not written: ids, names, prices, amounts.
 `billed_ratio` (procedures, materials) is billed amount / (unit price x quantity), rounded half
 up to 4 decimals: "1.0000", or "0.2500" for the S8 second operation (25 % of the list amount,
 same session).
