@@ -250,7 +250,7 @@ def test_report_scalars_match_proof(
     assert report_scalars(b.clean_report) == normalize(b.proof["clean"]["report"])
 
 
-# --- 5. Fault is found with its amount (or drug_indication for S6, a divergence for S8, S9, S22, S50) ----
+# --- 5. Fault is found with its amount (or drug_indication for S6, a divergence for S4, S8, S9, S22, S50) -
 
 
 @pytest.mark.parametrize("story", _STORIES)
@@ -263,7 +263,7 @@ def test_fault_found_with_expected_amount_in_signal_diff(
     expected_amount = _f(b.record.amount_try)
 
     if story == "S8":
-        assert set(KNOWN_REPORT_DIVERGENCES) == {"S8", "S9", "S22", "S50"}
+        assert set(KNOWN_REPORT_DIVERGENCES) == {"S4", "S8", "S9", "S22", "S50"}
         div = KNOWN_REPORT_DIVERGENCES["S8"]
         assert isinstance(div, ReportDivergence)
         assert div.report_amount_try == "3584.80"
@@ -279,6 +279,21 @@ def test_fault_found_with_expected_amount_in_signal_diff(
             if other_story not in KNOWN_REPORT_DIVERGENCES:
                 assert story_bundles[other_story].story_proof.note == ""
         assert target_signal_found("S8", b.record.amount_try, diff_tuples) is True
+        return
+
+    if story == "S4":
+        # No 510121 line shows the companion (#301): the report has a 0 TL check row that names the five nights'
+        # amount, and the record carries the companion lines the fault dropped.
+        div = KNOWN_REPORT_DIVERGENCES["S4"]
+        assert (div.report_amount_try, div.record_amount_try) == ("0.00", b.record.amount_try)
+        assert ("action", "refakatci", "refakatci_companion_bed", "", 0.0) in diff_tuples
+        assert not any(_f(t[-1]) == expected_amount for t in diff_tuples)
+        [check] = b.direct_faulty
+        assert (check["days"], check["recoverable_uplift_try"]) == (5, 0.0)
+        assert f"= {b.record.amount_try} TRY" in check["detail"]
+        assert "0.00" in b.story_proof.note and b.record.amount_try in b.story_proof.note
+        assert "Safa675/Bilun#301" in b.story_proof.note
+        assert target_signal_found("S4", b.record.amount_try, diff_tuples) is True
         return
 
     if story == "S9":

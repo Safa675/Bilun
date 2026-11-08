@@ -1219,22 +1219,25 @@ class TestMandatedPackageGap269:
 class TestOptionalOverrideNetting:
     """S1's stay with its operation 600170 at a training hospital: P600170 (group D, a 5-day window) is optional
     (§2.2.2(2)). The package includes the companion of those days (§2.2.2.B-1(1)(h)), so the SGK total takes the
-    package advice or the companion uplift, never both."""
+    package advice or the companion uplift, never both. A companion is owed only on a bill that shows one: its
+    first night is billed (#301)."""
 
     @staticmethod
-    def _bill(nights: int) -> _Bill:
+    def _bill(nights: int, *, companion: bool = True, labs: bool = True) -> _Bill:
         a = _d("2026-07-14")
         bill = _Bill("C-OPT", "yatis", a, a + timedelta(days=nights), tier="egitim_arastirma")
         bill.proc("600170", a, specialty=GENCER)
         bill.proc("550170", a, specialty=ANEST)
         bill.stay(GENCER, companion=False)
-        bill.labs(a, ("L107020", "L101850"), GENCER)
+        if companion:
+            bill.proc("510121", a, specialty=GENCER)
+        if labs:
+            bill.labs(a, ("L107020", "L101850"), GENCER)
         bill.proc("910230", a + timedelta(days=1), specialty=GENCER)
         return bill
 
     def test_the_package_advice_is_net_of_the_companion_it_includes(self) -> None:
-        # Two nights: the package pays more than the correct itemized bill. Was +493.54 advice and +148.18
-        # companion, 641.72 in the total.
+        # Two nights, the second owed: the package pays more than the correct itemized bill.
         bill = self._bill(2)
         report = compute_patient_billing_report("SH", claim_context=bill.ctx())
         row = _only_claim_row(report.billing_strategy.recommendations)
@@ -1248,9 +1251,8 @@ class TestOptionalOverrideNetting:
         assert "Toplam paket alternatifini varsayar" in row["detail"]
 
     def test_the_itemized_bill_wins_once_it_counts_the_companion(self) -> None:
-        # Four nights: the bill alone is below the package, the bill with its companion above it. Was +48.84
-        # advice on top of the companion.
-        bill = self._bill(4)
+        # Four nights, three owed, no labs: the bill alone is below the package, the bill with its companion above.
+        bill = self._bill(4, labs=False)
         report = compute_patient_billing_report("SH", claim_context=bill.ctx())
         row = _only_claim_row(report.billing_strategy.recommendations)
         billed = float(sum(line.billed_amount_try for line in bill.procs))
@@ -1258,6 +1260,19 @@ class TestOptionalOverrideNetting:
         assert (row["recommendation"], row["savings_try"]) == ("itemized", 0.0)
         assert report.sgk_uplift_try == report.refakatci.confirmed_refakat_try > 0
         assert "Toplam hizmet başı alternatifini varsayar" in row["detail"]
+
+    def test_without_a_companion_line_the_itemized_side_counts_no_companion(self) -> None:
+        # #301: four nights and no 510121 line. The itemized side won with four companion nights nothing on the bill
+        # shows; now the package wins by what it pays above the bill, and the nights are a 0 TL check.
+        bill = self._bill(4, companion=False)
+        report = compute_patient_billing_report("SH", claim_context=bill.ctx())
+        row = _only_claim_row(report.billing_strategy.recommendations)
+        billed = float(sum(line.billed_amount_try for line in bill.procs))
+        gap = round(_listed("P600170", "2026-07-14") - billed, 2)
+        assert (row["recommendation"], row["savings_try"], report.sgk_uplift_try) == ("package", gap, gap)
+        assert "alternatifini varsayar" not in row["detail"]
+        [check] = report.refakatci.opportunities
+        assert (check["days"], check["recoverable_uplift_try"], check["included_in_sgk_total"]) == (4, 0.0, False)
 
 
 def _only_claim_row(rows: list[dict]) -> dict:

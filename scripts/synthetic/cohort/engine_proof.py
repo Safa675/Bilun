@@ -114,6 +114,16 @@ class ReportDivergence:
 
 
 KNOWN_REPORT_DIVERGENCES: dict[str, ReportDivergence] = {
+    "S4": ReportDivergence(
+        report_amount_try="0.00",
+        record_amount_try="370.45",
+        reason=(
+            "No 510121 line or claim field shows the companion, so the report shows a 0 TL 'Kontrol et' row "
+            "naming the five nights' amount (SUT 2.6.3(2): the doctor's order and the refakatçi belgesi) and "
+            "the record carries the companion lines the fault dropped."
+        ),
+        issue="Safa675/Bilun#301",
+    ),
     "S8": ReportDivergence(
         report_amount_try="3584.80",
         record_amount_try="5377.20",
@@ -535,6 +545,7 @@ def _direct_rows_s4(ctx: PatientClaimContext) -> list[dict[str, Any]]:
                 "expected_try",
                 "actual_billed_try",
                 "recoverable_uplift_try",
+                "review_kind",
                 "detail",
             ),
         )

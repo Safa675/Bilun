@@ -1,8 +1,9 @@
 """The action rows of the three showcase faults that used to show their money only in a KPI.
 
-S3 (anaesthesia points missing) and S4 (companion bed not billed) add to `sgk_uplift_try`; S8 (second package
-at full rate) adds to `audit_exposure_try`. Each bill must carry one action row for its fault, in the view that
-fits the money, and the rows must add up to the report's components. The bills are the showcase bills of the
+S3 (anaesthesia points missing) adds to `sgk_uplift_try`; S8 (second package at full rate) adds to
+`audit_exposure_try`; S4 (companion bed not billed) is a 0 TL check row, since no 510121 line shows the companion
+(#301). Each bill must carry one action row for its fault, in the view that fits the money, and the rows must add
+up to the report's components. The bills are the showcase bills of the
 demo cohort, read through the registry (`tests/fixtures/synthetic_cohort.py`): a role name and the registry's
 fault record, never an id or an amount typed here.
 """
@@ -108,16 +109,19 @@ class TestRevenueRowsOfTheFaultStories:
         assert _try(report.sgk_uplift_try) == Decimal(fault["amount_try"])
         assert _try(report.anestezi_puani.confirmed_anestezi_try) == Decimal(fault["amount_try"])
 
-    def test_s4_companion_not_billed_is_one_revenue_row_with_the_registry_amount(
+    def test_s4_companion_not_billed_is_one_0_tl_check_row_that_names_the_registry_amount(
         self, reports
     ) -> None:
+        """#301: SUT §2.6.3.(2) pays the companion on the doctor's order and the refakatçi belgesi, and no 510121
+        line shows either, so the row asks for them and names what the nights would bill, outside the money."""
         fault = cohort.fault("S4")
         report = reports["S4"]
+        assert KNOWN_REPORT_DIVERGENCES["S4"].record_amount_try == fault["amount_try"]
 
         [row] = _rows(report, "refakatci")
         assert row["finding_type"] == "opportunity"
         assert row["claim_id"] == fault["claim_id"]
-        assert _try(row["sgk_uplift_try"]) == Decimal(fault["amount_try"])
+        assert _try(row["sgk_uplift_try"]) == Decimal("0.00")
         assert row["audit_risk_try"] is None
         assert row["compliance_savings_try"] is None
         assert row["billed_try"] is None
@@ -125,15 +129,12 @@ class TestRevenueRowsOfTheFaultStories:
         [opportunity] = report.refakatci.opportunities
         assert row["kind"] == opportunity["type"]
         assert row["sut_section_id"] == opportunity["sut_section_id"]
-        # SUT §2.6.3.(2) pays the companion bed on the physician's need and a stay certificate: the
-        # detector's verification note is part of what the officer reads.
-        assert row["detail"].startswith(opportunity["detail"])
-        assert opportunity["suppression_notes"]
-        for note in opportunity["suppression_notes"]:
-            assert note in row["detail"]
+        assert row["detail"] == opportunity["detail"]
+        assert row["detail"].startswith("Kontrol et:")
+        assert f"= {fault['amount_try']} TRY" in row["detail"]
 
-        assert _try(report.sgk_uplift_try) == Decimal(fault["amount_try"])
-        assert _try(report.refakatci.confirmed_refakat_try) == Decimal(fault["amount_try"])
+        assert report.sgk_uplift_try == 0.0
+        assert report.refakatci.confirmed_refakat_try == 0.0
 
     @pytest.mark.parametrize("story", ["S3", "S4"])
     def test_revenue_row_is_listed_for_the_revenue_view(self, reports, story: str) -> None:
@@ -248,7 +249,7 @@ class TestRowsAddUpToTheComponents:
         ]
         assert _sum_try(counted) == _try(report.sgk_uplift_try)
 
-    @pytest.mark.parametrize("story", ["S1", "S2", "S3", "S4"])
+    @pytest.mark.parametrize("story", ["S1", "S2", "S3"])  # S4's row is a 0 TL check (#301).
     def test_revenue_story_is_explained_by_its_rows_alone(self, reports, story: str) -> None:
         fault = cohort.fault(story)
         assert fault["effect_kind"] == "revenue_uplift"

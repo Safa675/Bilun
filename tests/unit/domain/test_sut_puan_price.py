@@ -188,7 +188,7 @@ def test_the_companion_bed_without_a_dated_price_is_cut(monkeypatch) -> None:
     monkeypatch.setattr(refakatci, "get_katsayi", lambda *a, **k: 0.593)
     monkeypatch.setattr(refakatci, "_refakatci_puan", lambda: 124.95)
     header = _header(date(2026, 7, 10), date(2026, 7, 13))
-    (opp,) = refakatci.detect_refakatci_opportunities([header], [_line("510010", date(2026, 7, 10), "0")])
+    (opp,) = refakatci.detect_refakatci_opportunities([header], [_line("510121", date(2026, 7, 10), "0")])
 
     assert opp["days"] == 3
     assert opp["expected_try"] == 222.27

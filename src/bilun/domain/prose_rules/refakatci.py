@@ -14,6 +14,13 @@ stays (§2.2.2.(5)) and does NOT apply on ICU days (§2.6.3.(3)); on ICU
 days a separate per-diem applies instead — Phase 1 suppresses 510121 and
 notes the per-diem consideration.
 
+Companion information (#301): SUT §2.6.3.(2) (C001628) pays the companion's
+bed and meal on the doctor's medical-necessity decision and the hospital's
+refakatçi belgesi; the claim model carries neither. A 510121 line on the
+claim is the only sign of a companion, so only then are the nights expected
+and netted against the billed lines. Without one the row is a 0 TL
+"Kontrol et" check (``review_kind``), outside the SGK total.
+
 See plans/refactor/rule-encoding-gap-closure-roadmap.md.
 """
 
@@ -43,6 +50,9 @@ if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 
 _OPPORTUNITY_TYPE = "refakatci_companion_bed"
+# A 0 TL row that asks for the doctor's order and the refakatçi belgesi (§2.6.3.(2)) because no 510121 line
+# shows a companion; ``billing_actions`` makes it an action row without money.
+REVIEW_KIND_COMPANION = "needs_companion_verification"
 _REFAKATCI_CODE = "510121"
 _REFAKATCI_PUAN = 124.95
 _ICU_DAY_RATE_CODE = "510090"
@@ -112,6 +122,9 @@ def detect_refakatci_opportunities(
       * Otherwise compute companion days = ``(discharge - admission).days``,
         expected charge = days × admission-date 510121 rate, and subtract any
         already-billed 510121 lines into ``recoverable_uplift_try``.
+      * When the claim has no 510121 line, nothing shows a companion
+        (§2.6.3.(2)): the row is a 0 TL check with ``review_kind``, outside
+        the SGK total, and its detail names what the nights would bill (#301).
 
     Args:
         claims: ClaimHeaders to evaluate.
@@ -279,6 +292,33 @@ def detect_refakatci_opportunities(
             companion_days = billable_companion_days
 
         expected = _money(companion_days * daily_rate)
+        if not companion_lines:
+            opportunities.append(
+                {
+                    "type": _OPPORTUNITY_TYPE,
+                    "claim_id": claim.claim_id,
+                    "days": companion_days,
+                    "puan": puan,
+                    "expected_try": 0.0,
+                    "actual_billed_try": 0.0,
+                    "recoverable_uplift_try": 0.0,
+                    "katsayi": katsayi,
+                    "sut_section_id": "2.6.3",
+                    "rule_id": "refakatci_510121",
+                    "review_kind": REVIEW_KIND_COMPANION,
+                    "detail": (
+                        f"Kontrol et: faturada refakatçi bilgisi yok (510121 satırı yok). "
+                        f"Refakatçinin yatak ve yemeği hekimin tıbbi lüzum kararı ve hastanenin "
+                        f"refakatçi belgesiyle ödenir (SUT 2.6.3(2)). Belge varsa {companion_days} gece × "
+                        f"{daily_rate:.2f} TRY = {expected:.2f} TRY faturalanır; bu tutar toplama girmez."
+                    ),
+                    "suppression_notes": [],
+                    "included_in_sgk_total": False,
+                    "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                    "savings_basis": SAVINGS_BASIS_SOURCED,
+                }
+            )
+            continue
         recoverable_try = _money(max(0.0, expected - actual_billed_try))
 
         opportunities.append(

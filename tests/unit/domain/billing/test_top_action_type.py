@@ -14,6 +14,7 @@ from typing import Any
 
 import pytest
 
+from scripts.synthetic.cohort import KNOWN_REPORT_DIVERGENCES
 from src.bilun.api.routes.billing import _serialize_billing_report
 from src.bilun.cache.build_streaming import json_ready
 from src.bilun.domain.billing import recovery_summary
@@ -55,6 +56,10 @@ _COPAY = {
 }
 # The registry names the engine rule of a story's fault; the cohort table names the motor by this key.
 _TOP_ACTION_OF_RULE = {"billing_strategy": "strategy", "procedure_capture_gap": "capture_gap"}
+# Revenue faults the report shows as a 0 TL check: S4, whose bill shows no companion (#301).
+_CHECK_ONLY = frozenset(
+    story for story, divergence in KNOWN_REPORT_DIVERGENCES.items() if divergence.report_amount_try == "0.00"
+)
 # The keys `_get_top_action_type` weighs, in order: `max` keeps the first of equal amounts.
 _KEYS = [
     "session_uplift",
@@ -142,19 +147,20 @@ class TestShowcaseBills:
         self, reports, story: str, exempt: bool
     ) -> None:
         fault = cohort.fault(story)
-        if fault["effect_kind"] == "revenue_uplift":
+        if fault["effect_kind"] == "revenue_uplift" and story not in _CHECK_ONLY:
             expected = _TOP_ACTION_OF_RULE.get(fault["engine_rule"], fault["engine_rule"])
         else:
-            expected = "none"  # over-billing and compliance faults carry no SGK uplift
+            expected = "none"  # over-billing and compliance faults carry no SGK uplift, nor a 0 TL check
         assert _both_paths(reports[story, exempt]) == {
             "live": expected,
             "cache": expected,
             "api": expected,
         }
 
-    def test_the_anaesthesia_and_companion_stories_name_their_motors(self, reports) -> None:
-        """S3 and S4 read `none` next to 928.09 and 370.50 TL recoverable before the four puan motors had a key."""
-        for story, motor in (("S3", "anestezi_puani"), ("S4", "refakatci")):
+    def test_the_anaesthesia_story_names_its_motor(self, reports) -> None:
+        """S3 read `none` next to 928.09 TL recoverable before the four puan motors had a key (S4's companion is a
+        0 TL check since #301)."""
+        for story, motor in (("S3", "anestezi_puani"),):
             assert cohort.fault(story)["engine_rule"] == motor
             for exempt in (False, True):
                 report = reports[story, exempt]
@@ -177,7 +183,7 @@ class TestShowcaseBills:
             patient_recovery_summary_entry(report)["top_action_type"]
             for report in reports.values()
         }
-        assert {"strategy", "yatak_puani", "anestezi_puani", "refakatci", "none"} <= tops
+        assert {"strategy", "yatak_puani", "anestezi_puani", "none"} <= tops
 
 
 class TestBothPathsWeighTheSameKeys:
