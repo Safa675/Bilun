@@ -5,18 +5,20 @@ import BilunFullLogo from "@/components/brand/BilunFullLogo";
 import { Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import Link from "next/link";
-import { canUseDeveloper } from "@/lib/auth";
+import { canUseBilling } from "@/lib/auth";
 import { getSessionIdentity } from "@/lib/api/auth";
 import { announceSessionChange, clearProtectedBrowserState } from "@/lib/authBrowser";
 import { useSessionIdentity } from "@/components/shell/RoleProvider";
 
 /**
- * Shared-password login screen.
+ * Shared-password login screen, the gate in front of the billing workflow
+ * while public billing is off.
  *
  * Posts credentials to /api/auth/login (proxied to the backend via the
  * next.config.ts rewrite). On success the backend sets the httpOnly
  * bilun:session cookie; a hard navigation then loads `/` so middleware
  * sees the cookie (soft router.replace can race the Set-Cookie commit).
+ * The server decides developer capability; this page only needs billing.
  */
 export default function LoginPage() {
   const t = useT();
@@ -48,8 +50,8 @@ export default function LoginPage() {
         return;
       }
       const verified = await getSessionIdentity();
-      if (!canUseDeveloper(verified)) {
-        setError(t("auth.login.notDeveloper"));
+      if (!canUseBilling(verified)) {
+        setError(t("auth.login.error"));
         return;
       }
       clearProtectedBrowserState();

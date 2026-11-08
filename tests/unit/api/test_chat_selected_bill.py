@@ -12,6 +12,13 @@ from src.bilun.shared.exceptions import ServiceUnavailableError
 pytestmark = pytest.mark.unit
 
 
+@pytest.fixture(autouse=True)
+def chat_budget(monkeypatch, tmp_path):
+    # Every non-developer chat draws on the daily allowance, so the run needs one.
+    monkeypatch.setenv("BILUN_PUBLIC_CHAT_DAILY_TOKEN_BUDGET", "1000000")
+    monkeypatch.setenv("BILUN_PUBLIC_CHAT_BUDGET_DB", str(tmp_path / "budget.sqlite3"))
+
+
 def _page(claim_id="BILL-A"):
     return {
         "patient_id": "PATIENT",

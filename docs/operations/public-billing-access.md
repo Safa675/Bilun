@@ -11,6 +11,13 @@ developer data and actions rather than concealing downloaded code.
 in production. With public access off, billing requests require authentication;
 engineering routes additionally require developer capability in either state.
 
+With public access off, the app opens at the sign-in page. The shared username
+and password (`BILUN_AUTH_USERNAME`, `BILUN_AUTH_PASSWORD`) open the billing
+workflow only. Developer capability needs that username to also appear in
+`BILUN_DEV_USERNAMES`, so keep the visitor credential out of that list.
+`generate_developer_auth_env.py` puts its username there, so it creates a
+developer credential, not a visitor one.
+
 The current app has one configured login. Reusing a previously shared password
 as the developer password would grant developer access to its former holders.
 Generate a new developer-only credential into a private file, never argv/logs:
@@ -46,8 +53,9 @@ token; such a token expires normally or is invalidated by signing-key rotation.
 
 ## Public compute limits
 
-Public chat additionally requires both settings below. It fails closed if they
-are absent or the budget ledger is unavailable; billing pages still work.
+Chat for every non-developer session, anonymous or signed in with the shared
+login, requires both settings below. It fails closed if they are absent or the
+budget ledger is unavailable; billing pages still work.
 
 - `BILUN_PUBLIC_CHAT_DAILY_TOKEN_BUDGET`: positive integer selected for the demo's
   provider budget. This is a conservative reservation allowance, **not** exact

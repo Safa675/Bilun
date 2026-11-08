@@ -1,10 +1,9 @@
 const auth = {
   login: {
-    title: "Developer sign in",
-    subtitle: "Sign in with your developer account.",
+    title: "Sign in",
+    subtitle: "Sign in with your Bilun username and password.",
     developerSignIn: "Developer sign in",
     returnToBilling: "Return to billing",
-    notDeveloper: "This account does not have developer access.",
     username: "Username",
     password: "Password",
     submit: "Sign in",
