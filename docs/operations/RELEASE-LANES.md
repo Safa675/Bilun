@@ -8,7 +8,7 @@ Staging is **synthetic data only**. Require `BILUN_DATA_MODE=synthetic_demo`; th
 
 ## Public URL currently served by staging
 
-Since 2026-10-09 the Caddy site `app.bilun.tech` proxies to **staging** (`/api/*` and `/health` to `127.0.0.1:8101`, everything else to `127.0.0.1:3100`); the old frozen pair (`5c89ed53`, ports 8001/3000), the last release of the deleted strict lane, keeps running from its own bundle under `/root` but receives no traffic; retiring it is a later step. Switch with `/opt/bilun-staging/caddy-switch.sh to-staging|to-live|status`; every switch backs up the Caddyfile to `/root/caddy-backups`, validates it, only reloads Caddy and rolls back on a failed check. Consequences:
+Since 2026-10-09 the Caddy site `app.bilun.tech` proxies to **staging** (`/api/*` and `/health` to `127.0.0.1:8101`, everything else to `127.0.0.1:3100`); staging follows `main` automatically (`bilun-deploy-main.timer`, see [AI-RUNBOOK.md](AI-RUNBOOK.md)). The old frozen pair (`5c89ed53`, ports 8001/3000), the last release of the deleted strict lane, was stopped and disabled on 2026-11-04 (`bilun-backend` and `bilun-frontend`); its bundle stays under `/root`. So `to-live` below has nothing to point at until a new live pair exists. Switch with `/opt/bilun-staging/caddy-switch.sh to-staging|to-live|status`; every switch backs up the Caddyfile to `/root/caddy-backups`, validates it, only reloads Caddy and rolls back on a failed check. Consequences:
 
 1. Staging updates restart the staging backend and frontend services; while public traffic points to staging this causes a few seconds of public downtime.
 2. Developer sign-in on `app.bilun.tech` does not work while staging serves public traffic: staging has no developer identity by design.

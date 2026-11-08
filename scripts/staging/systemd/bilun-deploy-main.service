@@ -1,0 +1,12 @@
+[Unit]
+Description=Update staging (app.bilun.tech) to main when its CI is green
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# The root gh login (CI status) and the deploy key (fetch) live under /root.
+Environment=HOME=/root
+ExecStart=/usr/local/sbin/bilun-deploy-main
+# update.sh waits up to an hour for a running CI job, then builds for about 5 minutes.
+TimeoutStartSec=90min
